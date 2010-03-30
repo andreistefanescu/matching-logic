@@ -1,0 +1,13 @@
+load kernel-c-compiled
+mod KERNEL-C-TEST is
+	including KERNEL-C .
+	
+	--- Programs
+  	op program : -> K [metadata "arity 0"] .
+	eq program = "return`;"(.List{K}) .
+
+	
+endm
+
+---set trace on .
+rew eval(program) .
