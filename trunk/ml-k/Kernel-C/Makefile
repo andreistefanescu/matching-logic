@@ -4,6 +4,9 @@ TMP = tmp
 EXTENSION = .c
 
 C_DIR = programs
+SEMANTICS_DIR = semantics
+K-MAUDE = ../../../../k-framework/k-maude/trunk/tools/kcompile.sh
+PARSER_DIR = parser
 
 CIL_BASE = cil
 CIL_PLATFORM = x86_WIN32
@@ -17,8 +20,8 @@ K_BASE_DIR = ../..
 
 CIL = $(CIL_BASE)/obj/$(CIL_PLATFORM)
 
-OCAML_COMPILE = ocamlopt $(OCAMLOPT_FLAGS) -c -I $(CIL)
-OCAML_LINK = ocamlopt $(OCAMLOPT_FLAGS) -ccopt -L$(CIL)
+OCAML_COMPILE = ocamlopt $(OCAMLOPT_FLAGS) -c -I $(CIL) -I $(PARSER_DIR)
+OCAML_LINK = ocamlopt $(OCAMLOPT_FLAGS) -ccopt -L$(CIL):$(PARSER_DIR)
 
 all: uglyprint $(addsuffix .gen.program.maude,$(TEST_PROGRAMS))
 
@@ -26,24 +29,27 @@ all: uglyprint $(addsuffix .gen.program.maude,$(TEST_PROGRAMS))
 	mkdir -p $(TMP)
 	gcc -E -I. -o $(TMP)/$@ $<
 
-MaudeVisitor.cmx MaudeVisitor.cmi: maudeVisitor.ml
-	$(OCAML_COMPILE) maudeVisitor.ml
+$(PARSER_DIR)/MaudeVisitor.cmx $(PARSER_DIR)/MaudeVisitor.cmi: $(PARSER_DIR)/maudeVisitor.ml
+	$(OCAML_COMPILE) $(PARSER_DIR)/maudeVisitor.ml
 	
-MaudePrinter.cmx MaudePrinter.cmi: maudePrinter.ml DefaultMaudePrinter.cmi
-	$(OCAML_COMPILE) maudePrinter.ml
+$(PARSER_DIR)/MaudePrinter.cmx $(PARSER_DIR)/MaudePrinter.cmi: $(PARSER_DIR)/maudePrinter.ml $(PARSER_DIR)/DefaultMaudePrinter.cmi
+	$(OCAML_COMPILE) $(PARSER_DIR)/maudePrinter.ml
 	
-DefaultMaudePrinter.cmx DefaultMaudePrinter.cmi: defaultmaudePrinter.ml
-	$(OCAML_COMPILE) defaultMaudePrinter.ml
+$(PARSER_DIR)/DefaultMaudePrinter.cmx $(PARSER_DIR)/DefaultMaudePrinter.cmi: $(PARSER_DIR)/defaultmaudePrinter.ml
+	$(OCAML_COMPILE) $(PARSER_DIR)/defaultMaudePrinter.ml
 	
-cildriver.cmx cildriver.cmi: cildriver.ml MaudeVisitor.cmi MaudePrinter.cmi
-	$(OCAML_COMPILE) cildriver.ml 
+$(PARSER_DIR)/cildriver.cmx $(PARSER_DIR)/cildriver.cmi: $(PARSER_DIR)/cildriver.ml $(PARSER_DIR)/MaudeVisitor.cmi $(PARSER_DIR)/MaudePrinter.cmi
+	$(OCAML_COMPILE) $(PARSER_DIR)/cildriver.ml 
 
-uglyprint: MaudeVisitor.cmx MaudePrinter.cmx cildriver.cmx
-	$(OCAML_LINK) -o uglyprint unix.cmxa str.cmxa $(CIL)/cil.cmxa MaudeVisitor.cmx DefaultMaudePrinter.cmx MaudePrinter.cmx cildriver.cmx
+cparser: $(PARSER_DIR)/MaudeVisitor.cmx $(PARSER_DIR)/MaudePrinter.cmx $(PARSER_DIR)/cildriver.cmx
+	$(OCAML_LINK) -o cparser unix.cmxa str.cmxa $(CIL)/cil.cmxa $(PARSER_DIR)/MaudeVisitor.cmx $(PARSER_DIR)/DefaultMaudePrinter.cmx $(PARSER_DIR)/MaudePrinter.cmx $(PARSER_DIR)/cildriver.cmx
 	
-%.gen.program.maude: %.preprocessed uglyprint
-	uglyprint $(CIL_FLAGS) --out $@ $(TMP)/$<
+%.gen.program.maude: %.preprocessed cparser
+	cparser $(CIL_FLAGS) --out $@ $(TMP)/$<
 	tail $@
+	
+semantics: $(SEMANTICS_DIR)/kernel-c.maude
+	$(K-MAUDE) $(SEMANTICS_DIR)/kernel-c.maude KERNEL-C
 
 # %.gen.maude: %.gen.program.maude
 	# echo -e "load $(K_BASE_DIR)/full-k-prelude\nload c-syntax\n" | cat - $< > $@.1
@@ -60,4 +66,4 @@ run: $(INPUT).gen.maude.run
 # Main.maude:: c-syntax.maude c-configuration.maude c-semantics.maude
 
 clean:
-	rm -f *.cmi *.cmx *.o *.cil *.gen.* *.preprocessed uglyprint.exe uglyprint *.stackdump
+	rm -f $(PARSER_DIR)/*.cmi $(PARSER_DIR)/*.cmx $(PARSER_DIR)/*.o $(PARSER_DIR)/*.cil *.gen.* *.preprocessed cparser.exe uglyprint *.stackdump
