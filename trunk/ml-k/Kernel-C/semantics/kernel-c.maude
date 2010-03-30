@@ -1,0 +1,59 @@
+load ../../../../k-framework/k-maude/trunk/k-prelude
+mod KERNEL-C-SYNTAX is
+  including PL-INT .   --- built-in integers
+  including PL-VARID . --- built-in variable identifiers
+
+  sort AExp .
+  subsort VarId Int < AExp .
+
+  sort AExpList .
+  subsort AExp < AExpList .
+  op _,_ : AExpList AExpList -> AExpList [assoc id: nil] .
+  op nil : -> AExpList .
+  op list_ : AExpList -> AExp [metadata "strict(1) hybrid"] .
+  
+--- BExp
+  sort BExp .
+  subsort Bool < BExp .
+
+--- Stmt
+  sort Stmt .
+
+endm
+
+mod KERNEL-C-SEMANTICS is
+	including KERNEL-C-SYNTAX .
+	including K .
+
+	subsort AExp BExp Stmt < K .
+	subsort Int < KResult .
+	subsort Bool < KResult .
+
+	op output : -> CellLabel .
+	op k : -> CellLabel .
+	op env : -> CellLabel .
+	op store : -> CellLabel .
+	op nextLoc : -> CellLabel .
+	op result : -> CellLabel .
+	
+	mb configuration 
+		< T > 
+			< k > K:K </ k >
+			< env > Env:Map </ env > 
+			< store > Store:Map </ store >  
+			< output > Output:List </ output > 
+			< nextLoc > N:Nat </ nextLoc > 
+		</ T > 
+		< result > Output:List </ result > : KSentence .
+	op startConfig : Stmt -> Bag .
+	eq startConfig(S:Stmt) = 
+		< T >
+			< k > S:Stmt </ k > 
+			< env > .Map </ env > 
+			< store > .Map </ store >  
+			< output > .List </ output > 
+			< nextLoc > 0 </ nextLoc > 
+		</ T > .
+endm
+
+mod KERNEL-C is including KERNEL-C-SEMANTICS . endm
