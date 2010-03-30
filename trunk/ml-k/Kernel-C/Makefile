@@ -23,7 +23,7 @@ CIL = $(CIL_BASE)/obj/$(CIL_PLATFORM)
 OCAML_COMPILE = ocamlopt $(OCAMLOPT_FLAGS) -c -I $(CIL) -I $(PARSER_DIR)
 OCAML_LINK = ocamlopt $(OCAMLOPT_FLAGS) -ccopt -L$(CIL):$(PARSER_DIR)
 
-all: uglyprint $(addsuffix .gen.program.maude,$(TEST_PROGRAMS))
+all: cparser $(addsuffix .gen.program.maude,$(TEST_PROGRAMS))
 
 %.preprocessed: $(C_DIR)/%.c Makefile
 	mkdir -p $(TMP)
@@ -66,4 +66,4 @@ run: $(INPUT).gen.maude.run
 # Main.maude:: c-syntax.maude c-configuration.maude c-semantics.maude
 
 clean:
-	rm -f $(PARSER_DIR)/*.cmi $(PARSER_DIR)/*.cmx $(PARSER_DIR)/*.o $(PARSER_DIR)/*.cil *.gen.* *.preprocessed cparser.exe uglyprint *.stackdump
+	rm -f $(PARSER_DIR)/*.cmi $(PARSER_DIR)/*.cmx $(PARSER_DIR)/*.o $(PARSER_DIR)/*.cil *.gen.* *.preprocessed cparser.exe cparser *.stackdump
