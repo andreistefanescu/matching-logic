@@ -67,8 +67,10 @@ let typedefList : string list ref = ref []
 let add_elem elem list = if List.mem elem list then list else elem :: list
 let nub list = List.fold_right add_elem list []
 
-let maudeHeader = "(fmod C-PROGRAMS is including C-SYNTAX .\n"
-let maudeFooter = "endm)"
+(* let maudeHeader = "(fmod C-PROGRAMS is including C-SYNTAX .\n"
+let maudeFooter = "endm)" *)
+let maudeHeader = ""
+let maudeFooter = ""
   
 let defineConstant name sort = ("op " ^ name ^ " : -> " ^ sort ^ " [ctor] .\n")
 let printString out x = fprintf out "%s" x
@@ -115,13 +117,15 @@ let myDumpFile (pp: cilPrinter) (out : out_channel) (outfile: string) file =
   if !E.verboseFlag then
     ignore (E.log "printing file %s\n" outfile);
 
-	fprintf out "%s\n" "(mod GEN-C-PROGRAM is including C-SYNTAX .";
+	(*fprintf out "%s\n" "(mod GEN-C-PROGRAM is including C-SYNTAX ."; *)
 	printIdentifierList out !identifierList;
 	printNewline out;
 	printTypedefList out !typedefList;
 	printNewline out;
+	
 	fprintf out "%s\n" "op program : -> [Program] .";
-	fprintf out "%s\n" "eq program = (";
+	fprintf out "%s\n" "eq program = ("; 
+	
 	
 	(*fprintf out "%s\n" (List.hd !identifierList);*)
 	let print x = fprint out 78 x in
@@ -129,8 +133,9 @@ let myDumpFile (pp: cilPrinter) (out : out_channel) (outfile: string) file =
 			   (* sm: I want to easily tell whether the generated output is with print_CIL_Input or not *)
 			   "/* print_CIL_Input is " ^ (if !print_CIL_Input then "true" else "false") ^ " */\n\n"));*)
 	iterGlobals file (fun g -> dumpGlobal pp out g);
+	
 	fprintf out "%s\n" ") .";
-	fprintf out "%s\n" "endm)";
+	(* fprintf out "%s\n" "endm)"; *)
 	(* sm: we have to flush the output channel; if we don't then under *)
 	(* some circumstances (I haven't figure out exactly when, but it happens *)
 	(* more often with big inputs), we get a truncated output file *)
