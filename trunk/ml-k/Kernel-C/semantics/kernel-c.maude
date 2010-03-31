@@ -1,7 +1,8 @@
 load ../../../../k-framework/k-maude/trunk/k-prelude
 mod KERNEL-C-SYNTAX is
-	including PL-INT .   --- built-in integers
-	including PL-VARID . --- built-in variable identifiers
+	including PL-INT .
+	including PL-VARID .
+	including PL-BOOL .
 	including K .
 
 	sort Comment .
@@ -17,10 +18,14 @@ mod KERNEL-C-SYNTAX is
 	--- ---- A.1.5 Constants
 	--- --- 6.4.4
 	sort Constant .
+	subsort Constant < K .
 	--- subsort Integer-Constant Floating-Constant Enumeration-Constant Character-Constant < Constant .
+	subsort Integer-Constant < Constant .
 	
 	--- --- 6.4.4.1
-	--- sort Integer-Constant .
+	sort Integer-Constant .
+	subsort Integer-Constant < K .
+	subsort Int < Integer-Constant .
 	--- subsort Decimal-Constant < Integer-Constant .
 	--- Octal-Constant Hexadecimal-Constant 
 	--- --- TODO
@@ -65,26 +70,28 @@ mod KERNEL-C-SYNTAX is
 	
 	--- ---- A.2.1 Expressions
 	--- --- 6.5.1
-	--- sort Primary-Expression .
+	sort Primary-Expression .
+	subsort Primary-Expression < K .
 	--- ---subsort Identifier Constant String-Literal Expression < Primary-Expression .
-	--- subsort Identifier Constant String-Literal < Primary-Expression .
+	subsort Identifier Constant < Primary-Expression .
 	---subsort Expression < Primary-Expression .
 	--- ---op `(_`) : Expression -> Primary-Expression .
 	--- --- no need to put `(_`) in for expressions
 	--- --- TODO
 	
 	--- --- 6.5.2
-	--- sort Postfix-Expression .
+	sort Postfix-Expression .
+	subsort Postfix-Expression < K .
 	--- subsort Declarator-or-Postfix-Expression < Postfix-Expression .
-	--- subsort Primary-Expression < Postfix-Expression .
+	subsort Primary-Expression < Postfix-Expression .
 	--- --- op _`[_`] : Postfix-Expression Expression -> Postfix-Expression .
 	
 	--- op _`(_`) : Postfix-Expression List{Assignment-Expression} -> Postfix-Expression [strict renameTo apply] .
 	--- op _`(`) : Postfix-Expression -> Postfix-Expression [strict renameTo applyNil] .
 	--- op _._ : Postfix-Expression Identifier -> Postfix-Expression .
 	--- op _->_ : Postfix-Expression Identifier -> Postfix-Expression .
-	--- op _++ : Postfix-Expression -> Postfix-Expression .
-	--- op _-- : Postfix-Expression -> Postfix-Expression .
+	op _++ : Postfix-Expression -> Postfix-Expression .
+	op _-- : Postfix-Expression -> Postfix-Expression .
 	--- op `(_`)`{_`} : Type-Name Initializer-List -> Postfix-Expression .
 	--- op `(_`)`{_`,`} : Type-Name Initializer-List -> Postfix-Expression .
 
@@ -94,62 +101,65 @@ mod KERNEL-C-SYNTAX is
 	--- --- TODO op hacklae_hacklae : List{Assignment-Expression} -> List{Assignment-Expression} .
 	
 	--- --- 6.5.3
-	--- sort Unary-Expression .
+	sort Unary-Expression .
+	subsort Unary-Expression < K .
 	--- subsort Postfix-Expression < Unary-Expression .
-	--- ops ++_ --_ : Unary-Expression -> Unary-Expression .
-	--- op &_ : Conditional-Expression -> Unary-Expression .
-	--- op *_ : Conditional-Expression -> Unary-Expression [strict] .
-	--- op +_ : Conditional-Expression -> Unary-Expression .
-	--- op -_ : Conditional-Expression -> Unary-Expression .
-	--- op ~_ : Conditional-Expression -> Unary-Expression .
-	--- op !_ : Conditional-Expression -> Unary-Expression .
-	--- op sizeof_ : Unary-Expression -> Unary-Expression .
-	--- op sizeof_ : Type-Name -> Unary-Expression .
+	ops ++_ --_ : Unary-Expression -> Unary-Expression .
+	op &_ : Conditional-Expression -> Unary-Expression .
+	op *_ : Conditional-Expression -> Unary-Expression .
+	op +_ : Conditional-Expression -> Unary-Expression .
+	op -_ : Conditional-Expression -> Unary-Expression .
+	op ~_ : Conditional-Expression -> Unary-Expression .
+	op !_ : Conditional-Expression -> Unary-Expression .
+	op sizeof_ : Unary-Expression -> Unary-Expression .
+	---op sizeof_ : Type-Name -> Unary-Expression .
 	
 	--- --- 6.5.4
-	--- sort Conditional-Expression .
-	--- subsort Unary-Expression < Conditional-Expression .
+	sort Conditional-Expression .
+	subsort Conditional-Expression < K .
+	subsort Unary-Expression < Conditional-Expression .
 	--- op `(_`)_
 		--- : Type-Name Conditional-Expression 
 			--- -> Conditional-Expression [prec 29 gather(E e) strict (2) renameTo castTo] .
-	--- ops _*_ _/_ _%_
-		--- : Conditional-Expression Conditional-Expression 
-			--- -> Conditional-Expression [prec 31 gather(E e)] .	
-	--- ops _+_ _-_ 
-		--- : Conditional-Expression Conditional-Expression 
-			--- -> Conditional-Expression [prec 33 gather(E e)] .
-	--- ops _<<_ _>>_ : 
-		--- Conditional-Expression Conditional-Expression 
-			--- -> Conditional-Expression [prec 35 gather(E e)] .
-	--- ops _<_ _>_ _<=_ _>=_
-		--- : Conditional-Expression Conditional-Expression 
-			--- -> Conditional-Expression [strict prec 37 gather(E e)] .
-	--- ops _==_ _!=_ 
-		--- : Conditional-Expression Conditional-Expression 
-			--- -> Conditional-Expression [strict prec 39 gather(E e)] .
-	--- op _&_ 
-		--- : Conditional-Expression Conditional-Expression 
-			--- -> Conditional-Expression [prec 41 gather(E e)] .
-	--- op _^_ 
-		--- : Conditional-Expression Conditional-Expression 
-			--- -> Conditional-Expression [prec 43 gather(E e)] .
-	--- op _|_ 
-		--- : Conditional-Expression Conditional-Expression 
-			--- -> Conditional-Expression [prec 45 gather(E e)] .
-	--- op _&&_ 
-		--- : Conditional-Expression Conditional-Expression 
-			--- -> Conditional-Expression [prec 47 gather(E e)] .
-	--- op _||_ 
-		--- : Conditional-Expression Conditional-Expression 
-			--- -> Conditional-Expression [prec 49 gather(E e)] .
-	--- op _?_:_ 
-		--- : Conditional-Expression Expression Conditional-Expression 
-			--- -> Conditional-Expression [prec 51 gather(e & E)] .
+	ops _*_ _/_ _%_
+		: Conditional-Expression Conditional-Expression 
+			-> Conditional-Expression [prec 31 gather(E e)] .	
+	ops _+_ _-_ 
+		: Conditional-Expression Conditional-Expression 
+			-> Conditional-Expression [prec 33 gather(E e)] .
+	ops _<<_ _>>_ : 
+		Conditional-Expression Conditional-Expression 
+			-> Conditional-Expression [prec 35 gather(E e)] .
+	ops _<_ _>_ _<=_ _>=_
+		: Conditional-Expression Conditional-Expression 
+			-> Conditional-Expression [prec 37 gather(E e)] .
+	ops _==_ _!=_ 
+		: Conditional-Expression Conditional-Expression 
+			-> Conditional-Expression [prec 39 gather(E e)] .
+	op _&_ 
+		: Conditional-Expression Conditional-Expression 
+			-> Conditional-Expression [prec 41 gather(E e)] .
+	op _^_ 
+		: Conditional-Expression Conditional-Expression 
+			-> Conditional-Expression [prec 43 gather(E e)] .
+	op _|_ 
+		: Conditional-Expression Conditional-Expression 
+			-> Conditional-Expression [prec 45 gather(E e)] .
+	op _&&_ 
+		: Conditional-Expression Conditional-Expression 
+			-> Conditional-Expression [prec 47 gather(E e)] .
+	op _||_ 
+		: Conditional-Expression Conditional-Expression 
+			-> Conditional-Expression [prec 49 gather(E e)] .
+	op _?_:_ 
+		: Conditional-Expression Expression Conditional-Expression 
+			-> Conditional-Expression [prec 51 gather(e & E)] .
 	
 	--- --- 6.5.16
-	--- sort Assignment-Expression .
+	sort Assignment-Expression .
+	subsort Assignment-Expression < K .
 	--- subsort Conditional-Expression < Assignment-Expression .
-	--- ops _=_ _*=_ _/=_ _%=_ _+=_ _-=_ _<<=_ _>>=_ _&=_ _^=_ _|=_ : Unary-Expression Assignment-Expression -> Assignment-Expression .
+	ops _=_ _*=_ _/=_ _%=_ _+=_ _-=_ _<<=_ _>>=_ _&=_ _^=_ _|=_ : Unary-Expression Assignment-Expression -> Assignment-Expression .
 	--- op _=_ : Unary-Expression Assignment-Expression -> Assignment-Expression .
 			
 	--- ops _*=_ _/=_ _%=_ _+=_ _-=_ _<<=_ _>>=_ _&=_ _^=_ _|=_ : Unary-Expression Assignment-Expression -> Assignment-Expression .
@@ -157,7 +167,7 @@ mod KERNEL-C-SYNTAX is
 	--- --- 6.5.17
 	sort Expression .
 	subsort Expression < K .
-	subsort Int < Expression .
+	---subsort Int < Expression .
 	--- subsort Assignment-Expression < Expression .
 	---op _`,_ : Expression Assignment-Expression -> Expression [ditto] .
 	
@@ -375,8 +385,8 @@ mod KERNEL-C-SYNTAX is
 	--- --- 6.8
 	sort Statement .
 	subsort Statement < K .
-	--- subsort Labeled-Statement Compound-Statement Expression-Statement Selection-Statement Iteration-Statement Jump-Statement < Statement .
-	subsort Jump-Statement < Statement .
+	--- subsort Labeled-Statement Selection-Statement < Statement .
+	subsort Jump-Statement Compound-Statement Iteration-Statement Expression-Statement < Statement .
 	
 	--- --- 6.8.1
 	--- sort Labeled-Statement .
@@ -385,9 +395,10 @@ mod KERNEL-C-SYNTAX is
 	--- op default`:_ : Statement -> Labeled-Statement .
 	
 	--- --- 6.8.2
-	--- sort Compound-Statement .
-	--- subsort Compound-Statement < K .
-	--- op `{`} : -> Compound-Statement .
+	sort Compound-Statement .
+	subsort Compound-Statement < K .
+	op Block`(`{`}`) : -> Compound-Statement .
+	op Block`(`{_`}`) : Block-Item-List -> Compound-Statement .
 	--- op Compound-Statement : Block-Item-List -> Compound-Statement .
 	--- ---format (ni++ o --ni o)
 	sort Block-Item-List .
@@ -402,9 +413,9 @@ mod KERNEL-C-SYNTAX is
 	subsort Declaration Statement < Block-Item .
 	
 	--- --- 6.8.3
-	--- sort Expression-Statement .
+	sort Expression-Statement .
 	--- ---- TODO op ; : -> Expression-Statement .
-	--- op _; : Expression -> Expression-Statement [format (ni o o) strict] .
+	op _; : Expression -> Expression-Statement [format (ni o o)] .
 	
 	--- --- 6.8.4
 	--- sort Selection-Statement .
@@ -413,29 +424,30 @@ mod KERNEL-C-SYNTAX is
 	--- op switch`(_`)_ : Expression Statement -> Selection-Statement .
 	
 	--- --- 6.8.5
-	--- sort Iteration-Statement .
-	--- op while`(_`)_ : Expression Statement -> Iteration-Statement .
-	--- op do_while`(_`) : Statement Expression -> Iteration-Statement .
-	--- op for`(_;_;_`)_ : Expression Expression Expression Statement -> Iteration-Statement .
-	--- op for`(;_;_`)_ : Expression Expression Statement -> Iteration-Statement .
-	--- op for`(_;`;_`)_ : Expression Expression Statement -> Iteration-Statement .
-	--- op for`(_;_;`)_ : Expression Expression Statement -> Iteration-Statement .
-	--- op for`(;`;_`)_ : Expression Statement -> Iteration-Statement .
-	--- op for`(_;`;`)_ : Expression Statement -> Iteration-Statement .
-	--- op for`(;_;`)_ : Expression Statement -> Iteration-Statement .
-	--- op for`(;`;`)_ : Statement -> Iteration-Statement .
+	sort Iteration-Statement .
+	subsort Iteration-Statement < K .
+	op while`(_`)_ : Expression Statement -> Iteration-Statement .
+	op do_while`(_`) : Statement Expression -> Iteration-Statement .
+	op for`(_;_;_`)_ : Expression Expression Expression Statement -> Iteration-Statement .
+	op for`(;_;_`)_ : Expression Expression Statement -> Iteration-Statement .
+	op for`(_;`;_`)_ : Expression Expression Statement -> Iteration-Statement .
+	op for`(_;_;`)_ : Expression Expression Statement -> Iteration-Statement .
+	op for`(;`;_`)_ : Expression Statement -> Iteration-Statement .
+	op for`(_;`;`)_ : Expression Statement -> Iteration-Statement .
+	op for`(;_;`)_ : Expression Statement -> Iteration-Statement .
+	op for`(;`;`)_ : Statement -> Iteration-Statement .
 	
-	--- op for`(__;_`)_ : Declaration Expression Expression Statement -> Iteration-Statement .
-	--- op for`(_;_`)_ : Declaration Expression Statement -> Iteration-Statement .
-	--- op for`(__;`)_ : Declaration Expression Statement -> Iteration-Statement .
-	--- op for`(_;`)_ : Declaration Statement -> Iteration-Statement .
+	op for`(__;_`)_ : Declaration Expression Expression Statement -> Iteration-Statement .
+	op for`(_;_`)_ : Declaration Expression Statement -> Iteration-Statement .
+	op for`(__;`)_ : Declaration Expression Statement -> Iteration-Statement .
+	op for`(_;`)_ : Declaration Statement -> Iteration-Statement .
 	
 	--- --- 6.8.6
 	sort Jump-Statement .
 	subsort Jump-Statement < K .
-	--- op goto_; : Identifier -> Jump-Statement .
-	--- op continue`; : -> Jump-Statement [format (ni o o)] .
-	--- op break`; : -> Jump-Statement [format (ni o o)] .
+	op goto_; : Identifier -> Jump-Statement .
+	op continue`; : -> Jump-Statement [format (ni o o)] .
+	op break`; : -> Jump-Statement [format (ni o o)] .
 	op return`; : -> Jump-Statement .
 	op return_; : Expression -> Jump-Statement .
 	
@@ -468,15 +480,45 @@ mod KERNEL-C-SYNTAX is
 	--- ---sort Declaration-List .
 	--- ---subsort Declaration < Declaration-List .
 	--- ---op __ : Declaration-List Declaration -> Declaration-List .
-
+	
+	--- subsort Int < Expression .
+	--- subsort Identifier < Expression .
 endm
 
 mod KERNEL-C-SYNTAX-TEST is
 	including KERNEL-C-SYNTAX .
-	op test1 : -> K .
-	op D : -> Declaration .
-	op B : -> Block-Item-List .
-	eq test1 = D { B } .
+	op pSimplest : -> Function-Definition .
+	eq pSimplest = (
+		Declaration(int main(void) )
+		{ 
+
+		  Block({
+		  return (0);
+		})
+		}
+	) .
+		
+	op i : -> Identifier [ctor] .
+	op sum : -> Identifier [ctor] .
+
+	op pSumN : -> Function-Definition .
+	eq pSumN = (
+		Declaration(int main(void) )
+		{ 
+		---Declaration(int sum );
+		---Declaration(int i );
+
+		  Block({
+		  sum = 0 ;
+		  i = 1 ;
+		  while (i <= 10) Block({
+		    sum += i ;
+		    i ++
+		  })
+		  return (0);
+		})
+		}
+	) .
 endm
 
 mod KERNEL-C-SEMANTICS is

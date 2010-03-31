@@ -63,7 +63,7 @@ class maudePrinter = object(self)
 	method pVDecl () (v:varinfo) = wrap (super#pVDecl () v) "Declaration"
 	
 	(** Print a block. *)
-	(* method pBlock () (b:block) = wrap (super#pBlock () b) "Block" *)
+	method pBlock () (b:block) = wrap (super#pBlock () b) "Block"
     
     (** A field declaration *)
 	(* method pFieldDecl () (f:fieldinfo) = wrap (super#pFieldDecl () f) "FieldDeclaration" *)
