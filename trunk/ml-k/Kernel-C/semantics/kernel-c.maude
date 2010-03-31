@@ -11,21 +11,22 @@ mod KERNEL-C-SYNTAX is
 	subsort Translation-Unit < Program .
 	
 	sort Identifier .
-	sort String-Literal .
 	
 	op main : -> Identifier [ctor] .
 	
 	--- ---- A.1.5 Constants
 	--- --- 6.4.4
 	sort Constant .
-	subsort Integer-Constant Floating-Constant Enumeration-Constant Character-Constant < Constant .
+	--- subsort Integer-Constant Floating-Constant Enumeration-Constant Character-Constant < Constant .
 	
 	--- --- 6.4.4.1
-	sort Integer-Constant .
-	--- subsort Decimal-Constant Octal-Constant Hexadecimal-Constant < Integer-Constant .
+	--- sort Integer-Constant .
+	--- subsort Decimal-Constant < Integer-Constant .
+	--- Octal-Constant Hexadecimal-Constant 
 	--- --- TODO
 	
 	--- sort Decimal-Constant .
+	--- subsort Int < Decimal-Constant .
 	--- --- TODO
 	
 	--- sort Octal-Constant .
@@ -37,7 +38,7 @@ mod KERNEL-C-SYNTAX is
 	--- --- TODO
 	
 	--- --- 6.4.4.2
-	sort Floating-Constant .
+	--- sort Floating-Constant .
 	--- subsort Decimal-Floating-Constant Hexadecimal-Floating-Constant < Floating-Constant .
 	
 	--- sort Decimal-Floating-Constant .
@@ -49,11 +50,11 @@ mod KERNEL-C-SYNTAX is
 	--- --- TODO
 	
 	--- --- 6.4.4.3
-	sort Enumeration-Constant .
+	--- sort Enumeration-Constant .
 	--- subsort Identifier < Enumeration-Constant .
 	
 	--- --- 6.4.4.4
-	sort Character-Constant .
+	--- sort Character-Constant .
 	--- --- TODO
 	
 	--- --- 6.4.5
@@ -67,6 +68,7 @@ mod KERNEL-C-SYNTAX is
 	--- sort Primary-Expression .
 	--- ---subsort Identifier Constant String-Literal Expression < Primary-Expression .
 	--- subsort Identifier Constant String-Literal < Primary-Expression .
+	---subsort Expression < Primary-Expression .
 	--- ---op `(_`) : Expression -> Primary-Expression .
 	--- --- no need to put `(_`) in for expressions
 	--- --- TODO
@@ -112,10 +114,10 @@ mod KERNEL-C-SYNTAX is
 			--- -> Conditional-Expression [prec 29 gather(E e) strict (2) renameTo castTo] .
 	--- ops _*_ _/_ _%_
 		--- : Conditional-Expression Conditional-Expression 
-			--- -> Conditional-Expression [strict prec 31 gather(E e)] .	
+			--- -> Conditional-Expression [prec 31 gather(E e)] .	
 	--- ops _+_ _-_ 
 		--- : Conditional-Expression Conditional-Expression 
-			--- -> Conditional-Expression [strict prec 33 gather(E e)] .
+			--- -> Conditional-Expression [prec 33 gather(E e)] .
 	--- ops _<<_ _>>_ : 
 		--- Conditional-Expression Conditional-Expression 
 			--- -> Conditional-Expression [prec 35 gather(E e)] .
@@ -147,52 +149,58 @@ mod KERNEL-C-SYNTAX is
 	--- --- 6.5.16
 	--- sort Assignment-Expression .
 	--- subsort Conditional-Expression < Assignment-Expression .
-	--- --- ops _=_ _*=_ _/=_ _%=_ _+=_ 
-		--- --- _-=_ _<<=_ _>>=_ _&=_ _^=_ _|=_ 
-		--- --- : Unary-Expression Assignment-Expression -> Assignment-Expression .
-	--- op _=_ 
-		--- : Unary-Expression Assignment-Expression 
-			--- -> Assignment-Expression [strict(2) renameTo _:=_] .
+	--- ops _=_ _*=_ _/=_ _%=_ _+=_ _-=_ _<<=_ _>>=_ _&=_ _^=_ _|=_ : Unary-Expression Assignment-Expression -> Assignment-Expression .
+	--- op _=_ : Unary-Expression Assignment-Expression -> Assignment-Expression .
 			
-	--- ops _*=_ _/=_ _%=_ _+=_ 
-		--- _-=_ _<<=_ _>>=_ _&=_ _^=_ _|=_ 
-		--- : Unary-Expression Assignment-Expression 
-			--- -> Assignment-Expression [strict(2)] .
+	--- ops _*=_ _/=_ _%=_ _+=_ _-=_ _<<=_ _>>=_ _&=_ _^=_ _|=_ : Unary-Expression Assignment-Expression -> Assignment-Expression .
 	
 	--- --- 6.5.17
-	--- sort Expression .
+	sort Expression .
+	subsort Expression < K .
+	subsort Int < Expression .
 	--- subsort Assignment-Expression < Expression .
-	--- ---op _`,_ : Expression Assignment-Expression -> Expression [ditto] .
+	---op _`,_ : Expression Assignment-Expression -> Expression [ditto] .
 	
-	--- ---subsort List{Assignment-Expression} < Expression .
-	--- ---op hackae_hackae : List{Assignment-Expression} -> List{Assignment-Expression} .
+	---subsort List{Assignment-Expression} < Expression .
+	---op hackae_hackae : List{Assignment-Expression} -> List{Assignment-Expression} .
 	
-	--- --- 6.6
+	--- 6.6
 	--- sort Constant-Expression .
 	--- subsort Conditional-Expression < Constant-Expression .
 	
 	--- ---- A.2.2 Declarations
 	--- --- 6.7
-	--- sort Declaration .
-	--- --- TODO op _; : Declaration-Specifiers -> Declaration .
-	--- --- TODO op __; : Declaration-Specifiers Init-Declarator-List -> Declaration . --- int main(void) ;
-	--- --- Note: totally made up to ease parsing
+	sort Declaration .
+	subsort Declaration < K .
+	op Declaration : DeclarationAux -> Declaration .
+	
+	sort DeclarationAux .
+	subsort DeclarationAux < K .
+	op int`main`(void`) : -> DeclarationAux .
+	---op Declaration`(_`) : Declaration-Specifiers -> Declaration .
+	---op Declaration`(__`) : Declaration-Specifiers Init-Declarator-List -> Declaration .
+	--- TODO op _; : Declaration-Specifiers -> Declaration .
+	--- TODO op __; : Declaration-Specifiers Init-Declarator-List -> Declaration . --- int main(void) ;
+	--- Note: totally made up to ease parsing
 	--- op _; : Parameter-Declaration -> Declaration [format (ni o o) renameTo _] .
 	
-	--- --- sort Init-Declarator-List .
-	--- --- subsort Init-Declarator < Init-Declarator-List .
+	--- sort Init-Declarator-List .
+	--- subsort Init-Declarator < Init-Declarator-List .
+	--- subsort Init-Declarator-List < K .
 	--- --- TODO subsort List{Init-Declarator} < Init-Declarator-List .
 	--- --- TODO op hackid_hackid : List{Init-Declarator} -> List{Init-Declarator} .
 	
 	--- sort Declaration-Specifiers .
+	--- subsort Declaration-Specifiers < K .
 	--- subsort Storage-Class-Specifier Type-Specifier Type-Qualifier Function-Specifier < Declaration-Specifiers .
 	--- --- TODO op __ : Storage-Class-Specifier Declaration-Specifiers -> Declaration-Specifiers .
 	--- --- TODO op __ : Type-Specifier Declaration-Specifiers -> Declaration-Specifiers [renameTo combine] .
 	--- --- TODO op __ : Type-Qualifier Declaration-Specifiers -> Declaration-Specifiers .
 	--- --- TODO op __ : Function-Specifier Declaration-Specifiers -> Declaration-Specifiers .
 	
-	--- --- sort Init-Declarator .
-	--- --- subsort Declarator < Init-Declarator .
+	--- sort Init-Declarator .
+	--- subsort Init-Declarator < K .
+	--- subsort Declarator < Init-Declarator .
 	--- --- Note: CIL separates declaration from initialization
 	--- --- op _=_ : Declarator Initializer -> Init-Declarator .
 	
@@ -201,9 +209,10 @@ mod KERNEL-C-SYNTAX is
 	--- ops typedef extern static auto register : -> Storage-Class-Specifier .
 	
 	--- --- 6.7.2
-	sort Type-Specifier .
+	--- sort Type-Specifier .
+	--- subsort Type-Specifier < K .
 	--- subsort Struct-Or-Union-Specifier Enum-Specifier Typedef-Name < Type-Specifier .
-	ops void char short int long float double signed unsigned : -> Type-Specifier [ctor] .
+	--- ops void char short int long float double signed unsigned : -> Type-Specifier [ctor] .
 	--- ----ops `_Bool `_Complex : -> Type-Specifier [ctor] .
 	--- --- TODO
 	
@@ -274,6 +283,7 @@ mod KERNEL-C-SYNTAX is
 	
 	--- --- 6.7.5
 	--- sort Declarator .
+	--- subsort Declarator < K .
 	--- subsort Declarator-or-Postfix-Expression < Declarator .
 	--- subsort Identifier < Declarator .
 	--- --- TODO op __ : Pointer Declarator -> Declarator .
@@ -365,44 +375,45 @@ mod KERNEL-C-SYNTAX is
 	--- --- 6.8
 	sort Statement .
 	subsort Statement < K .
-	subsort Labeled-Statement Compound-Statement Expression-Statement Selection-Statement Iteration-Statement Jump-Statement < Statement .
+	--- subsort Labeled-Statement Compound-Statement Expression-Statement Selection-Statement Iteration-Statement Jump-Statement < Statement .
+	subsort Jump-Statement < Statement .
 	
 	--- --- 6.8.1
-	sort Labeled-Statement .
+	--- sort Labeled-Statement .
 	--- op _:_ : Identifier Statement -> Labeled-Statement .
 	--- op case_:_ : Constant-Expression Statement -> Labeled-Statement .
 	--- op default`:_ : Statement -> Labeled-Statement .
 	
 	--- --- 6.8.2
-	sort Compound-Statement .
-	subsort Compound-Statement < K .
+	--- sort Compound-Statement .
+	--- subsort Compound-Statement < K .
 	--- op `{`} : -> Compound-Statement .
-	op Compound-Statement : Block-Item-List -> Compound-Statement .
+	--- op Compound-Statement : Block-Item-List -> Compound-Statement .
 	--- ---format (ni++ o --ni o)
 	sort Block-Item-List .
 	subsort Block-Item-List < K .
-	--- subsort Block-Item < Block-Item-List .
-	op Block-Item-List : Block-Item-List Block-Item -> Block-Item-List .
-	--- op __ : Block-Item-List Block-Item -> Block-Item-List [renameTo _->_] .
+	subsort Block-Item < Block-Item-List .
+	--- op Block-Item-List : Block-Item-List Block-Item -> Block-Item-List .
+	op __ : Block-Item-List Block-Item-List -> Block-Item-List [assoc].
 	
 	sort Block-Item .
 	subsort Block-Item < K .
-	op Block-Item : Statement -> Block-Item .
-	--- subsort Declaration Statement < Block-Item .
+	--- --- op Block-Item : Statement -> Block-Item .
+	subsort Declaration Statement < Block-Item .
 	
 	--- --- 6.8.3
-	sort Expression-Statement .
+	--- sort Expression-Statement .
 	--- ---- TODO op ; : -> Expression-Statement .
 	--- op _; : Expression -> Expression-Statement [format (ni o o) strict] .
 	
 	--- --- 6.8.4
-	sort Selection-Statement .
+	--- sort Selection-Statement .
 	--- op if`(_`)_ : Expression Statement -> Selection-Statement [strict(1)] .
 	--- op if`(_`)_else_ : Expression Statement Statement -> Selection-Statement [strict(1)] .
 	--- op switch`(_`)_ : Expression Statement -> Selection-Statement .
 	
 	--- --- 6.8.5
-	sort Iteration-Statement .
+	--- sort Iteration-Statement .
 	--- op while`(_`)_ : Expression Statement -> Iteration-Statement .
 	--- op do_while`(_`) : Statement Expression -> Iteration-Statement .
 	--- op for`(_;_;_`)_ : Expression Expression Expression Statement -> Iteration-Statement .
@@ -421,11 +432,12 @@ mod KERNEL-C-SYNTAX is
 	
 	--- --- 6.8.6
 	sort Jump-Statement .
+	subsort Jump-Statement < K .
 	--- op goto_; : Identifier -> Jump-Statement .
 	--- op continue`; : -> Jump-Statement [format (ni o o)] .
 	--- op break`; : -> Jump-Statement [format (ni o o)] .
 	op return`; : -> Jump-Statement .
-	---op return_; : Expression -> Jump-Statement .
+	op return_; : Expression -> Jump-Statement .
 	
 	--- ---- A.2.4 External definitions
 	--- --- 6.9
@@ -436,9 +448,9 @@ mod KERNEL-C-SYNTAX is
 
 	sort External-Declaration .
 	subsort External-Declaration < K .
-	---subsort Function-Definition Declaration < External-Declaration .
+	subsort Function-Definition Declaration < External-Declaration .
 	---subsort Function-Definition < External-Declaration .
-	op External-Declaration : Function-Definition -> External-Declaration .
+	--- op External-Declaration : Function-Definition -> External-Declaration .
 	--- op _;; : Function-Definition -> External-Declaration [format (n d d) renameTo _] .
 	--- op _;; : Declaration -> External-Declaration [format (n d d) renameTo _] .
 	
@@ -446,11 +458,9 @@ mod KERNEL-C-SYNTAX is
 	sort Function-Definition .
 	subsort Function-Definition < K .
 	--- op Function-Definition : -> Function-Definition .
-	--- --- op ___ : Declaration-Specifiers Declarator Compound-Statement -> Function-Definition .
+	--- op ___ : Declaration-Specifiers Declarator Compound-Statement -> Function-Definition .
 	--- --- Note: Totally made up to help parsing
-	--- op _`{_`} : 
-		--- Parameter-Declaration Block-Item-List 
-			--- -> Function-Definition [prec 120 format (ni o++ no --in d) renameTo Function-Definition] .
+	op _`{_`} : Declaration Block-Item-List -> Function-Definition [prec 120 format (ni o++ no --in d)] .
 	--- op _`{`} : Parameter-Declaration -> Function-Definition [prec 120] .
 	--- ---op __ : Parameter-Declaration Compound-Statement -> Function-Definition [prec 120] .
 	--- --- TODO op ____ : Declaration-Specifiers Declarator Declaration-List Compound-Statement -> Function-Definition .
@@ -461,8 +471,17 @@ mod KERNEL-C-SYNTAX is
 
 endm
 
+mod KERNEL-C-SYNTAX-TEST is
+	including KERNEL-C-SYNTAX .
+	op test1 : -> K .
+	op D : -> Declaration .
+	op B : -> Block-Item-List .
+	eq test1 = D { B } .
+endm
+
 mod KERNEL-C-SEMANTICS is
 	including KERNEL-C-SYNTAX .
+	including KERNEL-C-SYNTAX-TEST .
 	including K .
 
 	---subsort AExp BExp Stmt < K .
