@@ -86,7 +86,7 @@ method private pLvalPrec (contextprec: int) () lv =
     text (if v.vinline then "__inline " else "")
       ++ d_storage () v.vstorage
       ++ (self#pAttrs () stom)
-      ++ (self#pType (Some (text v.vname)) () v.vtype)
+      ++ (self#pType (Some (self#pVar v)) () v.vtype)
       ++ text " "
       ++ self#pAttrs () rest
 
@@ -205,15 +205,17 @@ method private pLvalPrec (contextprec: int) () lv =
                       else
                         (if args = None then nil 
                         (* else if args = Some [] then text "void" *)
-						else if args = Some [] then (self#pType (None) () (TVoid []))
+						else if args = Some [] then wrap (self#pType (None) () (TVoid [])) "Parameter-Declaration"
                         else 
                           let pArg (aname, atype, aattr) = 
                             let stom, rest = separateStorageModifiers aattr in
                             (* First the storage modifiers *)
-                            (self#pAttrs () stom)
+							  wrap (
+                              (self#pAttrs () stom)
                               ++ (self#pType (Some (text aname)) () atype)
                               ++ text " "
                               ++ self#pAttrs () rest
+								) "Parameter-Declaration"
                           in
                           (docList ~sep:(chr ',' ++ break) pArg) () 
                             (argsToList args))
