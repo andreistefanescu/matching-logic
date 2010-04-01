@@ -39,6 +39,10 @@
  
 open Cil
 
+let replace input output =
+    Str.global_replace (Str.regexp_string input) output
+
+
 class maudeVisitor = object inherit nopCilVisitor
 	val mutable identifierList : string list = []
 	val mutable typedefList : string list = []
@@ -47,7 +51,7 @@ class maudeVisitor = object inherit nopCilVisitor
 	method getTypedefList = typedefList
 	
 	method vvdec (v:varinfo) = begin
-		identifierList <- v.vname :: identifierList;
+		identifierList <- (replace "_" "u" v.vname) :: identifierList;
 		DoChildren
 	end
 	

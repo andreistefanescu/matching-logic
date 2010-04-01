@@ -51,6 +51,11 @@ let paren (d:Pretty.doc) : Pretty.doc = "(" ^+ d +^ ")"
 let giveType (d1:Pretty.doc) (d2:string) : Pretty.doc = paren(d1) ++ (text d2)
 let wrap (d1:Pretty.doc) (d2:string) : Pretty.doc = d2 ^+ paren(d1)
 
+let replace input output =
+    Str.global_replace (Str.regexp_string input) output
+(* val replace : string -> string -> string -> string = <fun> *)
+
+
 (* let trim (s:string) : string = String.sub s 1 ((String.length s) - 1) *)
 
 class maudePrinter = object(self)
@@ -105,9 +110,14 @@ class maudePrinter = object(self)
 	
     (** Print expressions *) 
 	method pExp () (e:exp) = paren (super#pExp () e)
+	
+	(** Invoked on each variable use. *)
+	(* method pVar (v:varinfo) = (super#pVar v) *)
+	method pVar (v:varinfo) = text (replace "_" "u" (sprint 1000 (super#pVar v)))
+
+	
 (*
-  method pVar: varinfo -> Pretty.doc
-    (** Invoked on each variable use. *)
+  
 
   method pOffset: Pretty.doc -> offset -> Pretty.doc
     (** Invoked on each offset occurrence. The second argument is the base. *)

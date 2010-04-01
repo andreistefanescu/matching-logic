@@ -324,8 +324,9 @@ mod KERNEL-C-SYNTAX is
 	
 	sort Parameter-Declaration .
 	subsort Parameter-Declaration < K .
-	subsort Declaration-Specifiers < Parameter-Declaration .
-	--- op __ : Declaration-Specifiers Declarator -> Parameter-Declaration [renameTo Parameter-Declaration] .
+	---subsort Declaration-Specifiers < Parameter-Declaration .
+	op Parameter-Declaration : Declaration-Specifiers -> Parameter-Declaration .
+	op Parameter-Declaration : Declaration-Specifiers Declarator -> Parameter-Declaration .
 	--- ---op __ : Declaration-Specifiers Abstract-Declarator -> Parameter-Declaration .
 	--- --- TODO
 	
@@ -481,7 +482,7 @@ mod KERNEL-C-SYNTAX-TEST is
 	including KERNEL-C-SYNTAX .
 	op pSimplest : -> Function-Definition .
 	eq pSimplest = (
-	Declaration((int),  Direct-Function-Declarator(main, Parameter-Type-List((void))) )
+	Declaration((int),  Direct-Function-Declarator(main, Parameter-Type-List(Parameter-Declaration((void)))) )
 		{ 
 		  Block({
 		  return (0);
@@ -490,7 +491,7 @@ mod KERNEL-C-SYNTAX-TEST is
 	) .
 	
 	op pTrial1 : -> Declarator .
-	eq pTrial1 = Direct-Function-Declarator(main, Parameter-Type-List(((void)))) .
+	eq pTrial1 = Direct-Function-Declarator(main, Parameter-Type-List(Parameter-Declaration(((void))))) .
 	
 	op pTrial2 : -> Declaration .
 	eq pTrial2 = Declaration(int,  pTrial1 ) .
@@ -507,7 +508,7 @@ mod KERNEL-C-SYNTAX-TEST is
 
 	op pSumN : -> Function-Definition .
 	eq pSumN = (
-		Declaration((int),  Direct-Function-Declarator(main, Parameter-Type-List((void))) )
+		Declaration((int),  Direct-Function-Declarator(main, Parameter-Type-List((Parameter-Declaration(void)))) )
 		{ Declaration((int),  sum );
 		  Declaration((int),  i );
 
@@ -522,6 +523,32 @@ mod KERNEL-C-SYNTAX-TEST is
 		})
 		}
 	) .
+	
+	op factorialuuu0 : -> Identifier [ctor] .
+	op tmp : -> Identifier [ctor] .
+	op fact : -> Identifier [ctor] .
+	op n : -> Identifier [ctor] .
+	op factorial : -> Identifier [ctor] .
+
+	
+	op pFactorial : -> Function-Definition .
+	eq pFactorial = (
+		---Declaration((int),  Direct-Function-Declarator(factorial, Parameter-Type-List(Parameter-Declaration((int),  n ))) );
+		Declaration((int),  Direct-Function-Declarator(main, Parameter-Type-List(Parameter-Declaration((void)))) )
+		{ Declaration((int),  n );
+			  Declaration((int),  fact );
+			  Declaration((int),  tmp );
+			  Declaration((int),  factorialuuu0 );
+
+			  Block({
+			  (n) = (10);
+			  (tmp) = ((factorial))(((n)));
+			  (fact) = ((tmp));
+			  (factorialuuu0) = ((fact));
+			  return (((factorialuuu0)));
+		})
+		}
+		) .
 endm
 
 mod KERNEL-C-SEMANTICS is

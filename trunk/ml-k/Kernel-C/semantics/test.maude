@@ -13,6 +13,7 @@ mod KERNEL-C-TEST is
 endm
 
 ---set trace on .
-rew eval(program) .
+---rew eval(program) .
 rew eval("pSimplest"(.List{K})) .
 rew eval("pSumN"(.List{K})) .
+rew eval("pFactorial"(.List{K})) .
