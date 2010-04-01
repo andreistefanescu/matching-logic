@@ -70,28 +70,28 @@ mod KERNEL-C-SYNTAX is
 	
 	--- ---- A.2.1 Expressions
 	--- --- 6.5.1
-	sort Primary-Expression .
-	subsort Primary-Expression < K .
+	---sort Primary-Expression .
+	---subsort Primary-Expression < K .
 	--- ---subsort Identifier Constant String-Literal Expression < Primary-Expression .
-	subsort Identifier Constant < Primary-Expression .
+	subsort Identifier Constant < Expression .
 	---subsort Expression < Primary-Expression .
-	--- ---op `(_`) : Expression -> Primary-Expression .
+	---op `(_`) : Expression -> Expression .
 	--- --- no need to put `(_`) in for expressions
 	--- --- TODO
 	
 	--- --- 6.5.2
-	sort Postfix-Expression .
-	subsort Postfix-Expression < K .
+	---sort Postfix-Expression .
+	---subsort Postfix-Expression < K .
 	--- subsort Declarator-or-Postfix-Expression < Postfix-Expression .
-	subsort Primary-Expression < Postfix-Expression .
+	---subsort Primary-Expression < Postfix-Expression .
 	--- --- op _`[_`] : Postfix-Expression Expression -> Postfix-Expression .
 	
 	--- op _`(_`) : Postfix-Expression List{Assignment-Expression} -> Postfix-Expression [strict renameTo apply] .
 	--- op _`(`) : Postfix-Expression -> Postfix-Expression [strict renameTo applyNil] .
 	--- op _._ : Postfix-Expression Identifier -> Postfix-Expression .
 	--- op _->_ : Postfix-Expression Identifier -> Postfix-Expression .
-	op _++ : Postfix-Expression -> Postfix-Expression .
-	op _-- : Postfix-Expression -> Postfix-Expression .
+	op _++ : Expression -> Expression [prec 21] .
+	op _-- : Expression -> Expression [prec 21] .
 	--- op `(_`)`{_`} : Type-Name Initializer-List -> Postfix-Expression .
 	--- op `(_`)`{_`,`} : Type-Name Initializer-List -> Postfix-Expression .
 
@@ -101,65 +101,43 @@ mod KERNEL-C-SYNTAX is
 	--- --- TODO op hacklae_hacklae : List{Assignment-Expression} -> List{Assignment-Expression} .
 	
 	--- --- 6.5.3
-	sort Unary-Expression .
-	subsort Unary-Expression < K .
-	--- subsort Postfix-Expression < Unary-Expression .
-	ops ++_ --_ : Unary-Expression -> Unary-Expression .
-	op &_ : Conditional-Expression -> Unary-Expression .
-	op *_ : Conditional-Expression -> Unary-Expression .
-	op +_ : Conditional-Expression -> Unary-Expression .
-	op -_ : Conditional-Expression -> Unary-Expression .
-	op ~_ : Conditional-Expression -> Unary-Expression .
-	op !_ : Conditional-Expression -> Unary-Expression .
-	op sizeof_ : Unary-Expression -> Unary-Expression .
+	---sort Unary-Expression .
+	---subsort Unary-Expression < K .
+	---subsort Postfix-Expression < Unary-Expression .
+	ops ++_ --_ : Expression -> Expression [prec 22] .
+	op &_ : Expression -> Expression [prec 22] .
+	op *_ : Expression -> Expression [prec 22] .
+	op +_ : Expression -> Expression [prec 22] .
+	op -_ : Expression -> Expression [prec 22] .
+	op ~_ : Expression -> Expression [prec 22] .
+	op !_ : Expression -> Expression [prec 22] .
+	op sizeof_ : Expression -> Expression .
 	---op sizeof_ : Type-Name -> Unary-Expression .
 	
 	--- --- 6.5.4
-	sort Conditional-Expression .
-	subsort Conditional-Expression < K .
-	subsort Unary-Expression < Conditional-Expression .
+	---sort Conditional-Expression .
+	---subsort Conditional-Expression < K .
+	---subsort Unary-Expression < Conditional-Expression .
 	--- op `(_`)_
 		--- : Type-Name Conditional-Expression 
 			--- -> Conditional-Expression [prec 29 gather(E e) strict (2) renameTo castTo] .
-	ops _*_ _/_ _%_
-		: Conditional-Expression Conditional-Expression 
-			-> Conditional-Expression [prec 31 gather(E e)] .	
-	ops _+_ _-_ 
-		: Conditional-Expression Conditional-Expression 
-			-> Conditional-Expression [prec 33 gather(E e)] .
-	ops _<<_ _>>_ : 
-		Conditional-Expression Conditional-Expression 
-			-> Conditional-Expression [prec 35 gather(E e)] .
-	ops _<_ _>_ _<=_ _>=_
-		: Conditional-Expression Conditional-Expression 
-			-> Conditional-Expression [prec 37 gather(E e)] .
-	ops _==_ _!=_ 
-		: Conditional-Expression Conditional-Expression 
-			-> Conditional-Expression [prec 39 gather(E e)] .
-	op _&_ 
-		: Conditional-Expression Conditional-Expression 
-			-> Conditional-Expression [prec 41 gather(E e)] .
-	op _^_ 
-		: Conditional-Expression Conditional-Expression 
-			-> Conditional-Expression [prec 43 gather(E e)] .
-	op _|_ 
-		: Conditional-Expression Conditional-Expression 
-			-> Conditional-Expression [prec 45 gather(E e)] .
-	op _&&_ 
-		: Conditional-Expression Conditional-Expression 
-			-> Conditional-Expression [prec 47 gather(E e)] .
-	op _||_ 
-		: Conditional-Expression Conditional-Expression 
-			-> Conditional-Expression [prec 49 gather(E e)] .
-	op _?_:_ 
-		: Conditional-Expression Expression Conditional-Expression 
-			-> Conditional-Expression [prec 51 gather(e & E)] .
+	ops _*_ _/_ _%_ : Expression Expression -> Expression [prec 31 gather(E e)] .	
+	ops _+_ _-_ : Expression Expression -> Expression [prec 33 gather(E e)] .
+	ops _<<_ _>>_ : Expression Expression -> Expression [prec 35 gather(E e)] .
+	ops _<_ _>_ _<=_ _>=_ : Expression Expression -> Expression [prec 37 gather(E e)] .
+	ops _==_ _!=_ : Expression Expression -> Expression [prec 39 gather(E e)] .
+	op _&_ : Expression Expression -> Expression [prec 41 gather(E e)] .
+	op _^_ : Expression Expression -> Expression [prec 43 gather(E e)] .
+	op _|_ : Expression Expression -> Expression [prec 45 gather(E e)] .
+	op _&&_ : Expression Expression -> Expression [prec 47 gather(E e)] .
+	op _||_ : Expression Expression -> Expression [prec 49 gather(E e)] .
+	op _?_:_ : Expression Expression Expression -> Expression [prec 51 gather(e & E)] .
 	
 	--- --- 6.5.16
-	sort Assignment-Expression .
-	subsort Assignment-Expression < K .
-	--- subsort Conditional-Expression < Assignment-Expression .
-	ops _=_ _*=_ _/=_ _%=_ _+=_ _-=_ _<<=_ _>>=_ _&=_ _^=_ _|=_ : Unary-Expression Assignment-Expression -> Assignment-Expression .
+	---sort Assignment-Expression .
+	---subsort Assignment-Expression < K .
+	---subsort Conditional-Expression < Assignment-Expression .
+	ops _=_ _*=_ _/=_ _%=_ _+=_ _-=_ _<<=_ _>>=_ _&=_ _^=_ _|=_ : Expression Expression -> Expression [prec 53] .
 	--- op _=_ : Unary-Expression Assignment-Expression -> Assignment-Expression .
 			
 	--- ops _*=_ _/=_ _%=_ _+=_ _-=_ _<<=_ _>>=_ _&=_ _^=_ _|=_ : Unary-Expression Assignment-Expression -> Assignment-Expression .
@@ -168,7 +146,7 @@ mod KERNEL-C-SYNTAX is
 	sort Expression .
 	subsort Expression < K .
 	---subsort Int < Expression .
-	--- subsort Assignment-Expression < Expression .
+	---subsort Assignment-Expression < Expression .
 	---op _`,_ : Expression Assignment-Expression -> Expression [ditto] .
 	
 	---subsort List{Assignment-Expression} < Expression .
@@ -182,35 +160,37 @@ mod KERNEL-C-SYNTAX is
 	--- --- 6.7
 	sort Declaration .
 	subsort Declaration < K .
-	op Declaration : DeclarationAux -> Declaration .
-	
-	sort DeclarationAux .
-	subsort DeclarationAux < K .
-	op int`main`(void`) : -> DeclarationAux .
-	---op Declaration`(_`) : Declaration-Specifiers -> Declaration .
-	---op Declaration`(__`) : Declaration-Specifiers Init-Declarator-List -> Declaration .
+	---op Declaration : Declaration-Specifiers -> Declaration .
+	--- sort DeclarationAux .
+	--- subsort DeclarationAux < K .
+	---op int`main`(void`) : -> DeclarationAux .
+	--- subsort Declaration-Specifiers < DeclarationAux .
+	--- op _ : Declaration-Specifiers 
+	op Declaration : Declaration-Specifiers -> Declaration .
+	op Declaration : Declaration-Specifiers Init-Declarator-List -> Declaration .
 	--- TODO op _; : Declaration-Specifiers -> Declaration .
 	--- TODO op __; : Declaration-Specifiers Init-Declarator-List -> Declaration . --- int main(void) ;
 	--- Note: totally made up to ease parsing
 	--- op _; : Parameter-Declaration -> Declaration [format (ni o o) renameTo _] .
 	
-	--- sort Init-Declarator-List .
-	--- subsort Init-Declarator < Init-Declarator-List .
-	--- subsort Init-Declarator-List < K .
+	sort Init-Declarator-List .
+	subsort Init-Declarator < Init-Declarator-List .
+	subsort Init-Declarator-List < K .
 	--- --- TODO subsort List{Init-Declarator} < Init-Declarator-List .
 	--- --- TODO op hackid_hackid : List{Init-Declarator} -> List{Init-Declarator} .
 	
-	--- sort Declaration-Specifiers .
-	--- subsort Declaration-Specifiers < K .
-	--- subsort Storage-Class-Specifier Type-Specifier Type-Qualifier Function-Specifier < Declaration-Specifiers .
+	sort Declaration-Specifiers .
+	subsort Declaration-Specifiers < K .
+	---subsort Storage-Class-Specifier Type-Specifier Type-Qualifier Function-Specifier < Declaration-Specifiers .
+	subsort Type-Specifier < Declaration-Specifiers .
 	--- --- TODO op __ : Storage-Class-Specifier Declaration-Specifiers -> Declaration-Specifiers .
 	--- --- TODO op __ : Type-Specifier Declaration-Specifiers -> Declaration-Specifiers [renameTo combine] .
 	--- --- TODO op __ : Type-Qualifier Declaration-Specifiers -> Declaration-Specifiers .
 	--- --- TODO op __ : Function-Specifier Declaration-Specifiers -> Declaration-Specifiers .
 	
-	--- sort Init-Declarator .
-	--- subsort Init-Declarator < K .
-	--- subsort Declarator < Init-Declarator .
+	sort Init-Declarator .
+	subsort Init-Declarator < K .
+	subsort Declarator < Init-Declarator .
 	--- --- Note: CIL separates declaration from initialization
 	--- --- op _=_ : Declarator Initializer -> Init-Declarator .
 	
@@ -219,10 +199,10 @@ mod KERNEL-C-SYNTAX is
 	--- ops typedef extern static auto register : -> Storage-Class-Specifier .
 	
 	--- --- 6.7.2
-	--- sort Type-Specifier .
-	--- subsort Type-Specifier < K .
+	sort Type-Specifier .
+	subsort Type-Specifier < K .
 	--- subsort Struct-Or-Union-Specifier Enum-Specifier Typedef-Name < Type-Specifier .
-	--- ops void char short int long float double signed unsigned : -> Type-Specifier [ctor] .
+	ops void char short int long float double signed unsigned : -> Type-Specifier [ctor] .
 	--- ----ops `_Bool `_Complex : -> Type-Specifier [ctor] .
 	--- --- TODO
 	
@@ -292,10 +272,14 @@ mod KERNEL-C-SYNTAX is
 	--- op _`[_`] : Declarator Assignment-Expression -> Declarator-or-Postfix-Expression .
 	
 	--- --- 6.7.5
-	--- sort Declarator .
-	--- subsort Declarator < K .
-	--- subsort Declarator-or-Postfix-Expression < Declarator .
-	--- subsort Identifier < Declarator .
+	sort Declarator .
+	subsort Declarator < K .
+
+	sort Direct-Declarator .
+	subsort Direct-Declarator < K .
+	subsort Direct-Declarator < Declarator .
+
+	subsort Identifier < Direct-Declarator .
 	--- --- TODO op __ : Pointer Declarator -> Declarator .
 	
 	--- --- op `(_`) : Declarator -> Declarator . --- problem with (_)
@@ -308,7 +292,8 @@ mod KERNEL-C-SYNTAX is
 	--- op _`[_static_`] : Declarator Type-Qualifier-List Assignment-Expression -> Declarator .
 	--- op _`[*`] : Declarator -> Declarator .
 	--- op _`[_*`] : Declarator Type-Qualifier-List -> Declarator .
-	--- op _`(_`) : Declarator Parameter-Type-List -> Declarator [renameTo Declarator] . --- Ex: main(void)
+	--- op _`(_`) : Direct-Declarator Parameter-Type-List -> Direct-Declarator . --- Ex: main(void)
+	op Direct-Function-Declarator : Direct-Declarator Parameter-Type-List -> Direct-Declarator .
 	--- --- TODO op _`(`) : Declarator -> Declarator .
 	--- --- TODO op _`(_`) : Declarator Identifier-List -> Declarator .
 	
@@ -323,18 +308,23 @@ mod KERNEL-C-SYNTAX is
 	--- subsort Type-Qualifier < Type-Qualifier-List .
 	--- --- TODO op __ : Type-Qualifier-List Type-Qualifier -> Type-Qualifier-List .
 	
-	--- sort Parameter-Type-List .
-	--- subsort Parameter-List < Parameter-Type-List .
+	sort Parameter-Type-List .
+	subsort Parameter-Type-List < K .
+	subsort Parameter-List < Parameter-Type-List .
+	---op .Parameter-Type-List : -> Parameter-Type-List .
+	op Parameter-Type-List : Declaration-Specifiers -> Parameter-Type-List .
 	--- ---op _`,... : Parameter-List -> Parameter-Type-List .
 	--- --- TODO
 	
-	--- sort Parameter-List .
-	--- subsort Parameter-Declaration < Parameter-List .
+	sort Parameter-List .
+	subsort Parameter-List < K .
+	subsort Parameter-Declaration < Parameter-List .
 	--- --- TODO subsort List{Parameter-Declaration} < Parameter-List .
 	--- --- TODO op hackpd_hackpd : List{Parameter-Declaration} -> List{Parameter-Declaration} .
 	
-	--- sort Parameter-Declaration .
-	--- subsort Declaration-Specifiers < Parameter-Declaration .
+	sort Parameter-Declaration .
+	subsort Parameter-Declaration < K .
+	subsort Declaration-Specifiers < Parameter-Declaration .
 	--- op __ : Declaration-Specifiers Declarator -> Parameter-Declaration [renameTo Parameter-Declaration] .
 	--- ---op __ : Declaration-Specifiers Abstract-Declarator -> Parameter-Declaration .
 	--- --- TODO
@@ -405,17 +395,19 @@ mod KERNEL-C-SYNTAX is
 	subsort Block-Item-List < K .
 	subsort Block-Item < Block-Item-List .
 	--- op Block-Item-List : Block-Item-List Block-Item -> Block-Item-List .
-	op __ : Block-Item-List Block-Item-List -> Block-Item-List [assoc].
+	op __ : Block-Item-List Block-Item-List -> Block-Item-List [assoc prec 85] .
 	
 	sort Block-Item .
 	subsort Block-Item < K .
 	--- --- op Block-Item : Statement -> Block-Item .
-	subsort Declaration Statement < Block-Item .
+	subsort Statement < Block-Item .
+	op _; : Declaration -> Block-Item [prec 75] .
 	
 	--- --- 6.8.3
 	sort Expression-Statement .
 	--- ---- TODO op ; : -> Expression-Statement .
-	op _; : Expression -> Expression-Statement [format (ni o o)] .
+	op _; : Expression -> Expression-Statement [ditto] .
+	---op _; : K -> K [prec 45] .
 	
 	--- --- 6.8.4
 	--- sort Selection-Statement .
@@ -489,33 +481,44 @@ mod KERNEL-C-SYNTAX-TEST is
 	including KERNEL-C-SYNTAX .
 	op pSimplest : -> Function-Definition .
 	eq pSimplest = (
-		Declaration(int main(void) )
+	Declaration((int),  Direct-Function-Declarator(main, Parameter-Type-List((void))) )
 		{ 
-
 		  Block({
 		  return (0);
 		})
 		}
 	) .
-		
+	
+	op pTrial1 : -> Declarator .
+	eq pTrial1 = Direct-Function-Declarator(main, Parameter-Type-List(((void)))) .
+	
+	op pTrial2 : -> Declaration .
+	eq pTrial2 = Declaration(int,  pTrial1 ) .
+
+
 	op i : -> Identifier [ctor] .
 	op sum : -> Identifier [ctor] .
+	
+			
+	op pTrial3 : -> Block-Item-List .
+	eq pTrial3 = sum += i ; ((i ++) ;) .
+	op pTrial4 : -> Block-Item-List .
+	eq pTrial4 = sum += i ; .
 
 	op pSumN : -> Function-Definition .
 	eq pSumN = (
-		Declaration(int main(void) )
-		{ 
-		---Declaration(int sum );
-		---Declaration(int i );
+		Declaration((int),  Direct-Function-Declarator(main, Parameter-Type-List((void))) )
+		{ Declaration((int),  sum );
+		  Declaration((int),  i );
 
 		  Block({
-		  sum = 0 ;
-		  i = 1 ;
-		  while (i <= 10) Block({
-		    sum += i ;
-		    i ++
+		  (sum) = (0);
+		  (i) = (1);
+		  while ((((i)) <= (10))) Block({
+		    (sum) += ((i));
+		    (i) ++ ;
 		  })
-		  return (0);
+		  return ((0));
 		})
 		}
 	) .
