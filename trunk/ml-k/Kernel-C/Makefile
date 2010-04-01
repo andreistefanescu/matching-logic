@@ -1,5 +1,5 @@
 INPUT = factorial
-TEST_PROGRAMS = multWithBreak simplest sumn factorial
+TEST_PROGRAMS = multWithBreak simplest sumn factorial hard
 TMP = tmp
 EXTENSION = .c
 
@@ -45,7 +45,7 @@ cparser: $(PARSER_DIR)/MaudeVisitor.cmx $(PARSER_DIR)/MaudePrinter.cmx $(PARSER_
 	$(OCAML_LINK) -o cparser unix.cmxa str.cmxa $(CIL)/cil.cmxa $(PARSER_DIR)/MaudeVisitor.cmx $(PARSER_DIR)/DefaultMaudePrinter.cmx $(PARSER_DIR)/MaudePrinter.cmx $(PARSER_DIR)/cildriver.cmx
 	
 %.gen.program.maude: %.preprocessed cparser
-	cparser $(CIL_FLAGS) --out $@ $(TMP)/$<
+	./cparser $(CIL_FLAGS) --out $@ $(TMP)/$<
 	tail $@
 	
 semantics: $(SEMANTICS_DIR)/kernel-c.maude

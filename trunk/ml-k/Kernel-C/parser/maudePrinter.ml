@@ -75,7 +75,7 @@ class maudePrinter = object(self)
 	(* method pInstr () (i:instr) = wrap (super#pInstr () i) "Instruction" *)
 
 	(** Invoked on each lvalue occurrence *)
-    (* method pLval () (l:lval) = wrap (super#pLval () l) "L-Value" *)
+    method pLval () (l:lval) = paren (super#pLval () l)
 	
     (** Control-flow statement.  *)
 	(* method pStmt () (s:stmt) = wrap (super#pStmt () s) "ControlFlowStatement" *)
@@ -92,8 +92,19 @@ class maudePrinter = object(self)
 		* name being declared. Note that for structure/union and enumeration types 
 		* the definition of the composite type is not visited. Use [vglob] to 
 		* visit it.  *)
-	(* method pType (d:Pretty.doc option) () (t:typ) = wrap (super#pType d () t) "Type" *)
+	(*method pType (d:Pretty.doc option) () (t:typ) = wrap (super#pType d () t) "Type"*)
+	(*method pType (d:Pretty.doc option) () (t:typ) = paren (super#pType d () t) *)
+	 (*method pType (d:Pretty.doc option) () (t:typ) = 
+		(* wrap (super#pType d () t) "Type" *)
+		match d with 
+			| None -> (super#pType d () t)
+			| Some _ -> wrap (super#pType d () t) "DeclaratorAux"*)
+			
+	(** Attribute lists *)
+    (* method pAttrs () (a:attributes) = wrap (super#pAttrs () a) "Attributes" *)
 	
+    (** Print expressions *) 
+	method pExp () (e:exp) = paren (super#pExp () e)
 (*
   method pVar: varinfo -> Pretty.doc
     (** Invoked on each variable use. *)
@@ -117,8 +128,7 @@ class maudePrinter = object(self)
   method pAttrParam: unit -> attrparam -> Pretty.doc 
     (** Attribute parameter *)
    
-  method pAttrs: unit -> attributes -> Pretty.doc
-    (** Attribute lists *)
+
 
   method pLineDirective: ?forcefile:bool -> location -> Pretty.doc
     (** Print a line-number. This is assumed to come always on an empty line. 
@@ -127,8 +137,6 @@ class maudePrinter = object(self)
      * is different from the last time time this function is called. The last 
      * file name is stored in a private field inside the cilPrinter object. *)
 
-  method pExp: unit -> exp -> Pretty.doc
-    (** Print expressions *) 
 
 *)	
 end
