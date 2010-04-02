@@ -447,6 +447,6 @@ method private pLvalPrec (contextprec: int) () lv =
 		++ text ")"
         ++ text (")" ^ (self#getPrintInstrTerminator ()))
     | _ -> super#pInstr () i
-            
+           
 	
 end (* class defaultCilPrinterClass *)

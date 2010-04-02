@@ -90,6 +90,7 @@ mod KERNEL-C-SYNTAX is
 	--- op _`(_`) : Postfix-Expression List{Assignment-Expression} -> Postfix-Expression [strict renameTo apply] .
 	---op _`(_`) : Expression Expression-List -> Expression .
 	op Apply : Expression Expression-List -> Expression .
+	op Apply : Expression -> Expression .
 	--- op _`(`) : Postfix-Expression -> Postfix-Expression [strict renameTo applyNil] .
 	--- op _._ : Postfix-Expression Identifier -> Postfix-Expression .
 	--- op _->_ : Postfix-Expression Identifier -> Postfix-Expression .
@@ -98,9 +99,13 @@ mod KERNEL-C-SYNTAX is
 	--- op `(_`)`{_`} : Type-Name Initializer-List -> Postfix-Expression .
 	--- op `(_`)`{_`,`} : Type-Name Initializer-List -> Postfix-Expression .
 
-	sort Expression-List .
-	subsort Expression < Expression-List .
+	---sort Expression-List .
+	---subsort Expression < Expression-List .
 	subsort Expression-List < K .
+	sort Expression-List .  
+	subsort Expression < Expression-List .
+	op .Expression-List : -> Expression-List .
+	---op _,_ : Expression-List Expression-List -> Expression-List [prec 70 assoc id: .Expression-List] .
 	
 	--- ---sort Argument-Expression-List .
 	--- ---subsort Assignment-Expression < Argument-Expression-List .
@@ -574,7 +579,7 @@ mod KERNEL-C-SEMANTICS is
 	op output : -> CellLabel .
 	op k : -> CellLabel .
 	op env : -> CellLabel .
-	op store : -> CellLabel .
+	op mem : -> CellLabel .
 	op nextLoc : -> CellLabel .
 	op result : -> CellLabel .
 	
@@ -582,20 +587,55 @@ mod KERNEL-C-SEMANTICS is
 		< T > 
 			< k > P:Program </ k >
 			< env > Env:Map </ env > 
-			< store > Store:Map </ store >  
+			< mem > Store:Map </ mem >  
 			< output > Output:List </ output > 
-			---< nextLoc > N:Nat </ nextLoc > 
+			< nextLoc > N:Nat </ nextLoc >
 		</ T > 
 		< result > Output:List </ result > : KSentence .
 	op eval : Program -> Bag .
 	eq eval(P:Program) = 
 		< T >
-			< k > P:Program </ k > 
+			< k > P:Program ~> Apply(main) </ k > 
 			< env > .Map </ env > 
-			< store > .Map </ store >  
+			< mem > .Map </ mem >  
 			< output > .List </ output > 
-			---< nextLoc > 0 </ nextLoc > 
+			< nextLoc > 0 </ nextLoc > 
 		</ T > .
+	
+	op closure : -> KLabel .
+	
+	--- massage application with no argument
+	mb rule 
+		[Apply(I:Identifier) => Apply(I:Identifier, .Expression-List)]
+		: KSentence .
+	
+	--- replace sequencing with ~>
+	mb rule 
+		[S1:Statement S2:Statement => S1:Statement ~> S2:Statement]
+		: KSentence .
+	
+	***(
+	Declaration(int, IDL){
+		Body
+	}
+	***)
+	mb [function-definition]: rule 
+		< k > [
+			Declaration(DS:Declaration-Specifiers, Direct-Function-Declarator(I:Identifier, PTL:Parameter-Type-List)){
+				B:Block-Item-List
+			}
+			=> .K] 
+		...</ k >
+		< env > [E:Map => E:Map[Loc:Nat / I:Identifier]]  </ env >
+		< mem > [M:Map => M:Map[Declaration(DS:Declaration-Specifiers, Direct-Function-Declarator(I:Identifier, PTL:Parameter-Type-List)){ B:Block-Item-List } / Loc:Nat]] </ mem >
+		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
+		: KSentence .
+		
+	mb [function-application]: rule 
+		< k > [Apply(I:Identifier, .Expression-List) => B:Block-Item-List] ...</ k >
+		< env >... I:Identifier |-> Loc:Nat ...</ env >
+		< mem >... Loc:Nat |-> (D:Declaration{ B:Block-Item-List }) ...</ mem >
+		: KSentence .
 endm
 
 mod KERNEL-C is including KERNEL-C-SEMANTICS . endm

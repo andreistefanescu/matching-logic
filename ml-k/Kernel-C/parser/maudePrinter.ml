@@ -115,7 +115,10 @@ class maudePrinter = object(self)
 	(* method pVar (v:varinfo) = (super#pVar v) *)
 	method pVar (v:varinfo) = text (replace "_" "u" (sprint 1000 (super#pVar v)))
 
-	
+	(** Global (vars, types, etc.). This can be slow and is used only by 
+     * {!Cil.printGlobal} but not by {!Cil.dumpGlobal}. *)
+	(* method pGlobal () (g:global) = wrap (super#pGlobal () g) "Global" *)
+   
 (*
   
 
@@ -124,12 +127,6 @@ class maudePrinter = object(self)
 
   method pLabel: unit -> label -> Pretty.doc
     (** Print a label. *)
-
-  method pGlobal: unit -> global -> Pretty.doc
-    (** Global (vars, types, etc.). This can be slow and is used only by 
-     * {!Cil.printGlobal} but not by {!Cil.dumpGlobal}. *)
-
- 
 
   method pAttr: attribute -> Pretty.doc * bool
     (** Attribute. Also return an indication whether this attribute must be 
