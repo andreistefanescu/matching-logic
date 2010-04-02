@@ -185,6 +185,7 @@ mod SKOL is inc SUBST .
   eq skolemTerm(NT, '?IntTree[QT]) = 'skolem[NT : '?IntTree[QT]] .
   eq skolemTerm(NT, '?IntTreeSeq[QT]) = 'skolem[NT : '?IntTreeSeq[QT]] .
   eq skolemTerm(NT, '?IntBag[QT]) = 'skolem[NT : '?IntBag[QT]] .
+  eq skolemTerm(NT, '?Graph[QT]) = 'skolem[NT : '?Graph[QT]] .
   eq skolemTerm(NT, 'skolem[NT' : QT]) = 'skolem[NT' : QT] .
   eq skolemTerm(NT, Q[QTList]) = Q[skolemTerm(NT, QTList)] [owise] .
 
@@ -242,12 +243,12 @@ mod FOL= is inc MATHEMATICAL-DOMAIN + SUBST + SKOL .
 
 --- Step 3: Get rid of variable equalities and propagate them via substitution
 --- Step 3.0.1 : Get rid of bound variables equalities at any time
+ ceq [FOL] : <config> <k> K </k> <form> Phi </form> Cfg2 <menv> MatchEnv </menv> </config>
+   = <config> <k> K </k> (<form> Phi </form> Cfg2)[?Subst] <menv> MatchEnv </menv> </config>
+   if ?Subst := get?Subst(Phi) /\ ?Subst =/= .Subst .
 ***(
- ceq [SUBST] : <config> <k> K </k> <form> Phi </form> Cfg </config> = <config> <k> K </k> <form> Phi </form> Cfg </config>[?Subst]
-  if ?Subst := get?Subst(Phi) /\ ?Subst =/= .Subst .
-
 --- Step 3.0.2 : Get rid of unbound variable equalities at any time
- ceq [SUBST] : <config> <k> K </k> <form> Phi </form> Cfg </config> = <config> Cfg' </config>
+ ceq [FOL] : <config> <k> K </k> <form> Phi </form> Cfg </config> = <config> Cfg' </config>
   if !Subst := get!Subst(Phi) /\ !Subst =/= .Subst /\ <config> Cfg' </config> := <config> <k> K </k> <form> Phi </form> Cfg </config>[!Subst] .
 ***)
 
