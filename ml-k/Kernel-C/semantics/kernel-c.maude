@@ -1,9 +1,10 @@
 load ../../../../k-framework/k-maude/trunk/k-prelude
 mod KERNEL-C-SYNTAX is
-	including PL-INT .
-	including PL-VARID .
-	including PL-BOOL .
+	---including PL-INT .
+	---including PL-VARID .
+	---including PL-BOOL .
 	including K .
+	including PL-BUILTINS .
 
 	sort Comment .
 	-----op /*_*/ : Comment -> 
@@ -87,6 +88,8 @@ mod KERNEL-C-SYNTAX is
 	--- --- op _`[_`] : Postfix-Expression Expression -> Postfix-Expression .
 	
 	--- op _`(_`) : Postfix-Expression List{Assignment-Expression} -> Postfix-Expression [strict renameTo apply] .
+	---op _`(_`) : Expression Expression-List -> Expression .
+	op Apply : Expression Expression-List -> Expression .
 	--- op _`(`) : Postfix-Expression -> Postfix-Expression [strict renameTo applyNil] .
 	--- op _._ : Postfix-Expression Identifier -> Postfix-Expression .
 	--- op _->_ : Postfix-Expression Identifier -> Postfix-Expression .
@@ -95,6 +98,10 @@ mod KERNEL-C-SYNTAX is
 	--- op `(_`)`{_`} : Type-Name Initializer-List -> Postfix-Expression .
 	--- op `(_`)`{_`,`} : Type-Name Initializer-List -> Postfix-Expression .
 
+	sort Expression-List .
+	subsort Expression < Expression-List .
+	subsort Expression-List < K .
+	
 	--- ---sort Argument-Expression-List .
 	--- ---subsort Assignment-Expression < Argument-Expression-List .
 	--- --- TODO subsort List{Assignment-Expression} < Argument-Expression-List .
@@ -106,9 +113,9 @@ mod KERNEL-C-SYNTAX is
 	---subsort Postfix-Expression < Unary-Expression .
 	ops ++_ --_ : Expression -> Expression [prec 22] .
 	op &_ : Expression -> Expression [prec 22] .
-	op *_ : Expression -> Expression [prec 22] .
+	---op *_ : Expression -> Expression [prec 22] .
 	op +_ : Expression -> Expression [prec 22] .
-	op -_ : Expression -> Expression [prec 22] .
+	---op -_ : Expression -> Expression [prec 22] .
 	op ~_ : Expression -> Expression [prec 22] .
 	op !_ : Expression -> Expression [prec 22] .
 	op sizeof_ : Expression -> Expression .
@@ -137,8 +144,9 @@ mod KERNEL-C-SYNTAX is
 	---sort Assignment-Expression .
 	---subsort Assignment-Expression < K .
 	---subsort Conditional-Expression < Assignment-Expression .
-	ops _=_ _*=_ _/=_ _%=_ _+=_ _-=_ _<<=_ _>>=_ _&=_ _^=_ _|=_ : Expression Expression -> Expression [prec 53] .
+	ops _*=_ _/=_ _%=_ _+=_ _-=_ _<<=_ _>>=_ _&=_ _^=_ _|=_ : Expression Expression -> Expression [prec 53] .
 	--- op _=_ : Unary-Expression Assignment-Expression -> Assignment-Expression .
+	op _:=_ : Expression Expression -> Expression .
 			
 	--- ops _*=_ _/=_ _%=_ _+=_ _-=_ _<<=_ _>>=_ _&=_ _^=_ _|=_ : Unary-Expression Assignment-Expression -> Assignment-Expression .
 	
@@ -310,15 +318,16 @@ mod KERNEL-C-SYNTAX is
 	
 	sort Parameter-Type-List .
 	subsort Parameter-Type-List < K .
-	subsort Parameter-List < Parameter-Type-List .
+	---subsort Parameter-List < Parameter-Type-List .
 	---op .Parameter-Type-List : -> Parameter-Type-List .
-	op Parameter-Type-List : Declaration-Specifiers -> Parameter-Type-List .
+	---op Parameter-Type-List : Declaration-Specifiers -> Parameter-Type-List .
+	op Parameter-Type-List : Parameter-Declaration -> Parameter-Type-List .
 	--- ---op _`,... : Parameter-List -> Parameter-Type-List .
 	--- --- TODO
 	
-	sort Parameter-List .
-	subsort Parameter-List < K .
-	subsort Parameter-Declaration < Parameter-List .
+	---sort Parameter-List .
+	---subsort Parameter-List < K .
+	---subsort Parameter-Declaration < Parameter-List .
 	--- --- TODO subsort List{Parameter-Declaration} < Parameter-List .
 	--- --- TODO op hackpd_hackpd : List{Parameter-Declaration} -> List{Parameter-Declaration} .
 	
@@ -376,8 +385,8 @@ mod KERNEL-C-SYNTAX is
 	--- --- 6.8
 	sort Statement .
 	subsort Statement < K .
-	--- subsort Labeled-Statement Selection-Statement < Statement .
-	subsort Jump-Statement Compound-Statement Iteration-Statement Expression-Statement < Statement .
+	--- subsort Labeled-Statement < Statement .
+	subsort Jump-Statement Compound-Statement Iteration-Statement Expression-Statement Selection-Statement < Statement .
 	
 	--- --- 6.8.1
 	--- sort Labeled-Statement .
@@ -396,7 +405,7 @@ mod KERNEL-C-SYNTAX is
 	subsort Block-Item-List < K .
 	subsort Block-Item < Block-Item-List .
 	--- op Block-Item-List : Block-Item-List Block-Item -> Block-Item-List .
-	op __ : Block-Item-List Block-Item-List -> Block-Item-List [assoc prec 85] .
+	op __ : Block-Item-List Block-Item-List -> Block-Item-List [prec 85 gather(e E)] . --- [assoc prec 85] .
 	
 	sort Block-Item .
 	subsort Block-Item < K .
@@ -411,9 +420,10 @@ mod KERNEL-C-SYNTAX is
 	---op _; : K -> K [prec 45] .
 	
 	--- --- 6.8.4
-	--- sort Selection-Statement .
-	--- op if`(_`)_ : Expression Statement -> Selection-Statement [strict(1)] .
-	--- op if`(_`)_else_ : Expression Statement Statement -> Selection-Statement [strict(1)] .
+	sort Selection-Statement .
+	subsort Selection-Statement < K .
+	op if`(_`)_ : Expression Statement -> Selection-Statement .
+	op if`(_`)_else_ : Expression Statement Statement -> Selection-Statement .
 	--- op switch`(_`)_ : Expression Statement -> Selection-Statement .
 	
 	--- --- 6.8.5
@@ -513,8 +523,8 @@ mod KERNEL-C-SYNTAX-TEST is
 		  Declaration((int),  i );
 
 		  Block({
-		  (sum) = (0);
-		  (i) = (1);
+		  (sum) := (0);
+		  (i) := (1);
 		  while ((((i)) <= (10))) Block({
 		    (sum) += ((i));
 		    (i) ++ ;
@@ -535,19 +545,19 @@ mod KERNEL-C-SYNTAX-TEST is
 	eq pFactorial = (
 		---Declaration((int),  Direct-Function-Declarator(factorial, Parameter-Type-List(Parameter-Declaration((int),  n ))) );
 		Declaration((int),  Direct-Function-Declarator(main, Parameter-Type-List(Parameter-Declaration((void)))) )
-		{ Declaration((int),  n );
-			  Declaration((int),  fact );
-			  Declaration((int),  tmp );
-			  Declaration((int),  factorialuuu0 );
-
-			  Block({
-			  (n) = (10);
-			  (tmp) = ((factorial))(((n)));
-			  (fact) = ((tmp));
-			  (factorialuuu0) = ((fact));
-			  return (((factorialuuu0)));
-		})
-		}
+		{ Declaration((int),  tmp );
+		  Block({
+		  if ((((n)) == (0))) Block({
+		    return ((1));
+		  }) else Block({
+		     if ((((n)) == (1))) Block({
+		       return ((1));
+		     })
+		  })
+		  tmp := Apply(factorial, (n - 1)) ;
+		  return ((((n)) * ((tmp)))) ;
+})
+}
 		) .
 endm
 
@@ -574,7 +584,7 @@ mod KERNEL-C-SEMANTICS is
 			< env > Env:Map </ env > 
 			< store > Store:Map </ store >  
 			< output > Output:List </ output > 
-			< nextLoc > N:Nat </ nextLoc > 
+			---< nextLoc > N:Nat </ nextLoc > 
 		</ T > 
 		< result > Output:List </ result > : KSentence .
 	op eval : Program -> Bag .
@@ -584,7 +594,7 @@ mod KERNEL-C-SEMANTICS is
 			< env > .Map </ env > 
 			< store > .Map </ store >  
 			< output > .List </ output > 
-			< nextLoc > 0 </ nextLoc > 
+			---< nextLoc > 0 </ nextLoc > 
 		</ T > .
 endm
 

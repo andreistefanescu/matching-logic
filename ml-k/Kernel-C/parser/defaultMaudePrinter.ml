@@ -53,6 +53,68 @@ let paren (d:Pretty.doc) : Pretty.doc = "(" ^+ d +^ ")"
 let giveType (d1:Pretty.doc) (d2:string) : Pretty.doc = paren(d1) ++ (text d2)
 let wrap (d1:Pretty.doc) (d2:string) : Pretty.doc = d2 ^+ paren(d1)
 
+let typeSig t = 
+  typeSigWithAttrs (fun al -> al) t
+
+(* Helper class for typeSig: replace any types in attributes with typsigs *)
+class typeSigVisitor(typeSigConverter: typ->typsig) = object 
+  inherit nopCilVisitor 
+  method vattrparam ap =
+    match ap with
+      | ASizeOf t -> ChangeTo (ASizeOfS (typeSigConverter t))
+      | AAlignOf t -> ChangeTo (AAlignOfS (typeSigConverter t))
+      | _ -> DoChildren
+end
+
+let typeSigAddAttrs a0 t = 
+  if a0 == [] then t else
+  match t with 
+    TSBase t -> TSBase (typeAddAttributes a0 t)
+  | TSPtr (ts, a) -> TSPtr (ts, addAttributes a0 a)
+  | TSArray (ts, l, a) -> TSArray(ts, l, addAttributes a0 a)
+  | TSComp (iss, n, a) -> TSComp (iss, n, addAttributes a0 a)
+  | TSEnum (n, a) -> TSEnum (n, addAttributes a0 a)
+  | TSFun(ts, tsargs, isva, a) -> TSFun(ts, tsargs, isva, addAttributes a0 a)
+
+(* Compute a type signature.
+    Use ~ignoreSign:true to convert all signed integer types to unsigned,
+    so that signed and unsigned will compare the same. *)
+let rec typeSigWithAttrs ?(ignoreSign=false) doattr t = 
+  let typeSig = typeSigWithAttrs ~ignoreSign doattr in
+  let attrVisitor = new typeSigVisitor typeSig in
+  let doattr al = visitCilAttributes attrVisitor (doattr al) in
+  match t with 
+  | TInt (ik, al) -> 
+      let ik' = 
+        if ignoreSign then unsignedVersionOf ik  else ik
+      in
+      TSBase (TInt (ik', doattr al))
+  | TFloat (fk, al) -> TSBase (TFloat (fk, doattr al))
+  | TVoid al -> TSBase (TVoid (doattr al))
+  | TEnum (enum, a) -> TSEnum (enum.ename, doattr a)
+  | TPtr (t, a) -> TSPtr (typeSig t, doattr a)
+  | TArray (t,l,a) -> (* We do not want fancy expressions in array lengths. 
+                       * So constant fold the lengths *)
+      let l' = 
+        match l with 
+          Some l -> begin 
+            match constFold true l with 
+              Const(CInt64(i, _, _)) -> Some i
+            | e -> E.s (E.bug "Invalid length in array type: %a\n" 
+                          (fun _ -> E.s (E.bug "pd_exp not initialized")) e)
+          end 
+        | None -> None
+      in 
+      TSArray(typeSig t, l', doattr a)
+
+  | TComp (comp, a) -> 
+      TSComp (comp.cstruct, comp.cname, doattr (addAttributes comp.cattr a))
+  | TFun(rt,args,isva,a) -> 
+      TSFun(typeSig rt, 
+            List.map (fun (_, atype, _) -> (typeSig atype)) (argsToList args),
+            isva, doattr a)
+  | TNamed(t, a) -> typeSigAddAttrs (doattr a) (typeSig t.ttype)
+  | TBuiltin_va_list al -> TSBase (TBuiltin_va_list (doattr al))     
 (* Pretty's api can be found in cil/ocamlutil/pretty.mli *)
 
 class virtual defaultMaudePrinterClass = object (self) 
@@ -277,7 +339,7 @@ method private pLvalPrec (contextprec: int) () lv =
         | _ ->
             self#pLineDirective l
               ++ self#pLval () lv
-              ++ text " = "
+              ++ text " := "
               ++ self#pExp () e
               ++ text (self#getPrintInstrTerminator ())
               
@@ -356,7 +418,34 @@ method private pLvalPrec (contextprec: int) () lv =
     | Call(_, Lval(Var vi, NoOffset), _, l) 
         when vi.vname = "__builtin_types_compatible_p" && not !printCilAsIs -> 
         E.s (bug "__builtin_types_compatible_p: cabs2cil should have added sizeof to the arguments.")
-          
+    | Call(dest,e,args,l) ->
+        self#pLineDirective l
+          ++ (match dest with
+            None -> nil
+          | Some lv -> 
+              self#pLval () lv ++ text " := " ++
+                (* Maybe we need to print a cast *)
+                (let destt = typeOfLval lv in
+                match unrollType (typeOf e) with
+                  TFun (rt, _, _, _) 
+                      when not (Util.equals (typeSig rt)
+                                            (typeSig destt)) ->
+                    text "(" ++ self#pType None () destt ++ text ")"
+                | _ -> nil))
+          (* Now the function name *)
+          ++ text "Apply(" ++ 
+			(let ed = self#pExp () e in
+              match e with 
+                Lval(Var _, _) -> ed
+              | _ -> text "(" ++ ed ++ text ")")
+          ++ text ", (" ++ 
+          (align
+             (* Now the arguments *)
+             ++ (docList ~sep:(chr ',' ++ break) 
+                   (self#pExp ()) () args)
+             ++ unalign)
+		++ text ")"
+        ++ text (")" ^ (self#getPrintInstrTerminator ()))
     | _ -> super#pInstr () i
             
 	
