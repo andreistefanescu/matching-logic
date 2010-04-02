@@ -1,0 +1,503 @@
+set include BOOL off .
+set show advisories off .
+
+
+fmod BOOL is
+  sort Bool .
+
+  op true : -> Bool [ctor special (id-hook SystemTrue)] .
+  op false : -> Bool [ctor special (id-hook SystemFalse)] .
+
+  op if_then_else_fi : Bool Universal Universal -> Universal [poly (2 3 0)
+    special (
+    id-hook BranchSymbol
+    term-hook 1 (true)
+    term-hook 2 (false))] .
+  op _==Bool_ : Universal Universal -> Bool [poly (1 2) prec 51 special (
+    id-hook EqualitySymbol
+    term-hook equalTerm (true)
+    term-hook notEqualTerm (false))] .
+  op _=/=_ : Universal Universal -> Bool [poly (1 2) prec 51 special (
+    id-hook EqualitySymbol
+    term-hook equalTerm (false)
+    term-hook notEqualTerm (true))] .
+
+  op _and_ : Bool Bool -> Bool [assoc comm prec 55] .
+  op _or_ : Bool Bool -> Bool [assoc comm prec 59] .
+  op _xor_ : Bool Bool -> Bool [assoc comm prec 57] .
+  op not_ : Bool -> Bool [prec 53] .
+  op _implies_ : Bool Bool -> Bool [prec 61 gather (e E)] .
+  vars A B C : Bool .
+  eq true and A = A .
+  eq false and A = false .
+  eq A and A = A .
+  eq false xor A = A .
+  eq A xor A = false .
+  eq A and (B xor C) = A and B xor A and C .
+  eq not A = A xor true .
+  eq A or B = A and B xor A xor B .
+  eq A implies B = not (A xor A and B) .
+endfm
+
+fmod PL-NAT is protecting BOOL .
+  sorts Zero NzNat Nat .
+  subsort Zero NzNat < Nat .
+
+  op 0 : -> Zero [ctor] .
+
+  op sNat_ : Nat -> NzNat
+        [ctor iter
+         special (id-hook SuccSymbol
+                  term-hook zeroTerm (0))] .
+
+  op _+Nat_ : NzNat Nat -> NzNat
+        [assoc comm prec 33
+         special (id-hook ACU_NumberOpSymbol (+)
+                  op-hook succSymbol (sNat_ : Nat ~> NzNat))] .
+  op _+Nat_ : Nat Nat -> Nat [ditto] .
+
+  op sdNat : Nat Nat -> Nat
+        [comm
+         special (id-hook CUI_NumberOpSymbol (sd)
+                  op-hook succSymbol (sNat_ : Nat ~> NzNat))] .
+
+  op _*Nat_ : NzNat NzNat -> NzNat
+        [assoc comm prec 31
+         special (id-hook ACU_NumberOpSymbol (*)
+                  op-hook succSymbol (sNat_ : Nat ~> NzNat))] .
+  op _*Nat_ : Nat Nat -> Nat [ditto] .
+
+  op _/Nat_ : Nat NzNat -> Nat
+        [prec 31 gather (E e)
+         special (id-hook NumberOpSymbol (quo)
+                  op-hook succSymbol (sNat_ : Nat ~> NzNat))] .
+
+  op _%Nat_ : Nat NzNat -> Nat
+        [prec 31 gather (E e)
+         special (id-hook NumberOpSymbol (rem)
+                  op-hook succSymbol (sNat_ : Nat ~> NzNat))] .
+
+  op _^Nat_ : Nat Nat -> Nat
+        [prec 29  gather (E e)
+         special (id-hook NumberOpSymbol (^)
+                  op-hook succSymbol (sNat_ : Nat ~> NzNat))] .
+  op _^Nat_ : NzNat Nat -> NzNat [ditto] .
+
+  op modExpNat : Nat Nat NzNat -> Nat
+        [special (id-hook NumberOpSymbol (modExp)
+                  op-hook succSymbol (sNat_ : Nat ~> NzNat))] .
+ 
+  op gcdNat : NzNat Nat -> NzNat
+        [assoc comm
+         special (id-hook ACU_NumberOpSymbol (gcd)
+                  op-hook succSymbol (sNat_ : Nat ~> NzNat))] .
+  op gcdNat : Nat Nat -> Nat [ditto] .
+
+  op lcmNat : NzNat NzNat -> NzNat
+        [assoc comm
+         special (id-hook ACU_NumberOpSymbol (lcm)
+                  op-hook succSymbol (sNat_ : Nat ~> NzNat))] .
+  op lcmNat : Nat Nat -> Nat [ditto] .
+
+  op minNat : NzNat NzNat -> NzNat
+        [assoc comm
+         special (id-hook ACU_NumberOpSymbol (min)
+                  op-hook succSymbol (sNat_ : Nat ~> NzNat))] .
+  op minNat : Nat Nat -> Nat [ditto] .
+
+  op maxNat : NzNat Nat -> NzNat
+        [assoc comm
+         special (id-hook ACU_NumberOpSymbol (max)
+                  op-hook succSymbol (sNat_ : Nat ~> NzNat))] .
+  op maxNat : Nat Nat -> Nat [ditto] .
+
+  op _xorNat_ : Nat Nat -> Nat
+        [assoc comm prec 55
+         special (id-hook ACU_NumberOpSymbol (xor)
+                  op-hook succSymbol (sNat_ : Nat ~> NzNat))] .
+
+  op _&Nat_ : Nat Nat -> Nat
+        [assoc comm prec 53
+         special (id-hook ACU_NumberOpSymbol (&)
+                  op-hook succSymbol (sNat_ : Nat ~> NzNat))] .
+
+  op _|Nat_ : NzNat Nat -> NzNat
+        [assoc comm prec 57
+         special (id-hook ACU_NumberOpSymbol (|)
+                  op-hook succSymbol (sNat_ : Nat ~> NzNat))] .
+  op _|Nat_ : Nat Nat -> Nat [ditto] .
+
+  op _>>Nat_ : Nat Nat -> Nat
+        [prec 35 gather (E e)
+         special (id-hook NumberOpSymbol (>>)
+                  op-hook succSymbol (sNat_ : Nat ~> NzNat))] .
+
+  op _<<Nat_ : Nat Nat -> Nat
+        [prec 35 gather (E e)
+         special (id-hook NumberOpSymbol (<<)
+                  op-hook succSymbol (sNat_ : Nat ~> NzNat))] .
+
+  op _<Nat_ : Nat Nat -> Bool
+        [prec 37
+         special (id-hook NumberOpSymbol (<)
+                  op-hook succSymbol (sNat_ : Nat ~> NzNat)
+                  term-hook trueTerm (true)
+                  term-hook falseTerm (false))] .
+
+  op _<=Nat_ : Nat Nat -> Bool
+        [prec 37
+         special (id-hook NumberOpSymbol (<=)
+                  op-hook succSymbol (sNat_ : Nat ~> NzNat)
+                  term-hook trueTerm (true)
+                  term-hook falseTerm (false))] .
+
+  op _>Nat_ : Nat Nat -> Bool
+        [prec 37
+         special (id-hook NumberOpSymbol (>)
+                  op-hook succSymbol (sNat_ : Nat ~> NzNat)
+                  term-hook trueTerm (true)
+                  term-hook falseTerm (false))] .
+
+  op _>=Nat_ : Nat Nat -> Bool
+        [prec 37
+         special (id-hook NumberOpSymbol (>=)
+                  op-hook succSymbol (sNat_ : Nat ~> NzNat)
+                  term-hook trueTerm (true)
+                  term-hook falseTerm (false))] .
+
+  op _dividesNat_ : NzNat Nat -> Bool
+        [prec 51
+         special (id-hook NumberOpSymbol (divides)
+                  op-hook succSymbol (sNat_ : Nat ~> NzNat)
+                  term-hook trueTerm (true)
+                  term-hook falseTerm (false))] .
+endfm
+
+fmod PL-INT is protecting PL-NAT .
+  sorts NzInt Int .
+  subsorts NzNat < NzInt Nat < Int .
+
+  op -Int_ : NzNat -> NzInt
+        [ctor
+         special (id-hook MinusSymbol
+                  op-hook succSymbol (sNat_ : Nat ~> NzNat)
+                  op-hook minusSymbol (-Int_ : NzNat ~> Int))] .
+  op -Int_ : NzInt -> NzInt [ditto] .
+  op -Int_ : Int -> Int [ditto] .
+
+  op _+Int_ : Int Int -> Int
+        [assoc comm prec 33  metadata "latex(renameTo _+\\subscript{\\small\\textit{Int}}_)"
+         special (id-hook ACU_NumberOpSymbol (+)
+                  op-hook succSymbol (sNat_ : Nat ~> NzNat)
+                  op-hook minusSymbol (-Int_ : NzNat ~> Int))] .
+  op _+Int_ : NzNat Nat -> NzNat [ditto] .
+  op _+Int_ : Nat Nat -> Nat [ditto] .
+
+
+  op _-Int_ : Int Int -> Int
+        [prec 33 gather (E e)   metadata "latex(renameTo _-\\subscript{\\small\\textit{Int}}_)"
+         special (id-hook NumberOpSymbol (-)
+                  op-hook succSymbol (sNat_ : Nat ~> NzNat)
+                  op-hook minusSymbol (-Int_ : NzNat ~> Int))] .
+
+  op _*Int_ : NzInt NzInt -> NzInt
+        [assoc comm prec 31
+         special (id-hook ACU_NumberOpSymbol (*)
+                  op-hook succSymbol (sNat_ : Nat ~> NzNat)
+                  op-hook minusSymbol (-Int_ : NzNat ~> Int))] .
+  op _*Int_ : Int Int -> Int [ditto] .
+ op _*Int_ : NzNat NzNat -> NzNat [ditto] .
+  op _*Int_ : Nat Nat -> Nat [ditto] .
+
+  op _/Int_ : Int Int -> Int
+        [prec 31 gather (E e)   metadata "latex(renameTo _\\ensuremath{/}\\subscript{\\small\\textit{Int}}_)"
+         special (id-hook NumberOpSymbol (quo)
+                  op-hook succSymbol (sNat_ : Nat ~> NzNat)
+                  op-hook minusSymbol (-Int_ : NzNat ~> Int))] .
+
+  op _%Int_ : Int Int -> Int
+        [prec 31 gather (E e)
+         special (id-hook NumberOpSymbol (rem)
+                  op-hook succSymbol (sNat_ : Nat ~> NzNat)
+                  op-hook minusSymbol (-Int_ : NzNat ~> Int))] .
+
+  op _^Int_ : Int Nat -> Int
+        [prec 29 gather (E e)
+         special (id-hook NumberOpSymbol (^)
+                  op-hook succSymbol (sNat_ : Nat ~> NzNat)
+                  op-hook minusSymbol (-Int_ : NzNat ~> Int))] .
+  op _^Int_ : NzInt Nat -> NzInt [ditto] .
+  op _^Int_ : Nat Nat -> Nat [ditto] .
+  op _^Int_ : NzNat Nat -> NzNat [ditto] .
+
+  op absInt : NzInt -> NzNat
+        [special (id-hook NumberOpSymbol (abs)
+                  op-hook succSymbol (sNat_ : Nat ~> NzNat)
+                  op-hook minusSymbol (-Int_ : NzNat ~> Int))] .
+  op absInt : Int -> Nat [ditto] .
+
+  op gcdInt : NzInt Int -> NzNat
+        [assoc comm
+         special (id-hook ACU_NumberOpSymbol (gcd)
+                  op-hook succSymbol (sNat_ : Nat ~> NzNat)
+                  op-hook minusSymbol (-Int_ : NzNat ~> Int))] .
+  op gcdInt : Int Int -> Nat [ditto] .
+
+  op lcmInt : NzInt NzInt -> NzNat
+        [assoc comm
+         special (id-hook ACU_NumberOpSymbol (lcm)
+                  op-hook succSymbol (sNat_ : Nat ~> NzNat)
+                  op-hook minusSymbol (-Int_ : NzNat ~> Int))] .
+  op lcmInt : Int Int -> Nat [ditto] .
+
+  op minInt : NzInt NzInt -> NzInt
+        [assoc comm
+         special (id-hook ACU_NumberOpSymbol (min)
+                  op-hook succSymbol (sNat_ : Nat ~> NzNat)
+                  op-hook minusSymbol (-Int_ : NzNat ~> Int))] .
+  op minInt : Int Int -> Int [ditto] .
+  op minInt : NzNat NzNat -> NzNat [ditto] .
+  op minInt : Nat Nat -> Nat [ditto] .
+
+
+  op maxInt : NzInt NzInt -> NzInt
+        [assoc comm
+         special (id-hook ACU_NumberOpSymbol (max)
+                  op-hook succSymbol (sNat_ : Nat ~> NzNat)
+                  op-hook minusSymbol (-Int_ : NzNat ~> Int))] .
+  op maxInt : Int Int -> Int [ditto] .
+  op maxInt : NzNat Int -> NzNat [ditto] .
+  op maxInt : Nat Int -> Nat [ditto] .
+
+  op ~Int_ : Int -> Int
+        [special (id-hook NumberOpSymbol (~)
+                  op-hook succSymbol (sNat_ : Nat ~> NzNat)
+                  op-hook minusSymbol (-Int_ : NzNat ~> Int))] .
+
+  op _xorInt_ : Int Int -> Int
+        [assoc comm prec 55
+         special (id-hook ACU_NumberOpSymbol (xor)
+                  op-hook succSymbol (sNat_ : Nat ~> NzNat)
+                  op-hook minusSymbol (-Int_ : NzNat ~> Int))] .
+
+  op _&Int_ : Nat Int -> Nat
+        [assoc comm prec 53
+         special (id-hook ACU_NumberOpSymbol (&)
+                  op-hook succSymbol (sNat_ : Nat ~> NzNat)
+                  op-hook minusSymbol (-Int_ : NzNat ~> Int))] .
+  op _&Int_ : Int Int -> Int [ditto] .
+
+  op _|Int_ : NzInt Int -> NzInt
+        [assoc comm prec 57
+         special (id-hook ACU_NumberOpSymbol (|)
+                  op-hook succSymbol (sNat_ : Nat ~> NzNat)
+                  op-hook minusSymbol (-Int_ : NzNat ~> Int))] .
+  op _|Int_ : Int Int -> Int [ditto] .
+
+  op _>>Int_ : Int Nat -> Int
+        [prec 35 gather (E e)
+         special (id-hook NumberOpSymbol (>>)
+                  op-hook succSymbol (sNat_ : Nat ~> NzNat)
+                  op-hook minusSymbol (-Int_ : NzNat ~> Int))] .
+
+  op _<<Int_ : Int Nat -> Int
+        [prec 35 gather (E e)
+         special (id-hook NumberOpSymbol (<<)
+                  op-hook succSymbol (sNat_ : Nat ~> NzNat)
+                  op-hook minusSymbol (-Int_ : NzNat ~> Int))] .
+
+  op _<Int_ : Int Int -> Bool
+        [prec 37  metadata "latex(renameTo _\\ensuremath{<}\\subscript{\\small\\textit{Int}}_)"
+         special (id-hook NumberOpSymbol (<)
+                  op-hook succSymbol (sNat_ : Nat ~> NzNat)
+                  op-hook minusSymbol (-Int_ : NzNat ~> Int)
+                  term-hook trueTerm (true)
+                  term-hook falseTerm (false))] .
+
+  op _<=Int_ : Int Int -> Bool
+        [prec 37   metadata "latex(renameTo _\\ensuremath{\\leq}\\subscript{\\small\\textit{Int}}_)"
+         special (id-hook NumberOpSymbol (<=)
+                  op-hook succSymbol (sNat_ : Nat ~> NzNat)
+                  op-hook minusSymbol (-Int_ : NzNat ~> Int)
+                  term-hook trueTerm (true)
+                  term-hook falseTerm (false))] .
+
+  op _>Int_ : Int Int -> Bool
+        [prec 37   metadata "latex(renameTo _\\ensuremath{>}\\subscript{\\small\\textit{Int}}_)"
+         special (id-hook NumberOpSymbol (>)
+                  op-hook succSymbol (sNat_ : Nat ~> NzNat)
+                  op-hook minusSymbol (-Int_ : NzNat ~> Int)
+                  term-hook trueTerm (true)
+                  term-hook falseTerm (false))] .
+
+  op _>=Int_ : Int Int -> Bool
+        [prec 37
+         special (id-hook NumberOpSymbol (>=)
+                  op-hook succSymbol (sNat_ : Nat ~> NzNat)
+                  op-hook minusSymbol (-Int_ : NzNat ~> Int)
+                  term-hook trueTerm (true)
+                  term-hook falseTerm (false))] .
+
+  op _dividesInt_ : NzInt Int -> Bool
+        [prec 51
+         special (id-hook NumberOpSymbol (divides)
+                  op-hook succSymbol (sNat_ : Nat ~> NzNat)
+                  op-hook minusSymbol (-Int_ : NzNat ~> Int)
+                  term-hook trueTerm (true)
+                  term-hook falseTerm (false))] .
+endfm
+
+fmod STRING is protecting PL-NAT .
+  sorts String Char FindResult .
+  subsorts Char < String .
+  subsorts Nat < FindResult .
+  op <Strings> : -> Char [special (id-hook StringSymbol)] .
+  op <Strings> : -> String [ditto] .
+  op notFound : -> FindResult [ctor] .
+  op ascii : Char -> Nat [special (
+    id-hook StringOpSymbol (ascii)
+    op-hook stringSymbol (<Strings> : ~> Char)
+    op-hook succSymbol (sNat_ : Nat ~> NzNat))] .
+  op char : [Nat] -> [Char] [special (
+    id-hook StringOpSymbol (char)
+    op-hook stringSymbol (<Strings> : ~> Char)
+    op-hook succSymbol (sNat_ : Nat ~> NzNat))] .
+  op _+_ : String String -> String [prec 33 gather (E e) special (
+    id-hook StringOpSymbol (+)
+    op-hook stringSymbol (<Strings> : ~> String))] .
+  op length : String -> Nat [special (
+    id-hook StringOpSymbol (length)
+    op-hook stringSymbol (<Strings> : ~> String)
+    op-hook succSymbol (sNat_ : Nat ~> NzNat))] .
+  op substr : String Nat Nat -> String [special (
+    id-hook StringOpSymbol (substr)
+    op-hook stringSymbol (<Strings> : ~> String)
+    op-hook succSymbol (sNat_ : Nat ~> NzNat))] .
+  op find : String String Nat -> FindResult [special (
+    id-hook StringOpSymbol (find)
+    op-hook stringSymbol (<Strings> : ~> String)
+    op-hook succSymbol (sNat_ : Nat ~> NzNat)
+    term-hook notFoundTerm (notFound))] .
+  op rfind : String String Nat -> FindResult [special (
+    id-hook StringOpSymbol (rfind)
+    op-hook stringSymbol (<Strings> : ~> String)
+    op-hook succSymbol (sNat_ : Nat ~> NzNat)
+    term-hook notFoundTerm (notFound))] .
+  op _<_ : String String -> Bool [prec 37 special (
+    id-hook StringOpSymbol (<)
+    op-hook stringSymbol (<Strings> : ~> String)
+    term-hook trueTerm (true)
+    term-hook falseTerm (false))] .
+  op _<=_ : String String -> Bool [prec 37 special (
+    id-hook StringOpSymbol (<=)
+    op-hook stringSymbol (<Strings> : ~> String)
+    term-hook trueTerm (true)
+    term-hook falseTerm (false))] .
+  op _>_ : String String -> Bool [prec 37 special (
+    id-hook StringOpSymbol (>)
+    op-hook stringSymbol (<Strings> : ~> String)
+    term-hook trueTerm (true)
+    term-hook falseTerm (false))] .
+  op _>=_ : String String -> Bool [prec 37 special (
+    id-hook StringOpSymbol (>=)
+    op-hook stringSymbol (<Strings> : ~> String)
+    term-hook trueTerm (true)
+    term-hook falseTerm (false))] .
+endfm
+
+mod QID is protecting STRING .
+  sorts Qid .
+  op <Qids> : -> Qid [special (id-hook QuotedIdentifierSymbol)] .
+  op string : Qid -> String [special (
+    id-hook QuotedIdentifierOpSymbol (string)
+    op-hook quotedIdentifierSymbol (<Qids> : ~> Qid)
+    op-hook stringSymbol (<Strings> : ~> String))] .
+  op qid : [String] -> [Qid] [special (
+    id-hook QuotedIdentifierOpSymbol (qid)
+    op-hook quotedIdentifierSymbol (<Qids> : ~> Qid)
+    op-hook stringSymbol (<Strings> : ~> String))] .
+endm
+
+mod PL-VARID is
+  sort VarId .
+endm
+
+mod PL-META-TERM is including BOOL + QID .
+*** types
+  sorts Sort Kind Type .
+  subsorts Sort Kind < Type < Qid .
+  op <Qids> : -> Sort [special (id-hook QuotedIdentifierSymbol (sortQid))] .
+  op <Qids> : -> Kind [special (id-hook QuotedIdentifierSymbol (kindQid))] .
+
+
+*** terms
+  sorts Constant Variable GroundTerm Term NeGroundTermList GroundTermList NeTermList TermList .
+  subsorts Constant Variable < Qid Term .
+  subsorts Constant < GroundTerm < Term NeGroundTermList < NeTermList .
+  subsorts NeGroundTermList < NeTermList GroundTermList < TermList .
+  op <Qids> : -> Constant [special (id-hook QuotedIdentifierSymbol (constantQid))] .
+  op <Qids> : -> Variable [special (id-hook QuotedIdentifierSymbol (variableQid))] .
+  op empty : -> GroundTermList [ctor] .
+  op _:_ : NeGroundTermList GroundTermList -> NeGroundTermList [ctor assoc id: empty gather (e E) prec 121] .
+  op _:_ : GroundTermList NeGroundTermList -> NeGroundTermList [ctor ditto] .
+  op _:_ : GroundTermList GroundTermList -> GroundTermList [ctor ditto] .
+  op _:_ : NeTermList TermList -> NeTermList [ctor ditto] .
+  op _:_ : TermList NeTermList -> NeTermList [ctor ditto] .
+  op _:_ : TermList TermList -> TermList [ctor ditto] .
+  op _[_] : Qid NeGroundTermList -> GroundTerm [ctor] .
+  op _[_] : Qid NeTermList -> Term [ctor] .
+
+*** utils for constant/variables
+  op getName : Constant -> Qid .
+  op getType : Constant -> Type .
+  var C : Constant .
+  op getName : Variable -> Qid .
+  op getType : Variable -> Type .
+  var V : Variable .
+  eq getName (C) = qid (substr (string (C), 0, rfind (string (C), ".", length (string (C))))) .
+  eq getType (C) = qid (substr (string (C), rfind (string (C), ".", length (string (C))) +Nat 1, length (string (C)))) .
+  eq getName (V) = qid (substr (string (V), 0, rfind (string (V), ":", length (string (V))))) .
+  eq getType (V) = qid (substr (string (V), rfind (string (V), ":", length (string (V))) +Nat 1, length (string (V)))) .
+
+
+  sort Module .
+  sort ResultPair .
+  op metaReduce : Module Term ~> ResultPair
+     [special (
+        id-hook MetaLevelOpSymbol	(metaReduce)
+
+        op-hook qidSymbol		(<Qids> : ~> Qid)
+        op-hook metaTermSymbol		(_[_] : Qid NeTermList ~> Term)
+        op-hook metaArgSymbol		(_:_ : NeTermList NeTermList ~> NeTermList)
+
+        term-hook trueTerm		(true)
+        term-hook falseTerm		(false))] .
+
+
+  op downTerm : Term Universal -> Universal
+        [poly (2 0)
+         special (
+           id-hook MetaLevelOpSymbol	(metaDownTerm)
+           op-hook shareWith		(metaReduce : Module Term ~> ResultPair))] .
+
+
+  op upTerm : Universal -> Term
+        [poly (1) strat(0)
+         special (
+           id-hook MetaLevelOpSymbol	(metaUpTerm)
+           op-hook shareWith		(metaReduce : Module Term ~> ResultPair)
+) ] .
+
+endm
+
+mod PL-BUILTINS is
+including BOOL .
+including PL-NAT .
+including PL-INT .
+including PL-VARID .
+including PL-META-TERM .
+endm
+
+
+set show advisories on .
+
