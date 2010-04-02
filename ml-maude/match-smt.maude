@@ -1,0 +1,84 @@
+in match-math
+in TCPSupport
+
+mod SMT-LIB is inc MATHEMATICAL-INT + STRING + CONVERSION .
+*** Define a SMT formula
+*** Use SMT only for integer theory
+  sorts SMTVar SMTQuantVar SMTQuantVarSet .  subsort SMTQuantVar < SMTQuantVarSet .
+  sort SMTTerm .  subsort Int SMTVar < SMTTerm .
+  sort SMTFormula .  --- subsort Bool < SMTFormula .
+  
+  op t_ : Nat ->   SMTVar [prec 0] .
+  op `(_Int`) : SMTVar -> SMTQuantVar .
+  op __ : SMTQuantVarSet SMTQuantVarSet -> SMTQuantVarSet [assoc comm] .
+  
+  op `(+__`) : SMTTerm SMTTerm -> SMTTerm .
+  op `(-__`) : SMTTerm SMTTerm -> SMTTerm .
+  op `(*__`) : SMTTerm SMTTerm -> SMTTerm .
+  op `(/__`) : SMTTerm SMTTerm -> SMTTerm .
+  op `(%__`) : SMTTerm SMTTerm -> SMTTerm .
+
+  op `(=__`) : SMTTerm SMTTerm -> SMTFormula .
+  op `(>__`) : SMTTerm SMTTerm -> SMTFormula .
+  op `(<__`) : SMTTerm SMTTerm -> SMTFormula .
+  op `(>=__`) : SMTTerm SMTTerm -> SMTFormula .
+  op `(<=__`) : SMTTerm SMTTerm -> SMTFormula .
+
+  op `(not_`) : SMTFormula -> SMTFormula .
+  op `(implies__`) : SMTFormula SMTFormula -> SMTFormula .
+  op `(and__`) : SMTFormula SMTFormula -> SMTFormula .
+  op `(or__`) : SMTFormula SMTFormula -> SMTFormula .
+  op `(xor__`) : SMTFormula SMTFormula -> SMTFormula .
+  op `(iff__`) : SMTFormula SMTFormula -> SMTFormula .
+
+  op `(exists__`) : SMTQuantVarSet SMTFormula -> SMTFormula .
+  op `(forall__`) : SMTQuantVarSet SMTFormula -> SMTFormula .
+
+
+*** Convert a ML integer formula into a SMT formula
+  op toSMT_ : Formula -> SMTFormula [strat(1)].
+
+
+*** Converst a SMT formula into a string
+  op toString_ : SMTVar -> String .
+  op toString_ : SMTQuantVar -> String .
+  op toString_ : SMTQuantVarSet -> String .
+  op toString_ : SMTTerm -> String .
+  op toString_ : SMTFormula -> String .
+  var N : Nat .  var I : Int . var SMTVar : SMTVar .  var SMTQuantVar : SMTQuantVar .  var SMTQuantVarSet : SMTQuantVarSet .
+  vars T1 T2 : SMTTerm .  vars F F1 F2 : SMTFormula .
+  eq toString(I) = if (I >= 0) then string(I, 10) else ("(~ " + string((- I), 10) + ")") fi .
+  eq toString(t(N)) = "?t__" + string(N, 10) .
+  eq toString(SMTVar Int) = "(" + toString(SMTVar) + " Int)" .
+  eq toString(SMTQuantVar SMTQuantVarSet) = toString(SMTQuantVar) + " " + toString(SMTQuantVarSet) .
+
+  eq toString(+ T1 T2) = "(+ " + toString(T1) + " " + toString(T2) + ")" .
+  eq toString(- T1 T2) = "(- " + toString(T1) + " " + toString(T2) + ")" .
+  eq toString(* T1 T2) = "(* " + toString(T1) + " " + toString(T2) + ")" .
+  eq toString(/ T1 T2) = "(/ " + toString(T1) + " " + toString(T2) + ")" .
+  eq toString(% T1 T2) = "(% " + toString(T1) + " " + toString(T2) + ")" .
+
+  eq toString(= T1 T2) = "(= " + toString(T1) + " " + toString(T2) + ")" .
+  eq toString(> T1 T2) = "(> " + toString(T1) + " " + toString(T2) + ")" .
+  eq toString(< T1 T2) = "(< " + toString(T1) + " " + toString(T2) + ")" .
+  eq toString(>= T1 T2) = "(>= " + toString(T1) + " " + toString(T2) + ")" .
+  eq toString(<= T1 T2) = "(<= " + toString(T1) + " " + toString(T2) + ")" .
+
+  eq toString(not F) = "(not " + toString(F) + ")" .
+  eq toString(implies F1 F2) = "(implies " + toString(F1) + " " + toString(F2) + ")" .
+  eq toString(and F1 F2) = "(and " + toString(F1) + " " + toString(F2) + ")" .
+  eq toString(or F1 F2) = "(or " + toString(F1) + " " + toString(F2) + ")" .
+  eq toString(xor F1 F2) = "(xor " + toString(F1) + " " + toString(F2) + ")" .
+  eq toString(iff F1 F2) = "(iff " + toString(F1) + " " + toString(F2) + ")" .
+
+  eq toString(exists SMTQuantVarSet F) = "(exists " + toString(SMTQuantVarSet) + " " + toString(F) + ")" .
+  eq toString(forall SMTQuantVarSet F) = "(forall " + toString(SMTQuantVarSet) + " " + toString(F) + ")" .
+endm
+
+mod ML-INTERFACE is inc MATH-INT + SMT-LIB .
+
+endm
+
+mod SMT-INTERFACE is inc SMT-LIB + TCP-INTERFACE . endm
+
+rew tcpRequest(toString(exists (t 0 Int) (and (>= t 0 (+ t 0 t 0)) (> t 0 1)))) .

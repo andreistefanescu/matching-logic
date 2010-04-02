@@ -65,7 +65,7 @@ mod FORMULA is including BOOL + MATHEMATICAL-OBJECT .
 
   eq Phi ===>  TrueFormula = TrueFormula .
   eq Phi ===> FalseFormula = Phi .
----  lead to in infinite rewriting
+---  leads to in infinite rewriting
 ---  eq FalseFormula ===> Phi = TrueFormula .
   eq  TrueFormula ===> Phi = Phi .
 
@@ -84,10 +84,14 @@ mod FORMULA is including BOOL + MATHEMATICAL-OBJECT .
   eq  ~(TrueFormula) = FalseFormula .
   eq ~(FalseFormula) =  TrueFormula .
 
-  eq (Phi ===> (NtPhi1 \/ NtPhi2)) = (Phi ===> NtPhi1) \/ (Phi ===> NtPhi2) .
+  eq Phi ===> (NtPhi1 \/ NtPhi2) = (Phi ===> NtPhi1) \/ (Phi ===> NtPhi2) .
 
 --- bad, bad eq
   eq NtPhi /\ (NtPhi1 \/ NtPhi2) ===> NtPhi' = (NtPhi /\ NtPhi1 ===> NtPhi') \/ (NtPhi /\ NtPhi2 ===> NtPhi') [owise] .
+
+--- very, very bad eqs
+---  eq NtPhi /\ (NtPhi1 \/ NtPhi2) = (NtPhi /\ NtPhi1) \/ (NtPhi /\ NtPhi2) .
+---  eq (NtPhi1 \/ NtPhi2) ===> Phi = (NtPhi1 ===> Phi) \/ (NtPhi2 ===> Phi) .
 endm
 
 
@@ -245,28 +249,6 @@ mod MATHEMATICAL-INT-TREE-SEQUENCE is inc MATHEMATICAL-INT-TREE .
 endm
 
 
-mod MATHEMATICAL-GRAPH is inc MATHEMATICAL-INT .
-***(
---- define sorts, subsorts and skolem as below for each new mathematical object
-  sorts ?Graph !Graph Graph mGraph Graph++ .
-  subsorts ?Graph !Graph mGraph Graph < Graph++ < MathObj++ .
-  subsort ?Graph < ?MathObj .
-  subsort !Graph < !MathObj .
-  subsort mGraph < mMathObj .
-  subsort  Graph <  MathObj .
-  op ?Graph : Nat -> ?Graph .
-  op skolem : ?Graph -> !Graph [ditto] .
---- define operations to be used symbolically, as well as desired properties
-  op empty : -> Graph .
-  op _[_,_] : Int++ Int++ Int++ -> Graph++ [prec 0] .
-  op _#_ : Graph++ Graph++ -> Graph++ [assoc comm id: empty] .
-  var G G' G1 G2 : Graph++ .  var P P' L L' R R' : Int++ .
-  eq ((G # P[L,R]) === (G' # P[L',R'])) = (G === G') /\ (L === L') /\ (R === R') .
- ceq G # G1 === G # G2 = G1 === G2 if G =/= empty .
-***)
-endm
-
-
 mod MATHEMATICAL-INT-BAG is inc MATHEMATICAL-INT .
 --- define sorts, subsorts and skolem as below for each new mathematical object
   sorts ?IntBag !IntBag FreeIntBag IntBag IntBag++ .
@@ -286,14 +268,14 @@ mod MATHEMATICAL-INT-BAG is inc MATHEMATICAL-INT .
 --- define operations to be used symbolically, as well as desired properties
   op empty : -> IntBag .
   op _&'_ : IntBag++ IntBag++ -> IntBag++ [assoc comm id: empty] .
----  op size : IntBag++ -> Int++ . 
+  op size : IntBag++ -> Int++ . 
   ops min max : IntBag++ -> Int++ .
 
   vars I J : Int++ .  vars A A' A'' : IntBag++ .
 
  ceq A &' A' === A &' A'' = A' === A'' if A =/= empty .
----  eq size(empty) = 0 .
----  eq size(I &' A) = 1 +Int size(A) .
+  eq size(empty) = 0 .
+ ceq size(A &' A') = size(A) +Int size(A') if A =/= empty /\ A' =/= empty .
   eq min(empty) +Int I >=Int 0 = true .
   eq min(I) = I .
  ceq @(min(A &' A') +Int I >=Int 0) = @(min(A) +Int I >=Int 0) /\ @(min(A') +Int I >=Int 0) if A =/= empty /\ A' =/= empty .
@@ -302,9 +284,29 @@ mod MATHEMATICAL-INT-BAG is inc MATHEMATICAL-INT .
  ceq @((-Int max(A &' A')) +Int I >=Int 0) = @((-Int max(A)) +Int I >=Int 0) /\ @((-Int max(A')) +Int I >=Int 0) if A =/= empty /\ A' =/= empty .
 endm
 
+***(
+mod MATHEMATICAL-GRAPH is inc MATHEMATICAL-INT + MATHEMATICAL-INT-SEQUENCE .
+--- define sorts, subsorts and skolem as below for each new mathematical object
+  sorts ?Graph !Graph FreeGraph Graph Graph++ .
+  subsorts ?Graph !Graph FreeGraph Graph < Graph++ < MathObj++ .
+  subsort ?Graph < ?MathObj .
+  subsort !Graph < !MathObj .
+  subsort FreeGraph < FreeMathObj .
+  subsort  Graph <  MathObj .
+  op ?Graph : Nat -> ?Graph .
+  op skolem : Nat ?Graph -> FreeGraph [ditto] .
+--- define operations to be used symbolically, as well as desired properties
+  op empty : -> Graph .
+  op _[_,_,_] : Int++ Int++ IntSeq++ IntSeq++ -> Graph++ [prec 0] .
+  op _#_ : Graph++ Graph++ -> Graph++ [assoc comm id: empty] .
+  vars G G' G1 G2 : Graph++ .  vars P P' M M' : Int++ .  vars In In' Out Out' : IntSeq++ .
+  eq P[M, In, Out] # G === P[M', In', Out'] # G' = M === M' /\ In === In' /\ Out === Out' /\ G === G' .
+ ceq G # G1 === G # G2 = G1 === G2 if G =/= empty .
+endm
+***)
 
 mod MATHEMATICAL-DOMAIN is
-  inc MATHEMATICAL-INT + MATHEMATICAL-INT-SEQUENCE + MATHEMATICAL-INT-TREE + MATHEMATICAL-INT-TREE-SEQUENCE + MATHEMATICAL-GRAPH + MATHEMATICAL-INT-BAG .
+  inc MATHEMATICAL-INT + MATHEMATICAL-INT-SEQUENCE + MATHEMATICAL-INT-TREE + MATHEMATICAL-INT-TREE-SEQUENCE + MATHEMATICAL-INT-BAG .
 
   vars Phi Phi1 Phi2 : Formula .
   var I : Int++ .

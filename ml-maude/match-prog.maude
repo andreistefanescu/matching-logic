@@ -131,6 +131,24 @@ eq pListAppend = (
   ) .
 
 
+  op pDListLength : -> K .
+  eq pDListLength = (
+    assume <config> <env> a |-> a0 ;; x |-> ?x ;; l |-> ?l </env>
+                    <heap> dlseg(a0,b0)(0,0,A) </heap> <form> TrueFormula </form> </config> ;
+    x = a ;
+    l = 0 ;
+    invariant <config> <env> a |-> a0 ;; x |-> ?x ;; l |-> ?l </env>
+                       <heap> dlseg(a0,?y)(?x,0,?A) ** dlseg(?x,b0)(0,?y,?X) </heap>
+                       <form> ?A :: ?X === A /\ ?l === len(?A) </form> </config> ;
+    while (x != 0) {
+        x = *(x + 1) ;
+        l = l + 1 ;
+    }
+    assert <config> <env> a |-> a0 ;; x |-> ?x ;; l |-> ?l </env>
+                    <heap> dlseg(a0,b0)(0,0,A) </heap> <form> ?l === len(A) </form> </config> ;
+  ) .
+
+
   op pEnqueue : -> K .
   eq pEnqueue = (
     assume <config> <env> q |-> q0 ;; n |-> ?n </env>
@@ -372,12 +390,12 @@ eq pListAppend = (
         --- split the list in two
         a = NULL ;
         b = NULL ;
-        watch ;
         *(*(l + 1)) = *(*(l + 1)) ;
-        watch ;
-        invariant <config> <env> l |-> l0 ;; a |-> ?a ;; b |-> ?b ;; h |-> ?h ;; t |-> ?t ;; e |-> ?e </env>
+        invariant <config> <env> l |-> l0 ;; a |-> 0 ;; b |-> 0 ;; h |-> ?h ;; t |-> ?t ;; e |-> ?e </env>
                            <heap> l0 |-> ?v : node ** (l0 +Int 1) |-> ?n : next ** ?n |-> ?u : node ** (?n +Int 1) |-> ?l : next ** list(?l)(?L) </heap>
-                           <form> ~(l0 === 0) </form> </config>
+---                            <form> ~(l0 === 0) /\ L === ?v :: ?u :: ?L </form> </config>
+---                         little extra help, assert ~(?n === 0)
+                           <form> ~(l0 === 0) /\ ~(?n === 0) /\ L === ?v :: ?u :: ?L </form> </config>
                   <config> <env> l |-> ?l ;; a |-> ?a ;; b |-> ?b ;; h |-> ?h ;; t |-> ?t ;; e |-> ?e </env>
                            <heap> list(?a)(?A) ** list(?b)(?B) ** list(?l)(?L) </heap>
                            <form> list2bag(L) === list2bag(?A) &' list2bag(?B) &' list2bag(?L) /\ ~(?a === 0) /\ ~(?b === 0) </form> </config> ;
@@ -392,8 +410,9 @@ eq pListAppend = (
                 * (e + 1) = b ;
                 b = e ;
             }
+            
         }
-***(
+
         --- sort the first half
         assert <config> <env> l |-> ?l ;; a |-> ?a ;; b |-> ?b ;; h |-> ?h ;; t |-> ?t ;; e |-> ?e </env>
                     <heap> list(?a)(?A) ** list(?b)(?B) </heap>
@@ -449,15 +468,14 @@ eq pListAppend = (
         }
 
         l = h ;
-***)
     }
----    assert <config> <env> l |-> ?l ;; a |-> ?a ;; b |-> ?b ;; h |-> ?h ;; t |-> ?t ;; e |-> ?e </env>
----                    <heap> list(?l)(?L) </heap> <form> list2bag(L) === list2bag(?L) /\ isSorted(?L) </form> </config> ;
+    assert <config> <env> l |-> ?l ;; a |-> ?a ;; b |-> ?b ;; h |-> ?h ;; t |-> ?t ;; e |-> ?e </env>
+                    <heap> list(?l)(?L) </heap> <form> list2bag(L) === list2bag(?L) /\ isSorted(?L) </form> </config> ;
   ) .
 
 
-  op pListMergeSort : -> K .
-  eq pListMergeSort = (
+  op pListLengthMergeSort : -> K .
+  eq pListLengthMergeSort = (
     assume <config> <env> x |-> ?x ;; i |-> ?i ;; n |-> n0 ;; a |-> ?a ;; b |-> ?b ;; h |-> ?h ;; t |-> ?t ;; e |-> ?e </env>
                     <heap> list(?h)(L) </heap> <form> n0 === len(L) </form> </config> ;
     if (n > 1) {
@@ -684,17 +702,6 @@ eq pListAppend = (
   ) .
 
 
-  op p!Test : -> K .
-  eq p!Test = (
-    assume <config> <env> l |-> l0 ;; a |-> ?a ;; b |-> ?b ;; h |-> ?h ;; t |-> ?t ;; e |-> ?e </env>
-                    <heap> list(l0)(L) </heap> <form> TrueFormula </form> </config> ;
-    assert <config> <env> l |-> l0 ;; !E </env>
-                    <heap> !H </heap> <form> TrueFormula </form> </config> ;
-    assert <config> <env> l |-> l0 ;; a |-> ?a ;; b |-> ?b ;; h |-> ?h ;; t |-> ?t ;; e |-> ?e </env>
-                    <heap> list(l0)(L) </heap> <form> TrueFormula </form> </config> ;
-  ) .
-
-
   op pDebug : -> K .
   eq pDebug = (
     assume <config> <env> l |-> l0 ;; a |-> ?a ;; b |-> ?b ;; h |-> ?h ;; t |-> ?t ;; e |-> ?e </env>
@@ -706,7 +713,9 @@ eq pListAppend = (
         *(*(l + 1)) = *(*(l + 1)) ;
         invariant <config> <env> l |-> l0 ;; a |-> 0 ;; b |-> 0 ;; h |-> ?h ;; t |-> ?t ;; e |-> ?e </env>
                            <heap> l0 |-> ?v : node ** (l0 +Int 1) |-> ?n : next ** ?n |-> ?u : node ** (?n +Int 1) |-> ?l : next ** list(?l)(?L) </heap>
-                           <form> ~(l0 === 0) /\ L === ?v :: ?u :: ?L </form> </config>
+---                            <form> ~(l0 === 0) /\ L === ?v :: ?u :: ?L </form> </config>
+---                         little extra help, assert ~(?n === 0)
+                           <form> ~(l0 === 0) /\ ~(?n === 0) /\ L === ?v :: ?u :: ?L </form> </config>
                   <config> <env> l |-> ?l ;; a |-> ?a ;; b |-> ?b ;; h |-> ?h ;; t |-> ?t ;; e |-> ?e </env>
                            <heap> list(?a)(?A) ** list(?b)(?B) ** list(?l)(?L) </heap>
                            <form> list2bag(L) === list2bag(?A) &' list2bag(?B) &' list2bag(?L) /\ ~(?a === 0) /\ ~(?b === 0) </form> </config> ;
@@ -783,9 +792,50 @@ eq pListAppend = (
     assert <config> <env> l |-> ?l ;; a |-> ?a ;; b |-> ?b ;; h |-> ?h ;; t |-> ?t ;; e |-> ?e </env>
                     <heap> list(?l)(?L) </heap> <form> list2bag(L) === list2bag(?L) /\ isSorted(?L) </form> </config> ;
   ) .
+
+  op pSchorrWaite : -> K .
+  eq pSchorrWaite = (
+    --- //@ assume [cleanGraph[graph](root)] ;
+    t = root ;
+    p = NULL ;
+    ***(
+    //@ inv t == NULL && [stackInGraph[graph](p) ** ?rest]
+        || [ (cleanGraph[graph])(?in)(t) ** stackInGraph[graph](nodes(graph) MINUS ?in)(p) ** ?rest]
+        || [markedGraph[graph](?in)(t) ** stackInGraph[graph](nodes(graph) MINUS ?in)(p) ** ?rest]
+    ***) 
+    while (p != NULL || (t != NULL && * t == 0)) {
+      if (t == NULL || * t == 1) {
+        if (*(p + 1) == 1) {       --- POP      t, p, p->r = p, p->r, t
+          q = t ;                  --- q = t
+          t = p ;                  --- t = p
+          p = *(p + 3) ;           --- p = p -> right
+          *(t + 3) = q ;           --- t -> right = q
+        }
+        else {                     --- SWING    t, p->r, p->l = p->r, p->l, t && p->c = 1
+          q = t ;                  --- q = t
+          t = *(p + 3) ;           --- t = p -> right
+          *(p + 3) = *(p + 2) ;    --- p -> right = p -> left
+          *(p + 2) = q ;           --- p -> left = q
+          *(p + 1) = 1 ;           --- p -> c = 1
+        }
+      }
+      else {                       --- PUSH     p, t, t->l = t, t->l, p && t->m = 1 && t->c = 0
+        q = p ;                    --- q = p
+        p = t ;                    --- p = t
+        t = *(t + 2) ;             --- t = t -> left
+        *(p + 2) = q ;             --- p -> left = q
+        * p = 1 ;                  --- p -> m = 1
+        *(p + 1) = 0 ;             --- p -> c = 0
+      }
+    }
+
+    --- return(t)
+    --- //@ assert [markedGraph[graph](result)]
+  ) .
 endm
 
 --- set print attribute on .
+
 
 rew [| pSum |] .
 rew [| pListReverseNotNull |] .
@@ -793,6 +843,7 @@ rew [| pListReverse |] .
 rew [| pListAppendNotNull |] .
 rew [| pListAppend |] .
 rew [| pListLength |] .
+rew [| pDListLength |] .
 rew [| pEnqueue |] .
 rew [| pDequeue |] .
 rew [| pQueueTransferOwner |] .
@@ -803,26 +854,41 @@ rew [| pTreeToListWhile |] .
 rew [| pListBubbleSort |] .
 rew [| pListInsertionSort |] .
 rew [| pListQuickSort |] .
+rew [| pListMergeSort |] .
 
 ***(
-rew [| pListMergeSort |] .
+rew [| pListLengthMergeSort |] .
 rew [| pArrayAccess |] .
+rew [| pSchorrWaite |] .
 ***)
 
-
---- rew [| pDebug |] .
-
+rew [| pArrayAccess |] .
 
 
-***(
+
+
+
 search
     <config>
-
+<env> a |-> a0 ;; i |-> i0 ;; n |-> n0 ;; x |-> x0 </env>
+<heap>
+     (a0 +Int i0) |-> x0 : node
+  ** array (a0,0,i0) ?IntSeq(1)
+  ** array (a0,i0 +Int 1,n0) ?IntSeq(2)
+</heap>
+<form> @ (i0 >=Int 0) /\ @ (n0 +Int -Int i0 +Int -1 >=Int 0) /\ ~(a0 === 0) /\ A === ?IntSeq(1) :: ?Int(0) :: ?IntSeq(
+    2) </form>
+<menv> .MatchEnv </menv>
+<newSym> 3 </newSym>
+<newImpl> 0 </newImpl>
     </config>
 ===>
     <config>
-
+   <env> a |-> a0 ;; i |-> i0 ;; n |-> n0 ;; x |-> x0 </env>
+   <heap>
+        array (a0,0,n0) (?A :: x0 :: ?B)
+   </heap>
+   <form> ~(a0 === 0) </form>
     </config>
-=>* <form> F:Formula </form> <menv> MatchEnv:MatchEnv </menv> .
----=>* S:Set{ConfigItem} .
-***)
+---=>* <form> F:Formula </form> <menv> MatchEnv:MatchEnv </menv> .
+=>* S:Set{ConfigItem} .
