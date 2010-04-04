@@ -21,7 +21,8 @@ K_BASE_DIR = ../..
 CIL = $(CIL_BASE)/obj/$(CIL_PLATFORM)
 
 OCAML_COMPILE = ocamlopt $(OCAMLOPT_FLAGS) -c -I $(CIL) -I $(PARSER_DIR)
-OCAML_LINK = ocamlopt $(OCAMLOPT_FLAGS) -ccopt -L$(CIL):$(PARSER_DIR)
+OCAML_LINK = ocamlopt $(OCAMLOPT_FLAGS) -ccopt -L$(CIL)
+#:$(PARSER_DIR)
 
 all: cparser $(addsuffix .gen.program.maude,$(TEST_PROGRAMS))
 
@@ -48,20 +49,24 @@ cparser: $(PARSER_DIR)/MaudeVisitor.cmx $(PARSER_DIR)/MaudePrinter.cmx $(PARSER_
 	./cparser $(CIL_FLAGS) --out $@ $(TMP)/$<
 	tail $@
 	
-semantics: $(SEMANTICS_DIR)/kernel-c.maude
+	
+$(SEMANTICS_DIR)/kernel-c-compiled.maude:  $(SEMANTICS_DIR)/kernel-c.maude
 	$(K-MAUDE) $(SEMANTICS_DIR)/kernel-c.maude KERNEL-C
+	
+semantics: $(SEMANTICS_DIR)/kernel-c-compiled.maude
+
 
 # %.gen.maude: %.gen.program.maude
-	# echo -e "load $(K_BASE_DIR)/full-k-prelude\nload c-syntax\n" | cat - $< > $@.1
-	# echo -e "in c-configuration\nin c-semantics\nin c-test\n(rew run(program) .)\nq" | cat $@.1 - > $@
+# echo -e "load $(K_BASE_DIR)/full-k-prelude\nload c-syntax\n" | cat - $< > $@.1
+# echo -e "in c-configuration\nin c-semantics\nin c-test\n(rew run(program) .)\nq" | cat $@.1 - > $@
 		
 # c-core-raw.txt: generate-core-raw.maude Main.maude
-	# echo -e "load $(K_BASE_DIR)/full-k-prelude\n" | cat - generate-core-raw.maude | maude -no-banner -no-advise -no-wrap > c-core-raw.txt
+# echo -e "load $(K_BASE_DIR)/full-k-prelude\n" | cat - generate-core-raw.maude | maude -no-banner -no-advise -no-wrap > c-core-raw.txt
 
 run: $(INPUT).gen.maude.run
 
 # %.gen.maude.run: %.gen.maude
-	# maude $<
+# maude $<
 	
 # Main.maude:: c-syntax.maude c-configuration.maude c-semantics.maude
 
