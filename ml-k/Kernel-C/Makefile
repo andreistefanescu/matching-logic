@@ -5,7 +5,6 @@ EXTENSION = .c
 
 C_DIR = programs
 SEMANTICS_DIR = semantics
-K-MAUDE = ../../../../k-framework/k-maude/trunk/tools/kcompile.sh
 PARSER_DIR = parser
 
 CIL_BASE = cil
@@ -14,15 +13,10 @@ GCC = /cygwin/bin/gcc-3
 OCAMLOPT_FLAGS = -w a -warn-error a
 CIL_FLAGS = --noWrap --decil --noPrintLn --warnall --strictcheck --nokeepunused 
 
-#K_BASE_DIR = /home/grosu/celliso2/k/trunk
-K_BASE_DIR = ../..
-#--stats 
-
 CIL = $(CIL_BASE)/obj/$(CIL_PLATFORM)
 
 OCAML_COMPILE = ocamlopt $(OCAMLOPT_FLAGS) -c -I $(CIL) -I $(PARSER_DIR)
 OCAML_LINK = ocamlopt $(OCAMLOPT_FLAGS) -ccopt -L$(CIL)
-#:$(PARSER_DIR)
 
 all: cparser $(addsuffix .gen.program.maude,$(TEST_PROGRAMS))
 
@@ -49,12 +43,15 @@ cparser: $(PARSER_DIR)/MaudeVisitor.cmx $(PARSER_DIR)/MaudePrinter.cmx $(PARSER_
 	./cparser $(CIL_FLAGS) --out $@ $(TMP)/$<
 	tail $@
 	
-	
-$(SEMANTICS_DIR)/kernel-c-compiled.maude:  $(SEMANTICS_DIR)/kernel-c.maude
-	$(K-MAUDE) $(SEMANTICS_DIR)/kernel-c.maude KERNEL-C
+$(SEMANTICS_DIR)/kernel-c-compiled.maude: 
+	cd $(SEMANTICS_DIR); make
 	
 semantics: $(SEMANTICS_DIR)/kernel-c-compiled.maude
 
+test: test-aux
+
+test-aux: $(SEMANTICS_DIR)/kernel-c-compiled.maude $(SEMANTICS_DIR)/test.maude
+	maude $(SEMANTICS_DIR)/test.maude
 
 # %.gen.maude: %.gen.program.maude
 # echo -e "load $(K_BASE_DIR)/full-k-prelude\nload c-syntax\n" | cat - $< > $@.1
@@ -71,4 +68,4 @@ run: $(INPUT).gen.maude.run
 # Main.maude:: c-syntax.maude c-configuration.maude c-semantics.maude
 
 clean:
-	rm -f $(PARSER_DIR)/*.cmi $(PARSER_DIR)/*.cmx $(PARSER_DIR)/*.o $(PARSER_DIR)/*.cil *.gen.* *.preprocessed cparser.exe cparser *.stackdump
+	rm -f $(PARSER_DIR)/*.cmi $(PARSER_DIR)/*.cmx $(PARSER_DIR)/*.o $(PARSER_DIR)/*.cil *.gen.* *.preprocessed cparser.exe cparser *.stackdump semantics/kernel-c-compiled.maude
