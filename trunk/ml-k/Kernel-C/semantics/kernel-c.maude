@@ -1,0 +1,7 @@
+--- load kernel-c-syntax
+load kernel-c-semantics
+
+mod KERNEL-C is 
+	including KERNEL-C-SYNTAX .
+	including KERNEL-C-SEMANTICS . 
+endm
