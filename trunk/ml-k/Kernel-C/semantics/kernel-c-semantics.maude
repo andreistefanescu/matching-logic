@@ -32,6 +32,7 @@ mod KERNEL-C-SEMANTICS is
 	op List : BagItem -> ListItem .
 	
 	op unknown : -> K .
+	op skipval : -> KResult . 
 	
 	mb configuration 
 		< T > 
@@ -72,11 +73,14 @@ mod KERNEL-C-SEMANTICS is
 	
 	--- remove _;
 	--- mb rule [E:Expression ; => E:Expression] : KSentence .
-	mb rule [D:Declaration ; => D:Declaration] : KSentence .
+	--- mb rule [D:Declaration ; => D:Declaration] : KSentence .
 	
 	--- dissolve blocks
 	mb rule < k > [Block(B:Block-Item-List) => B:Block-Item-List] ...</ k >	: KSentence .
 
+	--- dissolve expression statements that are finished evaluating
+	mb [value-statement]: rule < k > [V:Value ; => .K] ...</ k > : KSentence .
+	
 	----- end simple transformations -----
 
 	mb [terminate]: rule 
@@ -99,13 +103,14 @@ mod KERNEL-C-SEMANTICS is
 		: KSentence .
 	
 	mb [variable-declaration]: rule
-		< k > [Declaration(int, I:Identifier) => .K] ...</ k >
-		---< k > [Declaration(int, I:Identifier) ; => .K] ...</ k >
+		< k > [Declaration(int, I:Identifier) => skipval] ...</ k >
 		< env >... [.Map => I:Identifier |-> Loc:Nat] ...</ env >
 		< mem >... [.Map => Loc:Nat |-> unknown] ...</ mem >
 		< locals >... [.Bag => Bag(Declaration(int, I:Identifier))] ...</ locals >
 		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
 		: KSentence .
+	
+	
 	
 	***(
 	Declaration-Specifiers Identifier(Parameter-Type-List){
@@ -144,6 +149,17 @@ mod KERNEL-C-SEMANTICS is
 		< k > [P:Int := V:Int => V:Int] ...</ k >
 		< mem >... P:Int |-> [? => V:Int] ...</ mem >
 		: KSentence .
+	
+	--- mb [assign]: rule
+		--- < k > [while (B:Expression) S:Statement 
+		--- => 
+		--- ---if (B:Expression) (S:Statement (while (B:Expression) S:Statement)) --- doesn't work
+		--- ---if`(_`)_(B:Expression, (S:Statement)) --- works
+		--- ---if`(_`)_(B:Expression, (while (B:Expression) S:Statement)) --- works
+		--- ---if`(_`)_(B:Expression, (S:Statement (while (B:Expression) S:Statement))) --- doesn't work
+		--- ] ...</ k >
+		--- : KSentence .	
+	---mb rule < k > [while B do S  => if B then {S while B do S} else {}] ...</ k > : KSentence .
 		
 	--- mb [return-value]: rule 
 		--- < k > [return V:Value ; ~> ? => V:Value ~> K:K] </ k >
