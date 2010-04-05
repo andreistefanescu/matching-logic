@@ -4,8 +4,8 @@ K-MAUDE = $(K-MAUDE-BASE)/$(K-COMPILE)
 
 all: semantics
 
-kernel-c-compiled.maude: kernel-c-syntax.maude kernel-c-semantics.maude
-	$(K-MAUDE) kernel-c-semantics.maude KERNEL-C
+kernel-c-compiled.maude: kernel-c-syntax.maude kernel-c-semantics.maude kernel-c.maude
+	$(K-MAUDE) kernel-c.maude KERNEL-C
 	
 semantics: kernel-c-compiled.maude
 
