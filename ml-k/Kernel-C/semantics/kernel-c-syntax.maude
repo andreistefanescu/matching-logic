@@ -7,7 +7,6 @@ mod KERNEL-C-SYNTAX is
 	-----op /*_*/ : Comment -> 
 	
 	sort Program .
-	subsort Translation-Unit < Program .
 	
 	sort Identifier .
 	
@@ -460,17 +459,22 @@ mod KERNEL-C-SYNTAX is
 	--- ---- A.2.4 External definitions
 	--- --- 6.9
 	sort Translation-Unit .
-	---subsort External-Declaration < Translation-Unit .
+	subsort Translation-Unit < Program .
+	subsort Translation-Unit < K .
+	---op _;_ : Declaration Translation-Unit -> Translation-Unit [ditto] .
+	---op _;_ : Declaration Translation-Unit -> Translation-Unit [ditto] .
+	op __ : Translation-Unit Translation-Unit -> Translation-Unit [ditto] .
+	subsort External-Declaration < Translation-Unit .
 	---op Translation-Unit : Translation-Unit External-Declaration -> Translation-Unit .
-	op Translation-Unit : External-Declaration -> Translation-Unit .
+	---op Translation-Unit : External-Declaration -> Translation-Unit .
 
 	sort External-Declaration .
 	subsort External-Declaration < K .
-	subsort Function-Definition Declaration < External-Declaration .
+	subsort Function-Definition < External-Declaration .
+	op Global : Block-Item -> External-Declaration .
+	---subsort Block-Item < External-Declaration . --- SOOO WRONG, but parsing is dumb
 	---subsort Function-Definition < External-Declaration .
 	--- op External-Declaration : Function-Definition -> External-Declaration .
-	--- op _;; : Function-Definition -> External-Declaration [format (n d d) renameTo _] .
-	--- op _;; : Declaration -> External-Declaration [format (n d d) renameTo _] .
 	
 	--- --- 6.9.1
 	sort Function-Definition .
@@ -478,7 +482,7 @@ mod KERNEL-C-SYNTAX is
 	--- op Function-Definition : -> Function-Definition .
 	--- op ___ : Declaration-Specifiers Declarator Compound-Statement -> Function-Definition .
 	--- --- Note: Totally made up to help parsing
-	op _`{_`} : Declaration Block-Item-List -> Function-Definition [prec 120 format (ni o++ no --in d)] .
+	op _`{_`} : Declaration Block-Item-List -> Function-Definition [prec 70 format (ni o++ no --in d)] .
 	--- op _`{`} : Parameter-Declaration -> Function-Definition [prec 120] .
 	--- ---op __ : Parameter-Declaration Compound-Statement -> Function-Definition [prec 120] .
 	--- --- TODO op ____ : Declaration-Specifiers Declarator Declaration-List Compound-Statement -> Function-Definition .
@@ -493,7 +497,7 @@ endm
 
 mod KERNEL-C-SYNTAX-TEST is
 	including KERNEL-C-SYNTAX .
-	op pSimplest : -> Function-Definition .
+	op pSimplest : -> Program .
 	eq pSimplest = (
 	Declaration((int),  Direct-Function-Declarator(main, Parameter-Type-List(Parameter-Declaration((void)))) )
 		{ 
@@ -519,7 +523,7 @@ mod KERNEL-C-SYNTAX-TEST is
 	op pTrial4 : -> Block-Item-List .
 	eq pTrial4 = sum += i ; .
 
-	op pSumN : -> Function-Definition .
+	op pSumN : -> Program .
 	eq pSumN = (
 		Declaration((int),  Direct-Function-Declarator(main, Parameter-Type-List((Parameter-Declaration(void)))) )
 		{ Declaration((int),  sum );
@@ -543,19 +547,38 @@ mod KERNEL-C-SYNTAX-TEST is
 	op n : -> Identifier [ctor] .
 	op factorial : -> Identifier [ctor] .
 
+	op testDecl : -> Declaration .
+	eq testDecl = (
+		Declaration((int),  Direct-Function-Declarator(factorial, Parameter-Type-List(Parameter-Declaration((int),  n ))) );
+		) .
 	
-	op pFactorial : -> Function-Definition .
+	op pFactorial : -> Program .
 	eq pFactorial = (
+		Global(Declaration((int),  Direct-Function-Declarator(factorial, Parameter-Type-List(Parameter-Declaration((int),  n ))) );
+		)Declaration((int),  Direct-Function-Declarator(main, Parameter-Type-List(Parameter-Declaration((void)))) )
+		{ Declaration((int),  n );
+		  Declaration((int),  fact );
+		  Declaration((int),  tmp );
+		  Declaration((int),  factorialuuu0 );
+
+		  Block(
+		  (n) := (10);
+		  (tmp) := Apply(((factorial)), (((n))));
+		  (fact) := ((tmp));
+		  (factorialuuu0) := ((fact));
+		  return (((factorialuuu0)));
+		)
+		}
 		Declaration((int),  Direct-Function-Declarator(factorial, Parameter-Type-List(Parameter-Declaration((int),  n ))) )
 		{ Declaration((int),  tmp );
 
 		  Block(
 		  if ((((n)) == (0))) Block(
-			return ((1));
+		    return ((1));
 		  ) else Block(
-			if ((((n)) == (1))) Block(
-			  return ((1));
-			)
+		    if ((((n)) == (1))) Block(
+		      return ((1));
+		    )
 		  )
 		  (tmp) := Apply(((factorial)), ((((n)) - (1))));
 		  return ((((n)) * ((tmp))));

@@ -117,7 +117,7 @@ class maudePrinter = object(self)
 
 	(** Global (vars, types, etc.). This can be slow and is used only by 
      * {!Cil.printGlobal} but not by {!Cil.dumpGlobal}. *)
-	(* method pGlobal () (g:global) = wrap (super#pGlobal () g) "Global" *)
+	method pGlobal () (g:global) = wrap (super#pGlobal () g) "Global"
    
 (*
   
