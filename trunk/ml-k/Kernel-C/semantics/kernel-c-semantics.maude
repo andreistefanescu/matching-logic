@@ -31,6 +31,8 @@ mod KERNEL-C-SEMANTICS is
 	
 	op List : BagItem -> ListItem .
 	
+	op unknown : -> K .
+	
 	mb configuration 
 		< T > 
 			< k > P:Program </ k >
@@ -89,16 +91,21 @@ mod KERNEL-C-SEMANTICS is
 		< k > [main => Loc:Nat] ...</ k >
 		< genv >... main |-> Loc:Nat ...</ genv >
 		: KSentence .
+		
+	--- generic lookup
+	mb [lookup]: rule
+		< k > [I:Identifier => Loc:Nat] ...</ k >
+		< env >... I:Identifier |-> Loc:Nat ...</ env >
+		: KSentence .
 	
-	op bad : -> K .
-	
-	--- mb [variable-declaration]: rule
-		--- < k > [Declaration(int, I:Identifier) => .K] </ k >
-		--- < env >... [.Map => I:Identifier |-> Loc:Nat] ...</ env >
-		--- < mem >... [.Map => Loc:Nat |-> bad] ...</ mem >
-		--- < locals >... [.Bag => Bag(Declaration(int, I:Identifier))] ...</ locals >
-		--- < nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
-		--- : KSentence .
+	mb [variable-declaration]: rule
+		< k > [Declaration(int, I:Identifier) => .K] ...</ k >
+		---< k > [Declaration(int, I:Identifier) ; => .K] ...</ k >
+		< env >... [.Map => I:Identifier |-> Loc:Nat] ...</ env >
+		< mem >... [.Map => Loc:Nat |-> unknown] ...</ mem >
+		< locals >... [.Bag => Bag(Declaration(int, I:Identifier))] ...</ locals >
+		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
+		: KSentence .
 	
 	***(
 	Declaration-Specifiers Identifier(Parameter-Type-List){
@@ -117,19 +124,26 @@ mod KERNEL-C-SEMANTICS is
 		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
 		: KSentence .
 	
-	--- mb [function-application]: rule
-		--- < k > [Apply(I:Identifier, .Expression-List) ~> K:K => B:Block-Item-List] </ k >
-		--- < env >... I:Identifier |-> Loc:Nat ...</ env >
-		--- < mem >... Loc:Nat |-> (D:Declaration{ B:Block-Item-List }) ...</ mem >
-		--- < locals > [L:Bag =>  </ locals >
-		--- < callStack > [.List => List(
-			--- < stackFrame > 
-				--- < continuation > K:K </ continuation >
-				--- < parameters > .List </ parameters >
-				--- < locals > L:Bag </ locals >
-			--- </ stackFrame >
-			--- )] ...</ callStack >
-		--- : KSentence .
+	mb [function-application]: rule
+		< k > [Apply(Loc:Nat, .Expression-List) ~> K:K => B:Block-Item-List] </ k >
+		< mem >... Loc:Nat |-> (D:Declaration{ B:Block-Item-List }) ...</ mem >
+		< env > [E:Map => G:Map] </ env >
+		< genv > G:Map </ genv >
+		< locals > [L:Bag => .Bag] </ locals >
+		< callStack > [.List => List(
+			< stackFrame > 
+				< continuation > K:K </ continuation >
+				< parameters > .List </ parameters >
+				< locals > L:Bag </ locals >
+				< env > E:Map </ env >
+			</ stackFrame >
+			)] ...</ callStack >
+		: KSentence .
+		
+	mb [assign]: rule
+		< k > [P:Int := V:Int => V:Int] ...</ k >
+		< mem >... P:Int |-> [? => V:Int] ...</ mem >
+		: KSentence .
 		
 	--- mb [return-value]: rule 
 		--- < k > [return V:Value ; ~> ? => V:Value ~> K:K] </ k >
