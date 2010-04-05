@@ -1,0 +1,152 @@
+load kernel-c-syntax
+
+mod KERNEL-C-SEMANTICS is
+	including KERNEL-C-SYNTAX .
+	including KERNEL-C-SYNTAX-TEST .
+	---including K .
+
+	---subsort AExp BExp Stmt < K .
+	subsort Program < K .
+	sort Value .
+	--- subsort Int < KResult .
+	--- subsort Bool < KResult .
+	
+	subsort Int < Value < Expression .
+	subsort Value < KResult .
+
+	op output : -> CellLabel .
+	op k : -> CellLabel .
+	op env : -> CellLabel .
+	op genv : -> CellLabel .
+	op mem : -> CellLabel .
+	op nextLoc : -> CellLabel .
+	op resultValue : -> CellLabel .
+	op resultOutput : -> CellLabel .
+	
+	op callStack : -> CellLabel .
+	op stackFrame : -> CellLabel .
+	op continuation : -> CellLabel .
+	op locals : -> CellLabel .
+	op parameters : -> CellLabel .
+	
+	op List : BagItem -> ListItem .
+	
+	mb configuration 
+		< T > 
+			< k > P:Program </ k >
+			< env > Env:Map </ env > 
+			< genv > GEnv:Map </ genv > 
+			< mem > Store:Map </ mem >  
+			< output > Output:List </ output > 
+			< callStack > Stack:List </ callStack >
+			< nextLoc > N:Nat </ nextLoc >
+			< locals > Locals:Bag </ locals >
+		</ T > 
+		< resultValue > V:Value </ resultValue >
+		< resultOutput > Output:List </ resultOutput > 
+		: KSentence .
+
+	op eval : Program -> Bag .
+	eq eval(P:Program) = 
+		< T >
+			< k > P:Program ~> Apply(main) </ k > 
+			< env > .Map </ env > 
+			< genv > .Map </ genv > 
+			< mem > .Map </ mem >  
+			< output > .List </ output >
+			< callStack > .List </ callStack >
+			< nextLoc > 0 </ nextLoc >
+			< locals > .Bag </ locals >
+		</ T > .
+	
+	op closure : -> KLabel .
+	
+	----- start simple transformations -----
+	--- massage application with no argument
+	mb rule [Apply(I:Identifier) => Apply(I:Identifier, .Expression-List)] : KSentence .
+	
+	--- replace sequencing with ~>
+	mb rule [S1:Statement S2:Statement => S1:Statement ~> S2:Statement] : KSentence .
+	
+	--- remove _;
+	--- mb rule [E:Expression ; => E:Expression] : KSentence .
+	mb rule [D:Declaration ; => D:Declaration] : KSentence .
+	
+	--- dissolve blocks
+	mb rule < k > [Block(B:Block-Item-List) => B:Block-Item-List] ...</ k >	: KSentence .
+
+	----- end simple transformations -----
+
+	mb [terminate]: rule 
+		[< T >... < k > V:Value </ k > < output > O:List </ output > ...</ T >
+		=>
+		< resultValue > V:Value </ resultValue >
+		< resultOutput > O:List </ resultOutput >]
+		: KSentence .
+	
+	--- special case lookup for main, since genv hasn't been put into env yet
+	mb [lookup-main]: rule
+		< k > [main => Loc:Nat] ...</ k >
+		< genv >... main |-> Loc:Nat ...</ genv >
+		: KSentence .
+	
+	op bad : -> K .
+	
+	--- mb [variable-declaration]: rule
+		--- < k > [Declaration(int, I:Identifier) => .K] </ k >
+		--- < env >... [.Map => I:Identifier |-> Loc:Nat] ...</ env >
+		--- < mem >... [.Map => Loc:Nat |-> bad] ...</ mem >
+		--- < locals >... [.Bag => Bag(Declaration(int, I:Identifier))] ...</ locals >
+		--- < nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
+		--- : KSentence .
+	
+	***(
+	Declaration-Specifiers Identifier(Parameter-Type-List){
+		Block-Item-List
+	}
+	***)
+	mb [function-definition]: rule 
+		< k > [
+			Declaration(DS:Declaration-Specifiers, Direct-Function-Declarator(I:Identifier, PTL:Parameter-Type-List)){
+				B:Block-Item-List
+			}
+			=> .K]
+		...</ k >
+		< genv > [E:Map => E:Map[Loc:Nat / I:Identifier]]  </ genv >
+		< mem > [M:Map => M:Map[Declaration(DS:Declaration-Specifiers, Direct-Function-Declarator(I:Identifier, PTL:Parameter-Type-List)){ B:Block-Item-List } / Loc:Nat]] </ mem >
+		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
+		: KSentence .
+	
+	--- mb [function-application]: rule
+		--- < k > [Apply(I:Identifier, .Expression-List) ~> K:K => B:Block-Item-List] </ k >
+		--- < env >... I:Identifier |-> Loc:Nat ...</ env >
+		--- < mem >... Loc:Nat |-> (D:Declaration{ B:Block-Item-List }) ...</ mem >
+		--- < locals > [L:Bag =>  </ locals >
+		--- < callStack > [.List => List(
+			--- < stackFrame > 
+				--- < continuation > K:K </ continuation >
+				--- < parameters > .List </ parameters >
+				--- < locals > L:Bag </ locals >
+			--- </ stackFrame >
+			--- )] ...</ callStack >
+		--- : KSentence .
+		
+	--- mb [return-value]: rule 
+		--- < k > [return V:Value ; ~> ? => V:Value ~> K:K] </ k >
+		--- < env > E:Map </ env >
+		--- < callStack >
+			--- [List(
+				--- < stackFrame >...
+					--- < continuation > K:K </ continuation >
+					--- < parameters > .List </ parameters >
+				--- </ stackFrame >
+			--- ) => .List]
+		--- ...</ callStack >
+		--- : KSentence .
+		
+	--- keq <k> [[return V ; -> K ==> K'' -> V -> K']] </k>
+		--- <env> [[E ==> E']] </env>
+		--- <envStack> [[env(E') ==> .nil]] ...</envStack>
+		--- <callStack> [[funk(K') ==> .nil]] ...</callStack>
+		--- <onReturn> [[K'' ==> .K]] </onReturn>
+endm
