@@ -402,8 +402,8 @@ mod KERNEL-C-SYNTAX is
 	--- --- 6.8.2
 	sort Compound-Statement .
 	subsort Compound-Statement < K .
-	op Block`(`{`}`) : -> Compound-Statement .
-	op Block`(`{_`}`) : Block-Item-List -> Compound-Statement .
+	---op Block`(`{`}`) : -> Compound-Statement .
+	op Block : Block-Item-List -> Compound-Statement .
 	--- op Compound-Statement : Block-Item-List -> Compound-Statement .
 	--- ---format (ni++ o --ni o)
 	sort Block-Item-List .
@@ -499,9 +499,9 @@ mod KERNEL-C-SYNTAX-TEST is
 	eq pSimplest = (
 	Declaration((int),  Direct-Function-Declarator(main, Parameter-Type-List(Parameter-Declaration((void)))) )
 		{ 
-		  Block({
+		  Block(
 		  return (0);
-		})
+		)
 		}
 	) .
 	
@@ -527,15 +527,15 @@ mod KERNEL-C-SYNTAX-TEST is
 		{ Declaration((int),  sum );
 		  Declaration((int),  i );
 
-		  Block({
+		  Block(
 		  (sum) := (0);
 		  (i) := (1);
-		  while ((((i)) <= (10))) Block({
+		  while ((((i)) <= (10))) Block(
 		    (sum) += ((i));
 		    (i) ++ ;
-		  })
+		  )
 		  return ((0));
-		})
+		)
 		}
 	) .
 	
@@ -551,18 +551,18 @@ mod KERNEL-C-SYNTAX-TEST is
 		---Declaration((int),  Direct-Function-Declarator(factorial, Parameter-Type-List(Parameter-Declaration((int),  n ))) );
 		Declaration((int),  Direct-Function-Declarator(main, Parameter-Type-List(Parameter-Declaration((void)))) )
 		{ Declaration((int),  tmp );
-		  Block({
-		  if ((((n)) == (0))) Block({
+		  Block(
+		  if ((((n)) == (0))) Block(
 		    return ((1));
-		  }) else Block({
-		     if ((((n)) == (1))) Block({
+		  ) else Block(
+		     if ((((n)) == (1))) Block(
 		       return ((1));
-		     })
-		  })
+		     )
+		  )
 		  tmp := Apply(factorial, (n - 1)) ;
 		  return ((((n)) * ((tmp)))) ;
-})
-}
+		)
+		}
 		) .
 endm
 
@@ -573,15 +573,28 @@ mod KERNEL-C-SEMANTICS is
 
 	---subsort AExp BExp Stmt < K .
 	subsort Program < K .
-	subsort Int < KResult .
-	subsort Bool < KResult .
+	sort Value .
+	--- subsort Int < KResult .
+	--- subsort Bool < KResult .
+	
+	subsort Int < Value < Expression .
+	subsort Value < KResult .
 
 	op output : -> CellLabel .
 	op k : -> CellLabel .
 	op env : -> CellLabel .
 	op mem : -> CellLabel .
 	op nextLoc : -> CellLabel .
-	op result : -> CellLabel .
+	op resultValue : -> CellLabel .
+	op resultOutput : -> CellLabel .
+	
+	op callStack : -> CellLabel .
+	op stackFrame : -> CellLabel .
+	op continuation : -> CellLabel .
+	op locals : -> CellLabel .
+	op parameters : -> CellLabel .
+	
+	op List : BagItem -> ListItem .
 	
 	mb configuration 
 		< T > 
@@ -589,34 +602,57 @@ mod KERNEL-C-SEMANTICS is
 			< env > Env:Map </ env > 
 			< mem > Store:Map </ mem >  
 			< output > Output:List </ output > 
+			< callStack > Stack:List </ callStack >
 			< nextLoc > N:Nat </ nextLoc >
 		</ T > 
-		< result > Output:List </ result > : KSentence .
+		< resultValue > V:Value </ resultValue >
+		< resultOutput > Output:List </ resultOutput > 
+		: KSentence .
 	op eval : Program -> Bag .
 	eq eval(P:Program) = 
 		< T >
 			< k > P:Program ~> Apply(main) </ k > 
 			< env > .Map </ env > 
 			< mem > .Map </ mem >  
-			< output > .List </ output > 
+			< output > .List </ output >
+			< callStack > .List </ callStack >
 			< nextLoc > 0 </ nextLoc > 
 		</ T > .
 	
 	op closure : -> KLabel .
 	
+	----- start simple transformations -----
 	--- massage application with no argument
 	mb rule 
 		[Apply(I:Identifier) => Apply(I:Identifier, .Expression-List)]
 		: KSentence .
 	
 	--- replace sequencing with ~>
-	mb rule 
+	mb rule
 		[S1:Statement S2:Statement => S1:Statement ~> S2:Statement]
 		: KSentence .
 	
+	--- remove _;
+	--- mb rule [E:Expression ; => E:Expression] : KSentence .
+	mb rule [D:Declaration ; => D:Declaration] : KSentence .
+	
+	--- dissolve blocks
+	mb rule 
+		< k >[Block(B:Block-Item-List) => B:Block-Item-List] ...</ k >
+		: KSentence .
+
+	----- end simple transformations -----
+
+	mb [terminate]: rule 
+		[< T >... < k > V:Value </ k > < output > O:List </ output > ...</ T >
+		=>
+		< resultValue > V:Value </ resultValue >
+		< resultOutput > O:List </ resultOutput >]
+		: KSentence .
+	
 	***(
-	Declaration(int, IDL){
-		Body
+	Declaration-Specifiers Identifier(Parameter-Type-List){
+		Block-Item-List
 	}
 	***)
 	mb [function-definition]: rule 
@@ -630,12 +666,40 @@ mod KERNEL-C-SEMANTICS is
 		< mem > [M:Map => M:Map[Declaration(DS:Declaration-Specifiers, Direct-Function-Declarator(I:Identifier, PTL:Parameter-Type-List)){ B:Block-Item-List } / Loc:Nat]] </ mem >
 		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
 		: KSentence .
-		
-	mb [function-application]: rule 
-		< k > [Apply(I:Identifier, .Expression-List) => B:Block-Item-List] ...</ k >
+	
+	mb [function-application]: rule
+		< k > [Apply(I:Identifier, .Expression-List) ~> K:K => B:Block-Item-List] </ k >
 		< env >... I:Identifier |-> Loc:Nat ...</ env >
 		< mem >... Loc:Nat |-> (D:Declaration{ B:Block-Item-List }) ...</ mem >
+		< callStack > [.List => List(
+			< stackFrame > 
+				< continuation > K:K </ continuation >
+				< locals > .Bag </ locals >
+				< parameters > .List </ parameters >
+			</ stackFrame >
+			)] ...</ callStack >
 		: KSentence .
+		
+	mb [return-value]: rule 
+		< k > [return V:Value ; ~> ? => V:Value ~> K:K] </ k >
+		< env > E:Map </ env >
+		< callStack > 
+			List(< stackFrame > 
+				< continuation > K:K </ continuation >
+				< locals > .Bag </ locals >
+				< parameters > .List </ parameters >
+			</ stackFrame >)
+		...</ callStack >
+		: KSentence .
+		
+	
+		
+		
+	--- keq <k> [[return V ; -> K ==> K'' -> V -> K']] </k>
+		--- <env> [[E ==> E']] </env>
+		--- <envStack> [[env(E') ==> .nil]] ...</envStack>
+		--- <callStack> [[funk(K') ==> .nil]] ...</callStack>
+		--- <onReturn> [[K'' ==> .K]] </onReturn>
 endm
 
 mod KERNEL-C is including KERNEL-C-SEMANTICS . endm
