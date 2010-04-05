@@ -43,14 +43,14 @@ cparser: $(PARSER_DIR)/MaudeVisitor.cmx $(PARSER_DIR)/MaudePrinter.cmx $(PARSER_
 	./cparser $(CIL_FLAGS) --out $@ $(TMP)/$<
 	tail $@
 	
-$(SEMANTICS_DIR)/kernel-c-compiled.maude: 
-	cd $(SEMANTICS_DIR); make
+$(SEMANTICS_DIR)/kernel-c-compiled.maude: $(SEMANTICS_DIR)/kernel-c-syntax.maude $(SEMANTICS_DIR)/kernel-c-semantics.maude $(SEMANTICS_DIR)/kernel-c.maude
+	make -C $(SEMANTICS_DIR)
 	
 semantics: $(SEMANTICS_DIR)/kernel-c-compiled.maude
 
 test: test-aux
 
-test-aux: $(SEMANTICS_DIR)/kernel-c-compiled.maude $(SEMANTICS_DIR)/test.maude
+test-aux: semantics $(SEMANTICS_DIR)/test.maude
 	maude $(SEMANTICS_DIR)/test.maude
 
 # %.gen.maude: %.gen.program.maude
