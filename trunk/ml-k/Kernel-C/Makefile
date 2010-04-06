@@ -8,7 +8,7 @@ SEMANTICS_DIR = semantics
 PARSER_DIR = parser
 
 CIL_BASE = cil
-CIL_PLATFORM = x86_WIN32
+CIL_PLATFORM = x86_LINUX
 GCC = /cygwin/bin/gcc-3
 OCAMLOPT_FLAGS = -w a -warn-error a
 CIL_FLAGS = --noWrap --decil --noPrintLn --warnall --strictcheck --nokeepunused 
@@ -24,20 +24,20 @@ all: cparser $(addsuffix .gen.program.maude,$(TEST_PROGRAMS))
 	mkdir -p $(TMP)
 	gcc -E -I. -o $(TMP)/$@ $<
 
-$(PARSER_DIR)/MaudeVisitor.cmx $(PARSER_DIR)/MaudeVisitor.cmi: $(PARSER_DIR)/maudeVisitor.ml
+$(PARSER_DIR)/maudeVisitor.cmx $(PARSER_DIR)/maudeVisitor.cmi: $(PARSER_DIR)/maudeVisitor.ml
 	$(OCAML_COMPILE) $(PARSER_DIR)/maudeVisitor.ml
 	
-$(PARSER_DIR)/MaudePrinter.cmx $(PARSER_DIR)/MaudePrinter.cmi: $(PARSER_DIR)/maudePrinter.ml $(PARSER_DIR)/DefaultMaudePrinter.cmi
+$(PARSER_DIR)/maudePrinter.cmx $(PARSER_DIR)/maudePrinter.cmi: $(PARSER_DIR)/maudePrinter.ml $(PARSER_DIR)/defaultMaudePrinter.cmi
 	$(OCAML_COMPILE) $(PARSER_DIR)/maudePrinter.ml
 	
-$(PARSER_DIR)/DefaultMaudePrinter.cmx $(PARSER_DIR)/DefaultMaudePrinter.cmi: $(PARSER_DIR)/defaultmaudePrinter.ml
+$(PARSER_DIR)/defaultMaudePrinter.cmx $(PARSER_DIR)/defaultMaudePrinter.cmi: $(PARSER_DIR)/defaultMaudePrinter.ml
 	$(OCAML_COMPILE) $(PARSER_DIR)/defaultMaudePrinter.ml
 	
-$(PARSER_DIR)/cildriver.cmx $(PARSER_DIR)/cildriver.cmi: $(PARSER_DIR)/cildriver.ml $(PARSER_DIR)/MaudeVisitor.cmi $(PARSER_DIR)/MaudePrinter.cmi
+$(PARSER_DIR)/cildriver.cmx $(PARSER_DIR)/cildriver.cmi: $(PARSER_DIR)/cildriver.ml $(PARSER_DIR)/maudeVisitor.cmi $(PARSER_DIR)/maudePrinter.cmi
 	$(OCAML_COMPILE) $(PARSER_DIR)/cildriver.ml 
 
-cparser: $(PARSER_DIR)/MaudeVisitor.cmx $(PARSER_DIR)/MaudePrinter.cmx $(PARSER_DIR)/cildriver.cmx
-	$(OCAML_LINK) -o cparser unix.cmxa str.cmxa $(CIL)/cil.cmxa $(PARSER_DIR)/MaudeVisitor.cmx $(PARSER_DIR)/DefaultMaudePrinter.cmx $(PARSER_DIR)/MaudePrinter.cmx $(PARSER_DIR)/cildriver.cmx
+cparser: $(PARSER_DIR)/maudeVisitor.cmx $(PARSER_DIR)/maudePrinter.cmx $(PARSER_DIR)/cildriver.cmx
+	$(OCAML_LINK) -o cparser unix.cmxa str.cmxa $(CIL)/cil.cmxa $(PARSER_DIR)/maudeVisitor.cmx $(PARSER_DIR)/defaultMaudePrinter.cmx $(PARSER_DIR)/maudePrinter.cmx $(PARSER_DIR)/cildriver.cmx
 	
 %.gen.program.maude: %.preprocessed cparser
 	./cparser $(CIL_FLAGS) --out $@ $(TMP)/$<
