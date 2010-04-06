@@ -1,7 +1,7 @@
 load kernel-c-syntax
 
 mod KERNEL-C-SEMANTICS is
-	including KERNEL-C-SYNTAX .
+	---including KERNEL-C-SYNTAX .
 	including KERNEL-C-SYNTAX-TEST .
 	---including K .
 
@@ -10,7 +10,7 @@ mod KERNEL-C-SEMANTICS is
 	sort Value .
 	--- subsort Int < KResult .
 	--- subsort Bool < KResult .
-	
+	---subsort Id < Identifier . --- hack
 	subsort Int < Value < Expression .
 	subsort Value < KResult .
 	
@@ -86,6 +86,11 @@ mod KERNEL-C-SEMANTICS is
 	--- dissolve expression statements that are finished evaluating
 	mb [value-statement]: rule < k > [V:Value ; => .K] ...</ k > : KSentence .
 	
+	--- turn variables into references when appropriate
+	--- can't write--- it loops because I can't describe only identifiers
+	---mb [make-assign-ref]: rule < k > [I:Identifier := E:Expression => Deref(&(I:Identifier)) := E:Expression] ...</ k > : KSentence .
+	---mb [make-call-ref]: rule < k > [Apply(I:Identifier, L:List{Expression}) => Apply(Deref(&(I:Identifier)), L:List{Expression})] ...</ k > : KSentence .
+	
 	--- for now, just ignore global wrapper
 	---mb [remove-global-marker]: rule [Global(D:Declaration ;) => D:Declaration ;] : KSentence .
 	--- for now, just ignore globals
@@ -101,16 +106,17 @@ mod KERNEL-C-SEMANTICS is
 		: KSentence .
 	
 	--- special case lookup for main, since genv hasn't been put into env yet
-	mb [lookup-main]: rule
-		< k > [main => Loc:Nat] ...</ k >
-		< genv >... main |-> Loc:Nat ...</ genv >
-		: KSentence .
+	--- mb [lookup-main]: rule
+		--- < k > [main => Loc:Nat] ...</ k >
+		--- < genv >... main |-> Loc:Nat ...</ genv >
+		--- : KSentence .
 		
 	--- generic lookup
-	mb [lookup]: rule
-		< k > [I:Identifier => Loc:Nat] ...</ k >
-		< env >... I:Identifier |-> Loc:Nat ...</ env >
-		: KSentence .
+	--- mb [lookup]: rule
+		--- < k > [I:Identifier => V:Value] ...</ k >
+		--- < env >... I:Identifier |-> Loc:Nat ...</ env >
+		--- < mem >... Loc:Nat |-> V:Value ...</ env >
+		--- : KSentence .
 	
 	mb [variable-declaration]: rule
 		< k > [Declaration(int, I:Identifier) => skipval] ...</ k >
@@ -179,13 +185,13 @@ mod KERNEL-C-SEMANTICS is
 		< k > [bind(.List{Expression},, Parameter-Type-List(Parameter-Declaration(void))) => .K] ...</ k > 
 		: KSentence .
 	--- bind one
-	mb [function-application]: rule 
-		< k > [bind((V:Value ,List{Expression} L:List{Expression}),, 
-				Parameter-Type-List(Parameter-Declaration(int, I:Identifier))) => .K] ...</ k > 
-		< env >... [.Map => I:Identifier |-> Loc:Nat] ...</ env >
-		< mem >... [.Map => Loc:Nat |-> V:Value] ...</ mem >
-		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
-		: KSentence .
+	--- mb [function-application]: rule 
+		--- < k > [bind((V:Value ,List{Expression} L:List{Expression}),, 
+				--- Parameter-Type-List(Parameter-Declaration(int, I:Identifier))) => .K] ...</ k > 
+		--- < env >... [.Map => I:Identifier |-> Loc:Nat] ...</ env >
+		--- < mem >... [.Map => Loc:Nat |-> V:Value] ...</ mem >
+		--- < nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
+		--- : KSentence .
 
 --- bind(("_`,List`{Expression`}_").KHybridLabel("Int" 2(.List{K})),, ("Parameter-Type-List").KProperLabel(("Parameter-Declaration").KProperLabel(("int").KProperLabel(.List{K}),,("n").KProperLabel(.List{
 		
@@ -197,6 +203,42 @@ mod KERNEL-C-SEMANTICS is
 	mb [equality]: rule
 		< k > [V:Value == V':Value => if (V:Value ==Bool V':Value) then 1 else 0 fi] ...</ k >
 		: KSentence .
+		
+	mb [if-then-else-true]: rule
+		< k > [if (I:Int) S:Statement else S':Statement => S:Statement] ...</ k >
+		if notBool(I:Int ==Bool 0)
+		: KSentence .
+	mb [if-then-else-false]: rule
+		< k > [if (0) S:Statement else S':Statement => S':Statement] ...</ k >
+		: KSentence .
+	
+	--- mb [if-then-true]: rule
+		--- < k > [if (I:Int) S:Statement => S:Statement] ...</ k >
+		--- if notBool(I:Int ==Bool 0)
+		--- : KSentence .
+	--- mb [if-then-false]: rule
+		--- < k > [if (0) S:Statement => .K] ...</ k >
+		--- : KSentence .
+		
+		
+		
+	--------------- Start Expressions ---------------
+	--- mb rule [I1:Int + I2:Int => I1:Int +Int I2:Int] : KSentence .
+	--- mb rule [_-_(I1:Int,I2:Int) => _-Int_(I1:Int,I2:Int)] : KSentence .
+	--- mb rule [I1:Int * I2:Int => I1:Int *Int I2:Int] : KSentence .
+	--- mb rule [I1:Int / I2:Int => I1:Int /Int I2:Int] if I2:Int =/=Bool 0 : KSentence .
+	--- mb rule [I1:Int % I2:Int => I1:Int %Int I2:Int] if I2:Int =/=Bool 0 : KSentence .
+	--- mb rule [- I => -Int I] : KSentence .
+	--- mb rule [I1:Int < I2:Int => I1:Int <Int I2:Int] : KSentence .
+	--- mb rule [I1:Int <= I2:Int => I1:Int <=Int I2:Int] : KSentence .
+	--- mb rule [I1:Int > I2:Int => I1:Int >Int I2:Int] : KSentence .
+	--- mb rule [I1:Int >= I2:Int => I1:Int >=Int I2:Int] : KSentence .
+	--- mb rule [V1 == V2 => V1 ==Bool V2] : KSentence .
+	--- mb rule [V1 != V2 => V1 =/=Bool V2] : KSentence .
+	--- mb rule [T1 and T2 => T1 andBool T2] : KSentence .
+	--- mb rule [T1 or T2 => T1 orBool T2] : KSentence .
+	--- mb rule [not(T) => notBool(T)] : KSentence .
+	--------------- End Expressions ---------------
 	
 	--- mb [assign]: rule
 		--- < k > [while (B:Expression) S:Statement 

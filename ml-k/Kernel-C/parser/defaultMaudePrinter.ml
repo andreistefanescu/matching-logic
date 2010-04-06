@@ -520,4 +520,36 @@ method private pLvalPrec (contextprec: int) () lv =
         (if s.labels <> [] then line else nil) 
           ++ self#pStmtKind next () s.skind)
 	
+(*** L-VALUES ***)
+  method pLval () (lv:lval) =  (* lval (base is 1st field)  *)
+    match lv with
+      Var vi, o -> self#pOffset (self#pVar vi) o
+    | Mem e, Field(fi, o) ->
+        self#pOffset
+          ((self#pExpPrec arrowLevel () e) ++ text ("->" ^ fi.fname)) o
+    | Mem e, NoOffset -> 
+        (* text "*" ++ self#pExpPrec derefStarLevel () e *)
+		wrap (self#pExpPrec derefStarLevel () e) "Deref"
+    | Mem e, o ->
+        self#pOffset
+          (text "(*" ++ self#pExpPrec derefStarLevel () e ++ text ")") o
+
+ (* Print an expression, given the precedence of the context in which it 
+   * appears. *)
+  method private pExpPrec (contextprec: int) () (e: exp) = 
+    let thisLevel = getParenthLevel e in
+    let needParens =
+      if thisLevel >= contextprec then
+	true
+      else if contextprec == bitwiseLevel then
+        (* quiet down some GCC warnings *)
+	thisLevel == additiveLevel || thisLevel == comparativeLevel
+      else
+	false
+    in
+    if needParens then
+      chr '(' ++ self#pExp () e ++ chr ')'
+    else
+      self#pExp () e		  
+
 end (* class defaultCilPrinterClass *)

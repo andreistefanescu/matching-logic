@@ -81,6 +81,7 @@ class maudePrinter = object(self)
 
 	(** Invoked on each lvalue occurrence *)
     method pLval () (l:lval) = paren (super#pLval () l)
+	(* method pLval () (l:lval) = wrap (super#pLval () l) "lval" *)
 	
     (** Control-flow statement.  *)
 	(* method pStmt () (s:stmt) = wrap (super#pStmt () s) "ControlFlowStatement" *)
