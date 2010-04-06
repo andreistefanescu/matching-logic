@@ -86,7 +86,7 @@ mod KERNEL-C-SYNTAX is
 	
 	--- op _`(_`) : Postfix-Expression List{Assignment-Expression} -> Postfix-Expression [strict renameTo apply] .
 	---op _`(_`) : Expression Expression-List -> Expression .
-	op Apply : Expression Expression-List -> Expression [metadata "strict(1)"] .
+	op Apply : Expression List{Expression} -> Expression [metadata "strict"] .
 	op Apply : Expression -> Expression [metadata "strict"] .
 	--- op _`(`) : Postfix-Expression -> Postfix-Expression [strict renameTo applyNil] .
 	--- op _._ : Postfix-Expression Identifier -> Postfix-Expression .
@@ -98,11 +98,17 @@ mod KERNEL-C-SYNTAX is
 
 	---sort Expression-List .
 	---subsort Expression < Expression-List .
-	subsort Expression-List < K .
-	sort Expression-List .  
-	subsort Expression < Expression-List .
-	op .Expression-List : -> Expression-List .
+	---subsort Expression-List < K .
+	---sort Expression-List .  
+	---subsort Expression < Expression-List .
+	---op .Expression-List : -> Expression-List .
 	---op _,_ : Expression-List Expression-List -> Expression-List [prec 70 assoc id: .Expression-List] .
+	
+	sort List{Expression} .
+	subsort Expression < List{Expression} .
+	op .List{Expression} : -> List{Expression} .
+	op _,List`{Expression`}_ : List{Expression} List{Expression} -> List{Expression} [assoc id: .List`{Expression`}] .
+	subsort List{Expression} < K .
 	
 	--- ---sort Argument-Expression-List .
 	--- ---subsort Assignment-Expression < Argument-Expression-List .
