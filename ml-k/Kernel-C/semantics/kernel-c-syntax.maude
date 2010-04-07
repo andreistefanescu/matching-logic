@@ -7,6 +7,8 @@ mod KERNEL-C-SYNTAX is
 	
 	sort Program .
 	
+	op debug : -> Statement .
+	
 	---sort Identifier .
 	---subsort Identifier < Id .
 	---sort Identifier-Aux .
@@ -593,6 +595,7 @@ mod KERNEL-C-SYNTAX-TEST is
 		    )
 		  )
 		  (tmp) := Apply(((factorial)), ((((n)) - (1))));
+		  ---debug
 		  return ((((n)) * ((tmp))));
 		)
 		}
