@@ -42,6 +42,7 @@ mod KERNEL-C-SEMANTICS is
 	op Closure : Function-Definition -> Value .
 	
 	mb context Deref([]) := ? : KSentence .
+	mb context Deref([]) ++ : KSentence .
 	
 	subsort Int < Value < Expression .
 	subsort Value < KResult .
@@ -122,11 +123,15 @@ mod KERNEL-C-SEMANTICS is
 	--- turn variables into references when appropriate
 	mb [make-assign-ref]: rule < k > [I:Id := E:Expression => Deref(&(I:Id)) := E:Expression] ...</ k > : KSentence .
 	mb [make-call-ref]: rule < k > [Apply(I:Id, L:List{Expression}) => Apply(Deref(&(I:Id)), L:List{Expression})] ...</ k > : KSentence .
+	mb [make-postinc-ref]: rule < k > [I:Id ++ => Deref(&(I:Id)) ++] ...</ k > : KSentence .
 	
 	--- for now, just ignore global wrapper
 	---mb [remove-global-marker]: rule [Global(D:Declaration ;) => D:Declaration ;] : KSentence .
 	--- for now, just ignore globals
 	mb [remove-global-marker]: rule [Global(D:Declaration) => .K] : KSentence .
+	
+	--- simplify compound assignments (if E1 op= E2, need to ensure E1 only gets evaluated once to be correct)
+	mb [assign-plus]: rule [E1:Expression += E2:Expression => E1:Expression := E1:Expression + E2:Expression] : KSentence .
 	
 	----- end simple transformations -----
 
@@ -257,10 +262,10 @@ mod KERNEL-C-SEMANTICS is
 	mb rule [I1:Int / I2:Int => I1:Int /Int I2:Int] if I2:Int =/=Bool 0 : KSentence .
 	mb rule [I1:Int % I2:Int => I1:Int %Int I2:Int] if I2:Int =/=Bool 0 : KSentence .
 	--- mb rule [- I => -Int I] : KSentence .
-	--- mb rule [I1:Int < I2:Int => I1:Int <Int I2:Int] : KSentence .
-	--- mb rule [I1:Int <= I2:Int => I1:Int <=Int I2:Int] : KSentence .
-	--- mb rule [I1:Int > I2:Int => I1:Int >Int I2:Int] : KSentence .
-	--- mb rule [I1:Int >= I2:Int => I1:Int >=Int I2:Int] : KSentence .
+	mb rule [I1:Int < I2:Int => if (I1:Int <Int I2:Int) then 1 else 0 fi] : KSentence .
+	mb rule [I1:Int <= I2:Int => if (I1:Int <=Int I2:Int) then 1 else 0 fi] : KSentence .
+	mb rule [I1:Int > I2:Int => if (I1:Int >Int I2:Int) then 1 else 0 fi] : KSentence .
+	mb rule [I1:Int >= I2:Int => if (I1:Int >=Int I2:Int) then 1 else 0 fi] : KSentence .
 	--- mb rule [V1 == V2 => V1 ==Bool V2] : KSentence .
 	--- mb rule [V1 != V2 => V1 =/=Bool V2] : KSentence .
 	--- mb rule [T1 and T2 => T1 andBool T2] : KSentence .
@@ -268,15 +273,12 @@ mod KERNEL-C-SEMANTICS is
 	--- mb rule [not(T) => notBool(T)] : KSentence .
 	--------------- End Expressions ---------------
 	
-	--- mb [assign]: rule
-		--- < k > [while (B:Expression) S:Statement 
-		--- => 
-		--- ---if (B:Expression) (S:Statement (while (B:Expression) S:Statement)) --- doesn't work
-		--- ---if`(_`)_(B:Expression, (S:Statement)) --- works
-		--- ---if`(_`)_(B:Expression, (while (B:Expression) S:Statement)) --- works
-		--- ---if`(_`)_(B:Expression, (S:Statement (while (B:Expression) S:Statement))) --- doesn't work
-		--- ] ...</ k >
-		--- : KSentence .	
+	mb [while]: rule
+		< k > [while (B:Expression) S:Statement 
+		=> 
+		if (B:Expression) Block(S:Statement while (B:Expression) S:Statement)
+		] ...</ k >
+		: KSentence .	
 	---mb rule < k > [while B do S  => if B then {S while B do S} else {}] ...</ k > : KSentence .
 		
 	mb [return-value]: rule 
@@ -295,6 +297,12 @@ mod KERNEL-C-SEMANTICS is
 			) => .List]
 		...</ callStack >
 		: KSentence .
+		
+	
+	mb [post-increment]: rule
+		< k > [Deref(Loc:Nat) ++ => V:Int] ...</ k >
+		< mem >... Loc:Nat |-> [V:Int => V:Int +Int 1] ...</ mem >
+		: KSentence .	
 		
 	--- keq <k> [[return V ; -> K ==> K'' -> V -> K']] </k>
 		--- <env> [[E ==> E']] </env>
