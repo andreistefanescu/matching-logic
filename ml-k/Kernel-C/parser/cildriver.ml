@@ -96,7 +96,7 @@ let parseOneFile (fname: string) : C.file =
 
 let rec printIdentifierList (out : out_channel) (l : string list) = match l with 
 	| x :: xs -> 
-		(if x = "main" then text "" else (printString out (defineConstant x "Identifier")));
+		(if x = "main" then text "" else (printString out (defineConstant x "Identifier-Aux")));
 		printIdentifierList out xs
 	| [] -> ()
 	
