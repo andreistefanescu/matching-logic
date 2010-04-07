@@ -213,6 +213,7 @@ mod KERNEL-C-SEMANTICS is
 				Parameter-Type-List(Parameter-Declaration(int, I:Id))) => .K] ...</ k > 
 		< env >... [.Map => I:Id |-> Loc:Nat] ...</ env >
 		< mem >... [.Map => Loc:Nat |-> V:Value] ...</ mem >
+		< parameters >... [.Bag => Bag(Parameter-Declaration(int, I:Id))] ...</ parameters >
 		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
 		: KSentence .
 
@@ -281,11 +282,24 @@ mod KERNEL-C-SEMANTICS is
 		: KSentence .	
 	---mb rule < k > [while B do S  => if B then {S while B do S} else {}] ...</ k > : KSentence .
 		
+	mb [return-value-clean-local]: rule 
+		< k > return V:Value ; ...</ k >
+		< locals >... [BagItem(Declaration(int, I:Id)) => .Bag] ...</ locals >	
+		< env >... I:Id |-> Loc:Nat ...</ env >
+		< mem >... [Loc:Nat |-> ? => .Map] ...</ mem >
+		: KSentence .
+	mb [return-value-clean-params]: rule 
+		< k > return V:Value ; ...</ k >
+		< parameters >... [BagItem(Parameter-Declaration(int, I:Id)) => .Bag] ...</ parameters >	
+		< env >... I:Id |-> Loc:Nat ...</ env >
+		< mem >... [Loc:Nat |-> ? => .Map] ...</ mem >
+		: KSentence .
+	
 	mb [return-value]: rule 
 		< k > [return V:Value ; ~> ? => V:Value ~> K:K] </ k >
 		< env > [? => E:Map] </ env >
-		< parameters > [? => P:Bag ] </ parameters >
-		< locals > [? => L:Bag ] </ locals >
+		< parameters > [.Bag => P:Bag ] </ parameters >
+		< locals > [.Bag => L:Bag ] </ locals >
 		< callStack >
 			[List(
 				< stackFrame >...
