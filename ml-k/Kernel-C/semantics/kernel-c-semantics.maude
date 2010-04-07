@@ -23,7 +23,8 @@ mod KERNEL-C-SEMANTICS is
 	subsort Expression < K .
 	subsort External-Declaration < K .
 	subsort Function-Definition < K .
-	subsort Identifier Constant < K .
+	subsort Constant < K .
+	subsort Id < K .
 	subsort Init-Declarator < K .
 	subsort Init-Declarator-List < K .
 	subsort Integer-Constant < K .
@@ -39,6 +40,7 @@ mod KERNEL-C-SEMANTICS is
 	
 	subsort Int < Value < Expression .
 	subsort Value < KResult .
+	---subsort Identifier < Id < Expression .
 	
 	op output : -> CellLabel .
 	op k : -> CellLabel .
@@ -94,7 +96,7 @@ mod KERNEL-C-SEMANTICS is
 	
 	----- start simple transformations -----
 	--- massage application with no argument
-	mb rule [Apply(I:Identifier) => Apply(I:Identifier, .List{Expression})] : KSentence .
+	mb rule [Apply(I:Id) => Apply(I:Id, .List{Expression})] : KSentence .
 	
 	--- lists turn to their id
 	---mb rule [_`,List`{Expression`}_(.List{K}) => .List{Expression}] : KSentence .
@@ -113,9 +115,8 @@ mod KERNEL-C-SEMANTICS is
 	mb [value-statement]: rule < k > [V:Value ; => .K] ...</ k > : KSentence .
 	
 	--- turn variables into references when appropriate
-	--- can't write--- it loops because I can't describe only identifiers
-	--- mb [make-assign-ref]: rule < k > [I:Identifier := E:Expression => Deref(&(I:Identifier)) := E:Expression] ...</ k > : KSentence .
-	--- mb [make-call-ref]: rule < k > [Apply(I:Identifier, L:List{Expression}) => Apply(Deref(&(I:Identifier)), L:List{Expression})] ...</ k > : KSentence .
+	--- mb [make-assign-ref]: rule < k > [I:Id := E:Expression => Deref(&(I:Id)) := E:Expression] ...</ k > : KSentence .
+	mb [make-call-ref]: rule < k > [Apply(I:Id, L:List{Expression}) => Apply(Deref(&(I:Id)), L:List{Expression})] ...</ k > : KSentence .
 	
 	--- for now, just ignore global wrapper
 	---mb [remove-global-marker]: rule [Global(D:Declaration ;) => D:Declaration ;] : KSentence .
@@ -139,16 +140,16 @@ mod KERNEL-C-SEMANTICS is
 		
 	--- generic lookup
 	--- mb [lookup]: rule
-		--- < k > [I:Identifier => V:Value] ...</ k >
-		--- < env >... I:Identifier |-> Loc:Nat ...</ env >
+		--- < k > [I:Id => V:Value] ...</ k >
+		--- < env >... I:Id |-> Loc:Nat ...</ env >
 		--- < mem >... Loc:Nat |-> V:Value ...</ env >
 		--- : KSentence .
 	
 	mb [variable-declaration]: rule
-		< k > [Declaration(int, I:Identifier) => skipval] ...</ k >
-		< env >... [.Map => I:Identifier |-> Loc:Nat] ...</ env >
+		< k > [Declaration(int, I:Id) => skipval] ...</ k >
+		< env >... [.Map => I:Id |-> Loc:Nat] ...</ env >
 		< mem >... [.Map => Loc:Nat |-> unknown] ...</ mem >
-		< locals >... [.Bag => Bag(Declaration(int, I:Identifier))] ...</ locals >
+		< locals >... [.Bag => Bag(Declaration(int, I:Id))] ...</ locals >
 		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
 		: KSentence .
 	
@@ -161,13 +162,13 @@ mod KERNEL-C-SEMANTICS is
 	***)
 	mb [function-definition]: rule 
 		< k > [
-			Declaration(DS:Declaration-Specifiers, Direct-Function-Declarator(I:Identifier, PTL:Parameter-Type-List)){
+			Declaration(DS:Declaration-Specifiers, Direct-Function-Declarator(I:Id, PTL:Parameter-Type-List)){
 				B:Block-Item-List
 			}
 			=> .K]
 		...</ k >
-		< genv > [E:Map => E:Map[Loc:Nat / I:Identifier]]  </ genv >
-		< mem > [M:Map => M:Map[Declaration(DS:Declaration-Specifiers, Direct-Function-Declarator(I:Identifier, PTL:Parameter-Type-List)){ B:Block-Item-List } / Loc:Nat]] </ mem >
+		< genv > [E:Map => E:Map[Loc:Nat / I:Id]]  </ genv >
+		< mem > [M:Map => M:Map[Declaration(DS:Declaration-Specifiers, Direct-Function-Declarator(I:Id, PTL:Parameter-Type-List)){ B:Block-Item-List } / Loc:Nat]] </ mem >
 		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
 		: KSentence .
 	
@@ -192,7 +193,7 @@ mod KERNEL-C-SEMANTICS is
 	op bind : -> KLabel .
 	mb [function-application]: rule
 		< k > [Apply(Loc:Nat, L:List{Expression}) ~> K:K => bind(L:List{Expression},, PTL:Parameter-Type-List) ~> B:Block-Item-List] </ k >
-		< mem >... Loc:Nat |-> (Declaration(DS:Declaration-Specifiers, Direct-Function-Declarator(I:Identifier, PTL:Parameter-Type-List)){ B:Block-Item-List }) ...</ mem >
+		< mem >... Loc:Nat |-> (Declaration(DS:Declaration-Specifiers, Direct-Function-Declarator(I:Id, PTL:Parameter-Type-List)){ B:Block-Item-List }) ...</ mem >
 		< env > [E:Map => G:Map] </ env >
 		< genv > G:Map </ genv >
 		< locals > [L:Bag => .Bag] </ locals >
@@ -213,8 +214,8 @@ mod KERNEL-C-SEMANTICS is
 	--- bind one
 	--- mb [function-application]: rule 
 		--- < k > [bind((V:Value ,List{Expression} L:List{Expression}),, 
-				--- Parameter-Type-List(Parameter-Declaration(int, I:Identifier))) => .K] ...</ k > 
-		--- < env >... [.Map => I:Identifier |-> Loc:Nat] ...</ env >
+				--- Parameter-Type-List(Parameter-Declaration(int, I:Id))) => .K] ...</ k > 
+		--- < env >... [.Map => I:Id |-> Loc:Nat] ...</ env >
 		--- < mem >... [.Map => Loc:Nat |-> V:Value] ...</ mem >
 		--- < nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
 		--- : KSentence .
