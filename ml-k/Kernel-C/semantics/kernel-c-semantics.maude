@@ -38,6 +38,8 @@ mod KERNEL-C-SEMANTICS is
 	subsort Translation-Unit < K .
 	subsort Type-Specifier < K .
 	
+	op Closure : Function-Definition -> Value .
+	
 	subsort Int < Value < Expression .
 	subsort Value < KResult .
 	---subsort Identifier < Id < Expression .
@@ -96,7 +98,7 @@ mod KERNEL-C-SEMANTICS is
 	
 	----- start simple transformations -----
 	--- massage application with no argument
-	mb rule [Apply(I:Id) => Apply(I:Id, .List{Expression})] : KSentence .
+	mb rule [Apply(E:Expression) => Apply(E:Expression, .List{Expression})] : KSentence .
 	
 	--- lists turn to their id
 	---mb rule [_`,List`{Expression`}_(.List{K}) => .List{Expression}] : KSentence .
@@ -115,8 +117,34 @@ mod KERNEL-C-SEMANTICS is
 	mb [value-statement]: rule < k > [V:Value ; => .K] ...</ k > : KSentence .
 	
 	--- turn variables into references when appropriate
-	--- mb [make-assign-ref]: rule < k > [I:Id := E:Expression => Deref(&(I:Id)) := E:Expression] ...</ k > : KSentence .
+	mb [make-assign-ref]: rule < k > [I:Id := E:Expression => Deref(&(I:Id)) := E:Expression] ...</ k > : KSentence .
 	mb [make-call-ref]: rule < k > [Apply(I:Id, L:List{Expression}) => Apply(Deref(&(I:Id)), L:List{Expression})] ...</ k > : KSentence .
+	
+	--- heat deref contexts
+	op freezeDerefAssign : -> KLabel .
+	---op freezeApply : K -> K .
+	---- urrrg, can't write heating rule properly since I can't say "proper"
+	--- mb [heat-deref-assign]: rule 
+		--- < k > ["Deref"(E:Expression) := E':Expression 
+		--- => E:Expression ~> freezeDerefAssign(E':Expression)] ...</ k > 
+		--- : KSentence .
+	--- mb [heat-deref-assign]: rule 
+		--- < k > [("_:=_")(("Deref")(K':K),, K:K) 
+		--- => K':K ~> K:K] ...</ k > 
+		--- : KSentence .
+	--- mb [heat-deref-apply]: rule 
+		--- < k > [Apply(Deref(E:Expression), L:List{Expression})
+		--- => Deref(E:Expression) ~> freezeApply(L:List{Expression})] ...</ k > 
+		--- : KSentence .
+	--- cool deref contexts
+	--- mb [cool-deref-assign]: rule 
+		--- < k > [V:Value ~> freezeDerefAssign(E':Expression) 
+		--- => Deref(V:Value) := E':Expression] ...</ k > 
+		--- : KSentence .
+	--- mb [cool-deref-apply]: rule 
+		--- < k > [V:Value ~> freezeApply(L:List{Expression})
+		--- => Apply(V:Value, L:List{Expression})] ...</ k > 
+		--- : KSentence .
 	
 	--- for now, just ignore global wrapper
 	---mb [remove-global-marker]: rule [Global(D:Declaration ;) => D:Declaration ;] : KSentence .
@@ -133,10 +161,12 @@ mod KERNEL-C-SEMANTICS is
 		: KSentence .
 	
 	--- special case lookup for main, since genv hasn't been put into env yet
-	--- mb [lookup-main]: rule
-		--- < k > [main => Loc:Nat] ...</ k >
-		--- < genv >... main |-> Loc:Nat ...</ genv >
-		--- : KSentence .
+	mb [lookup-main]: rule
+		< k > [main => V:Value] ...</ k >
+		< env > .Map </ env >
+		< genv >... main |-> Loc:Nat ...</ genv >
+		< mem >... Loc:Nat |-> V:Value ...</ mem >
+		: KSentence .
 		
 	--- generic lookup
 	--- mb [lookup]: rule
@@ -146,7 +176,7 @@ mod KERNEL-C-SEMANTICS is
 		--- : KSentence .
 	
 	mb [variable-declaration]: rule
-		< k > [Declaration(int, I:Id) => skipval] ...</ k >
+		< k > [Declaration(int, I:Id) => .K] ...</ k >
 		< env >... [.Map => I:Id |-> Loc:Nat] ...</ env >
 		< mem >... [.Map => Loc:Nat |-> unknown] ...</ mem >
 		< locals >... [.Bag => Bag(Declaration(int, I:Id))] ...</ locals >
@@ -168,32 +198,14 @@ mod KERNEL-C-SEMANTICS is
 			=> .K]
 		...</ k >
 		< genv > [E:Map => E:Map[Loc:Nat / I:Id]]  </ genv >
-		< mem > [M:Map => M:Map[Declaration(DS:Declaration-Specifiers, Direct-Function-Declarator(I:Id, PTL:Parameter-Type-List)){ B:Block-Item-List } / Loc:Nat]] </ mem >
+		< mem > [M:Map => M:Map[Closure(Declaration(DS:Declaration-Specifiers, Direct-Function-Declarator(I:Id, PTL:Parameter-Type-List)){ B:Block-Item-List }) / Loc:Nat]] </ mem >
 		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
 		: KSentence .
 	
-	***(
-	mb [function-application]: rule
-		< k > [Apply(Loc:Nat, .List{Expression}) ~> K:K => B:Block-Item-List] </ k >
-		< mem >... Loc:Nat |-> (D:Declaration{ B:Block-Item-List }) ...</ mem >
-		< env > [E:Map => G:Map] </ env >
-		< genv > G:Map </ genv >
-		< locals > [L:Bag => .Bag] </ locals >
-		< locals > [P:Bag => .Bag] </ locals >
-		< callStack > [.List => List(
-			< stackFrame > 
-				< continuation > K:K </ continuation >
-				< parameters > P:Bag </ parameters >
-				< locals > L:Bag </ locals >
-				< env > E:Map </ env >
-			</ stackFrame >
-			)] ...</ callStack >
-		: KSentence .
-	***)
+
 	op bind : -> KLabel .
 	mb [function-application]: rule
-		< k > [Apply(Loc:Nat, L:List{Expression}) ~> K:K => bind(L:List{Expression},, PTL:Parameter-Type-List) ~> B:Block-Item-List] </ k >
-		< mem >... Loc:Nat |-> (Declaration(DS:Declaration-Specifiers, Direct-Function-Declarator(I:Id, PTL:Parameter-Type-List)){ B:Block-Item-List }) ...</ mem >
+		< k > [Apply(Closure(Declaration(DS:Declaration-Specifiers, Direct-Function-Declarator(I:Id, PTL:Parameter-Type-List)){ B:Block-Item-List }), L:List{Expression}) ~> K:K => bind(L:List{Expression},, PTL:Parameter-Type-List) ~> B:Block-Item-List] </ k >
 		< env > [E:Map => G:Map] </ env >
 		< genv > G:Map </ genv >
 		< locals > [L:Bag => .Bag] </ locals >
@@ -207,6 +219,7 @@ mod KERNEL-C-SEMANTICS is
 			</ stackFrame >
 			)] ...</ callStack >
 		: KSentence .
+		
 	--- empty binding
 	mb [function-application]: rule 
 		< k > [bind(.List{Expression},, Parameter-Type-List(Parameter-Declaration(void))) => .K] ...</ k > 
@@ -222,13 +235,29 @@ mod KERNEL-C-SEMANTICS is
 
 --- bind(("_`,List`{Expression`}_").KHybridLabel("Int" 2(.List{K})),, ("Parameter-Type-List").KProperLabel(("Parameter-Declaration").KProperLabel(("int").KProperLabel(.List{K}),,("n").KProperLabel(.List{
 		
-	mb [assign]: rule
-		< k > [P:Int := V:Int => V:Int] ...</ k >
-		< mem >... P:Int |-> [? => V:Int] ...</ mem >
-		: KSentence .
+	--- mb [assign]: rule
+		--- < k > [P:Int := V:Int => V:Int] ...</ k >
+		--- < mem >... P:Int |-> [? => V:Int] ...</ mem >
+		--- : KSentence .
 		
 	mb [equality]: rule
 		< k > [V:Value == V':Value => if (V:Value ==Bool V':Value) then 1 else 0 fi] ...</ k >
+		: KSentence .
+		
+	--- mb [ref-special-case-main]: rule
+		--- < k > [&(I:Id) => Loc:Nat] ...</ k >
+		--- < env > .Map </ env >
+		--- < genv >... I:Id |-> Loc:Nat ...</ genv >
+		--- : KSentence .
+		
+	mb [ref]: rule
+		< k > [&(I:Id) => Loc:Nat] ...</ k >
+		< env >... I:Id |-> Loc:Nat ...</ env >
+		: KSentence .
+		
+	mb [deref]: rule
+		< k > [Deref(Loc:Nat) => V:Value] ...</ k >
+		< mem >... Loc:Nat |-> V:Value ...</ mem >
 		: KSentence .
 		
 	mb [if-then-else-true]: rule

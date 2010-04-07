@@ -89,8 +89,8 @@ mod KERNEL-C-SYNTAX is
 	
 	--- op _`(_`) : Postfix-Expression List{Assignment-Expression} -> Postfix-Expression [strict renameTo apply] .
 	---op _`(_`) : Expression Expression-List -> Expression .
-	op Apply : Expression List{Expression} -> Expression [metadata "strict(2)"] .
-	op Apply : Expression -> Expression .
+	op Apply : Expression List{Expression} -> Expression [metadata "strict"] .
+	op Apply : Expression -> Expression [metadata "strict"] .
 	--- op _`(`) : Postfix-Expression -> Postfix-Expression [strict renameTo applyNil] .
 	--- op _._ : Postfix-Expression Identifier -> Postfix-Expression .
 	--- op _->_ : Postfix-Expression Identifier -> Postfix-Expression .
@@ -124,7 +124,7 @@ mod KERNEL-C-SYNTAX is
 	ops ++_ --_ : Expression -> Expression [prec 22] .
 	op &_ : Expression -> Expression [prec 22] .
 	---op *_ : Expression -> Expression [prec 22] .
-	op Deref : Expression -> Expression .
+	op Deref : Expression -> Expression [metadata "strict"] .
 	---op +_ : Expression -> Expression [prec 22] .
 	---op -_ : Expression -> Expression [prec 22] .
 	op ~_ : Expression -> Expression [prec 22] .
@@ -155,9 +155,9 @@ mod KERNEL-C-SYNTAX is
 	---sort Assignment-Expression .
 	---subsort Assignment-Expression < K .
 	---subsort Conditional-Expression < Assignment-Expression .
-	ops _*=_ _/=_ _%=_ _+=_ _-=_ _<<=_ _>>=_ _&=_ _^=_ _|=_ : Expression Expression -> Expression [prec 53 metadata "strict(1)"] .
+	ops _*=_ _/=_ _%=_ _+=_ _-=_ _<<=_ _>>=_ _&=_ _^=_ _|=_ : Expression Expression -> Expression [prec 53 metadata "strict(2)"] .
 	--- op _=_ : Unary-Expression Assignment-Expression -> Assignment-Expression .
-	op _:=_ : Expression Expression -> Expression [prec 53 metadata "strict(1)"] .
+	op _:=_ : Expression Expression -> Expression [prec 53 metadata "strict(2)"] .
 			
 	--- ops _*=_ _/=_ _%=_ _+=_ _-=_ _<<=_ _>>=_ _&=_ _^=_ _|=_ : Unary-Expression Assignment-Expression -> Assignment-Expression .
 	
@@ -424,7 +424,7 @@ mod KERNEL-C-SYNTAX is
 	--- --- 6.8.3
 	sort Expression-Statement .
 	--- ---- TODO op ; : -> Expression-Statement .
-	op _; : Expression -> Expression-Statement [prec 75] .
+	op _; : Expression -> Expression-Statement [prec 75 metadata "strict"] .
 	---op _; : K -> K [prec 45] .
 	
 	--- --- 6.8.4
