@@ -7,13 +7,14 @@ mod KERNEL-C-SYNTAX is
 	
 	sort Program .
 	
-	sort Identifier .
+	---sort Identifier .
+	---subsort Identifier < Id .
 	---sort Identifier-Aux .
 	---subsort Identifier-Aux < K .
 	---subsort String < Identifier-Aux .
 	---op Identifier : Identifier-Aux -> Identifier .
 	
-	op main : -> Identifier [ctor] .
+	op main : -> Id [ctor] .
 	
 	--- ---- A.1.5 Constants
 	--- --- 6.4.4
@@ -72,7 +73,7 @@ mod KERNEL-C-SYNTAX is
 	---subsort Primary-Expression < K .
 	--- ---subsort Identifier Constant String-Literal Expression < Primary-Expression .
 	---subsort Identifier Constant < Expression .
-	subsort Identifier Constant < Expression .
+	subsort Id Constant < Expression .
 
 	---subsort Expression < Primary-Expression .
 	---op `(_`) : Expression -> Expression .
@@ -293,7 +294,7 @@ mod KERNEL-C-SYNTAX is
 
 	subsort Direct-Declarator < Declarator .
 
-	subsort Identifier < Direct-Declarator .
+	subsort Id < Direct-Declarator .
 	--- --- TODO op __ : Pointer Declarator -> Declarator .
 	
 	--- --- op `(_`) : Declarator -> Declarator . --- problem with (_)
@@ -455,7 +456,7 @@ mod KERNEL-C-SYNTAX is
 	--- --- 6.8.6
 	sort Jump-Statement .
 
-	op goto_; : Identifier -> Jump-Statement .
+	op goto_; : Id -> Jump-Statement .
 	op continue`; : -> Jump-Statement [format (ni o o)] .
 	op break`; : -> Jump-Statement [format (ni o o)] .
 	op return`; : -> Jump-Statement .
@@ -506,13 +507,13 @@ endm
 mod KERNEL-C-SYNTAX-TEST is
 	including KERNEL-C-SYNTAX .
 	
-	op i : -> Identifier [ctor] .
-	op sum : -> Identifier [ctor] .
-	op factorialuuu0 : -> Identifier [ctor] .
-	op tmp : -> Identifier [ctor] .
-	op fact : -> Identifier [ctor] .
-	op n : -> Identifier [ctor] .
-	op factorial : -> Identifier [ctor] .
+	op i : -> Id [ctor] .
+	op sum : -> Id [ctor] .
+	op factorialuuu0 : -> Id [ctor] .
+	op tmp : -> Id [ctor] .
+	op fact : -> Id [ctor] .
+	op n : -> Id [ctor] .
+	op factorial : -> Id [ctor] .
 
 	
 	op pSimplest : -> Program .
