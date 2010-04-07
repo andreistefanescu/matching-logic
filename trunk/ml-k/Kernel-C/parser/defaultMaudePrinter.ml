@@ -550,6 +550,199 @@ method private pLvalPrec (contextprec: int) () lv =
     if needParens then
       chr '(' ++ self#pExp () e ++ chr ')'
     else
-      self#pExp () e		  
+      self#pExp () e	
+
+  method private pFunDecl () f =
+      self#pVDecl () f.svar
+      ++  line
+      ++ text "{ "
+      ++ (align
+            (* locals. *)
+            (* ++ (docList ~sep:line (fun vi -> self#pVDecl () vi ++ text ";") *)
+			++ (docList ~sep:line (fun vi -> self#pVDecl () vi) 
+                  () f.slocals)
+            ++ line ++ line
+            (* the body *)
+            ++ ((* remember the declaration *) currentFormals <- f.sformals; 
+                let body = self#pBlock () f.sbody in
+                currentFormals <- [];
+                body))
+      ++ line
+      ++ text "}"	
+
+  (*** GLOBALS ***)
+  method pGlobal () (g:global) : doc =       (* global (vars, types, etc.) *)
+    match g with 
+    | GFun (fundec, l) ->
+        (* If the function has attributes then print a prototype because 
+        * GCC cannot accept function attributes in a definition *)
+        let oldattr = fundec.svar.vattr in
+        (* Always pring the file name before function declarations *)
+        let proto = 
+          if oldattr <> [] then 
+            (self#pLineDirective l) ++ (self#pVDecl () fundec.svar) 
+              ++ chr ';' ++ line 
+          else nil in
+        (* Temporarily remove the function attributes *)
+        fundec.svar.vattr <- [];
+        let body = (self#pLineDirective ~forcefile:true l) 
+                      ++ (self#pFunDecl () fundec) in
+        fundec.svar.vattr <- oldattr;
+        proto ++ body ++ line
+          
+    | GType (typ, l) ->
+        self#pLineDirective ~forcefile:true l ++
+          text "typedef "
+          ++ (self#pType (Some (text typ.tname)) () typ.ttype)
+          ++ text ";\n"
+
+    | GEnumTag (enum, l) ->
+        self#pLineDirective l ++
+          text "enum" ++ align ++ text (" " ^ enum.ename) ++
+          text " {" ++ line
+          ++ (docList ~sep:(chr ',' ++ line)
+                (fun (n,i, loc) -> 
+                  text (n ^ " = ") 
+                    ++ self#pExp () i)
+                () enum.eitems)
+          ++ unalign ++ line ++ text "} " 
+          ++ self#pAttrs () enum.eattr ++ text";\n"
+
+    | GEnumTagDecl (enum, l) -> (* This is a declaration of a tag *)
+        self#pLineDirective l ++
+          text ("enum " ^ enum.ename ^ ";\n")
+
+    | GCompTag (comp, l) -> (* This is a definition of a tag *)
+        let n = comp.cname in
+        let su, su1, su2 =
+          if comp.cstruct then "struct", "str", "uct"
+          else "union",  "uni", "on"
+        in
+        let sto_mod, rest_attr = separateStorageModifiers comp.cattr in
+        self#pLineDirective ~forcefile:true l ++
+          text su1 ++ (align ++ text su2 ++ chr ' ' ++ (self#pAttrs () sto_mod)
+                         ++ text n
+                         ++ text " {" ++ line
+                         ++ ((docList ~sep:line (self#pFieldDecl ())) () 
+                               comp.cfields)
+                         ++ unalign)
+          ++ line ++ text "}" ++
+          (self#pAttrs () rest_attr) ++ text ";\n"
+
+    | GCompTagDecl (comp, l) -> (* This is a declaration of a tag *)
+        self#pLineDirective l ++
+          text (compFullName comp) ++ text ";\n"
+
+    | GVar (vi, io, l) ->
+        self#pLineDirective ~forcefile:true l ++
+          self#pVDecl () vi
+          ++ chr ' '
+          ++ (match io.init with
+            None -> nil
+          | Some i -> text " = " ++ 
+                (let islong = 
+                  match i with
+                    CompoundInit (_, il) when List.length il >= 8 -> true
+                  | _ -> false 
+                in
+                if islong then 
+                  line ++ self#pLineDirective l ++ text "  " 
+                else nil) ++
+                (self#pInit () i))
+          ++ text ";\n"
+      
+    (* print global variable 'extern' declarations, and function prototypes *)    
+    | GVarDecl (vi, l) ->
+        if not !printCilAsIs && H.mem builtinFunctions vi.vname then begin
+          (* Compiler builtins need no prototypes. Just print them in
+             comments. *)
+          text "/* compiler builtin: \n   " ++
+            (self#pVDecl () vi)
+            ++ text ";  */\n"
+          
+        end else
+          self#pLineDirective l ++
+            (self#pVDecl () vi)
+            ++ text "\n"
+
+    | GAsm (s, l) ->
+        self#pLineDirective l ++
+          text ("__asm__(\"" ^ escape_string s ^ "\");\n")
+
+    | GPragma (Attr(an, args), l) ->
+        (* sm: suppress printing pragmas that gcc does not understand *)
+        (* assume anything starting with "ccured" is ours *)
+        (* also don't print the 'combiner' pragma *)
+        (* nor 'cilnoremove' *)
+        let suppress =
+          not !print_CIL_Input && 
+          not !msvcMode &&
+          ((startsWith "box" an) ||
+           (startsWith "ccured" an) ||
+           (an = "merger") ||
+           (an = "cilnoremove")) in
+        let d =
+	  match an, args with
+	  | _, [] ->
+              text an
+	  | "weak", [ACons (symbol, [])] ->
+	      text "weak " ++ text symbol
+	  | _ ->
+            text (an ^ "(")
+              ++ docList ~sep:(chr ',') (self#pAttrParam ()) () args
+              ++ text ")"
+        in
+        self#pLineDirective l 
+          ++ (if suppress then text "/* " else text "")
+          ++ (text "#pragma ")
+          ++ d
+          ++ (if suppress then text " */\n" else text "\n")
+
+    | GText s  -> 
+        if s <> "//" then 
+          text s ++ text "\n"
+        else
+          nil
+
+
+   method dGlobal (out: out_channel) (g: global) : unit = 
+     (* For all except functions and variable with initializers, use the 
+      * pGlobal *)
+     match g with 
+       GFun (fdec, l) -> 
+         (* If the function has attributes then print a prototype because 
+          * GCC cannot accept function attributes in a definition *)
+         let oldattr = fdec.svar.vattr in
+         let proto = 
+           if oldattr <> [] then 
+             (self#pLineDirective l) ++ (self#pVDecl () fdec.svar) 
+               ++ chr ';' ++ line
+           else nil in
+         fprint out !lineLength
+           (proto ++ (self#pLineDirective ~forcefile:true l));
+         (* Temporarily remove the function attributes *)
+         fdec.svar.vattr <- [];
+         fprint out !lineLength (self#pFunDecl () fdec);               
+         fdec.svar.vattr <- oldattr;
+         output_string out "\n"
+
+     | GVar (vi, {init = Some i}, l) -> begin
+         fprint out !lineLength 
+           (self#pLineDirective ~forcefile:true l ++
+              self#pVDecl () vi
+              ++ text " = " 
+              ++ (let islong = 
+                match i with
+                  CompoundInit (_, il) when List.length il >= 8 -> true
+                | _ -> false 
+              in
+              if islong then 
+                line ++ self#pLineDirective l ++ text "  " 
+              else nil)); 
+         self#dInit out 3 i;
+         output_string out ";\n"
+     end
+
+     | g -> fprint out !lineLength (self#pGlobal () g)	  
 
 end (* class defaultCilPrinterClass *)

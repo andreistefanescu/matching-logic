@@ -3,14 +3,40 @@ load kernel-c-syntax
 mod KERNEL-C-SEMANTICS is
 	---including KERNEL-C-SYNTAX .
 	including KERNEL-C-SYNTAX-TEST .
-	---including K .
+	including K .
 
 	---subsort AExp BExp Stmt < K .
 	subsort Program < K .
 	sort Value .
 	--- subsort Int < KResult .
 	--- subsort Bool < KResult .
-	---subsort Id < Identifier . --- hack
+	---subsort Identifier < Id < Expression . --- hack
+	
+	subsort Block-Item < K .
+	subsort Block-Item-List < K .
+	subsort Compound-Statement < K .
+	subsort Constant < K .
+	subsort Declaration < K .
+	subsort Declaration-Specifiers < K .
+	subsort Declarator < K .
+	subsort Direct-Declarator < K .
+	subsort Expression < K .
+	subsort External-Declaration < K .
+	subsort Function-Definition < K .
+	subsort Identifier Constant < K .
+	subsort Init-Declarator < K .
+	subsort Init-Declarator-List < K .
+	subsort Integer-Constant < K .
+	subsort Iteration-Statement < K .
+	subsort Jump-Statement < K .
+	subsort List{Expression} < K .
+	subsort Parameter-Declaration < K .
+	subsort Parameter-Type-List < K .
+	subsort Selection-Statement < K .
+	subsort Statement < K .
+	subsort Translation-Unit < K .
+	subsort Type-Specifier < K .
+	
 	subsort Int < Value < Expression .
 	subsort Value < KResult .
 	
@@ -88,13 +114,13 @@ mod KERNEL-C-SEMANTICS is
 	
 	--- turn variables into references when appropriate
 	--- can't write--- it loops because I can't describe only identifiers
-	---mb [make-assign-ref]: rule < k > [I:Identifier := E:Expression => Deref(&(I:Identifier)) := E:Expression] ...</ k > : KSentence .
-	---mb [make-call-ref]: rule < k > [Apply(I:Identifier, L:List{Expression}) => Apply(Deref(&(I:Identifier)), L:List{Expression})] ...</ k > : KSentence .
+	--- mb [make-assign-ref]: rule < k > [I:Identifier := E:Expression => Deref(&(I:Identifier)) := E:Expression] ...</ k > : KSentence .
+	--- mb [make-call-ref]: rule < k > [Apply(I:Identifier, L:List{Expression}) => Apply(Deref(&(I:Identifier)), L:List{Expression})] ...</ k > : KSentence .
 	
 	--- for now, just ignore global wrapper
 	---mb [remove-global-marker]: rule [Global(D:Declaration ;) => D:Declaration ;] : KSentence .
 	--- for now, just ignore globals
-	mb [remove-global-marker]: rule [Global(D:Declaration ;) => .K] : KSentence .
+	mb [remove-global-marker]: rule [Global(D:Declaration) => .K] : KSentence .
 	
 	----- end simple transformations -----
 
