@@ -359,7 +359,13 @@ method private pLvalPrec (contextprec: int) () lv =
 			| (Mem _, _) -> None ) in
 			match myv with
 			| Some name -> 
-				if strcontains name "fslAnnotation" then text "" else f
+				if strcontains name "fslAnnotation" then 
+					match e with
+					| CastE(t,e) -> 
+				          (text "/*"
+							++ self#pExp () e
+							++ text "*/" )
+				else f
 			| None -> f
 	            
         )   
