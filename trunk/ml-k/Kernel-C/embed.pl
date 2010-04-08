@@ -376,9 +376,9 @@ $linenum++;
   # Asserts, /*@ and //@ style comments, no system defined
   #$var =~ s/([CHARLIST])/\\$1/g;
 
-  if ($line =~ s/\/\/\@\s*assert(\:?)\s*(.*)$/int fslAnnotation$linenum __attribute__ ((visibility ("$2"))); fslAnnotation$linenum = $linenum;/i) {
-  } elsif ($line =~ s/\/\/\@\s*assume(\:?)\s*(.*)$/int fslAnnotation$linenum __attribute__ ((visibility ("$2"))); fslAnnotation$linenum = $linenum;/i) {
-  } elsif ($line =~ s/\/\/\@\s*invariant(\:?)\s*(.*)$/int fslAnnotation$linenum __attribute__ ((visibility ("$2"))); fslAnnotation$linenum = $linenum;/i) {
+  if ($line =~ s/\/\/\@\s*assert(\:?)\s*(.*)$/char* fslAnnotation$linenum = "assert ($2)";/i) {
+  } elsif ($line =~ s/\/\/\@\s*assume(\:?)\s*(.*)$/char* fslAnnotation$linenum = "assume ($2)";/i) {
+  } elsif ($line =~ s/\/\/\@\s*invariant(\:?)\s*(.*)$/char* fslAnnotation$linenum = "invariant ($2)";/i) {
   }
 
   # If we didn't write anything into $outline yet, just copy in the $line, so we can always just
