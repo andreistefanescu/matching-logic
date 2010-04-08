@@ -506,6 +506,7 @@ mod KERNEL-C-SYNTAX is
 	--- subsort Identifier < Expression .
 endm
 
+***(
 mod KERNEL-C-SYNTAX-TEST is
 	including KERNEL-C-SYNTAX .
 	
@@ -601,3 +602,4 @@ mod KERNEL-C-SYNTAX-TEST is
 		}
 		) .
 endm
+***)

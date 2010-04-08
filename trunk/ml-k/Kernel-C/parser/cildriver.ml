@@ -130,7 +130,7 @@ let myDumpFile (pp: cilPrinter) (out : out_channel) (outfile: string) file =
 	printTypedefList out !typedefList;
 	printNewline out;
 	
-	fprintf out "%s\n" "op program : -> [Program] .";
+	fprintf out "%s\n" "op program : -> Program .";
 	fprintf out "%s\n" "eq program = ("; 
 	
 	
