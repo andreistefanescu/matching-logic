@@ -59,6 +59,13 @@ module H = Hashtbl
 
 let printerForMaincil = new maudePrinter
 
+let strcontains s1 s2 =
+try 
+	(Str.search_forward (Str.regexp_string s2) s1 0);
+	true
+with
+| e -> false
+
 (* variables to help generate maude.  These get set by calling the maude visitor *)
 let identifierList : string list ref = ref []
 let typedefList : string list ref = ref []
@@ -96,7 +103,7 @@ let parseOneFile (fname: string) : C.file =
 
 let rec printIdentifierList (out : out_channel) (l : string list) = match l with 
 	| x :: xs -> 
-		(if x = "main" then text "" else (printString out (defineConstant x "Id")));
+		(if (x = "main" || strcontains x "fslAnnotation") then text "" else (printString out (defineConstant x "Id")));
 		printIdentifierList out xs
 	| [] -> ()
 	

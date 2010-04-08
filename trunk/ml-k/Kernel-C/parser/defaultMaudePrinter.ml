@@ -56,6 +56,15 @@ let wrap (d1:Pretty.doc) (d2:string) : Pretty.doc = d2 ^+ paren(d1)
 let typeSig t = 
   typeSigWithAttrs (fun al -> al) t
 
+
+let strcontains s1 s2 =
+try 
+	(Str.search_forward (Str.regexp_string s2) s1 0);
+	true
+with
+| e -> false
+
+  
 (* Helper class for typeSig: replace any types in attributes with typsigs *)
 class typeSigVisitor(typeSigConverter: typ->typsig) = object 
   inherit nopCilVisitor 
@@ -141,16 +150,19 @@ method private pLvalPrec (contextprec: int) () lv =
   (* variable use *)
   method pVar (v:varinfo) = text v.vname
 
+  
+  
   (* variable declaration *)
   method pVDecl () (v:varinfo) =
     let stom, rest = separateStorageModifiers v.vattr in
     (* First the storage modifiers *)
+	(if (strcontains v.vname "fslAnnotation") then nil else (
     text (if v.vinline then "__inline " else "")
       ++ d_storage () v.vstorage
       ++ (self#pAttrs () stom)
       ++ (self#pType (Some (self#pVar v)) () v.vtype)
       ++ text " "
-      ++ self#pAttrs () rest
+      ++ self#pAttrs () rest))
 
   (** Offsets **)
   method pOffset (base: doc) = function
@@ -304,7 +316,7 @@ method private pLvalPrec (contextprec: int) () lv =
     match i with
     | Set(lv,e,l) -> begin
         (* Be nice to some special cases *)
-        match e with
+        (match e with
           BinOp((PlusA|PlusPI|IndexPI),Lval(lv'),Const(CInt64(one,_,_)),_)
             when Util.equals lv lv' && one = Int64.one && not !printCilAsIs ->
               self#pLineDirective l
@@ -337,12 +349,20 @@ method private pLvalPrec (contextprec: int) () lv =
                     ++ text (self#getPrintInstrTerminator ())
                     
         | _ ->
-            self#pLineDirective l
-              ++ self#pLval () lv
-              ++ text " := "
-              ++ self#pExp () e
-              ++ text (self#getPrintInstrTerminator ())
-              
+			let f = (self#pLineDirective l
+	              ++ self#pLval () lv
+	              ++ text " := "
+	              ++ self#pExp () e
+	              ++ text (self#getPrintInstrTerminator ())) in
+			let myv = (match lv with
+			| (Var fslv, _) -> Some fslv.vname
+			| (Mem _, _) -> None ) in
+			match myv with
+			| Some name -> 
+				if strcontains name "fslAnnotation" then text "" else f
+			| None -> f
+	            
+        )   
     end
       (* In cabs2cil we have turned the call to builtin_va_arg into a 
        * three-argument call: the last argument is the address of the 

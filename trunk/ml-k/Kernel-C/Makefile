@@ -18,11 +18,16 @@ CIL = $(CIL_BASE)/obj/$(CIL_PLATFORM)
 OCAML_COMPILE = ocamlopt $(OCAMLOPT_FLAGS) -c -I $(CIL) -I $(PARSER_DIR)
 OCAML_LINK = ocamlopt $(OCAMLOPT_FLAGS) -ccopt -L$(CIL)
 
+.SECONDARY:
+
 all: cparser $(addsuffix .gen.program.maude,$(TEST_PROGRAMS))
 
-%.preprocessed: $(C_DIR)/%.c Makefile
+$(TMP)/%.embed.c: $(C_DIR)/%.c Makefile
 	mkdir -p $(TMP)
-	gcc -E -I. -o $(TMP)/$@ $<
+	perl embed.pl -d=ML -o=$@ $<
+
+$(TMP)/%.preprocessed: $(TMP)/%.embed.c Makefile
+	gcc -E -I. -o $@ $<
 
 $(PARSER_DIR)/maudeVisitor.cmx $(PARSER_DIR)/maudeVisitor.cmi: $(PARSER_DIR)/maudeVisitor.ml
 	$(OCAML_COMPILE) $(PARSER_DIR)/maudeVisitor.ml
@@ -39,8 +44,8 @@ $(PARSER_DIR)/cildriver.cmx $(PARSER_DIR)/cildriver.cmi: $(PARSER_DIR)/cildriver
 cparser: $(PARSER_DIR)/maudeVisitor.cmx $(PARSER_DIR)/maudePrinter.cmx $(PARSER_DIR)/cildriver.cmx
 	$(OCAML_LINK) -o cparser unix.cmxa str.cmxa $(CIL)/cil.cmxa $(PARSER_DIR)/maudeVisitor.cmx $(PARSER_DIR)/defaultMaudePrinter.cmx $(PARSER_DIR)/maudePrinter.cmx $(PARSER_DIR)/cildriver.cmx
 	
-%.gen.program.maude: %.preprocessed cparser
-	./cparser $(CIL_FLAGS) --out $@ $(TMP)/$<
+%.gen.program.maude: $(TMP)/%.preprocessed cparser
+	./cparser $(CIL_FLAGS) --out $@ $<
 	tail $@
 	
 $(SEMANTICS_DIR)/kernel-c-compiled.maude: $(SEMANTICS_DIR)/kernel-c-syntax.maude $(SEMANTICS_DIR)/kernel-c-semantics.maude $(SEMANTICS_DIR)/kernel-c.maude
@@ -68,4 +73,4 @@ run: $(INPUT).gen.maude.run
 # Main.maude:: c-syntax.maude c-configuration.maude c-semantics.maude
 
 clean:
-	rm -f $(PARSER_DIR)/*.cmi $(PARSER_DIR)/*.cmx $(PARSER_DIR)/*.o $(PARSER_DIR)/*.cil *.gen.* *.preprocessed cparser.exe cparser *.stackdump semantics/kernel-c-compiled.maude
+	rm -f $(PARSER_DIR)/*.cmi $(PARSER_DIR)/*.cmx $(PARSER_DIR)/*.o $(PARSER_DIR)/*.cil *.gen.* *.preprocessed cparser.exe cparser *.stackdump $(SEMANTICS_DIR)/kernel-c-compiled.maude $(TMP)/*
