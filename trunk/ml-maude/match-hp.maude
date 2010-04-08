@@ -3,7 +3,7 @@ in match-fol
 
 mod HP is inc FOL= .
   var N : Nat .  var P P' P1 P2 Q Q' Q1 Q2 I I' J L R L' R' B E : Int++ .  var Rest : K .  var Alpha Beta : IntSeq++ .  var H H' : Heap++ .
-  var ?ObjList : List{?MathObj} .  var Phi Phi1 Phi2 : Formula .  var Cfg : Set{ConfigItem} .  var CFG : ConfigItem . var O : TypedObj .
+  var ?ObjList : List{?MathObj} .  var Phi : Formula .  var NtPhi : NtFormula .  var Cfg : Set{ConfigItem} .  var CFG : ConfigItem . var O : TypedObj .
   var Sigma Tau : IntTree++ .  var Alpha' Beta' : IntTreeSeq++ .
 
   
@@ -13,8 +13,13 @@ mod HP is inc FOL= .
 
 
 *** derive ***
-  eq <config> <k> derive(P') ~> Rest </k> <heap> P' |-> O ** H </heap> <form> Phi </form> Cfg </config>
-   = <config> <k> Rest </k> <heap> P' |-> O ** H </heap> <form> Phi </form> Cfg </config> .
+  eq <config> <k> derive(P) ~> Rest </k> <heap> P |-> O ** H </heap> <form> Phi </form> Cfg </config>
+   = <config> <k> Rest </k> <heap> P |-> O ** H </heap> <form> Phi </form> Cfg </config> .
+
+*** call external SMT solver
+ crl <config> <k> derive(P) ~> Rest </k> <form> NtPhi </form> Cfg </config>
+  => <config> <k> derive(P) ~> Rest </k> <form> FalseFormula </form> Cfg </config>
+  if tcpRequest(toString(toSMT(NtPhi))) => "unsat" [print "ana are mere"] .
 
 ***(
  ceq <config> <k> derive(P') ~> Rest </k> <heap> P |-> O ** H </heap> <form> Phi </form> Cfg </config>

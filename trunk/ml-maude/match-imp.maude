@@ -116,7 +116,7 @@ mod IMP is inc HP .
  crl <config> <k> assert Cfg' ~> Rest </k> <menv>  MatchEnv </menv> <newImpl> N:Nat </newImpl> Cfg </config>
   => <config> <k> assume Cfg' ~> Rest </k> <menv> MatchEnv' </menv> <newImpl> N:Nat +Nat 1 </newImpl> skolemize(N:Nat, Cfg) </config>
   if <config> Cfg <menv> MatchEnv </menv> <newImpl> N:Nat </newImpl> </config> ===> Cfg'
-  => <form> TrueFormula </form> <menv> MatchEnv' </menv> [print MatchEnv'] .
+  => <config> <form> TrueFormula </form> <menv> MatchEnv' </menv> </config> [print MatchEnv'] .
 
   op breakpoint : -> K .
   op watch : -> K .
