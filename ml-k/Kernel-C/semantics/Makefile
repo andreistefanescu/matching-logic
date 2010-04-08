@@ -9,5 +9,8 @@ kernel-c-compiled.maude: kernel-c-syntax.maude kernel-c-semantics.maude kernel-c
 	
 semantics: kernel-c-compiled.maude
 
+.PHONY: input-program 
+input-program: 
+
 clean:
 	rm -f kernel-c-compiled.maude

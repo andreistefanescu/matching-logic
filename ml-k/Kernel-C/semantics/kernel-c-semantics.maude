@@ -1,8 +1,9 @@
-load kernel-c-syntax
+---load kernel-c-syntax
 
 mod KERNEL-C-SEMANTICS is
 	---including KERNEL-C-SYNTAX .
-	including KERNEL-C-SYNTAX-TEST .
+	---including KERNEL-C-SYNTAX-TEST .
+	including INPUT-PROGRAM .
 	including K .
 	including K-CONTEXTS .
 
