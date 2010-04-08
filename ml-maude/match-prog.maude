@@ -834,7 +834,7 @@ eq pListAppend = (
   ) .
 endm
 
---- set print attribute on .
+---set print attribute on .
 
 
 rew [| pSum |] .
@@ -862,33 +862,42 @@ rew [| pArrayAccess |] .
 rew [| pSchorrWaite |] .
 ***)
 
-rew [| pArrayAccess |] .
+rew [| pListLengthMergeSort |] .
 
-
-
-
-
+***(
 search
     <config>
-<env> a |-> a0 ;; i |-> i0 ;; n |-> n0 ;; x |-> x0 </env>
+<env> a |-> ?a ;; b |-> ?b ;; e |-> ?e ;; h |-> 0 ;; i |-> ?i ;; n |-> n0 ;; t |-> 0 ;; x |-> ?x </env>
 <heap>
-     (a0 +Int i0) |-> x0 : node
-  ** array (a0,0,i0) ?IntSeq(1)
-  ** array (a0,i0 +Int 1,n0) ?IntSeq(2)
+     ?a |-> ?Int(0) : node
+  ** ?b |-> ?Int(3) : node
+  ** (?a +Int 1) |-> ?Int(1) : next
+  ** (?b +Int 1) |-> ?Int(4) : next
+  ** list ?Int(1) ?IntSeq(2)
+  ** list ?Int(4) ?IntSeq(5)
 </heap>
-<form> @ (i0 >=Int 0) /\ @ (n0 +Int -Int i0 +Int -1 >=Int 0) /\ ~(a0 === 0) /\ A === ?IntSeq(1) :: ?Int(0) :: ?IntSeq(
-    2) </form>
+<form> @ (len(skolem(1, ?A)) >=Int 0) /\ @ (n0 +Int -2 >=Int 0) /\ @ (-Int ?Int(0) +Int min(list2bag(?IntSeq(2))) >=Int
+    0) /\ @ (-Int ?Int(3) +Int min(list2bag(?IntSeq(5))) >=Int 0) /\ @ (n0 +Int -1 +Int -Int len(skolem(1, ?A)) +Int
+    -Int len(skolem(1, ?A)) >=Int 0) /\ @ (2 +Int -Int n0 +Int skolem(1, ?i) +Int skolem(1, ?i) >=Int 0) /\ ~(?a === 0)
+    /\ ~(?b === 0) /\ ~(skolem(1, ?x) === 0) /\ isSorted(?IntSeq(2)) /\ isSorted(?IntSeq(5)) /\ isSorted(skolem(2,
+    ?A')) /\ n0 === len(L) /\ L === ?A :: ?B /\ L === skolem(2, ?A) :: skolem(2, ?B) /\ L === skolem(1, ?A) :: skolem(
+    1, ?Int(0)) :: skolem(1, ?IntSeq(2)) </form>
 <menv> .MatchEnv </menv>
-<newSym> 3 </newSym>
-<newImpl> 0 </newImpl>
+<newSym> 6 </newSym>
+<newImpl> 3 </newImpl>
     </config>
 ===>
     <config>
-   <env> a |-> a0 ;; i |-> i0 ;; n |-> n0 ;; x |-> x0 </env>
+   <env> a |-> ?a ;; b |-> ?b ;; e |-> ?e ;; h |-> ?h ;; i |-> ?i ;; n |-> n0 ;; t |-> ?t ;; x |-> ?x </env>
    <heap>
-        array (a0,0,n0) (?A :: x0 :: ?B)
+        list ?a ?A
+     ** list ?b ?B
+     ** queue (?h,?t) ?C
    </heap>
-   <form> ~(a0 === 0) </form>
-    </config>
+   <form> @ (min(list2bag(?A)) >=Int max(list2bag(?C))) /\ @ (min(list2bag(?B)) >=Int max(list2bag(?C))) /\ isSorted(
+    ?A) /\ isSorted(?B) /\ isSorted(?C) /\ (~(?a === 0) /\ ~(?b === 0) \/ ~(?h === 0) /\ ~(?t === 0)) /\ list2bag(L)
+    === list2bag(?A) &' list2bag(?B) &' list2bag(?C) </form>    </config>
 ---=>* <form> F:Formula </form> <menv> MatchEnv:MatchEnv </menv> .
 =>* S:Set{ConfigItem} .
+***)
+

@@ -2,29 +2,47 @@ in pl-builtins
 
 mod MATHEMATICAL-OBJECT is including PL-BUILTINS .
 ***(
+Sort-- stands for the common subsort
 ?Sort stands for bound symbolic mathematical objects
 !Sort stands for unbound symbolic mathematical objects
 FreeSort stands for unbound symbolic mathematical objects
 Sort stands for ground, non-symbolic mathematical objects
 Sort++ stands for all the above
 ***)
-  sort ?MathObj !MathObj FreeMathObj MathObj MathObj++ List{?MathObj} List{MathObj++} .
-  subsorts ?MathObj !MathObj FreeMathObj MathObj < MathObj++ .
-  subsort ?MathObj < List{?MathObj} .
-  subsort MathObj++ < List{MathObj++} .
+  sort MathObj-- ?MathObj !MathObj FreeMathObj MathObj MathObj++ .
+  sort List{?MathObj} List{MathObj++} .
+  sort Set{MathObj--} Set{?MathObj} Set{!MathObj} Set{FreeMathObj} Set{MathObj++} .
+  subsort MathObj-- < ?MathObj !MathObj FreeMathObj MathObj < MathObj++ .
+  subsort ?MathObj < List{?MathObj} Set{?MathObj} .
+  subsort !MathObj < Set{!MathObj} .
+  subsort FreeMathObj < Set{FreeMathObj} .
+  subsort MathObj++ < List{MathObj++} Set{MathObj++} .
   subsort List{?MathObj} < List{MathObj++} .
+  subsort Set{MathObj--} < Set{?MathObj} Set{!MathObj} Set{FreeMathObj} < Set{MathObj++} .
 
   op .empty : -> List{?MathObj} .
   op _,_ : List{?MathObj} List{?MathObj} -> List{?MathObj} [assoc id: .empty] .
   op _,_ : List{MathObj++} List{MathObj++} -> List{MathObj++} [ditto] .
   op errorObj : -> [MathObj++] .
 
-  var ?Obj : ?MathObj .  var ?ObjList : List{?MathObj} .
+  op .emptySet : -> Set{MathObj++} .
+  op _&_ : Set{MathObj++} Set{MathObj++} -> Set{MathObj++} [assoc comm id: .emptySet] .
 
+  var Obj : MathObj++ .
+  eq Obj & Obj = Obj .
+
+***(
+  op .emptySet : -> Set{MathObj--} .
+  op _&&&&_ : Set{MathObj--} Set{MathObj--} -> Set{MathObj--} [assoc comm id: .emptySet] .
+  op _&&&&_ : Set{?MathObj} Set{?MathObj} -> Set{?MathObj} [ditto] .
+  op _&&&&_ : Set{!MathObj} Set{!MathObj} -> Set{!MathObj} [ditto] .
+  op _&&&&_ : Set{FreeMathObj} Set{FreeMathObj} -> Set{FreeMathObj} [ditto] .
+  op _&&&&_ : Set{MathObj++} Set{MathObj++} -> Set{MathObj++} [ditto] .  
+***)
   op skolem : Nat ?MathObj -> FreeMathObj [strat(0)] .
 endm
 
-mod FORMULA is including BOOL + MATHEMATICAL-OBJECT .
+mod FORMULA is including PL-BOOL + MATHEMATICAL-OBJECT .
   sorts Truth Atom NtFormula Formula .
   subsort Atom < NtFormula .
   subsorts Truth NtFormula < Formula .
@@ -34,9 +52,9 @@ mod FORMULA is including BOOL + MATHEMATICAL-OBJECT .
   op @_ : Bool -> Atom [prec 0] .
   op _/\_ : NtFormula Formula -> NtFormula [prec 55 assoc comm id: TrueFormula] .
   op _/\_ : Formula Formula -> Formula [ditto] .
-  op ~ : Bool -> Bool .
-  op ~ : Atom -> Atom .
-  op ~ : Formula -> NtFormula [ditto] .
+  op ~_ : Bool -> Bool [prec 0] .
+  op ~_ : Atom -> Atom [prec 0] .
+  op ~_ : Formula -> NtFormula [ditto] .
   op _\/_ : NtFormula Formula -> NtFormula [prec 59 assoc comm id: FalseFormula] .
   op _\/_ : Formula Formula -> Formula [ditto] .
   op _===>_ : Formula Formula -> NtFormula [prec 61] .
@@ -90,8 +108,8 @@ mod FORMULA is including BOOL + MATHEMATICAL-OBJECT .
   eq NtPhi /\ (NtPhi1 \/ NtPhi2) ===> NtPhi' = (NtPhi /\ NtPhi1 ===> NtPhi') \/ (NtPhi /\ NtPhi2 ===> NtPhi') [owise] .
 
 --- very, very bad eqs
----  eq NtPhi /\ (NtPhi1 \/ NtPhi2) = (NtPhi /\ NtPhi1) \/ (NtPhi /\ NtPhi2) .
----  eq (NtPhi1 \/ NtPhi2) ===> Phi = (NtPhi1 ===> Phi) \/ (NtPhi2 ===> Phi) .
+---   eq NtPhi /\ (NtPhi1 \/ NtPhi2) = (NtPhi /\ NtPhi1) \/ (NtPhi /\ NtPhi2) .
+---   eq (NtPhi1 \/ NtPhi2) ===> Phi = (NtPhi1 ===> Phi) \/ (NtPhi2 ===> Phi) .
 endm
 
 
@@ -171,19 +189,14 @@ mod MATHEMATICAL-INT-SEQUENCE is inc MATHEMATICAL-INT .
   op epsilon : -> IntSeq .
   op _::_ : IntSeq++ IntSeq++ -> IntSeq++ [assoc id: epsilon] .
   op rev : IntSeq++ -> IntSeq++ .
----  op len : IntSeq++ -> Int++ .
-  op len : ?IntSeq -> ?Int .
-  op len : !IntSeq -> !Int [ditto] .
-  op len : FreeIntSeq -> FreeInt [ditto] .
-  op len : IntSeq -> Int [ditto] .
-  op len : IntSeq++ -> Int++ [ditto] .
+  op len : IntSeq++ -> Int++ .
 
   var I I' : Int++ .  var A A' A'' : IntSeq++ .
 
  ceq A :: A' === A :: A'' = A' === A'' if A =/= epsilon .
  ceq A' :: A === A'' :: A = A' === A'' if A =/= epsilon .
- ceq I :: A === I' :: A' = I === I' /\ A === A' if A =/= epsilon or A' =/= epsilon .
- ceq A :: I === A' :: I' = I === I' /\ A === A' if A =/= epsilon or A' =/= epsilon .
+ ceq I :: A === I' :: A' = I === I' /\ A === A' if A =/= epsilon orBool A' =/= epsilon .
+ ceq A :: I === A' :: I' = I === I' /\ A === A' if A =/= epsilon orBool A' =/= epsilon .
   eq rev(I :: A) = rev(A) :: I .
   eq rev(epsilon) = epsilon .
  ceq len(A :: A') = len(A) +Int len(A') if A =/= epsilon /\ A' =/= epsilon .
@@ -323,7 +336,7 @@ mod MATHEMATICAL-DOMAIN is
 
   var A A' : IntSeq++ .
 
----  op list2bag : IntSeq++ -> IntBag++ .
+---   op list2bag : IntSeq++ -> IntBag++ .
   op list2bag : ?IntSeq -> ?IntBag .
   op list2bag : !IntSeq -> !IntBag [ditto] .
   op list2bag : FreeIntSeq -> FreeIntBag [ditto] .
@@ -345,4 +358,45 @@ mod MATHEMATICAL-DOMAIN is
 --- ceq (((B1 === B2) /\ Phi1) ===> ((B1 &' B1') === (B2 &' B2') /\ Phi2)) = (((B1 === B2) /\ Phi1) ===> ((B1' === B2') /\ Phi2))
 ---  if B1 =/= empty /\ B2 =/= empty /\ B1' =/= empty /\ B2' =/= empty .
   eq @(1 +Int (-Int len(A)) >=Int 0) /\ Phi1 ===> isSorted(A) /\ Phi2 = @(1 +Int (-Int len(A)) >=Int 0) /\ Phi1 ===> Phi2 .
+endm
+
+mod VAR-UTILS is inc PL-BOOL + FORMULA + PL-META-TERM .
+  op get?VarSet : Formula -> Set{MathObj++} .
+  op get?VarSet : TermList -> Set{MathObj++} .
+  op get!VarSet : Formula -> Set{MathObj++} .
+  op get!VarSet : TermList -> Set{MathObj++} .
+  op getFreeVarSet : Formula -> Set{MathObj++} .
+  op getFreeVarSet : TermList -> Set{MathObj++} .
+
+  var Phi : Formula .
+
+  eq get?VarSet(Phi) = get?VarSet(upTerm(Phi)) .
+  eq get!VarSet(Phi) = get!VarSet(upTerm(Phi)) .
+  eq getFreeVarSet(Phi) = getFreeVarSet(upTerm(Phi)) .
+
+  var QC : Constant .  vars QT NT NT' : Term .  var QTList : TermList .  var QTNeList : NeTermList .  var Q : Qid .
+
+  eq get?VarSet((QT : QTNeList)) = get?VarSet(QT) & get?VarSet(QTNeList) .
+  eq get?VarSet(empty) = .emptySet .
+  eq get?VarSet(QC) = if substrString(string(getType(QC)), 0, 1) ==Bool "?" then downTerm(QC, .emptySet) else .emptySet fi .
+  eq get?VarSet('?Int[QT]) = downTerm('?Int[QT], .emptySet) .
+  eq get?VarSet('?IntSeq[QT]) = downTerm('?IntSeq[QT], .emptySet) .
+  eq get?VarSet('?IntTree[QT]) = downTerm('?IntTree[QT], .emptySet) .
+  eq get?VarSet('?IntTreeSeq[QT]) = downTerm('?IntTreeSeq[QT], .emptySet) .
+  eq get?VarSet('?IntBag[QT]) = downTerm('?IntBag[QT], .emptySet) .
+  eq get?VarSet('?Graph[QT]) = downTerm('?Graph[QT], .emptySet) .
+  eq get?VarSet(Q[QTList]) = get?VarSet(QTList) [owise] .
+
+  eq getFreeVarSet((QT : QTNeList)) = getFreeVarSet(QT) & getFreeVarSet(QTNeList) .
+  eq getFreeVarSet(empty) = .emptySet .
+ ceq getFreeVarSet(QC) = downTerm(QC, .emptySet) if getType(QC) ==Bool 'FreeMathObj .
+ ceq getFreeVarSet(QC) = downTerm(QC, .emptySet) if getType(QC) ==Bool 'FreeInt .
+ ceq getFreeVarSet(QC) = downTerm(QC, .emptySet) if getType(QC) ==Bool 'FreeIntSeq .
+ ceq getFreeVarSet(QC) = downTerm(QC, .emptySet) if getType(QC) ==Bool 'FreeIntTree .
+ ceq getFreeVarSet(QC) = downTerm(QC, .emptySet) if getType(QC) ==Bool 'FreeIntTreeSeq .
+ ceq getFreeVarSet(QC) = downTerm(QC, .emptySet) if getType(QC) ==Bool 'FreeIntBag .
+---  ceq getFreeVarSet(QC) = downTerm(QC, .emptySet) if getType(QC) ==Bool 'FreeGraph .
+  eq getFreeVarSet(QC) = .emptySet [owise] .
+  eq getFreeVarSet('skolem[NT : QT]) = downTerm('skolem[NT : QT], .emptySet) .
+  eq getFreeVarSet(Q[QTList]) = getFreeVarSet(QTList) [owise] .
 endm
