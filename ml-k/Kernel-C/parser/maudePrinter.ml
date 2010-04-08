@@ -51,6 +51,9 @@ let paren (d:Pretty.doc) : Pretty.doc = "(" ^+ d +^ ")"
 let giveType (d1:Pretty.doc) (d2:string) : Pretty.doc = paren(d1) ++ (text d2)
 let wrap (d1:Pretty.doc) (d2:string) : Pretty.doc = d2 ^+ paren(d1)
 
+let wrapifne (d1:Pretty.doc) (d2:string) = 
+	if (d1 = nil) then nil else wrap d1 d2
+
 let replace input output =
     Str.global_replace (Str.regexp_string input) output
 (* val replace : string -> string -> string -> string = <fun> *)
@@ -65,7 +68,7 @@ class maudePrinter = object(self)
      * declarations are all the [GVar], [GVarDecl], [GFun], all the [varinfo] 
      * in formals of function types, and the formals and locals for function 
      * definitions. *)
-	method pVDecl () (v:varinfo) = wrap (super#pVDecl () v) "Declaration"
+	method pVDecl () (v:varinfo) = wrapifne (super#pVDecl () v) "Declaration"
 	
 	(** Print a block. *)
 	method pBlock () (b:block) = wrap (super#pBlock () b) "Block"

@@ -14,7 +14,8 @@ Getopt::Long::Configure("no_auto_abbrev");
 # -- default         Specify which analysis is the default analysis
 #
 GetOptions("default|d=s"=>\$default_analysis,
-           "help|?"=>\$help_flag);
+           "help|?"=>\$help_flag,
+		   "output|o=s"=>\$output_flag);
 
 #
 # Check to see if the user wants a usage message -- if so, print one and exit
@@ -35,6 +36,12 @@ if ($ARGV[0]) {
   exit;
 }
 
+if ($output_flag) {
+	
+} else {
+	$output_flag = "$c_prog.embed";
+}
+
 #
 # Verify the specified program exists.
 #
@@ -52,7 +59,7 @@ open CSOURCE, "< $c_prog" or die "Cannot open file $c_prog\n";
 #
 # Open the destination file name.
 #
-open CDEST, "> $c_prog.embed" or die "Cannot open output file $c_prog.embed\n";
+open CDEST, "> $output_flag" or die "Cannot open output file $output_flag\n";
 
 #
 # Set up the lists we will use to track pre- and post-conditions.
@@ -71,7 +78,9 @@ $funflag = 0;
 #
 # Now, process the C source file
 #
+my $linenum = 0;
 while ($line = <CSOURCE>) {
+$linenum++;
   # Check for annotation comments. For now, keep it simple -- assume only one annotation comment 
   # on any given line. Assertions and assumptions are replaced inline, since they could be embedded
   # in the middle of code, like <code> /*@ assume */ <more code>. Conditions with the system defined
@@ -361,113 +370,15 @@ while ($line = <CSOURCE>) {
       $funflag = 0;
     }
   }
-
-  # Asserts, /*@ and //@ style comments, system defined
-  elsif ($line =~ s/\/\*\@\s*assert\s*\(([^\)]+)\)(\:?)\s*(([^\*]|\*[^\/])*)\*\//___CPFAssert\($1,\"$3\"\)\;/i) {
-    #print STDOUT "Found assert with system $1, memory = $3, leftover = $5\n";
-    #$outline = "___CPFAssert(" . $1 . "," . '"' . $2 . '"' . ");\n";
-  }
-  elsif ($line =~ s/\/\/\@\s*assert\s*\(([^\)]+)\)(\:?)\s*(.*)$/___CPFAssert\($1,\"$3\"\)\;/i) {
-    #print STDOUT "Found assert with system $1, memory = $3\n";
-    #$outline = "___CPFAssert(" . $1 . "," . '"' . $2 . '"' . ");\n";
-  }
-  elsif ($line =~ s/\/\*\@\s*assert\s*\(([^\)]+)\)(\:?)\s*(([^\*]|\*[^\/])*)\*\//___CPFAssert\($1,\"$3\"\)\;/i) {
-    #print STDOUT "Found assert with system $1, memory = $3, leftover = $5\n";
-    #$outline = "___CPFAssert(" . $1 . "," . '"' . $2 . '"' . ");\n";
-  }
-  elsif ($line =~ s/\/\/\@\s*assert\s*\(([^\)]+)\)(\:?)\s*(.*)$/___CPFAssert\($1,\"$3\"\)\;/i) {
-    #print STDOUT "Found assert with system $1, memory = $3\n";
-    #$outline = "___CPFAssert(" . $1 . "," . '"' . $2 . '"' . ");\n";
-  }
+  
+# int fslAnnotation __attribute__ ((visibility ("protected"))); fslAnnotation = 0;
 
   # Asserts, /*@ and //@ style comments, no system defined
-  if ($line =~ s/\/\*\@\s*assert(\:?)\s*(([^\*]|\*[^\/])*)\*\//___CPFAssert\($default_analysis,\"$2\"\)\;/i) {
-    #print STDOUT "Found assert with memory = $2, leftover = $4\n";
-    #$outline = "___CPFAssert(" . $default_analysis . "," . '"' . $1 . '"' . ");\n";
-  }
-  elsif ($line =~ s/\/\/\@\s*assert(\:?)\s*(.*)$/___CPFAssert\($default_analysis,\"$2\"\)\;/i) {
-    #print STDOUT "Found assert with memory = $2\n";
-    #$outline = "___CPFAssert(" . $default_analysis . "," . '"' . $1 . '"' . ");\n";
-  }
-  elsif ($line =~ s/\/\*\@\s*assert(\:?)\s*(([^\*]|\*[^\/])*)\*\//___CPFAssert\($default_analysis,\"$2\"\)\;/i) {
-    #print STDOUT "Found assert with memory = $2, leftover = $4\n";
-    #$outline = "___CPFAssert(" . $default_analysis . "," . '"' . $1 . '"' . ");\n";
-  }
-  elsif ($line =~ s/\/\/\@\s*assert(\:?)\s*(.*)$/___CPFAssert\($default_analysis,\"$2\"\)\;/i) {
-    #print STDOUT "Found assert with memory = $2\n";
-    #$outline = "___CPFAssert(" . $default_analysis . "," . '"' . $1 . '"' . ");\n";
-  }
+  #$var =~ s/([CHARLIST])/\\$1/g;
 
-  # Assumes, /*@ and //@ style comments, system defined
-  elsif ($line =~ s/\/\*\@\s*assume\s*\(([^\)]+)\)(\:?)\s*(([^\*]|\*[^\/])*)\*\//___CPFAssume\($1,\"$3\"\)\;/i) {
-    #print STDOUT "Found assume with system $1, memory = $3, leftover = $5\n";
-    #$outline = "___CPFAssume(" . $1 . "," . '"' . $2 . '"' . ");\n";
-  }
-  elsif ($line =~ s/\/\/\@\s*assume\s*\(([^\)]+)\)(\:?)\s*(.*)$/___CPFAssume\($1,\"$3\"\)\;/i) {
-    #print STDOUT "Found assume with system $1, memory = $3\n";
-    #$outline = "___CPFAssume(" . $1 . "," . '"' . $2 . '"' . ");\n";
-  }
-  elsif ($line =~ s/\/\*\@\s*assume\s*\(([^\)]+)\)(\:?)\s*(([^\*]|\*[^\/])*)\*\//___CPFAssume\($1,\"$3\"\)\;/i) {
-    #print STDOUT "Found assume with system $1, memory = $3, leftover = $5\n";
-    #$outline = "___CPFAssume(" . $1 . "," . '"' . $2 . '"' . ");\n";
-  }
-  elsif ($line =~ s/\/\/\@\s*assume\s*\(([^\)]+)\)(\:?)\s*(.*)$/___CPFAssume\($1,\"$3\"\)\;/i) {
-    #print STDOUT "Found assume with system $1, memory = $3\n";
-    #$outline = "___CPFAssume(" . $1 . "," . '"' . $2 . '"' . ");\n";
-  }
-
-  # Assumes, /*@ and //@ style comments, no system defined
-  elsif ($line =~ s/\/\*\@\s*assume(\:?)\s*(([^\*]|\*[^\/])*)\*\//___CPFAssume\($default_analysis,\"$2\"\)\;/i) {
-    #print STDOUT "Found assume with memory = $2, leftover = $4\n";
-    #$outline = "___CPFAssume(" . $default_analysis . "," . '"' . $1 . '"' . ");\n";
-  }
-  elsif ($line =~ s/\/\/\@\s*assume(\:?)\s*(.*)$/___CPFAssume\($default_analysis,\"$2\"\)\;/i) {
-    #print STDOUT "Found assume with memory = $2\n";
-    #$outline = "___CPFAssume(" . $default_analysis . "," . '"' . $1 . '"' . ");\n";
-  }
-  elsif ($line =~ s/\/\*\@\s*assume(\:?)\s*(([^\*]|\*[^\/])*)\*\//___CPFAssume\($default_analysis,\"$2\"\)\;/i) {
-    #print STDOUT "Found assume with memory = $2, leftover = $4\n";
-    #$outline = "___CPFAssume(" . $default_analysis . "," . '"' . $1 . '"' . ");\n";
-  }
-  elsif ($line =~ s/\/\/\@\s*assume(\:?)\s*(.*)$/___CPFAssume\($default_analysis,\"$2\"\)\;/i) {
-    #print STDOUT "Found assume with memory = $2\n";
-    #$outline = "___CPFAssume(" . $default_analysis . "," . '"' . $1 . '"' . ");\n";
-  }
-
-  # Invariants, /*@ and //@ style comments, system defined
-  elsif ($line =~ s/\/\*\@\s*invariant\s*\(([^\)]+)\)(\:?)\s*(([^\*]|\*[^\/])*)\*\//___CPFInvariant\($1,\"$3\"\)\;/i) {
-    #print STDOUT "Found invariant with system $1, memory = $3, leftover = $5\n";
-    #$outline = "___CPFInvariant(" . $1 . "," . '"' . $2 . '"' . ");\n";
-  }
-  elsif ($line =~ s/\/\/\@\s*invariant\s*\(([^\)]+)\)(\:?)\s*(.*)$/___CPFInvariant\($1,\"$3\"\)\;/i) {
-    #print STDOUT "Found invariant with system $1, memory = $3\n";
-    #$outline = "___CPFInvariant(" . $1 . "," . '"' . $2 . '"' . ");\n";
-  }
-  elsif ($line =~ s/\/\*\@\s*invariant\s*\(([^\)]+)\)(\:?)\s*(([^\*]|\*[^\/])*)\*\//___CPFInvariant\($1,\"$3\"\)\;/i) {
-    #print STDOUT "Found invariant with system $1, memory = $3, leftover = $5\n";
-    #$outline = "___CPFInvariant(" . $1 . "," . '"' . $2 . '"' . ");\n";
-  }
-  elsif ($line =~ s/\/\/\@\s*invariant\s*\(([^\)]+)\)(\:?)\s*(.*)$/___CPFInvariant\($1,\"$3\"\)\;/i) {
-    #print STDOUT "Found invariant with system $1, memory = $3\n";
-    #$outline = "___CPFInvariant(" . $1 . "," . '"' . $2 . '"' . ");\n";
-  }
-
-  # Invariants, /*@ and //@ style comments, no system defined
-  elsif ($line =~ s/\/\*\@\s*invariant(\:?)\s*(([^\*]|\*[^\/])*)\*\//___CPFInvariant\($default_analysis,\"$2\"\)\;/i) {
-    #print STDOUT "Found invariant with memory = $2, leftover = $4\n";
-    #$outline = "___CPFInvariant(" . $default_analysis . "," . '"' . $1 . '"' . ");\n";
-  }
-  elsif ($line =~ s/\/\/\@\s*invariant(\:?)\s*(.*)$/___CPFInvariant\($default_analysis,\"$2\"\)\;/i) {
-    #print STDOUT "Found invariant with memory = $2\n";
-    #$outline = "___CPFInvariant(" . $default_analysis . "," . '"' . $1 . '"' . ");\n";
-  }
-  elsif ($line =~ s/\/\*\@\s*invariant(\:?)\s*(([^\*]|\*[^\/])*)\*\//___CPFInvariant\($default_analysis,\"$2\"\)\;/i) {
-    #print STDOUT "Found invariant with memory = $2, leftover = $4\n";
-    #$outline = "___CPFInvariant(" . $default_analysis . "," . '"' . $1 . '"' . ");\n";
-  }
-  elsif ($line =~ s/\/\/\@\s*invariant(\:?)\s*(.*)$/___CPFInvariant\($default_analysis,\"$2\"\)\;/i) {
-    #print STDOUT "Found invariant with memory = $2\n";
-    #$outline = "___CPFInvariant(" . $default_analysis . "," . '"' . $1 . '"' . ");\n";
+  if ($line =~ s/\/\/\@\s*assert(\:?)\s*(.*)$/int fslAnnotation$linenum __attribute__ ((visibility ("$2"))); fslAnnotation$linenum = $linenum;/i) {
+  } elsif ($line =~ s/\/\/\@\s*assume(\:?)\s*(.*)$/int fslAnnotation$linenum __attribute__ ((visibility ("$2"))); fslAnnotation$linenum = $linenum;/i) {
+  } elsif ($line =~ s/\/\/\@\s*invariant(\:?)\s*(.*)$/int fslAnnotation$linenum __attribute__ ((visibility ("$2"))); fslAnnotation$linenum = $linenum;/i) {
   }
 
   # If we didn't write anything into $outline yet, just copy in the $line, so we can always just
@@ -524,9 +435,11 @@ usage: $0 [flags] prog.c
 flags include:
 --default=analysis    specify the default analysis (for instance, UNITS)
 --help                display usage info (which you are now reading) and exit
+--output=file         output gets saved here
 
 short forms include:
 -d       =        --default
+-o       =        --output
 -?       =        --help
 
 EOF
