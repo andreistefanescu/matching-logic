@@ -1,7 +1,6 @@
 mod MATCH-KERNEL-C-SYNTAX is
 	including COMMON-KERNEL-C-SYNTAX .
 	including K .
-	including PL-BUILTINS .
 	
 
 	sort Annotation-Statement .
