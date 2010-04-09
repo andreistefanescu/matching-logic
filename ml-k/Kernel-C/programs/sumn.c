@@ -1,10 +1,10 @@
 int main() {
-	//@ assume nothing ;
+	//@ assume < T > < env > .Map </ env > < mem > .Map </ mem > < form > @ </ form > </ T >
 	int sum = 0;
-	//@ invariant nothing ;
+	//@ invariant .Bag
 	for(int i = 1; i <= 10; i++){
 		sum += i;
 	}
-	//@ assert nothing ;
+	//@ assert .Bag
 	return sum;
 }

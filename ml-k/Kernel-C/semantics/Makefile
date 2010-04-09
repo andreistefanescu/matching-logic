@@ -9,10 +9,10 @@ ifeq ($(INPUT),)
 	exit 1
 endif
 
-input-program.maude: c-maude.template $(INPUT)
-	printf "`cat c-maude.template`" "INPUT-PROGRAM" "`cat $(INPUT)`" > input-program.maude
+kernel-c.maude: c-maude.template $(INPUT)
+	printf "`cat c-maude.template`" "including MATCH-KERNEL-C-SYNTAX ." "`cat $(INPUT)`" > kernel-c.maude
 	
-kernel-c-compiled.maude: kernel-c-syntax.maude kernel-c-semantics.maude kernel-c.maude input-program.maude fake
+kernel-c-compiled.maude: kernel-c-syntax.maude kernel-c-semantics.maude kernel-c.maude fake
 	$(K-MAUDE) kernel-c.maude KERNEL-C
 	
 semantics: kernel-c-compiled.maude
@@ -20,4 +20,4 @@ semantics: kernel-c-compiled.maude
 fake:
 
 clean:
-	rm -f kernel-c-compiled.maude input-program.maude
+	rm -f kernel-c-compiled.maude kernel-c.maude

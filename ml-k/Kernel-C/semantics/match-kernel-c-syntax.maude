@@ -1,0 +1,34 @@
+mod MATCH-KERNEL-C-SYNTAX is
+	including COMMON-KERNEL-C-SYNTAX .
+	including K .
+	including PL-BUILTINS .
+	
+
+	sort Annotation-Statement .
+	subsort Annotation-Statement < Statement .
+	sort Annotation .
+	sort Configuration .
+	---sort Annotation-Aux .
+	--- /*("assume (nothing ;)")*/
+	---op /*("_")*/ : Annotation -> Annotation-Statement .
+	op /*_*/ : Annotation -> Annotation-Statement .
+	---op `(\"_\"`) : -> Annotation-Aux .
+	---op `("_"`) : Annotation -> Annotation-Aux .
+	---sort Annotation-Aux .
+	---op "_" : Annotation-Aux -> Annotation .
+	---op assume`(nothing`;`) : -> Annotation .
+	sort Formula .
+	subsort Formula < K .
+	op @ : -> Formula .
+	
+	op bvar : -> K .
+	
+	op assume : Bag -> Annotation .
+	op assert : Bag -> Annotation .
+	op invariant : Bag -> Annotation .
+	
+	---op Config : Bag -> Configuration .
+	
+	---op nothing : -> Configuration .
+	
+endm

@@ -1,0 +1,78 @@
+mod KERNEL-C-CONFIGURATION is
+	including KERNEL-C-SYNTAX .
+	including PL-BUILTINS .
+
+
+	op k : -> CellLabel .
+	op output : -> CellLabel .
+	op env : -> CellLabel .
+	op genv : -> CellLabel .
+	op mem : -> CellLabel .
+	op nextLoc : -> CellLabel .
+	op resultValue : -> CellLabel .
+	op resultOutput : -> CellLabel .
+	op form : -> CellLabel .
+
+	op callStack : -> CellLabel .
+	op stackFrame : -> CellLabel .
+	op continuation : -> CellLabel .
+	op locals : -> CellLabel .
+	op parameters : -> CellLabel .
+	
+	
+	---subsort AExp BExp Stmt < K .
+	subsort Program < K .
+
+	--- subsort Int < KResult .
+	--- subsort Bool < KResult .
+	---subsort Identifier < Id < Expression . --- hack
+	
+	subsort Annotation < K .
+	subsort Annotation-Statement < K .
+	subsort Block-Item < K .
+	subsort Block-Item-List < K .
+	subsort Compound-Statement < K .
+	subsort Configuration < K .
+	subsort Constant < K .
+	subsort Declaration < K .
+	subsort Declaration-Specifiers < K .
+	subsort Declarator < K .
+	subsort Direct-Declarator < K .
+	subsort Expression < K .
+	subsort External-Declaration < K .
+
+	subsort Function-Definition < K .
+	subsort Constant < K .
+	subsort Id < K .
+	subsort Init-Declarator < K .
+	subsort Init-Declarator-List < K .
+	subsort Integer-Constant < K .
+	subsort Iteration-Statement < K .
+	subsort Jump-Statement < K .
+	subsort List{Expression} < K .
+	subsort Parameter-Declaration < K .
+	subsort Parameter-Type-List < K .
+	subsort Selection-Statement < K .
+	subsort Statement < K .
+	subsort Translation-Unit < K .
+	subsort Type-Specifier < K .
+	
+	
+	mb configuration 
+		< T > 
+			< k > P:Program </ k >
+			< env > Env:Map </ env > 
+			< genv > GEnv:Map </ genv > 
+			< mem > Store:Map </ mem >  
+			< output > Output:List </ output > 
+			< callStack > Stack:List </ callStack >
+			< nextLoc > N:Nat </ nextLoc >
+			< locals > Locals:Bag </ locals >
+			< parameters > Parameters:Bag </ parameters >
+			---< form > F:Formula </ form >
+		</ T > 
+		< resultValue > K:K </ resultValue >
+		< resultOutput > Output:List </ resultOutput > 
+		: KSentence .
+	
+endm

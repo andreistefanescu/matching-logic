@@ -1,6 +1,6 @@
----load ../../../../../k-framework/k-maude/trunk/k-prelude
-mod KERNEL-C-SYNTAX is
+mod COMMON-KERNEL-C-SYNTAX is
 	including PL-BUILTINS .
+
 
 	sort Comment .
 	-----op /*_*/ : Comment -> 
@@ -394,25 +394,6 @@ mod KERNEL-C-SYNTAX is
 	--- --- 6.8
 	sort Statement .
 
-	sort Annotation-Statement .
-	subsort Annotation-Statement < Statement .
-	sort Annotation .
-	sort Configuration .
-	---sort Annotation-Aux .
-	--- /*("assume (nothing ;)")*/
-	---op /*("_")*/ : Annotation -> Annotation-Statement .
-	op /*_*/ : Annotation -> Annotation-Statement .
-	---op `(\"_\"`) : -> Annotation-Aux .
-	---op `("_"`) : Annotation -> Annotation-Aux .
-	---sort Annotation-Aux .
-	---op "_" : Annotation-Aux -> Annotation .
-	---op assume`(nothing`;`) : -> Annotation .
-	op assume : Configuration -> Annotation .
-	op assert : Configuration -> Annotation .
-	op invariant : Configuration -> Annotation .
-	
-	op nothing`; : -> Configuration .
-	
 	
 	--- subsort Labeled-Statement < Statement .
 	subsort Jump-Statement Compound-Statement Iteration-Statement Expression-Statement Selection-Statement < Statement .
