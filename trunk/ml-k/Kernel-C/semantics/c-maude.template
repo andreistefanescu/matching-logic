@@ -1,6 +1,28 @@
-mod %s is
+load ../../../../../k-framework/k-maude/trunk/k-prelude
+load kernel-c-syntax
+load match-kernel-c-syntax
+
+mod KERNEL-C-SYNTAX is
+	including COMMON-KERNEL-C-SYNTAX .
+	%s
+endm
+
+load kernel-c-configuration
+load kernel-c-semantics
+
+
+
+mod KERNEL-C-PROGRAM is
 	including KERNEL-C-SYNTAX .
+	including MATCH-KERNEL-C-SYNTAX .
+	including KERNEL-C-CONFIGURATION .
+	including KERNEL-C-SEMANTICS . 
 	
 %s
 
+endm
+
+mod KERNEL-C is 
+	including KERNEL-C-PROGRAM .
+	
 endm
