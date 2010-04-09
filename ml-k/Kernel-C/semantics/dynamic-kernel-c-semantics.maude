@@ -1,4 +1,21 @@
 mod DYNAMIC-KERNEL-C-SEMANTICS is
 	including COMMON-KERNEL-C-SEMANTICS .
 	
+	eq eval(P:Program) = 
+		< T >
+			< k > P:Program ~> Apply(main) </ k > 
+			< env > .Map </ env > 
+			< genv > .Map </ genv > 
+			< mem > .Map </ mem >  
+			< output > .List </ output >
+			< callStack > .List </ callStack >
+			< nextLoc > 0 </ nextLoc >
+			< locals > .Bag </ locals >
+			< parameters > .Bag </ parameters >
+		</ T > .
+	
+	--- throw away annotations
+	mb [no-annotations]: rule [/* ? */ => .K] : KSentence .
+	
+	
 endm
