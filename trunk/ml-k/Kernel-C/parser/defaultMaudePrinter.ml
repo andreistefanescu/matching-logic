@@ -361,10 +361,11 @@ method private pLvalPrec (contextprec: int) () lv =
 			| Some name -> 
 				if strcontains name "fslAnnotation" then 
 					match e with
-					| CastE(t,e) -> 
-				          (text "/*"
-							++ self#pExp () e
-							++ text "*/" )
+					| CastE(t,Const(CStr(s))) -> 
+				          (text "/* "
+							++ text s
+							(* ++ self#pExp () e*)
+							++ text " */" )
 				else f
 			| None -> f
 	            

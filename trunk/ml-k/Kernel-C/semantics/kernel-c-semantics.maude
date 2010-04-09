@@ -14,9 +14,12 @@ mod KERNEL-C-SEMANTICS is
 	--- subsort Bool < KResult .
 	---subsort Identifier < Id < Expression . --- hack
 	
+	subsort Annotation < K .
+	subsort Annotation-Statement < K .
 	subsort Block-Item < K .
 	subsort Block-Item-List < K .
 	subsort Compound-Statement < K .
+	subsort Configuration < K .
 	subsort Constant < K .
 	subsort Declaration < K .
 	subsort Declaration-Specifiers < K .
@@ -133,6 +136,9 @@ mod KERNEL-C-SEMANTICS is
 	
 	--- simplify compound assignments (if E1 op= E2, need to ensure E1 only gets evaluated once to be correct)
 	mb [assign-plus]: rule [E1:Expression += E2:Expression => E1:Expression := E1:Expression + E2:Expression] : KSentence .
+	
+	--- throw away comments
+	mb [no-comments]: rule [/* ? */ => .K] : KSentence .
 	
 	----- end simple transformations -----
 
