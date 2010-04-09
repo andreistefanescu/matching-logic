@@ -32,10 +32,16 @@ $(TMP)/%.gen.program.maude: $(TMP)/%.preprocessed cparser
 	./cparser $(CIL_FLAGS) --out $@ $<
 	tail $@
 	
-semantics: $(TMP)/$(INPUT).gen.program.maude
-	make -C $(SEMANTICS_DIR) INPUT=$(realpath $<)
+dynamic-build: $(TMP)/$(INPUT).gen.program.maude
+	make -C $(SEMANTICS_DIR) dynamic INPUT=$(realpath $<)
 
-test: semantics $(SEMANTICS_DIR)/test.maude
+match-build: $(TMP)/$(INPUT).gen.program.maude
+	make -C $(SEMANTICS_DIR) match INPUT=$(realpath $<)
+	
+test: dynamic-build $(SEMANTICS_DIR)/test.maude
+	maude $(SEMANTICS_DIR)/test.maude
+	
+test-match: match-build $(SEMANTICS_DIR)/test.maude
 	maude $(SEMANTICS_DIR)/test.maude
 
 run: $(INPUT).gen.maude.run
