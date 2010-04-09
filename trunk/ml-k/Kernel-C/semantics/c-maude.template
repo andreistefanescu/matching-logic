@@ -1,0 +1,6 @@
+mod %s is
+	including KERNEL-C-SYNTAX .
+	
+%s
+
+endm
