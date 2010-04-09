@@ -1,4 +1,4 @@
-INPUT = factorial
+INPUT = sumn
 #TEST_PROGRAMS = multWithBreak simplest sumn factorial hard
 TMP = tmp
 
