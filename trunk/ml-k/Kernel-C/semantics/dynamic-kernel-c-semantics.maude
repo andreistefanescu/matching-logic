@@ -1,0 +1,4 @@
+mod DYNAMIC-KERNEL-C-SEMANTICS is
+	including COMMON-KERNEL-C-SEMANTICS .
+	
+endm

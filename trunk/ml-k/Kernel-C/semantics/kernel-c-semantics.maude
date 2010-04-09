@@ -1,4 +1,4 @@
-mod KERNEL-C-SEMANTICS is
+mod COMMON-KERNEL-C-SEMANTICS is
 	including KERNEL-C-CONFIGURATION .
 	including K-CONTEXTS .
 	
