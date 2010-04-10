@@ -82,7 +82,7 @@ mod FORMULA is including PL-BOOL + MATHEMATICAL-OBJECT .
   eq ~(~(Phi)) = Phi .
 
   eq Phi ===>  TrueFormula = TrueFormula .
-  eq Phi ===> FalseFormula = Phi .
+  eq Phi ===> FalseFormula = ~ Phi .
 ---  leads to in infinite rewriting
 ---  eq FalseFormula ===> Phi = TrueFormula .
   eq  TrueFormula ===> Phi = Phi .
@@ -145,7 +145,8 @@ mod MATHEMATICAL-INT is inc MATHEMATICAL-OBJECT + FORMULA + PL-INT .
   eq 1 *Int I = I .
   eq I -Int J = I +Int (-Int J) .
   eq -Int (I +Int J) = (-Int I) +Int (-Int J) .
-  eq I +Int (J /Int 2) = (I +Int I +Int J) /Int 2 .
+---  stack overflow
+---  eq I +Int (J /Int 2) = (I +Int I +Int J) /Int 2 .
 
   eq I +Int K === J +Int K = I === J .
  ceq I1 === J1 /\ Phi1 ===> I2 === J2 /\ Phi2 = I1 === J1 /\ Phi1 ===> Phi2 if (-Int I1) +Int (-Int I2) +Int J1 +Int J2 ==Bool 0 .
@@ -317,6 +318,10 @@ mod MATHEMATICAL-GRAPH is inc MATHEMATICAL-INT + MATHEMATICAL-INT-SEQUENCE .
  ceq G # G1 === G # G2 = G1 === G2 if G =/= empty .
 endm
 ***)
+
+mod MATHEMATICAL-INT-ARRAY is inc MATHEMATICAL-INT + MATHEMATICAL-INT-SEQUENCE .
+    
+endm
 
 mod MATHEMATICAL-DOMAIN is
   inc MATHEMATICAL-INT + MATHEMATICAL-INT-SEQUENCE + MATHEMATICAL-INT-TREE + MATHEMATICAL-INT-TREE-SEQUENCE + MATHEMATICAL-INT-BAG .

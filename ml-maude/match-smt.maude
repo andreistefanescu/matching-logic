@@ -22,8 +22,8 @@ mod SMT-LIB is inc MATHEMATICAL-DOMAIN + PL-STRING + PL-CONVERSION + VAR-UTILS .
   op `(+__`) : SMTTerm SMTTerm -> SMTTerm .
   op `(-__`) : SMTTerm SMTTerm -> SMTTerm .
   op `(*__`) : SMTTerm SMTTerm -> SMTTerm .
-  op `(/__`) : SMTTerm SMTTerm -> SMTTerm .
-  op `(%__`) : SMTTerm SMTTerm -> SMTTerm .
+  op `(div__`) : SMTTerm SMTTerm -> SMTTerm .
+  op `(rem__`) : SMTTerm SMTTerm -> SMTTerm .
 
   op `(=__`) : SMTTerm SMTTerm -> SMTFormula .
   op `(>__`) : SMTTerm SMTTerm -> SMTFormula .
@@ -90,8 +90,8 @@ mod SMT-LIB is inc MATHEMATICAL-DOMAIN + PL-STRING + PL-CONVERSION + VAR-UTILS .
   eq mkSMTTerm(I1 +Int I2) = (+ mkSMTTerm(I1) mkSMTTerm(I2)) .
   eq mkSMTTerm(I1 -Int I2) = (- mkSMTTerm(I1) mkSMTTerm(I2)) .
   eq mkSMTTerm(I1 *Int I2) = (* mkSMTTerm(I1) mkSMTTerm(I2)) .
-  eq mkSMTTerm(I1 /Int I2) = (/ mkSMTTerm(I1) mkSMTTerm(I2)) .
-  eq mkSMTTerm(I1 %Int I2) = (% mkSMTTerm(I1) mkSMTTerm(I2)) .
+  eq mkSMTTerm(I1 /Int I2) = (div mkSMTTerm(I1) mkSMTTerm(I2)) .
+  eq mkSMTTerm(I1 %Int I2) = (rem mkSMTTerm(I1) mkSMTTerm(I2)) .
   eq mkSMTTerm(I) = I [owise] .
 
   eq mkSMTFormula(I1 === I2) = (= mkSMTTerm(I1) mkSMTTerm(I2)) .
@@ -145,8 +145,8 @@ mod SMT-LIB is inc MATHEMATICAL-DOMAIN + PL-STRING + PL-CONVERSION + VAR-UTILS .
   eq toString(+ T1 T2) = "(+ " +String toString(T1) +String " " +String toString(T2) +String ")" .
   eq toString(- T1 T2) = "(- " +String toString(T1) +String " " +String toString(T2) +String ")" .
   eq toString(* T1 T2) = "(* " +String toString(T1) +String " " +String toString(T2) +String ")" .
-  eq toString(/ T1 T2) = "(/ " +String toString(T1) +String " " +String toString(T2) +String ")" .
-  eq toString(% T1 T2) = "(% " +String toString(T1) +String " " +String toString(T2) +String ")" .
+  eq toString(div T1 T2) = "(div " +String toString(T1) +String " " +String toString(T2) +String ")" .
+  eq toString(rem T1 T2) = "(rem " +String toString(T1) +String " " +String toString(T2) +String ")" .
 
   eq toString(= T1 T2) = "(= " +String toString(T1) +String " " +String toString(T2) +String ")" .
   eq toString(> T1 T2) = "(> " +String toString(T1) +String " " +String toString(T2) +String ")" .
@@ -191,11 +191,13 @@ mod SMT-LIB is inc MATHEMATICAL-DOMAIN + PL-STRING + PL-CONVERSION + VAR-UTILS .
 ***)
 endm
 
-mod SMT-INTERFACE is inc SMT-LIB + TCP-INTERFACE . endm
+mod SMT-INTERFACE is inc SMT-LIB .
+  op callSolvers : String -> String
+        [special (id-hook StringOpSymbol (callSolvers)
+                  op-hook stringSymbol (<Strings> : ~> String))] .
+  op check-sat : String -> [String] .
 
-***(
-erew tcpRequest(toString(toSMT(
-    @ (len(L) >=Int 0) /\ @ (n0 +Int -2 >=Int 0) /\ @ (n0 +Int -1 +Int -Int len(L) +Int -Int len(L) >=Int 0) /\ @ (
-    ?i +Int ?i +Int 2 +Int -Int n0 >=Int 0) /\ n0 === len(L)
-))) .
-***)
+  var S : String .
+  rl check-sat(S) => callSolvers(S +String "###EOMTCP###" +String "\r\n") .
+endm
+
