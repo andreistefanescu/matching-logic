@@ -832,6 +832,23 @@ eq pListAppend = (
     --- return(t)
     --- //@ assert [markedGraph[graph](result)]
   ) .
+
+  op pListReverse1 : -> K .
+  eq pListReverse1 = (
+    assume <config> <env> p |-> ?p ;; x |-> ?x ;; y |-> ?y </env>
+                    <heap> list(?x)(A) </heap> <form> TrueFormula </form> </config> ;
+    p = 0 ;
+    invariant <config> <env> p |-> ?p ;; x |-> ?x ;; y |-> ?x </env>
+                   <heap> list(?p)(?B) ** list(?x)(?C) </heap> <form> rev(A) === rev(?C) :: ?B /\ ~(?p === 0) </form> </config> ;
+    while(x != 0) {
+      y = *(x + 1) ;
+      *(x + 1) = p ;
+      p = x ;
+      x = y ;
+    }
+    assert <config> <env> p |-> ?p ;; x |-> ?x ;; y |-> ?y </env>
+                    <heap> list(?p)(rev(A)) </heap> <form> TrueFormula </form> </config> ;
+) .
 endm
 
 ---set print attribute on .
@@ -862,42 +879,32 @@ rew [| pArrayAccess |] .
 rew [| pSchorrWaite |] .
 ***)
 
-rew [| pListLengthMergeSort |] .
+--- rew [| pListLengthMergeSort |] .
+rew [| pListReverse1 |] .
 
-***(
+eof
+
 search
     <config>
-<env> a |-> ?a ;; b |-> ?b ;; e |-> ?e ;; h |-> 0 ;; i |-> ?i ;; n |-> n0 ;; t |-> 0 ;; x |-> ?x </env>
+<env> p |-> 0 ;; x |-> ?x ;; y |-> ?y </env>
 <heap>
-     ?a |-> ?Int(0) : node
-  ** ?b |-> ?Int(3) : node
-  ** (?a +Int 1) |-> ?Int(1) : next
-  ** (?b +Int 1) |-> ?Int(4) : next
-  ** list ?Int(1) ?IntSeq(2)
-  ** list ?Int(4) ?IntSeq(5)
+     list ?x A
 </heap>
-<form> @ (len(skolem(1, ?A)) >=Int 0) /\ @ (n0 +Int -2 >=Int 0) /\ @ (-Int ?Int(0) +Int min(list2bag(?IntSeq(2))) >=Int
-    0) /\ @ (-Int ?Int(3) +Int min(list2bag(?IntSeq(5))) >=Int 0) /\ @ (n0 +Int -1 +Int -Int len(skolem(1, ?A)) +Int
-    -Int len(skolem(1, ?A)) >=Int 0) /\ @ (2 +Int -Int n0 +Int skolem(1, ?i) +Int skolem(1, ?i) >=Int 0) /\ ~(?a === 0)
-    /\ ~(?b === 0) /\ ~(skolem(1, ?x) === 0) /\ isSorted(?IntSeq(2)) /\ isSorted(?IntSeq(5)) /\ isSorted(skolem(2,
-    ?A')) /\ n0 === len(L) /\ L === ?A :: ?B /\ L === skolem(2, ?A) :: skolem(2, ?B) /\ L === skolem(1, ?A) :: skolem(
-    1, ?Int(0)) :: skolem(1, ?IntSeq(2)) </form>
+<form> TrueFormula </form>
 <menv> .MatchEnv </menv>
-<newSym> 6 </newSym>
-<newImpl> 3 </newImpl>
+<newSym> 0 </newSym>
+<newImpl> 0 </newImpl>
     </config>
 ===>
     <config>
-   <env> a |-> ?a ;; b |-> ?b ;; e |-> ?e ;; h |-> ?h ;; i |-> ?i ;; n |-> n0 ;; t |-> ?t ;; x |-> ?x </env>
+   <env> p |-> ?p ;; x |-> ?x ;; y |-> ?x </env>
    <heap>
-        list ?a ?A
-     ** list ?b ?B
-     ** queue (?h,?t) ?C
+        list ?p ?B
+     ** list ?x ?C
    </heap>
-   <form> @ (min(list2bag(?A)) >=Int max(list2bag(?C))) /\ @ (min(list2bag(?B)) >=Int max(list2bag(?C))) /\ isSorted(
-    ?A) /\ isSorted(?B) /\ isSorted(?C) /\ (~(?a === 0) /\ ~(?b === 0) \/ ~(?h === 0) /\ ~(?t === 0)) /\ list2bag(L)
-    === list2bag(?A) &' list2bag(?B) &' list2bag(?C) </form>    </config>
+   <form> ~ (?p === 0) /\ rev(A) === rev(?C) :: ?B </form>
+    </config>
 ---=>* <form> F:Formula </form> <menv> MatchEnv:MatchEnv </menv> .
 =>* S:Set{ConfigItem} .
-***)
+
 

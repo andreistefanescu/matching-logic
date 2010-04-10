@@ -25,17 +25,19 @@ def initZ3():
 
 Z3 = initZ3()
 
-def callZ3(querry):
-    Z3.stdin.writelines(["(push)\n",
-        querry + "\n",
-        "(pop)\n"])
+def callZ3(Z3_querry):
+    Z3.stdin.writelines(["(push)\n"])
+    if Z3.stdout.readline().strip() != "success": return "unknown"
     
-    print Z3.stdout.readline().strip()
-    print Z3.stdout.readline().strip()
-    print Z3.stdout.readline().strip()
-    result = Z3.stdout.readline().strip()
-    print result
-    print Z3.stdout.readline().strip()
+    for Z3_cmd in Z3_querry:
+        Z3.stdin.writelines([Z3_cmd + "\n"])
+        result = Z3.stdout.readline().strip()
+        print Z3_cmd + "\n" + result
+        if result != "success": break
+    
+    Z3.stdin.writelines(["(pop)\n"])
+    if Z3.stdout.readline().strip() != "success": return "unknown"    
+    
     return result
 
 HOST = 'localhost'              # Symbolic name meaning all available interfaces
@@ -50,14 +52,16 @@ serversocket.listen(1)
 while True:
     conn, addr = serversocket.accept()
     print "receiving querry from ", addr
+    
     msg = ""
     while True:
         data = conn.recv(BUFSIZ)
         msg += data
         if not data or data.find(MAUDE_EOF) != -1: break
+    querry = msg[0:data.find(MAUDE_EOF)].split("\n")
     
-    formula = msg[0:data.find(MAUDE_EOF)]
-    result = callZ3(formula)
-    print "sending result to", addr, " :\t", result
+    result = callZ3(querry)
+
+    print "sending result to", addr
     conn.send(result)
     conn.close()

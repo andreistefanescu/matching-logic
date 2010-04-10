@@ -32,6 +32,15 @@ mod IMP is inc HP .
 ---  eq I1 - I2 = #(_-_(I1,I2)) .
   eq I1 - I2 = I1 +Int (-Int I2) .
 
+  --- elena
+  op _/_ : K K -> KProper [prec 33 gather(e E)] .  ops ([]/_) (_/[]) : K -> K .
+  eq <k> Kp / K ~> Rest </k> = <k> Kp ~> [] / K ~> Rest </k> .
+  eq <k> V1 ~> [] / K ~> Rest </k> = <k> V1 / K ~> Rest </k> .
+  eq <k> V1 / Kp ~> Rest </k> = <k> Kp ~> V1 / [] ~> Rest </k> .
+  eq <k> V2 ~> V1 / [] ~> Rest </k> = <k> V1 / V2 ~> Rest </k> .
+ ceq I1 / I2 = I1 /Int I2 if I2 =/= 0 .
+  --- elena
+
   op _>_ : K K -> KProper [prec 35] .  ops ([]>_) (_>[]) : K -> K .
   eq <k> Kp > K ~> Rest </k> = <k> Kp ~> [] > K ~> Rest </k> .
   eq <k> V1 ~> [] > K ~> Rest </k> = <k> V1 > K ~> Rest </k> .

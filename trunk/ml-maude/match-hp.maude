@@ -19,7 +19,7 @@ mod HP is inc FOL= .
 *** call external SMT solver
  crl <config> <k> derive(P) ~> Rest </k> <form> NtPhi </form> Cfg </config>
   => <config> <k> derive(P) ~> Rest </k> <form> FalseFormula </form> Cfg </config>
-  if tcpRequest(toString(toSMT(NtPhi))) => "unsat" [print "ana are mere"] .
+  if check-sat(toString(toSMT(NtPhi))) => "unsat" [print "ana are mere"] .
 
 ***(
  ceq <config> <k> derive(P') ~> Rest </k> <heap> P |-> O ** H </heap> <form> Phi </form> Cfg </config>

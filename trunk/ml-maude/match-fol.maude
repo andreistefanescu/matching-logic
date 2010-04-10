@@ -316,7 +316,7 @@ mod FOL= is inc MATHEMATICAL-DOMAIN + SUBST + SKOL + SMT-INTERFACE .
 
 --- Step 6: Call external SMT solver to check the formula if the "in-house" approach failed
  crl <config> <form> NtPhi </form> <menv> MatchEnv </menv> </config> => <config> <form> TrueFormula </form> <menv> MatchEnv </menv> </config>
-  if tcpRequest(toString(toSMT(~ NtPhi))) => "unsat" [print "ana are mere"] .
+  if check-sat(toString(toSMT(~ NtPhi))) => "unsat" [print "ana are mere"] .
 
 
 --- helper operations
