@@ -1,5 +1,28 @@
 mod MATCH-KERNEL-C-SEMANTICS is
 	including COMMON-KERNEL-C-SEMANTICS .
+
 	
+	--- [| 0,0,<config>
+		--- <k> K </k>
+		--- <env> .Env </env>
+		--- <heap> .Heap </heap>
+		--- <form> TrueFormula </form>
+		--- <menv> .MatchEnv </menv>
+		--- <newSym> 0 </newSym>
+		--- <newImpl> 0 </newImpl>
+	--- </config> |]
+	--- eq eval(P:Program) = 
+		--- < T >
+			--- < k > P:Program ~> Apply(main) </ k > 
+			--- < env > .Map </ env > 
+			--- < genv > .Map </ genv > 
+			--- < mem > .Map </ mem >  
+			--- < output > .List </ output >
+			--- < callStack > .List </ callStack >
+			--- < nextLoc > 0 </ nextLoc >
+			--- < locals > .Bag </ locals >
+			--- < parameters > .Bag </ parameters >
+			--- ---< form > TrueFormula </ form >
+		--- </ T > .
 	
 endm

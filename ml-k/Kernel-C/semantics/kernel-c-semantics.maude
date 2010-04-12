@@ -13,15 +13,13 @@ mod COMMON-KERNEL-C-SEMANTICS is
 	subsort Value < KResult .
 	
 	op List : BagItem -> ListItem .
-	
 	op unknown : -> K .
 	op skipval : -> KResult . 
+	op closure : -> KLabel .
 	
 
 	op eval : Program -> Bag .
 
-	
-	op closure : -> KLabel .
 	
 	----- start simple transformations -----
 	--- massage application with no argument

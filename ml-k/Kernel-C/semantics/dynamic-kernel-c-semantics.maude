@@ -12,6 +12,7 @@ mod DYNAMIC-KERNEL-C-SEMANTICS is
 			< nextLoc > 0 </ nextLoc >
 			< locals > .Bag </ locals >
 			< parameters > .Bag </ parameters >
+			---< form > .Bag </ form >
 		</ T > .
 	
 	--- throw away annotations

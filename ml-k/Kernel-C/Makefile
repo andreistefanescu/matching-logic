@@ -44,8 +44,6 @@ test: dynamic-build $(SEMANTICS_DIR)/test.maude
 test-match: match-build $(SEMANTICS_DIR)/test.maude
 	maude $(SEMANTICS_DIR)/test.maude
 
-run: $(INPUT).gen.maude.run
-
 clean:
 	rm -f cparser $(TMP)/*
 	make -C $(PARSER_DIR) clean
