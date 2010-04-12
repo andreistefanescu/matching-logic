@@ -1,4 +1,4 @@
-K-MAUDE-BASE = ../../../../../k-framework/k-maude/trunk
+K-MAUDE-BASE = ../../../../../k-framework/trunk
 K-COMPILE = tools/kcompile.sh
 
 K-MAUDE = $(K-MAUDE-BASE)/$(K-COMPILE)

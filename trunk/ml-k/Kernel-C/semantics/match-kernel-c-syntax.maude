@@ -2,23 +2,28 @@ mod MATCH-KERNEL-C-SYNTAX is
 	including COMMON-KERNEL-C-SYNTAX .
 	including K .
 	
-
 	sort Annotation-Statement .
 	subsort Annotation-Statement < Statement .
 	sort Annotation .
 	sort Configuration .
-	---sort Annotation-Aux .
-	--- /*("assume (nothing ;)")*/
-	---op /*("_")*/ : Annotation -> Annotation-Statement .
 	op /*_*/ : Annotation -> Annotation-Statement .
-	---op `(\"_\"`) : -> Annotation-Aux .
-	---op `("_"`) : Annotation -> Annotation-Aux .
-	---sort Annotation-Aux .
-	---op "_" : Annotation-Aux -> Annotation .
-	---op assume`(nothing`;`) : -> Annotation .
-	sort Formula .
+		
+	sorts Formula .
+	--- Atom Truth NtFormula 
+	--- subsort Atom < K .
+	--- subsort Truth < K .
+	--- subsort NtFormula < K .
 	subsort Formula < K .
 	op @ : -> Formula .
+	
+	--- subsort Atom < NtFormula .
+	--- subsort Truth NtFormula < Formula .
+
+	--- ops TrueFormula FalseFormula : -> Truth .
+	--- op @_ : Bool -> Atom [prec 0] .
+	---op _/\_ : NtFormula Formula -> NtFormula [prec 55 assoc comm id: TrueFormula] .
+	---op _/\_ : Formula Formula -> Formula [ditto] .
+	
 	
 	op bvar : -> K .
 	
