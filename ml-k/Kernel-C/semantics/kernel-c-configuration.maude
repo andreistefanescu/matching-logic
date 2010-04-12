@@ -60,19 +60,19 @@ mod KERNEL-C-CONFIGURATION is
 	
 	mb configuration 
 		< T > 
-			< k > P:Program </ k >
-			< env > Env:Map </ env > 
-			< genv > GEnv:Map </ genv > 
-			< mem > Store:Map </ mem >  
-			< output > Output:List </ output > 
-			< callStack > Stack:List </ callStack >
-			< nextLoc > N:Nat </ nextLoc >
-			< locals > Locals:Bag </ locals >
-			< parameters > Parameters:Bag </ parameters >
-			---< form > F:Formula </ form >
+			< k > .K </ k >
+			< env > .Map </ env > 
+			< genv > .Map </ genv > 
+			< mem > .Map </ mem >  
+			< output > .List </ output > 
+			< callStack > .List </ callStack >
+			< nextLoc > 0 </ nextLoc >
+			< locals > .Bag </ locals >
+			< parameters > .Bag </ parameters >
+			< form > .K </ form >
 		</ T > 
-		< resultValue > K:K </ resultValue >
-		< resultOutput > Output:List </ resultOutput > 
+		< resultValue > .K </ resultValue >
+		< resultOutput > .List </ resultOutput > 
 		: KSentence .
 	
 endm
