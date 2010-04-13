@@ -126,9 +126,7 @@ mod COMMON-KERNEL-C-SYNTAX is
 	---sort Conditional-Expression .
 	---subsort Conditional-Expression < K .
 	---subsort Unary-Expression < Conditional-Expression .
-	--- op `(_`)_
-		--- : Type-Name Conditional-Expression 
-			--- -> Conditional-Expression [prec 29 gather(E e) strict (2) renameTo castTo] .
+	op Cast : Type-Name Expression -> Expression .
 	ops _*_ _/_ _%_ : Expression Expression -> Expression [prec 31 gather(E e) metadata "strict"] .	
 	ops _+_ _-_ : Expression Expression -> Expression [prec 33 gather(E e) metadata "strict"] .
 	ops _<<_ _>>_ : Expression Expression -> Expression [prec 35 gather(E e) metadata "strict"] .
@@ -166,19 +164,8 @@ mod COMMON-KERNEL-C-SYNTAX is
 	--- ---- A.2.2 Declarations
 	--- --- 6.7
 	sort Declaration .
-
-	---op Declaration : Declaration-Specifiers -> Declaration .
-	--- sort DeclarationAux .
-	--- subsort DeclarationAux < K .
-	---op int`main`(void`) : -> DeclarationAux .
-	--- subsort Declaration-Specifiers < DeclarationAux .
-	--- op _ : Declaration-Specifiers 
 	op Declaration : Declaration-Specifiers -> Declaration .
 	op Declaration : Declaration-Specifiers Init-Declarator-List -> Declaration .
-	--- TODO op _; : Declaration-Specifiers -> Declaration .
-	--- TODO op __; : Declaration-Specifiers Init-Declarator-List -> Declaration . --- int main(void) ;
-	--- Note: totally made up to ease parsing
-	--- op _; : Parameter-Declaration -> Declaration [format (ni o o) renameTo _] .
 	
 	sort Init-Declarator-List .
 	subsort Init-Declarator < Init-Declarator-List .
@@ -187,8 +174,8 @@ mod COMMON-KERNEL-C-SYNTAX is
 	
 	sort Declaration-Specifiers .
 
-	---subsort Storage-Class-Specifier Type-Specifier Type-Qualifier Function-Specifier < Declaration-Specifiers .
-	subsort Type-Specifier < Declaration-Specifiers .
+	---subsort Type-Specifier Type-Qualifier Function-Specifier < Declaration-Specifiers .
+	subsort Storage-Class-Specifier Type-Specifier < Declaration-Specifiers .
 	--- --- TODO op __ : Storage-Class-Specifier Declaration-Specifiers -> Declaration-Specifiers .
 	--- --- TODO op __ : Type-Specifier Declaration-Specifiers -> Declaration-Specifiers [renameTo combine] .
 	--- --- TODO op __ : Type-Qualifier Declaration-Specifiers -> Declaration-Specifiers .
@@ -201,8 +188,8 @@ mod COMMON-KERNEL-C-SYNTAX is
 	--- --- op _=_ : Declarator Initializer -> Init-Declarator .
 	
 	--- --- 6.7.1
-	--- sort Storage-Class-Specifier .
-	--- ops typedef extern static auto register : -> Storage-Class-Specifier .
+	sort Storage-Class-Specifier .
+	ops typedef extern static auto register : -> Storage-Class-Specifier .
 	
 	--- --- 6.7.2
 	sort Type-Specifier .
@@ -230,8 +217,9 @@ mod COMMON-KERNEL-C-SYNTAX is
 	--- --- TODO op __; : Specifier-Qualifier-List Struct-Declarator-List -> Struct-Declarator .
 	--- --- TODO
 	
-	--- sort Specifier-Qualifier-List .
-	--- subsort Type-Specifier Type-Qualifier < Specifier-Qualifier-List .
+	sort Specifier-Qualifier-List .
+	---subsort Type-Specifier Type-Qualifier < Specifier-Qualifier-List .
+	subsort Type-Specifier < Specifier-Qualifier-List .
 	--- op __ : Type-Specifier Specifier-Qualifier-List -> Specifier-Qualifier-List [renameTo Specifier-Qualifier-List] .
 	--- op __ : Type-Qualifier Specifier-Qualifier-List -> Specifier-Qualifier-List [renameTo Specifier-Qualifier-List] .
 	--- --- TODO 
@@ -285,8 +273,8 @@ mod COMMON-KERNEL-C-SYNTAX is
 	subsort Direct-Declarator < Declarator .
 
 	subsort Id < Direct-Declarator .
-	--- --- TODO op __ : Pointer Declarator -> Declarator .
-	
+	op Pointer : Direct-Declarator -> Direct-Declarator .
+	op Pointer`(`) : -> Direct-Declarator .
 	--- --- op `(_`) : Declarator -> Declarator . --- problem with (_)
 	--- op _`[`] : Declarator -> Declarator .
 	--- op _`[_`] : Declarator Type-Qualifier-List -> Declarator .
@@ -302,8 +290,8 @@ mod COMMON-KERNEL-C-SYNTAX is
 	--- --- TODO op _`(`) : Declarator -> Declarator .
 	--- --- TODO op _`(_`) : Declarator Identifier-List -> Declarator .
 	
-	--- sort Pointer .
-	--- op * : -> Pointer [renameTo Pointer] .
+	---sort Pointer .
+	---op Pointer : -> Pointer .
 	--- op *_ : Type-Qualifier-List -> Pointer [renameTo Pointer] .
 	--- op *_ : Pointer -> Pointer [renameTo Pointer] .
 	--- op *__ : Type-Qualifier-List Pointer -> Pointer [renameTo Pointer] .
@@ -319,7 +307,7 @@ mod COMMON-KERNEL-C-SYNTAX is
 	---op .Parameter-Type-List : -> Parameter-Type-List .
 	---op Parameter-Type-List : Declaration-Specifiers -> Parameter-Type-List .
 	op Parameter-Type-List : Parameter-Declaration -> Parameter-Type-List .
-	--- ---op _`,... : Parameter-List -> Parameter-Type-List .
+	op _`,... : Parameter-Declaration -> Parameter-Type-List .
 	--- --- TODO
 	
 	---sort Parameter-List .
@@ -342,8 +330,9 @@ mod COMMON-KERNEL-C-SYNTAX is
 	--- --- TODO op hackli_hackli : List{Identifier} -> List{Identifier} .
 	
 	--- --- 6.7.6
-	--- sort Type-Name .
-	--- subsort Specifier-Qualifier-List < Type-Name .
+	sort Type-Name .
+	subsort Specifier-Qualifier-List < Type-Name .
+	op __ : Specifier-Qualifier-List Declarator -> Type-Name [prec 85 gather(e E)] .
 	--- --- TODO op __ : Specifier-Qualifier-List Abstract-Declarator -> Type-Name .
 	
 	--- --- Note: Collapsed Abstract-Declarator with Direct-Abstract-Declarator
@@ -404,7 +393,7 @@ mod COMMON-KERNEL-C-SYNTAX is
 
 	subsort Block-Item < Block-Item-List .
 	--- op Block-Item-List : Block-Item-List Block-Item -> Block-Item-List .
-	op __ : Block-Item-List Block-Item-List -> Block-Item-List [prec 85 gather(e E)] . --- [assoc prec 85] .
+	op __ : Block-Item-List Block-Item-List -> Block-Item-List [ditto] . --- [assoc prec 85] .
 	
 	sort Block-Item .
 
@@ -460,7 +449,7 @@ mod COMMON-KERNEL-C-SYNTAX is
 	subsort Translation-Unit < Program .
 
 	sort Common-Ancestor-Sequencing .
-	subsort Translation-Unit Block-Item-List <  Common-Ancestor-Sequencing .
+	subsort Translation-Unit Block-Item-List Specifier-Qualifier-List Declarator <  Common-Ancestor-Sequencing .
 	
 	---op _;_ : Declaration Translation-Unit -> Translation-Unit [ditto] .
 	---op _;_ : Declaration Translation-Unit -> Translation-Unit [ditto] .
@@ -473,6 +462,7 @@ mod COMMON-KERNEL-C-SYNTAX is
 
 	subsort Function-Definition < External-Declaration .
 	op Global : Block-Item -> External-Declaration .
+	op Global`(`) : -> External-Declaration .
 	---subsort Block-Item < External-Declaration . --- SOOO WRONG, but parsing is dumb
 	---subsort Function-Definition < External-Declaration .
 	--- op External-Declaration : Function-Definition -> External-Declaration .

@@ -61,6 +61,10 @@ open CSOURCE, "< $c_prog" or die "Cannot open file $c_prog\n";
 #
 open CDEST, "> $output_flag" or die "Cannot open output file $output_flag\n";
 
+# Print our fake function decl
+print CDEST "void fslAnnotation(char*, ...);\n";
+
+
 #
 # Set up the lists we will use to track pre- and post-conditions.
 #
@@ -96,290 +100,30 @@ $linenum++;
   # Keep track of changed output text.
   $outline = "";
 
-  # Preconditions, /*@ and //@ style comments, system defined
-  if ($line =~ m/^\s*\/\*\@\s*pre\s*\(([^\)]+)\)(\:?)\s*(([^\*]|\*[^\/])*)(.*)$/i) {
-    #print STDOUT "Found pre with system $1, memory = $3, leftover = $5\n";
-    push @preconds, [ $1, $3 ];
-    $funflag = 1;
-    $ppflag = 1;
-  }
-  elsif ($line =~ m/^\s*\/\/\@\s*pre\s*\(([^\)]+)\)(\:?)\s*(.*)$/i) {
-    #print STDOUT "Found pre with system $1, memory = $3\n";
-    push @preconds, [ $1, $3 ];
-    $funflag = 1;
-    $ppflag = 1;
-  }
-  elsif ($line =~ m/^\s*\/\*\@\s*precondition\s*\(([^\)]+)\)(\:?)\s*(([^\*]|\*[^\/])*)(.*)$/i) {
-    #print STDOUT "Found pre with system $1, memory = $3, leftover = $5\n";
-    push @preconds, [ $1, $3 ];
-    $funflag = 1;
-    $ppflag = 1;
-  }
-  elsif ($line =~ m/^\s*\/\/\@\s*precondition\s*\(([^\)]+)\)(\:?)\s*(.*)$/i) {
-    #print STDOUT "Found pre with system $1, memory = $3\n";
-    push @preconds, [ $1, $3 ];
-    $funflag = 1;
-    $ppflag = 1;
-  }
-
-  # Preconditions, /*@ and //@ style comments, no system defined
-  elsif ($line =~ m/^\s*\/\*\@\s*pre(\:?)\s*(([^\*]|\*[^\/])*)(.*)$/i) {
-    #print STDOUT "Found pre with memory = $2, leftover = $4\n";
-    push @preconds, [ $default_analysis, $2 ];
-    $funflag = 1;
-    $ppflag = 1;
-  }
-  elsif ($line =~ m/^\s*\/\/\@\s*pre(\:?)\s*(.*)$/i) {
-    #print STDOUT "Found pre with memory = $2\n";
-    push @preconds, [ $default_analysis, $2 ];
-    $funflag = 1;
-    $ppflag = 1;
-  }
-  elsif ($line =~ m/^\s*\/\*\@\s*precondition(\:?)\s*(([^\*]|\*[^\/])*)(.*)$/i) {
-    #print STDOUT "Found pre with memory = $2, leftover = $4\n";
-    push @preconds, [ $default_analysis, $2 ];
-    $funflag = 1;
-    $ppflag = 1;
-  }
-  elsif ($line =~ m/^\s*\/\/\@\s*precondition(\:?)\s*(.*)$/i) {
-    #print STDOUT "Found pre with memory = $2\n";
-    push @preconds, [ $default_analysis, $2 ];
-    $funflag = 1;
-    $ppflag = 1;
-  }
-
-  # Postconditions, /*@ and //@ style comments, system defined
-  elsif ($line =~ m/^\s*\/\*\@\s*post\s*\(([^\)]+)\)(\:?)\s*(([^\*]|\*[^\/])*)(.*)$/i) {
-    #print STDOUT "Found post with system $1, memory = $3, leftover = $5\n";
-    push @postconds, [ $1, $3 ];
-    $funflag = 1;
-    $ppflag = 1;
-  }
-  elsif ($line =~ m/^\s*\/\/\@\s*post\s*\(([^\)]+)\)(\:?)\s*(.*)$/i) {
-    #print STDOUT "Found post with system $1, memory = $3\n";
-    push @postconds, [ $1, $3 ];
-    $funflag = 1;
-    $ppflag = 1;
-  }
-  elsif ($line =~ m/^\s*\/\*\@\s*postcondition\s*\(([^\)]+)\)(\:?)\s*(([^\*]|\*[^\/])*)(.*)$/i) {
-    #print STDOUT "Found post with system $1, memory = $3, leftover = $5\n";
-    push @postconds, [ $1, $3 ];
-    $funflag = 1;
-    $ppflag = 1;
-  }
-  elsif ($line =~ m/^\s*\/\/\@\s*postcondition\s*\(([^\)]+)\)(\:?)\s*(.*)$/i) {
-    #print STDOUT "Found post with system $1, memory = $3\n";
-    push @postconds, [ $1, $3 ];
-    $funflag = 1;
-    $ppflag = 1;
-  }
-
-  # Postconditions, /*@ and //@ style comments, no system defined
-  elsif ($line =~ m/^\s*\/\*\@\s*post(\:?)\s*(([^\*]|\*[^\/])*)(.*)$/i) {
-    #print STDOUT "Found post with memory = $2, leftover = $4\n";
-    push @postconds, [ $default_analysis, $2 ];
-    $funflag = 1;
-    $ppflag = 1;
-  }
-  elsif ($line =~ m/^\s*\/\/\@\s*post\s*(\:?)\s*(.*)$/i) {
-    #print STDOUT "Found post with memory = $2\n";
-    push @postconds, [ $default_analysis, $2 ];
-    $funflag = 1;
-    $ppflag = 1;
-  }
-  elsif ($line =~ m/^\s*\/\*\@\s*postcondition(\:?)\s*(([^\*]|\*[^\/])*)(.*)$/i) {
-    #print STDOUT "Found post with memory = $2, leftover = $4\n";
-    push @postconds, [ $default_analysis, $2 ];
-    $funflag = 1;
-    $ppflag = 1;
-  }
-  elsif ($line =~ m/^\s*\/\/\@\s*postcondition(\:?)\s*(.*)$/i) {
-    #print STDOUT "Found post with memory = $2\n";
-    push @postconds, [ $default_analysis, $2 ];
-    $funflag = 1;
-    $ppflag = 1;
-  }
-
-  # Modifies, /*@ and //@ style comments, system defined
-  if ($line =~ m/^\s*\/\*\@\s*modifies\s*\(([^\)]+)\)(\:?)\s*(([^\*]|\*[^\/])*)(.*)$/i) {
-    #print STDOUT "Found mod with system $1, memory = $3, leftover = $5\n";
-    push @modifies, [ $1, $3 ];
-    $funflag = 1;
-    $ppflag = 1;
-  }
-  elsif ($line =~ m/^\s*\/\/\@\s*modifies\s*\(([^\)]+)\)(\:?)\s*(.*)$/i) {
-    #print STDOUT "Found mod with system $1, memory = $3\n";
-    push @modifies, [ $1, $3 ];
-    $funflag = 1;
-    $ppflag = 1;
-  }
-  elsif ($line =~ m/^\s*\/\*\@\s*mod\s*\(([^\)]+)\)(\:?)\s*(([^\*]|\*[^\/])*)(.*)$/i) {
-    #print STDOUT "Found mod with system $1, memory = $3, leftover = $5\n";
-    push @modifies, [ $1, $3 ];
-    $funflag = 1;
-    $ppflag = 1;
-  }
-  elsif ($line =~ m/^\s*\/\/\@\s*mod\s*\(([^\)]+)\)(\:?)\s*(.*)$/i) {
-    #print STDOUT "Found mod with system $1, memory = $3\n";
-    push @modifies, [ $1, $3 ];
-    $funflag = 1;
-    $ppflag = 1;
-  }
-
-  # Modifies, /*@ and //@ style comments, no system defined
-  elsif ($line =~ m/^\s*\/\*\@\s*modifies(\:?)\s*(([^\*]|\*[^\/])*)(.*)$/i) {
-    #print STDOUT "Found mod with memory = $2, leftover = $4\n";
-    push @modifies, [ $default_analysis, $2 ];
-    $funflag = 1;
-    $ppflag = 1;
-  }
-  elsif ($line =~ m/^\s*\/\/\@\s*modifies(\:?)\s*(.*)$/i) {
-    #print STDOUT "Found mod with memory = $2\n";
-    push @modifies, [ $default_analysis, $2 ];
-    $funflag = 1;
-    $ppflag = 1;
-  }
-  elsif ($line =~ m/^\s*\/\*\@\s*mod(\:?)\s*(([^\*]|\*[^\/])*)(.*)$/i) {
-    #print STDOUT "Found mod with memory = $2, leftover = $4\n";
-    push @modifies, [ $default_analysis, $2 ];
-    $funflag = 1;
-    $ppflag = 1;
-  }
-  elsif ($line =~ m/^\s*\/\/\@\s*mod(\:?)\s*(.*)$/i) {
-    #print STDOUT "Found mod with memory = $2\n";
-    push @modifies, [ $default_analysis, $2 ];
-    $funflag = 1;
-    $ppflag = 1;
-  }
-
-  # Type invariant, /*@ and //@ style comments, system defined
-  if ($line =~ m/^\s*\/\*\@\s*tinv\s*\(([^\)]+)\)(\:?)\s*(([^\*]|\*[^\/])*)(.*)$/i) {
-    #print STDOUT "Found tinv with system $1, memory = $3, leftover = $5\n";
-    push @tinvariants, [ $1, $3 ];
-    $funflag = 1;
-    $ppflag = 1;
-  }
-  elsif ($line =~ m/^\s*\/\/\@\s*tinv\s*\(([^\)]+)\)(\:?)\s*(.*)$/i) {
-    #print STDOUT "Found tinv with system $1, memory = $3\n";
-    push @tinvariants, [ $1, $3 ];
-    $funflag = 1;
-    $ppflag = 1;
-  }
-  elsif ($line =~ m/^\s*\/\*\@\s*tinvariant\s*\(([^\)]+)\)(\:?)\s*(([^\*]|\*[^\/])*)(.*)$/i) {
-    #print STDOUT "Found tinv with system $1, memory = $3, leftover = $5\n";
-    push @tinvariants, [ $1, $3 ];
-    $funflag = 1;
-    $ppflag = 1;
-  }
-  elsif ($line =~ m/^\s*\/\/\@\s*tinvariant\s*\(([^\)]+)\)(\:?)\s*(.*)$/i) {
-    #print STDOUT "Found tinv with system $1, memory = $3\n";
-    push @tinvariants, [ $1, $3 ];
-    $funflag = 1;
-    $ppflag = 1;
-  }
-
-  # Type invariant, /*@ and //@ style comments, no system defined
-  elsif ($line =~ m/^\s*\/\*\@\s*tinv(\:?)\s*(([^\*]|\*[^\/])*)(.*)$/i) {
-    #print STDOUT "Found tinv with memory = $2, leftover = $4\n";
-    push @tinvariants, [ $default_analysis, $2 ];
-    $funflag = 1;
-    $ppflag = 1;
-  }
-  elsif ($line =~ m/^\s*\/\/\@\s*tinv(\:?)\s*(.*)$/i) {
-    #print STDOUT "Found tinv with memory = $2\n";
-    push @tinvariants, [ $default_analysis, $2 ];
-    $funflag = 1;
-    $ppflag = 1;
-  }
-  elsif ($line =~ m/^\s*\/\*\@\s*tinvariant(\:?)\s*(([^\*]|\*[^\/])*)(.*)$/i) {
-    #print STDOUT "Found tinv with memory = $2, leftover = $4\n";
-    push @tinvariants, [ $default_analysis, $2 ];
-    $funflag = 1;
-    $ppflag = 1;
-  }
-  elsif ($line =~ m/^\s*\/\/\@\s*tinvariant(\:?)\s*(.*)$/i) {
-    #print STDOUT "Found tinv with memory = $2\n";
-    push @tinvariants, [ $default_analysis, $2 ];
-    $funflag = 1;
-    $ppflag = 1;
-  }
-
-  # Put the pre- and post-conditions into our own C syntax, to be handled by CIL.
-  # These go after the function header but before the ; or { character. Try to
-  # maintain line numbers, so the error reports we get back from our analysis
-  # will still make sense.
-  #
-  # NOTE: To make this work with structures, the order of the two regexp tests
-  # in the second if below is important. If they are reversed, any annotations
-  # will be put after the { but before the first ; (i.e, before the ; which
-  # terminates the first field definition).
-  if ($funflag == 1 && $ppflag == 0) {
-    if ($line =~ m/^([^{]*)([{])(.*)$/i || $line =~ m/^([^\;]*)(\;)(.*)$/i) {
-      if ($2 eq ";") {
-	print STDOUT "Found prototype of $1, then ;, then $3\n";
-      } else {
-	print STDOUT "Found definition of $1, then {, then $3\n";
-      }
-      # Print out the pre and post conditions and clear out the pre/post lists
-      $outline = $1;
-      if ($1 ne "") {
-	$outline = $outline . " ";
-      }
-
-      $first = 1;
-
-      foreach $pre (@preconds) {
-	if ($first != 1) {
-	  $outline = $outline . " ";
-	} else {
-	  $first = 0;
-	}
-	$outline = $outline . "precondition(" . $pre->[0] . "," . '"' . rtrim($pre->[1]) . '"' . ")";
-      }
-
-      foreach $post (@postconds) {
-	if ($first != 1) {
-	  $outline = $outline . " ";
-	} else {
-	  $first = 0;
-	}
-	$outline = $outline . "postcondition(" . $post->[0] . "," . '"' . rtrim($post->[1]) . '"' . ")";
-      }
-
-      foreach $mod (@modifies) {
-	if ($first != 1) {
-	  $outline = $outline . " ";
-	} else {
-	  $first = 0;
-	}
-	$outline = $outline . "modifies(" . $mod->[0] . "," . '"' . rtrim($mod->[1]) . '"' . ")";
-      }
-
-      foreach $tinv (@tinvariants) {
-	if ($first != 1) {
-	  $outline = $outline . " ";
-	} else {
-	  $first = 0;
-	}
-	$outline = $outline . "tinvariant(" . $tinv->[0] . "," . '"' . rtrim($tinv->[1]) . '"' . ")";
-      }
-
-      $outline = $outline . $2 . $3 . "\n";
-
-      @preconds = (); @postconds = ();
-      $funflag = 0;
-    }
-  }
   
 # int fslAnnotation __attribute__ ((visibility ("protected"))); fslAnnotation = 0;
 
   # Asserts, /*@ and //@ style comments, no system defined
   #$var =~ s/([CHARLIST])/\\$1/g;
-
-  if ($line =~ s/\/\/\@\s*assert(\:?)\s*(.*)$/char* fslAnnotation$linenum = "assert ($2)";/i) {
-  } elsif ($line =~ s/\/\/\@\s*assume(\:?)\s*(.*)$/char* fslAnnotation$linenum = "assume ($2)";/i) {
-  } elsif ($line =~ s/\/\/\@\s*invariant(\:?)\s*(.*)$/char* fslAnnotation$linenum = "invariant ($2)";/i) {
-  }
+	
+	my @vars = ();
+	#print "$line\n";
+	while ($line =~ m/(\@(\w+))\b/g) {
+		#print "Found '$&'\n";
+		push(@vars, $2);
+		push(@atvars, "\"$1\"");
+		#Next attempt at character " . pos($string)+1 . "\n";
+	}
+	@vars = zip2(@atvars, @vars);
+	my $varstr = join(', ', @vars);
+	if ($varstr){
+		$varstr = ", $varstr";
+	}
+	if ($line =~ s/\/\/\@\s*assert(\:?)\s*(.*)$/char* fslAnnotation$linenum = "assert ($2)";/i) {
+	} elsif ($line =~ s/\/\/\@\s*assume(\:?)\s*(.*)$/fslAnnotation("assert ($2)"$varstr);/i) {
+	} elsif ($line =~ s/\/\/\@\s*invariant(\:?)\s*(.*)$/char* fslAnnotation$linenum = "invariant ($2)";/i) {
+	}
+  
 
   # If we didn't write anything into $outline yet, just copy in the $line, so we can always just
   # output $outline. This will usually be the case (it will be on any standard lines of C code).
@@ -419,6 +163,13 @@ sub rtrim($)
         $string =~ s/\s+$//;
         return $string;
 }
+# from http://stackoverflow.com/questions/38345/is-there-an-elegant-zip-to-interleave-two-lists-in-perl-5
+# interleaves two lists together 
+sub zip2 {
+    my $p = @_ / 2; 
+    return @_[ map { $_, $_ + $p } 0 .. $p - 1 ];
+}
+
 
 #
 # Usage message 
