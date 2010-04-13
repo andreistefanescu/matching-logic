@@ -53,8 +53,11 @@ mod KERNEL-C-CONFIGURATION is
 	subsort Parameter-Declaration < K .
 	subsort Parameter-Type-List < K .
 	subsort Selection-Statement < K .
+	subsort Specifier-Qualifier-List < K .
+	subsort Storage-Class-Specifier < K .
 	subsort Statement < K .
 	subsort Translation-Unit < K .
+	subsort Type-Name < K .
 	subsort Type-Specifier < K .
 	
 	

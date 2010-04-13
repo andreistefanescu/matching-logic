@@ -21,7 +21,7 @@ $(PARSER_DIR)/cparser: Makefile
 cparser: $(PARSER_DIR)/cparser Makefile
 	cp $(PARSER_DIR)/cparser .
 
-$(TMP)/%.embed.c: $(C_DIR)/%.c Makefile
+$(TMP)/%.embed.c: $(C_DIR)/%.c Makefile embed.pl
 	mkdir -p $(TMP)
 	perl embed.pl -d=ML -o=$@ $<
 

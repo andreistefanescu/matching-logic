@@ -148,7 +148,7 @@ method private pLvalPrec (contextprec: int) () lv =
 	
   (*** VARIABLES ***)
   (* variable use *)
-  method pVar (v:varinfo) = text v.vname
+  method pVar (v:varinfo) = text v.vname (* ++ (text "/*" ++ v.vdescr ++ text "*/") *)
 
   
   
@@ -235,7 +235,7 @@ method private pLvalPrec (contextprec: int) () lv =
 
           | _ -> None, bt
         in
-        let name' = text "*" ++ printAttributes a ++ name in
+        let name' = text "Pointer(" ++ printAttributes a ++ name ++ text ")" in
         let name'' = (* Put the parenthesis *)
           match paren with 
             Some p -> p ++ name' ++ text ")" 
@@ -460,10 +460,29 @@ method private pLvalPrec (contextprec: int) () lv =
                     text "(" ++ self#pType None () destt ++ text ")"
                 | _ -> nil))
           (* Now the function name *)
-          ++ text "Apply(" ++ 
+		  
+		  (*
+		 let myv = (match lv with
+			| (Var fslv, _) -> Some fslv.vname
+			| (Mem _, _) -> None ) in
+			match myv with
+			| Some name -> 
+				if strcontains name "fslAnnotation" then 
+					match e with
+					| CastE(t,Const(CStr(s))) -> 
+				          (text "/* "
+							++ text s
+							(* ++ self#pExp () e*)
+							++ text " */" )
+				else f
+			| None -> f
+		  *)
+		  ++
+		  let f = 
+		  (text "Apply(" ++ 
 			(let ed = self#pExp () e in
               match e with 
-                Lval(Var _, _) -> ed
+                Lval(Var fslv, _) -> ed
               | _ -> text "(" ++ ed ++ text ")")
           ++ text ", (" ++ 
           (align
@@ -472,7 +491,28 @@ method private pLvalPrec (contextprec: int) () lv =
                    (self#pExp ()) () args)
              ++ unalign)
 		++ text ")"
-        ++ text (")" ^ (self#getPrintInstrTerminator ()))
+        ++ text (")" ^ (self#getPrintInstrTerminator ())))
+		in
+		  let myv = (
+			match e with 
+                Lval(Var fslv, _) -> Some fslv.vname
+              | _ -> None
+			 ) in 
+			match myv with
+				| Some name -> 
+					if strcontains name "fslAnnotation" then 
+						(*let rec newe () e = (
+							match e with
+							| CastE(t,e') -> (newe () e')
+							| Const(CStr(s)) -> text s			
+						    | _ -> self#pExp () e
+						) ++ text " " in
+						(text "/* annotation(("
+							++ (docList ~sep:(text ";;" ++ break) (newe ()) () args)
+							++ text ")) */" ) *) text ""
+					else f
+				| None -> f
+        
     | _ -> super#pInstr () i
 
 	
@@ -772,4 +812,49 @@ method private pLvalPrec (contextprec: int) () lv =
 
      | g -> fprint out !lineLength (self#pGlobal () g)	  
 
+
+	 
+	  (*** EXPRESSIONS ***)
+  method pExp () (e: exp) : doc = 
+    let level = getParenthLevel e in
+    match e with
+      Const(c) -> d_const () c
+    | Lval(l) -> self#pLval () l
+    | UnOp(u,e1,_) -> 
+        (d_unop () u) ++ chr ' ' ++ (self#pExpPrec level () e1)
+          
+    | BinOp(b,e1,e2,_) -> 
+        align 
+          ++ (self#pExpPrec level () e1)
+          ++ chr ' ' 
+          ++ (d_binop () b)
+          ++ chr ' '
+          ++ (self#pExpPrec level () e2)
+          ++ unalign
+
+    | CastE(t,e) -> 
+        text "Cast(" 
+          ++ self#pType None () t
+          ++ text ")"
+          ++ self#pExpPrec level () e
+
+    | SizeOf (t) -> 
+        text "sizeof(" ++ self#pType None () t ++ chr ')'
+    | SizeOfE (Lval (Var fv, NoOffset)) when fv.vname = "__builtin_va_arg_pack" && (not !printCilAsIs) -> 
+        text "__builtin_va_arg_pack()"
+    | SizeOfE (e) ->  
+        text "sizeof(" ++ self#pExp () e ++ chr ')'
+
+    | SizeOfStr s -> 
+        text "sizeof(" ++ d_const () (CStr s) ++ chr ')'
+
+    | AlignOf (t) -> 
+        text "__alignof__(" ++ self#pType None () t ++ chr ')'
+    | AlignOfE (e) -> 
+        text "__alignof__(" ++ self#pExp () e ++ chr ')'
+    | AddrOf(lv) -> 
+        text "& " ++ (self#pLvalPrec addrOfLevel () lv)
+          
+    | StartOf(lv) -> self#pLval () lv
+	 
 end (* class defaultCilPrinterClass *)

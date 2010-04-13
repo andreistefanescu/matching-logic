@@ -3,8 +3,8 @@ int main() {
 }
 
 int sum(int n) {
-	//@ assume < T > < env > .Map </ env > < mem > .Map </ mem > < form > @ </ form > </ T >
 	int sum = 0;
+	//@ assume < T > < env > @n |-> ?l1 @sum |-> ?l2 </ env > < mem > ?l1 |-> ?n ?l2 |-> ?sum </ mem > < form > TrueFormula </ form > </ T >
 	int i = 1;
 	//@ invariant .Bag
 	while (i <= n){

@@ -7,14 +7,25 @@ mod MATCH-KERNEL-C-SYNTAX is
 	sort Annotation .
 	sort Configuration .
 	op /*_*/ : Annotation -> Annotation-Statement .
-		
+	---subsort Annotation Configuration Annotation-Statement < K .
+	---sort Info .
+	---op _;;_ : Annotation Annotation -> Annotation [assoc] .
+	--- annotation((assert (< T > < env > @n |-> ?l1 @sum |-> ?l2 </ env > < mem > ?l1 |-> ?n ?l2 |-> ?sum </ mem > < form > TrueFormula </ form > </ T >); @n; ((n)); @sum; ((sumuuu0))))
+	
+	---op annotation : Annotation -> Annotation .
+	---subsort Id < Annotation .
+	---op annot : Info -> Annotation .
+	---op _;_ : K K -> K [assoc] .
 	sorts Formula .
 	--- Atom Truth NtFormula 
 	--- subsort Atom < K .
 	--- subsort Truth < K .
 	--- subsort NtFormula < K .
 	subsort Formula < K .
-	op @ : -> Formula .
+	op TrueFormula : -> Formula .
+	
+	---ops ?l1 ?l2 @n ?n ?sum @sum : -> Annotation .
+	---subsort Id < Annotation .
 	
 	--- subsort Atom < NtFormula .
 	--- subsort Truth NtFormula < Formula .

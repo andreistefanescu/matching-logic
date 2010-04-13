@@ -50,6 +50,7 @@ mod COMMON-KERNEL-C-SEMANTICS is
 	---mb [remove-global-marker]: rule [Global(D:Declaration ;) => D:Declaration ;] : KSentence .
 	--- for now, just ignore globals
 	mb [remove-global-marker]: rule [Global(D:Declaration) => .K] : KSentence .
+	mb [remove-global-marker-empty]: rule [Global() => .K] : KSentence .
 	
 	--- simplify compound assignments (if E1 op= E2, need to ensure E1 only gets evaluated once to be correct)
 	mb [assign-plus]: rule [E1:Expression += E2:Expression => E1:Expression := E1:Expression + E2:Expression] : KSentence .
