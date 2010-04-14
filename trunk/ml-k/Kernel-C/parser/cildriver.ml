@@ -134,8 +134,9 @@ let myDumpFile (pp: cilPrinter) (out : out_channel) (outfile: string) file =
 	printTypedefList out !typedefList;
 	printNewline out;
 	
-	fprintf out "%s\n" "op program : -> Program .";
-	fprintf out "%s\n" "eq program = ("; 
+	let programName = "program-" ^ outfile in
+		fprintf out "%s\n" ("op " ^ programName ^ " : -> Program .");
+		fprintf out "%s\n" ("eq " ^ programName ^ " = ("); 
 	
 	
 	(*fprintf out "%s\n" (List.hd !identifierList);*)
