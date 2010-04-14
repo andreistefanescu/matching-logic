@@ -119,9 +119,9 @@ $linenum++;
 	if ($varstr){
 		$varstr = ", $varstr";
 	}
-	if ($line =~ s/\/\/\@\s*assert(\:?)\s*(.*)$/char* fslAnnotation$linenum = "assert ($2)";/i) {
-	} elsif ($line =~ s/\/\/\@\s*assume(\:?)\s*(.*)$/fslAnnotation("assert ($2)"$varstr);/i) {
-	} elsif ($line =~ s/\/\/\@\s*invariant(\:?)\s*(.*)$/char* fslAnnotation$linenum = "invariant ($2)";/i) {
+	if ($line =~ s/\/\/\@\s*assert(\:?)\s*(.*)$/fslAnnotation("assert ($2)"$varstr);/i) {
+	} elsif ($line =~ s/\/\/\@\s*assume(\:?)\s*(.*)$/fslAnnotation("assume ($2)"$varstr);/i) {
+	} elsif ($line =~ s/\/\/\@\s*invariant(\:?)\s*(.*)$/fslAnnotation("invariant ($2)"$varstr);/i) {
 	}
   
 

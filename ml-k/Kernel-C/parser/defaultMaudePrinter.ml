@@ -56,6 +56,8 @@ let wrap (d1:Pretty.doc) (d2:string) : Pretty.doc = d2 ^+ paren(d1)
 let typeSig t = 
   typeSigWithAttrs (fun al -> al) t
 
+let replace input output =
+    Str.global_replace (Str.regexp_string input) output
 
 let strcontains s1 s2 =
 try 
@@ -501,15 +503,24 @@ method private pLvalPrec (contextprec: int) () lv =
 			match myv with
 				| Some name -> 
 					if strcontains name "fslAnnotation" then 
-						(*let rec newe () e = (
+						let rec newe () e = (
 							match e with
 							| CastE(t,e') -> (newe () e')
-							| Const(CStr(s)) -> text s			
-						    | _ -> self#pExp () e
-						) ++ text " " in
-						(text "/* annotation(("
-							++ (docList ~sep:(text ";;" ++ break) (newe ()) () args)
-							++ text ")) */" ) *) text ""
+							| Const(CStr(s)) -> s
+							| Lval(Var vi, o) -> vi.vname
+						) in
+						let (s, m) = (
+							match args with
+							| x::xs -> ((newe () x), xs)
+							(*(docList ~sep:(text ";;" ++ break) (newe ()) () args)*) 
+						) in let rec f (s, m) = (
+							match m with
+							| (pattern :: replacement :: ms) -> 
+								let var1 = (replace "_" "u" (newe () pattern)) in
+								let var2 = (replace "_" "u" (newe () replacement)) in
+								f (((replace var1 var2) s), ms)
+							| [] -> text ("(annotation(" ^ s ^ ") ;) ")
+						) in f (s, m)
 					else f
 				| None -> f
         

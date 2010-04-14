@@ -16,7 +16,7 @@ mod DYNAMIC-KERNEL-C-SEMANTICS is
 		</ T > .
 	
 	--- throw away annotations
-	mb [no-annotations]: rule [/* ? */ => .K] : KSentence .
+	mb [no-annotations]: rule [annotation(?); => .K] : KSentence .
 	
 	
 endm
