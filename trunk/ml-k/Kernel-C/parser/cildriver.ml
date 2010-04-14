@@ -57,7 +57,11 @@ module E = Errormsg
 module H = Hashtbl
 
 
-let printerForMaincil = new maudePrinter  (* descriptiveCilPrinterClass *)
+let printerForMaincil = new maudePrinter
+(* new plainCilPrinterClass *)
+(* new maudePrinter *)
+
+(* ((new descriptiveCilPrinterClass true) :> descriptiveCilPrinter) *)  (* descriptiveCilPrinterClass *)
 
 let strcontains s1 s2 =
 try 

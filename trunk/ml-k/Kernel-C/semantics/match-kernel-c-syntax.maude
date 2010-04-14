@@ -5,17 +5,17 @@ mod MATCH-KERNEL-C-SYNTAX is
 	sort Annotation-Statement .
 	subsort Annotation-Statement < Statement .
 	sort Annotation .
-	sort Configuration .
-	op /*_*/ : Annotation -> Annotation-Statement .
-	---subsort Annotation Configuration Annotation-Statement < K .
-	---sort Info .
-	---op _;;_ : Annotation Annotation -> Annotation [assoc] .
-	--- annotation((assert (< T > < env > @n |-> ?l1 @sum |-> ?l2 </ env > < mem > ?l1 |-> ?n ?l2 |-> ?sum </ mem > < form > TrueFormula </ form > </ T >); @n; ((n)); @sum; ((sumuuu0))))
+	---sort Configuration .
+	op annotation_; : Annotation -> Annotation-Statement .
 	
-	---op annotation : Annotation -> Annotation .
-	---subsort Id < Annotation .
-	---op annot : Info -> Annotation .
-	---op _;_ : K K -> K [assoc] .
+	op assume : Bag -> Annotation .
+	op assert : Bag -> Annotation .
+	op invariant : Bag -> Annotation .
+	
+	ops ?l1 ?l2 n0 ?sum ?n : -> Int .
+	
+	subsort Annotation Annotation-Statement < K .
+
 	sorts Formula .
 	--- Atom Truth NtFormula 
 	--- subsort Atom < K .
@@ -23,9 +23,6 @@ mod MATCH-KERNEL-C-SYNTAX is
 	--- subsort NtFormula < K .
 	subsort Formula < K .
 	op TrueFormula : -> Formula .
-	
-	---ops ?l1 ?l2 @n ?n ?sum @sum : -> Annotation .
-	---subsort Id < Annotation .
 	
 	--- subsort Atom < NtFormula .
 	--- subsort Truth NtFormula < Formula .
@@ -35,12 +32,6 @@ mod MATCH-KERNEL-C-SYNTAX is
 	---op _/\_ : NtFormula Formula -> NtFormula [prec 55 assoc comm id: TrueFormula] .
 	---op _/\_ : Formula Formula -> Formula [ditto] .
 	
-	
-	op bvar : -> K .
-	
-	op assume : Bag -> Annotation .
-	op assert : Bag -> Annotation .
-	op invariant : Bag -> Annotation .
 	
 	---op Config : Bag -> Configuration .
 	

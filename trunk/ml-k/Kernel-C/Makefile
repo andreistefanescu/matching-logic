@@ -15,10 +15,10 @@ CIL_FLAGS = --noWrap --decil --noPrintLn --warnall --strictcheck --nokeepunused
 all: cparser 
 #$(addsuffix .gen.program.maude,$(TEST_PROGRAMS))
 
-$(PARSER_DIR)/cparser: Makefile
+$(PARSER_DIR)/cparser: Makefile $(PARSER_DIR)/cildriver.ml $(PARSER_DIR)/defaultMaudePrinter.ml $(PARSER_DIR)/maudePrinter.ml 
 	make -C $(PARSER_DIR)
 
-cparser: $(PARSER_DIR)/cparser Makefile
+cparser: $(PARSER_DIR)/cparser Makefile 
 	cp $(PARSER_DIR)/cparser .
 
 $(TMP)/%.embed.c: $(C_DIR)/%.c Makefile embed.pl

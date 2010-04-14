@@ -27,12 +27,9 @@ mod KERNEL-C-CONFIGURATION is
 	--- subsort Bool < KResult .
 	---subsort Identifier < Id < Expression . --- hack
 	
-	subsort Annotation < K .
-	subsort Annotation-Statement < K .
 	subsort Block-Item < K .
 	subsort Block-Item-List < K .
 	subsort Compound-Statement < K .
-	subsort Configuration < K .
 	subsort Constant < K .
 	subsort Declaration < K .
 	subsort Declaration-Specifiers < K .
