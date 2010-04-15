@@ -6,8 +6,8 @@ mod COMMON-KERNEL-C-SEMANTICS is
 	
 	op Closure : Function-Definition -> Value .
 	
-	mb context Deref([]) := ? : KSentence .
-	mb context Deref([]) ++ : KSentence .
+	mb context Deref([HOLE]) := ? : KSentence .
+	mb context Deref([HOLE]) ++ : KSentence .
 	
 	subsort Int < Value < Expression .
 	subsort Value < KResult .
