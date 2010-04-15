@@ -66,6 +66,86 @@ try
 with
 | e -> false
 
+let mostNeg32BitInt : int64 = (Int64.of_string "-0x80000000")
+let mostNeg64BitInt : int64 = (Int64.of_string "-0x8000000000000000")
+
+
+	(* constant *)
+let d_const () c = 
+  match c with
+    CInt64(_, _, Some s) -> text s (* Always print the text if there is one *)
+  | CInt64(i, ik, None) -> 
+      (** We must make sure to capture the type of the constant. For some 
+       * constants this is done with a suffix, for others with a cast prefix.*)
+      let suffix : string = 
+        match ik with
+          IUInt -> "U"
+        | ILong -> "L"
+        | IULong -> "UL"
+        | ILongLong -> if !msvcMode then "L" else "LL"
+        | IULongLong -> if !msvcMode then "UL" else "ULL"
+        | _ -> ""
+      in
+      let prefix : string = 
+        if suffix <> "" then "" 
+        else if ik = IInt then ""
+        else "(" ^ (sprint !lineLength (d_ikind () ik)) ^ ")"
+      in
+      (* Watch out here for negative integers that we should be printing as 
+       * large positive ones *)
+      if i < Int64.zero 
+          && (match ik with 
+            IUInt | IULong | IULongLong | IUChar | IUShort -> true | _ -> false) then
+        let high = Int64.shift_right i 32 in
+        if ik <> IULongLong && ik <> ILongLong && high = Int64.of_int (-1) then
+          (* Print only the low order 32 bits *)
+          text (prefix ^ "0x " ^ 
+				suffix ^ "(" ^
+                (Int64.format "%x" 
+                  (Int64.logand i (Int64.shift_right_logical high 32))
+                ^ ")"))
+        else
+          text (prefix ^ "0x " ^ suffix ^ "(" ^ Int64.format "%x" i ^ ")")
+      else (
+        if (i = mostNeg32BitInt) then
+          (* sm: quirk here: if you print -2147483648 then this is two tokens *)
+          (* in C, and the second one is too large to represent in a signed *)
+          (* int.. so we do what's done in limits.h, and print (-2147483467-1); *)
+          (* in gcc this avoids a warning, but it might avoid a real problem *)
+          (* on another compiler or a 64-bit architecture *)
+          text (prefix ^ "(-0x7FFFFFFF-1)")
+        else if (i = mostNeg64BitInt) then
+          (* The same is true of the largest 64-bit negative. *)
+          text (prefix ^ "(-0x7FFFFFFFFFFFFFFF-1)")
+        else
+          text (prefix ^ suffix ^ "(" ^ (Int64.to_string i ^ ")"))
+      )
+
+  | CStr(s) -> text ("\"" ^ escape_string s ^ "\"")
+  | CWStr(s) -> 
+      (* text ("L\"" ^ escape_string s ^ "\"")  *)
+      (List.fold_left (fun acc elt -> 
+        acc ++ 
+        if (elt >= Int64.zero &&
+            elt <= (Int64.of_int 255)) then 
+          text (escape_char (Char.chr (Int64.to_int elt)))
+        else
+          ( text (Printf.sprintf "\\x%LX\"" elt) ++ break ++
+            (text "\""))
+      ) (text "L\"") s ) ++ text "\""
+      (* we cannot print L"\xabcd" "feedme" as L"\xabcdfeedme" --
+       * the former has 7 wide characters and the later has 3. *)
+
+  | CChr(c) -> text ("'" ^ escape_char c ^ "'")
+  | CReal(_, _, Some s) -> text s
+  | CReal(f, fsize, None) -> 
+      text (string_of_float f) ++
+      (match fsize with
+         FFloat -> chr 'f'
+       | FDouble -> nil
+       | FLongDouble -> chr 'L')
+  | CEnum(_, s, ei) -> text s
+	 
   
 (* Helper class for typeSig: replace any types in attributes with typsigs *)
 class typeSigVisitor(typeSigConverter: typ->typsig) = object 
@@ -200,6 +280,7 @@ method private pLvalPrec (contextprec: int) () lv =
     | TInt (ikind,a) -> text ""
 		++ paren (d_ikind () ikind)
 		++ text ", "
+		(*++ if (name = nil) then (nil) else (text " xx " ++ name ++ text " xx, ")*)
 		++ (self#pAttrs () a)
 		++ text " "
 		++ name
@@ -302,7 +383,7 @@ method private pLvalPrec (contextprec: int) () lv =
           restyp
 
   | TNamed (t, a) ->
-      text t.tname ++ self#pAttrs () a ++ text " " ++ name
+      text t.tname ++ text ", " ++ self#pAttrs () a ++ text " " ++ name
 
   | TBuiltin_va_list a -> 
       text "__builtin_va_list"
@@ -670,9 +751,9 @@ method private pLvalPrec (contextprec: int) () lv =
           
     | GType (typ, l) ->
         self#pLineDirective ~forcefile:true l ++
-          text "typedef "
-          ++ (self#pType (Some (text typ.tname)) () typ.ttype)
-          ++ text ";\n"
+          text "(Typedef ("
+          ++ (self#pType (Some (text (typ.tname))) () typ.ttype)
+          ++ text ")) \n"
 
     | GEnumTag (enum, l) ->
         self#pLineDirective l ++
@@ -844,10 +925,11 @@ method private pLvalPrec (contextprec: int) () lv =
           ++ unalign
 
     | CastE(t,e) -> 
-        text "Cast(" 
+        text "Cast((" 
           ++ self#pType None () t
-          ++ text ")"
+          ++ text ")),("
           ++ self#pExpPrec level () e
+		  ++ text ")"
 
     | SizeOf (t) -> 
         text "sizeof(" ++ self#pType None () t ++ chr ')'
@@ -868,4 +950,7 @@ method private pLvalPrec (contextprec: int) () lv =
           
     | StartOf(lv) -> self#pLval () lv
 	 
+	 
+	 
+
 end (* class defaultCilPrinterClass *)

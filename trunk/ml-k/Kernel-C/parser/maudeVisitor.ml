@@ -54,12 +54,42 @@ class maudeVisitor = object inherit nopCilVisitor
 		identifierList <- (replace "_" "u" v.vname) :: identifierList;
 		DoChildren
 	end
+
+	method vvrbl (v:varinfo) = begin
+		identifierList <- (replace "_" "u" v.vname) :: identifierList;
+		DoChildren
+	end
 	
 	method vglob (g:global) = begin
 		( match g with 
-			| GType(typeinfo, location) -> typedefList <- typeinfo.tname :: typedefList (*typeinfo.ttype*)
+			| GType(typeinfo, location) -> typedefList <- (replace "_" "u" typeinfo.tname) :: typedefList (*typeinfo.ttype*)
+			| GVarDecl(varinfo, location) -> identifierList <- (replace "_" "u" varinfo.vname) :: identifierList (*typeinfo.ttype*)
 			| _ -> ()
 		) ;
 		DoChildren
 	end
+	
+	method vinit (forg: varinfo) (off: offset) (i:init) = begin
+		identifierList <- (replace "_" "u" forg.vname) :: identifierList;
+		DoChildren
+	end
+	
+	method vtype (t:typ) = begin
+		( match t with 
+			| TFun (restyp, args, isvararg, a) -> 
+				(match args with
+				| Some ((aname, atype, aattr)::xs) -> 
+					if (String.length(aname) != 0) then (
+						identifierList <- (replace "_" "u" aname) :: identifierList;
+					) else (
+					)
+				| _ -> () ;
+				)
+			(* | TNamed (typeinfo, attributes) -> *)
+			(* typedefList <- (replace "_" "u" typeinfo.tname) :: typedefList (*typeinfo.ttype*) *)
+			| _ -> ()
+		) ;
+		DoChildren
+	end
+	
 end
