@@ -11,14 +11,14 @@ benchmark: $(addsuffix .gen.maude,$(TEST_PROGRAMS))
 all: %.gen.maude
 
 %.prepre.gen.c: %.c embed.pl Makefile
-	perl embed.pl -d=ML -o=$@ $<
+	@perl embed.pl -d=ML -o=$@ $<
 
 %.pre.gen.c: %.prepre.gen.c
-	gcc -E -I. -o $@ $<
+	@gcc -Wall -Wextra -Werror -Wmissing-prototypes -pedantic -x c -std=c99 -E -I. -o $@ $<
 
 %.gen.maude: %.pre.gen.c $(PARSER_DIR)/cparser
-	$(PARSER_DIR)/cparser $(CIL_FLAGS) --out $@ $<
-	tail $@
+	@$(PARSER_DIR)/cparser $(CIL_FLAGS) --out $@ $<
+#tail $@
 		
 clean:
 	rm -f *.prepre.gen.c *.pre.gen.c *.gen.maude

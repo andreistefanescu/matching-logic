@@ -1,11 +1,11 @@
 //#include <stddef.h>
-//#include <stdlib.h>
+#include <stdlib.h>
 int* listReverseUnchecked(int* p);
 int* listReverse(int* p);
 int* listAppend(int* p, int n);
 
 int main(void){
-	// int* head = malloc(2);
+	//int* head = malloc(2);
 	// *head = 20; 
 	// *(head + 1) = NULL;
 	

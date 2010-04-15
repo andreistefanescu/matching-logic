@@ -15,6 +15,7 @@ mod COMMON-KERNEL-C-SYNTAX is
 	--- --- 6.4.4.1
 	sort Integer-Constant .
 	subsort Int < Integer-Constant .
+	op UL : Int -> Integer-Constant .
 	--- subsort Decimal-Constant < Integer-Constant .
 	--- Octal-Constant Hexadecimal-Constant 
 	--- --- TODO
@@ -166,6 +167,7 @@ mod COMMON-KERNEL-C-SYNTAX is
 	sort Declaration .
 	op Declaration : Declaration-Specifiers -> Declaration .
 	op Declaration : Declaration-Specifiers Init-Declarator-List -> Declaration .
+	op Typedef : Specifier-Qualifier-List Typedef-Name -> Declaration .
 	
 	sort Init-Declarator-List .
 	subsort Init-Declarator < Init-Declarator-List .
@@ -176,7 +178,7 @@ mod COMMON-KERNEL-C-SYNTAX is
 
 	---subsort Type-Specifier Type-Qualifier Function-Specifier < Declaration-Specifiers .
 	subsort Storage-Class-Specifier Type-Specifier < Declaration-Specifiers .
-	--- --- TODO op __ : Storage-Class-Specifier Declaration-Specifiers -> Declaration-Specifiers .
+	op __ : Storage-Class-Specifier Declaration-Specifiers -> Declaration-Specifiers [prec 85 gather(e E)] .
 	--- --- TODO op __ : Type-Specifier Declaration-Specifiers -> Declaration-Specifiers [renameTo combine] .
 	--- --- TODO op __ : Type-Qualifier Declaration-Specifiers -> Declaration-Specifiers .
 	--- --- TODO op __ : Function-Specifier Declaration-Specifiers -> Declaration-Specifiers .
@@ -191,10 +193,13 @@ mod COMMON-KERNEL-C-SYNTAX is
 	sort Storage-Class-Specifier .
 	ops typedef extern static auto register : -> Storage-Class-Specifier .
 	
+	---- typedef char c
+	
 	--- --- 6.7.2
 	sort Type-Specifier .
 
-	--- subsort Struct-Or-Union-Specifier Enum-Specifier Typedef-Name < Type-Specifier .
+	--- subsort Struct-Or-Union-Specifier Enum-Specifier < Type-Specifier .
+	subsort Typedef-Name < Type-Specifier .
 	ops void char short int long float double signed unsigned : -> Type-Specifier [ctor] .
 	--- ----ops `_Bool `_Complex : -> Type-Specifier [ctor] .
 	--- --- TODO
@@ -220,6 +225,7 @@ mod COMMON-KERNEL-C-SYNTAX is
 	sort Specifier-Qualifier-List .
 	---subsort Type-Specifier Type-Qualifier < Specifier-Qualifier-List .
 	subsort Type-Specifier < Specifier-Qualifier-List .
+	op __ : Type-Specifier Specifier-Qualifier-List -> Specifier-Qualifier-List [ditto] .
 	--- op __ : Type-Specifier Specifier-Qualifier-List -> Specifier-Qualifier-List [renameTo Specifier-Qualifier-List] .
 	--- op __ : Type-Qualifier Specifier-Qualifier-List -> Specifier-Qualifier-List [renameTo Specifier-Qualifier-List] .
 	--- --- TODO 
@@ -332,7 +338,7 @@ mod COMMON-KERNEL-C-SYNTAX is
 	--- --- 6.7.6
 	sort Type-Name .
 	subsort Specifier-Qualifier-List < Type-Name .
-	op __ : Specifier-Qualifier-List Declarator -> Type-Name [prec 85 gather(e E)] .
+	op __ : Specifier-Qualifier-List Declarator -> Type-Name [ditto] .
 	--- --- TODO op __ : Specifier-Qualifier-List Abstract-Declarator -> Type-Name .
 	
 	--- --- Note: Collapsed Abstract-Declarator with Direct-Abstract-Declarator
@@ -343,8 +349,8 @@ mod COMMON-KERNEL-C-SYNTAX is
 	--- --- TODO
 	
 	--- --- 6.7.7
-	--- sort Typedef-Name .
-	--- ---subsort Identifier < Typedef-Name .
+	sort Typedef-Name .
+	---subsort Identifier < Typedef-Name .
 	
 	--- --- 6.7.8
 	--- sort Initializer .
@@ -449,7 +455,7 @@ mod COMMON-KERNEL-C-SYNTAX is
 	subsort Translation-Unit < Program .
 
 	sort Common-Ancestor-Sequencing .
-	subsort Translation-Unit Block-Item-List Specifier-Qualifier-List Declarator <  Common-Ancestor-Sequencing .
+	subsort Declaration-Specifiers Translation-Unit Block-Item-List Specifier-Qualifier-List Declarator <  Common-Ancestor-Sequencing .
 	
 	---op _;_ : Declaration Translation-Unit -> Translation-Unit [ditto] .
 	---op _;_ : Declaration Translation-Unit -> Translation-Unit [ditto] .

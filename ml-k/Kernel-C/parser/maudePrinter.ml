@@ -101,7 +101,9 @@ class maudePrinter = object(self)
 		* name being declared. Note that for structure/union and enumeration types 
 		* the definition of the composite type is not visited. Use [vglob] to 
 		* visit it.  *)
+	
 	(*method pType (d:Pretty.doc option) () (t:typ) = wrap (super#pType d () t) "Type"*)
+	method pType (d:Pretty.doc option) () (t:typ) = text (replace "_" "u" (sprint 1000 (super#pType d () t)))
 	(*method pType (d:Pretty.doc option) () (t:typ) = paren (super#pType d () t) *)
 	 (*method pType (d:Pretty.doc option) () (t:typ) = 
 		(* wrap (super#pType d () t) "Type" *)
@@ -110,7 +112,8 @@ class maudePrinter = object(self)
 			| Some _ -> wrap (super#pType d () t) "DeclaratorAux"*)
 			
 	(** Attribute lists *)
-    (* method pAttrs () (a:attributes) = wrap (super#pAttrs () a) "Attributes" *)
+     (* method pAttrs () (a:attributes) = wrap (super#pAttrs () a) "Attributes" *)
+	 method pAttrs () (a:attributes) = nil
 	
     (** Print expressions *) 
 	method pExp () (e:exp) = paren (super#pExp () e)
@@ -121,7 +124,7 @@ class maudePrinter = object(self)
 
 	(** Global (vars, types, etc.). This can be slow and is used only by 
      * {!Cil.printGlobal} but not by {!Cil.dumpGlobal}. *)
-	method pGlobal () (g:global) = wrapifne (super#pGlobal () g) "Global"
+	method pGlobal () (g:global) = wrap (super#pGlobal () g) "Global"
    
 (*
   
