@@ -1,14 +1,18 @@
 PARSER_DIR = ../parser
+PARSER = $(PARSER_DIR)/cparser
 TEST_PROGRAMS = multWithBreak simplest sumn factorial hard listReverse
+
+ALL_FILES = $(wildcard *.c)
+ALL_PROGRAMS = $(basename $(ALL_FILES))
 CIL_FLAGS = --noWrap --decil --noPrintLn --warnall --strictcheck --nokeepunused 
 
-.SECONDARY:
+#.SECONDARY:
 
 .PHONY: all clean benchmark
 
-benchmark: $(addsuffix .gen.maude,$(TEST_PROGRAMS))
+all: $(addsuffix .gen.maude,$(ALL_PROGRAMS))
 
-all: %.gen.maude
+benchmark: $(addsuffix .gen.maude,$(TEST_PROGRAMS))
 
 %.prepre.gen.c: %.c embed.pl Makefile
 	@perl embed.pl -d=ML -o=$@ $<
@@ -16,8 +20,8 @@ all: %.gen.maude
 %.pre.gen.c: %.prepre.gen.c
 	@gcc -Wall -Wextra -Werror -Wmissing-prototypes -pedantic -x c -std=c99 -E -I. -o $@ $<
 
-%.gen.maude: %.pre.gen.c $(PARSER_DIR)/cparser
-	@$(PARSER_DIR)/cparser $(CIL_FLAGS) --out $@ $<
+%.gen.maude: %.pre.gen.c $(PARSER)
+	@$(PARSER) $(CIL_FLAGS) --out $@ $<
 #tail $@
 		
 clean:

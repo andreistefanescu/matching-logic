@@ -5,9 +5,7 @@ SEMANTICS = match
 # match or dynamic semantics
 VPATH = programs
 
-
-
-.PHONY: all clean run test force cparser maude-fragments build-all dynamic match
+.PHONY: all clean run test force cparser maude-fragments build-all dynamic match fix
 
 all: cparser maude-fragments 
 
@@ -16,6 +14,9 @@ dynamic: build-all run
 
 match: SEMANTICS=match build-all
 match: build-all run
+
+fix: 
+	maude $(SEMANTICS_DIR)/kernel-c.maude
 
 force: ;
 

@@ -279,7 +279,7 @@ method private pLvalPrec (contextprec: int) () lv =
 
     | TInt (ikind,a) -> text ""
 		++ paren (d_ikind () ikind)
-		++ text ", "
+		++ if (name = nil) then (nil) else (text ", ")
 		(*++ if (name = nil) then (nil) else (text " xx " ++ name ++ text " xx, ")*)
 		++ (self#pAttrs () a)
 		++ text " "
@@ -927,9 +927,9 @@ method private pLvalPrec (contextprec: int) () lv =
     | CastE(t,e) -> 
         text "Cast((" 
           ++ self#pType None () t
-          ++ text ")),("
+          ++ text "),("
           ++ self#pExpPrec level () e
-		  ++ text ")"
+		  ++ text "))"
 
     | SizeOf (t) -> 
         text "sizeof(" ++ self#pType None () t ++ chr ')'

@@ -12,7 +12,8 @@ mod MATCH-KERNEL-C-SYNTAX is
 	op assert : Bag -> Annotation .
 	op invariant : Bag -> Annotation .
 	
-	ops ?l1 ?l2 n0 ?sum ?n : -> Int .
+	ops ?l1 ?l2 ?sum ?n : -> Int .
+	ops #n0 : -> Int .
 	
 	subsort Annotation Annotation-Statement < K .
 

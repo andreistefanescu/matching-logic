@@ -16,6 +16,7 @@ mod COMMON-KERNEL-C-SYNTAX is
 	sort Integer-Constant .
 	subsort Int < Integer-Constant .
 	op UL : Int -> Integer-Constant .
+	op U : Int -> Integer-Constant .
 	--- subsort Decimal-Constant < Integer-Constant .
 	--- Octal-Constant Hexadecimal-Constant 
 	--- --- TODO
@@ -76,7 +77,7 @@ mod COMMON-KERNEL-C-SYNTAX is
 	---subsort Postfix-Expression < K .
 	--- subsort Declarator-or-Postfix-Expression < Postfix-Expression .
 	---subsort Primary-Expression < Postfix-Expression .
-	--- --- op _`[_`] : Postfix-Expression Expression -> Postfix-Expression .
+	op _`[_`] : Expression Expression -> Expression [prec 21] .
 	
 	--- op _`(_`) : Postfix-Expression List{Assignment-Expression} -> Postfix-Expression [strict renameTo apply] .
 	---op _`(_`) : Expression Expression-List -> Expression .
@@ -178,8 +179,8 @@ mod COMMON-KERNEL-C-SYNTAX is
 
 	---subsort Type-Specifier Type-Qualifier Function-Specifier < Declaration-Specifiers .
 	subsort Storage-Class-Specifier Type-Specifier < Declaration-Specifiers .
-	op __ : Storage-Class-Specifier Declaration-Specifiers -> Declaration-Specifiers [prec 85 gather(e E)] .
-	--- --- TODO op __ : Type-Specifier Declaration-Specifiers -> Declaration-Specifiers [renameTo combine] .
+	op __ : Storage-Class-Specifier Declaration-Specifiers -> Declaration-Specifiers [prec 85 gather(E e)] .
+	op __ : Type-Specifier Declaration-Specifiers -> Declaration-Specifiers [ditto] .
 	--- --- TODO op __ : Type-Qualifier Declaration-Specifiers -> Declaration-Specifiers .
 	--- --- TODO op __ : Function-Specifier Declaration-Specifiers -> Declaration-Specifiers .
 	
@@ -225,7 +226,7 @@ mod COMMON-KERNEL-C-SYNTAX is
 	sort Specifier-Qualifier-List .
 	---subsort Type-Specifier Type-Qualifier < Specifier-Qualifier-List .
 	subsort Type-Specifier < Specifier-Qualifier-List .
-	op __ : Type-Specifier Specifier-Qualifier-List -> Specifier-Qualifier-List [ditto] .
+	---op __ : Type-Specifier Specifier-Qualifier-List -> Specifier-Qualifier-List [ditto] .
 	--- op __ : Type-Specifier Specifier-Qualifier-List -> Specifier-Qualifier-List [renameTo Specifier-Qualifier-List] .
 	--- op __ : Type-Qualifier Specifier-Qualifier-List -> Specifier-Qualifier-List [renameTo Specifier-Qualifier-List] .
 	--- --- TODO 
@@ -277,6 +278,8 @@ mod COMMON-KERNEL-C-SYNTAX is
 	sort Direct-Declarator .
 
 	subsort Direct-Declarator < Declarator .
+	subsort Direct-Declarator < Expression .
+
 
 	subsort Id < Direct-Declarator .
 	op Pointer : Direct-Declarator -> Direct-Declarator .
@@ -284,7 +287,7 @@ mod COMMON-KERNEL-C-SYNTAX is
 	--- --- op `(_`) : Declarator -> Declarator . --- problem with (_)
 	--- op _`[`] : Declarator -> Declarator .
 	--- op _`[_`] : Declarator Type-Qualifier-List -> Declarator .
-	--- --- op _`[_`] : Declarator Assignment-Expression -> Declarator .
+	op _`[_`] : Direct-Declarator Expression -> Direct-Declarator [ditto] .
 	--- op _`[__`] : Declarator Type-Qualifier-List Assignment-Expression -> Declarator .
 	--- op _`[static_`] : Declarator Assignment-Expression -> Declarator .
 	--- op _`[static__`] : Declarator Type-Qualifier-List Assignment-Expression -> Declarator .
