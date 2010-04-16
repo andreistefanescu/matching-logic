@@ -967,6 +967,144 @@ method private pLvalPrec (contextprec: int) () lv =
     | StartOf(lv) -> self#pLval () lv
 	 
 	 
-	 
+	method private pStmtKind (next: stmt) () = function
+      Return(None, l) ->
+        self#pLineDirective l
+          ++ text "return ;"
+
+    | Return(Some e, l) ->
+        self#pLineDirective l
+          ++ text "return ("
+          ++ self#pExp () e
+          ++ text ");"
+          
+    | Goto (sref, l) -> begin
+        (* Grab one of the labels *)
+        let rec pickLabel = function
+            [] -> None
+          | Label (l, _, _) :: _ -> Some l
+          | _ :: rest -> pickLabel rest
+        in
+        match pickLabel !sref.labels with
+          Some l -> text ("goto " ^ l ^ " ;")
+        | None -> 
+            ignore (error "Cannot find label for target of goto");
+            text "goto __invalid_label ;"
+		end 
+	
+    | Break l ->
+        self#pLineDirective l
+          ++ text "break ;"
+
+    | Continue l -> 
+        self#pLineDirective l
+          ++ text "continue ;"
+
+    | Instr il ->
+        align
+          ++ (docList ~sep:line (fun i -> self#pInstr () i) () il)
+          ++ unalign
+
+    | If(be,t,{bstmts=[];battrs=[]},l) when not !printCilAsIs ->
+        self#pLineDirective l
+          ++ text "if"
+          ++ (align
+                ++ text " ("
+                ++ self#pExp () be
+                ++ text ") "
+                ++ self#pBlock () t)
+          
+    | If(be,t,{bstmts=[{skind=Goto(gref,_);labels=[]}];
+                battrs=[]},l)
+     when !gref == next && not !printCilAsIs ->
+       self#pLineDirective l
+         ++ text "if"
+         ++ (align
+               ++ text " ("
+               ++ self#pExp () be
+               ++ text ") "
+               ++ self#pBlock () t)
+
+    | If(be,{bstmts=[];battrs=[]},e,l) when not !printCilAsIs ->
+        self#pLineDirective l
+          ++ text "if"
+          ++ (align
+                ++ text " ("
+                ++ self#pExp () (UnOp(LNot,be,intType))
+                ++ text ") "
+                ++ self#pBlock () e)
+
+    | If(be,{bstmts=[{skind=Goto(gref,_);labels=[]}];
+           battrs=[]},e,l)
+      when !gref == next && not !printCilAsIs ->
+        self#pLineDirective l
+          ++ text "if"
+          ++ (align
+                ++ text " ("
+                ++ self#pExp () (UnOp(LNot,be,intType))
+                ++ text ") "
+                ++ self#pBlock () e)
+          
+    | If(be,t,e,l) ->
+        self#pLineDirective l
+          ++ (align
+                ++ text "if"
+                ++ (align
+                      ++ text " ("
+                      ++ self#pExp () be
+                      ++ text ") "
+                      ++ self#pBlock () t)
+                ++ text " "   (* sm: indent next code 2 spaces (was 4) *)
+                ++ (align
+                      ++ text "else "
+                      ++ self#pBlock () e)
+          ++ unalign)
+          
+    | Switch(e,b,_,l) ->
+        self#pLineDirective l
+          ++ (align
+                ++ text "switch ("
+                ++ self#pExp () e
+                ++ text ") "
+                ++ self#pBlock () b)
+    | Loop(b, l, _, _) -> begin
+        (* Maybe the first thing is a conditional. Turn it into a WHILE *)
+        try
+          let term, bodystmts =
+            let rec skipEmpty = function
+                [] -> []
+              | {skind=Instr [];labels=[]} :: rest -> skipEmpty rest
+              | x -> x
+            in
+            (* Bill McCloskey: Do not remove the If if it has labels *)
+            match skipEmpty b.bstmts with
+              {skind=If(e,tb,fb,_); labels=[]} :: rest 
+                                              when not !printCilAsIs -> begin
+                match skipEmpty tb.bstmts, skipEmpty fb.bstmts with
+                  [], {skind=Break _; labels=[]} :: _  -> e, rest
+                | {skind=Break _; labels=[]} :: _, [] 
+                                     -> UnOp(LNot, e, intType), rest
+                | _ -> raise Not_found
+              end
+            | _ -> raise Not_found
+          in
+          self#pLineDirective l
+            ++ text "wh"
+            ++ (align
+                  ++ text "ile ("
+                  ++ self#pExp () term
+                  ++ text ") "
+                  ++ self#pBlock () {bstmts=bodystmts; battrs=b.battrs})
+
+        with Not_found ->
+          self#pLineDirective l
+            ++ text "wh"
+            ++ (align
+                  ++ text "ile (1) "
+                  ++ self#pBlock () b)
+    end
+    | Block b -> align ++ self#pBlock () b
+	| _ -> E.s (E.bug "Not handling this stmtkind")
+
 
 end (* class defaultCilPrinterClass *)

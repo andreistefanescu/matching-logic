@@ -28,6 +28,7 @@ int main(void) {
 	// float (*crazyGetPtr)(float, float) = (float (*)(float, float))(GetPtr1('+'));
 	// int z = (*crazyGetPtr)(5, 10);
 	// return val + z;
+	return 0;
 }
 
 // int thePtrFun(float x, char y, char z){
