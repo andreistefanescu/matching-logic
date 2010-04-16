@@ -2,6 +2,8 @@ mod MATCH-KERNEL-C-SEMANTICS is
 	including COMMON-KERNEL-C-SEMANTICS .
 
 	
+	subsort Annotation-Statement < K .
+
 	--- [| 0,0,<config>
 		--- <k> K </k>
 		--- <env> .Env </env>

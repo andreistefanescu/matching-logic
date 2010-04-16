@@ -24,8 +24,10 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Retrieved from: http://en.literateprograms.org/Insertion_sort_(C)?oldid=15530
 */
 
-#include <stdio.h>
+//#include <stdio.h>
 
+void insertion_sort(int a[], int length);
+void checkThatArrayIsSorted (int array[], int length);
 
 /* Sort an array of integers */
 void insertion_sort(int a[], int length)
@@ -53,7 +55,7 @@ void checkThatArrayIsSorted (int array[], int length)
     {
        if (array[i-1] > array[i])
        {
-          printf("The array is not in sorted order at position %d\n", i-1);
+          //printf("The array is not in sorted order at position %d\n", i-1);
        }
     } 
 }
@@ -67,7 +69,7 @@ int main(void)
     /* Print out a */
     for(i=0; i<sizeof(a)/sizeof(*a); i++)
     {
-        printf("%d\n", a[i]);
+        //printf("%d\n", a[i]);
     }
 
     checkThatArrayIsSorted(a, sizeof(a)/sizeof(*a));

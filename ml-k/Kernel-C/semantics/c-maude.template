@@ -8,19 +8,21 @@ mod KERNEL-C-SYNTAX is
 	%s
 endm
 
-load kernel-c-configuration
-load kernel-c-semantics
+load match-kernel-c-configuration
 
 mod KERNEL-C-PROGRAM is
 	including KERNEL-C-SYNTAX .
 	including MATCH-KERNEL-C-SYNTAX .
-	including KERNEL-C-CONFIGURATION .
+	including MATCH-KERNEL-C-CONFIGURATION .
 %s
 endm
 
+load kernel-c-configuration
+load kernel-c-semantics
 load %s
 
 mod KERNEL-C-SEMANTICS is
+	including KERNEL-C-CONFIGURATION .
 	including COMMON-KERNEL-C-SEMANTICS .
 	including %s .
 endm
