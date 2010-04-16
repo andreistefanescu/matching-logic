@@ -165,7 +165,7 @@ mod COMMON-KERNEL-C-SEMANTICS is
 	--- bind one
 	--- consider same variable name
 	mb [bind-one-int]: rule 
-		< k > [bind((V:Value ,List{Expression} L:List{Expression}),, 
+		< k > [bind((V:Value .,. L:List{Expression}),, 
 				Parameter-Type-List(Parameter-Declaration(int, I:Id))) => .K] ...</ k > 
 		< env >... [.Map => I:Id |-> Loc:Nat] ...</ env >
 		< mem >... [.Map => Loc:Nat |-> V:Value] ...</ mem >
@@ -173,7 +173,7 @@ mod COMMON-KERNEL-C-SEMANTICS is
 		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
 		: KSentence .
 	mb [bind-one-unsigned-int]: rule 
-		< k > [bind((V:Value ,List{Expression} L:List{Expression}),, 
+		< k > [bind((V:Value .,. L:List{Expression}),, 
 				Parameter-Type-List(Parameter-Declaration(unsigned-int, I:Id))) => .K] ...</ k > 
 		< env >... [.Map => I:Id |-> Loc:Nat] ...</ env >
 		< mem >... [.Map => Loc:Nat |-> V:Value] ...</ mem >

@@ -15,14 +15,13 @@ mod MATCH-KERNEL-C-SYNTAX is
 	ops ?l1 ?l2 ?sum ?n : -> Int .
 	ops #n0 : -> Int .
 	
-	subsort Annotation Annotation-Statement < K .
 
 	sorts Formula .
 	--- Atom Truth NtFormula 
 	--- subsort Atom < K .
 	--- subsort Truth < K .
 	--- subsort NtFormula < K .
-	subsort Formula < K .
+
 	op TrueFormula : -> Formula .
 	
 	--- subsort Atom < NtFormula .

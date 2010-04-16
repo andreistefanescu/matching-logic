@@ -112,7 +112,7 @@ mod COMMON-KERNEL-C-SYNTAX is
 	subsort Expression < List{Expression} .
 	op .List{Expression} : -> List{Expression} .
 	---op _,_ : Comma-List Comma-List -> Comma-List [prec 70 assoc] .
-	op _,List`{Expression`}_ : List{Expression} List{Expression} -> List{Expression} [assoc id: .List`{Expression`}] .
+	op _.,._ : List{Expression} List{Expression} -> List{Expression} [assoc id: .List`{Expression`}] .
 	----  
 
 	
@@ -327,12 +327,16 @@ mod COMMON-KERNEL-C-SYNTAX is
 	--- --- TODO op __ : Type-Qualifier-List Type-Qualifier -> Type-Qualifier-List .
 	
 	sort Parameter-Type-List .
-
+	sort Parameter-Type-List-Aux .
+	---subsort Parameter-Type-List-Aux < Parameter-Type-List .
+	subsort Parameter-Declaration < Parameter-Type-List-Aux .
+	---subsort Parameter-Type-List-Aux < List{Expression} .
+	op _,.,_ : Parameter-Type-List-Aux Parameter-Type-List-Aux -> Parameter-Type-List-Aux [assoc] .
 	---subsort Parameter-List < Parameter-Type-List .
 	---op .Parameter-Type-List : -> Parameter-Type-List .
 	---op Parameter-Type-List : Declaration-Specifiers -> Parameter-Type-List .
-	op Parameter-Type-List : Parameter-Declaration -> Parameter-Type-List .
-	op _`,... : Parameter-Declaration -> Parameter-Type-List .
+	op Parameter-Type-List : Parameter-Type-List-Aux -> Parameter-Type-List .
+	---op _`,... : Parameter-Declaration -> Parameter-Type-List .
 	--- --- TODO
 	
 	---sort Parameter-List .

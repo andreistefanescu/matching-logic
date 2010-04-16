@@ -390,7 +390,7 @@ method private pLvalPrec (contextprec: int) () lv =
                               ++ self#pAttrs () rest
 								) "Parameter-Declaration"
                           in
-                          (docList ~sep:(chr ',' ++ break) pArg) () 
+                          (docList ~sep:(text " ,., " ++ break) pArg) () 
                             (argsToList args))
                           ++ (if isvararg then break ++ text ", ..." else nil))
                       ++ unalign)
@@ -586,7 +586,7 @@ method private pLvalPrec (contextprec: int) () lv =
           ++ text ", (" ++ 
           (align
              (* Now the arguments *)
-             ++ (docList ~sep:(chr ',' ++ break) 
+             ++ (docList ~sep:(text " .,. " ++ break) 
                    (self#pExp ()) () args)
              ++ unalign)
 		++ text ")"
