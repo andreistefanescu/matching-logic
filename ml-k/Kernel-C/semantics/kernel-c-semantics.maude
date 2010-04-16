@@ -1,3 +1,5 @@
+--- clearly need to distinguish between parts of my config, i.e., not be flat
+
 mod COMMON-KERNEL-C-SEMANTICS is
 	including KERNEL-C-CONFIGURATION .
 	including K-CONTEXTS .
@@ -8,14 +10,19 @@ mod COMMON-KERNEL-C-SEMANTICS is
 	
 	mb context Deref([HOLE]) := ? : KSentence .
 	mb context Deref([HOLE]) ++ : KSentence .
+	mb context Deref([HOLE]) -- : KSentence .
 	
-	subsort Int < Value < Expression .
-	subsort Value < KResult .
+	subsort Int < Value < Expression KResult .
+	---subsort Value < List{Expression} .
+	
+	----op val : Expression Type -> KLabel 
+	
 	
 	op List : BagItem -> ListItem .
 	op unknown : -> K .
 	op skipval : -> KResult . 
 	op closure : -> KLabel .
+
 	
 
 	op eval : Program -> Bag .
@@ -37,7 +44,8 @@ mod COMMON-KERNEL-C-SEMANTICS is
 	--- mb rule [D:Declaration ; => D:Declaration] : KSentence .
 	
 	--- we're ignoring types for now
-	mb rule [U(I:Int) => I:Int] : KSentence .
+	mb rule [U(I:Int) => I:Int] : KSentence [metadata "structural"] .
+	mb rule [unsigned-int => int] : KSentence [metadata "structural"] .
 	
 	--- dissolve blocks
 	mb rule < k > [Block(B:TogetherList) => B:TogetherList] ...</ k > : KSentence .
@@ -49,8 +57,10 @@ mod COMMON-KERNEL-C-SEMANTICS is
 	mb [make-assign-ref]: rule < k > [I:Id := E:Expression => Deref(&(I:Id)) := E:Expression] ...</ k > : KSentence .
 	mb [make-call-ref]: rule < k > [Apply(I:Id, L:List{Expression}) => Apply(Deref(&(I:Id)), L:List{Expression})] ...</ k > : KSentence .
 	mb [make-postinc-ref]: rule < k > [I:Id ++ => Deref(&(I:Id)) ++] ...</ k > : KSentence .
-	
+	mb [make-postdec-ref]: rule < k > [I:Id -- => Deref(&(I:Id)) --] ...</ k > : KSentence .
 	mb [array-revision]: rule < k > [ E1:Expression[E2:Expression] => Deref(E1:Expression + E2:Expression) ] ...</ k > : KSentence .
+	--- mb [array-revision]: rule [ E1:Expression[E2:Expression] => Deref(E1:Expression + E2:Expression) ] : KSentence .--- i don't think i can safely do this because of the _[_] being overloaded
+	mb [make-assign-array-ref]: rule < k > [ E1:Expression[E2:Expression] := E:Expression => Deref(E1:Expression + E2:Expression) := E:Expression] ...</ k > : KSentence .
 	
 	--- for now, just ignore global wrapper
 	---mb [remove-global-marker]: rule [Global(D:Declaration ;) => D:Declaration ;] : KSentence .
@@ -92,27 +102,23 @@ mod COMMON-KERNEL-C-SEMANTICS is
 		< mem >... [.Map => Loc:Nat |-> unknown] ...</ mem >
 		< locals >... [.Bag => Bag(Declaration(int, I:Id))] ...</ locals >
 		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
-		: KSentence .
-	mb [variable-declaration2]: rule
-		< k > [Declaration((unsigned-int), I:Id) => .K] ...</ k >
-		< env >... [.Map => I:Id |-> Loc:Nat] ...</ env >
-		< mem >... [.Map => Loc:Nat |-> unknown] ...</ mem >
-		< locals >... [.Bag => Bag(Declaration(int, I:Id))] ...</ locals >
-		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
+		< sizes >... [.Map => I:Id |-> 1 ] ...</ sizes > 
 		: KSentence .
 	mb [pointer-declaration]: rule
-		< k > [Declaration((unsigned-int), Pointer(I:Id)) => .K] ...</ k >
+		< k > [Declaration(int, Pointer(I:Id)) => .K] ...</ k >
 		< env >... [.Map => I:Id |-> Loc:Nat] ...</ env >
 		< mem >... [.Map => Loc:Nat |-> unknown] ...</ mem >
 		< locals >... [.Bag => Bag(Declaration(int, I:Id))] ...</ locals >
 		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
+		< sizes >... [.Map => Pointer(I:Id) |-> 1 ] ...</ sizes > 
 		: KSentence .
 	mb [array-declaration]: rule
-		< k > [Declaration((unsigned-int), X:Id[I:Int]) => .K] ...</ k >
+		< k > [Declaration(int, X:Id[I:Int]) => .K] ...</ k >
 		< env >... [.Map => X:Id |-> Loc:Nat] ...</ env >
 		< mem >... [.Map => Loc:Nat |-> sNat(Loc:Nat)  sNat(Loc:Nat) to (sNat(Loc:Nat) +Nat absInt(I:Int)) |-> unknown] ...</ mem >
-		< locals >... [.Bag => Bag(Declaration(int, X:Id[I:Int]))] ...</ locals >
+		< locals >... [.Bag => Bag(Declaration(int, X:Id[absInt(I:Int)]))] ...</ locals >
 		< nextLoc > [Loc:Nat => (sNat(Loc:Nat) +Nat absInt(I:Int))] </ nextLoc >
+		< sizes >... [.Map => X:Id |-> I:Int] ...</ sizes > 
 		if I:Int >=Int 0
 		: KSentence .
 	
@@ -148,38 +154,51 @@ mod COMMON-KERNEL-C-SEMANTICS is
 		< genv > G:Map </ genv >
 		< locals > [L:Bag => .Bag] </ locals >
 		< parameters > [P:Bag => .Bag] </ parameters >
+		< sizes > [S:Map => .Map] </ sizes >
+		< loopStack > [LS:List => .List] </ loopStack >
 		< callStack > [.List => List(
 			< stackFrame > 
 				< continuation > K:K </ continuation >
 				< parameters > P:Bag </ parameters >
 				< locals > L:Bag </ locals >
 				< env > E:Map </ env >
+				< sizes > S:Map </ sizes >
+				< loopStack > LS:List </ loopStack >
 			</ stackFrame >
 			)] ...</ callStack >
 		: KSentence .
 		
 	--- empty binding
-	mb [bind-empty]: rule 
+	mb [bind-empty-void]: rule 
 		< k > [bind(.List{Expression},, Parameter-Type-List(Parameter-Declaration(void))) => .K] ...</ k > 
+		: KSentence .
+	mb [bind-empty]: rule 
+		< k > [bind(.List{Expression},, Parameter-Type-List(.List{Parameter})) => .K] ...</ k > 
 		: KSentence .
 	--- bind one
 	--- consider same variable name
 	mb [bind-one-int]: rule 
 		< k > [bind((V:Value .,. L:List{Expression}),, 
-				Parameter-Type-List(Parameter-Declaration(int, I:Id))) => .K] ...</ k > 
+				Parameter-Type-List(Parameter-Declaration(int, I:Id) ,., P:List{Parameter})) =>
+			bind((.List{Expression} .,. L:List{Expression}),, 
+				Parameter-Type-List(.List{Parameter} ,., P:List{Parameter}))]
+				...</ k > 
 		< env >... [.Map => I:Id |-> Loc:Nat] ...</ env >
 		< mem >... [.Map => Loc:Nat |-> V:Value] ...</ mem >
 		< parameters >... [.Bag => Bag(Parameter-Declaration(int, I:Id))] ...</ parameters >
 		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
 		: KSentence .
-	mb [bind-one-unsigned-int]: rule 
+	mb [bind-one-int-pointer]: rule 
 		< k > [bind((V:Value .,. L:List{Expression}),, 
-				Parameter-Type-List(Parameter-Declaration(unsigned-int, I:Id))) => .K] ...</ k > 
+				Parameter-Type-List(Parameter-Declaration(int, Pointer(I:Id)) ,., P:List{Parameter})) =>
+			bind((.List{Expression} .,. L:List{Expression}),, 
+				Parameter-Type-List(.List{Parameter} ,., P:List{Parameter}))]
+				...</ k > 
 		< env >... [.Map => I:Id |-> Loc:Nat] ...</ env >
 		< mem >... [.Map => Loc:Nat |-> V:Value] ...</ mem >
-		< parameters >... [.Bag => Bag(Parameter-Declaration(unsigned-int, I:Id))] ...</ parameters >
+		< parameters >... [.Bag => Bag(Parameter-Declaration(int, Pointer(I:Id)))] ...</ parameters >
 		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
-		: KSentence .	
+		: KSentence .
 		
 
 --- bind(("_`,List`{Expression`}_").KHybridLabel("Int" 2(.List{K})),, ("Parameter-Type-List").KProperLabel(("Parameter-Declaration").KProperLabel(("int").KProperLabel(.List{K}),,("n").KProperLabel(.List{
@@ -255,14 +274,48 @@ mod COMMON-KERNEL-C-SEMANTICS is
 	--- mb rule [not(T) => notBool(T)] : KSentence .
 	--------------- End Expressions ---------------
 	
+	op loopMarked : -> Statement .
+	op popLoop : -> K .
+	
+	mb [while-mark]: rule
+		< k > [while (B:Expression) S:Statement ~> K:K
+		=> (loopMarked while (B:Expression) S:Statement) ~> popLoop ~> K:K
+		] </ k >
+		< loopStack > [.List => ListItem(_~>_(_~>_((while (B:Expression) S:Statement), popLoop), K:K))] ...</ loopStack >
+		: KSentence .
 	mb [while]: rule
-		< k > [while (B:Expression) S:Statement 
+		< k > [loopMarked ~> while (B:Expression) S:Statement
 		=> 
-		if (B:Expression) Block(S:Statement while (B:Expression) S:Statement)
+		if (B:Expression) Block(Block(S:Statement loopMarked) (while (B:Expression) S:Statement))
 		] ...</ k >
-		: KSentence .	
-	---mb rule < k > [while B do S  => if B then {S while B do S} else {}] ...</ k > : KSentence .
+		: KSentence .
+	mb [popLoop]: rule
+		< k > [popLoop => .K] ...</ k >
+		< loopStack > [Li:ListItem => .List] ...</ loopStack >
+		: KSentence .
+	mb [while-break]: rule
+		< k > [break ; ~> ? => K:K ] </ k >
+		< loopStack > [ListItem(_~>_(_~>_((while (B:Expression) S:Statement), popLoop), K:K)) => .List] ...</ loopStack >
+		: KSentence .
 		
+	mb [return-clean-local]: rule 
+		< k > return ; ...</ k >
+		< locals >... [BagItem(Declaration(int, I:Id)) => .Bag] ...</ locals >	
+		< env >... I:Id |-> Loc:Nat ...</ env >
+		< mem >... [Loc:Nat |-> ? => .Map] ...</ mem >
+		: KSentence .
+	mb [return-clean-local-pointer]: rule 
+		< k > return ; ...</ k >
+		< locals >... [BagItem(Declaration(int, Pointer(I:Id))) => .Bag] ...</ locals >	
+		< env >... I:Id |-> Loc:Nat ...</ env >
+		< mem >... [Loc:Nat |-> ? => .Map] ...</ mem >
+		: KSentence .
+	mb [return-clean-local-array]: rule 
+		< k > return ; ...</ k >
+		< locals >... [BagItem(Declaration(int, I:Id[N:Nat])) => .Bag] ...</ locals >	
+		< env >... I:Id |-> Loc:Nat ...</ env >
+		< mem > [M:Map Loc:Nat |-> Start:Nat => cleanMap(M:Map, Start:Nat, N:Nat)] </ mem >
+		: KSentence .
 	mb [return-value-clean-local]: rule 
 		< k > return V:Value ; ...</ k >
 		< locals >... [BagItem(Declaration(int, I:Id)) => .Bag] ...</ locals >	
@@ -280,30 +333,38 @@ mod COMMON-KERNEL-C-SEMANTICS is
 	eq cleanMap((M:Map (N:Nat |-> ?)), N:Nat, sNat(N':Nat)) = cleanMap(M:Map, sNat(N:Nat), N':Nat) .
 	eq cleanMap(M:Map, N:Nat, 0) = M:Map .
 		
-	mb [return-value-clean-local]: rule 
-		< k > return V:Value ; ...</ k >
-		< locals >... [BagItem(Declaration(unsigned-int, I:Id)) => .Bag] ...</ locals >	
-		< env >... I:Id |-> Loc:Nat ...</ env >
-		< mem >... [Loc:Nat |-> ? => .Map] ...</ mem >
-		: KSentence .
 	mb [return-value-clean-params]: rule 
 		< k > return V:Value ; ...</ k >
 		< parameters >... [BagItem(Parameter-Declaration(int, I:Id)) => .Bag] ...</ parameters >	
 		< env >... I:Id |-> Loc:Nat ...</ env >
 		< mem >... [Loc:Nat |-> ? => .Map] ...</ mem >
 		: KSentence .
-	mb [return-value-clean-params]: rule 
+	mb [return-value-clean-params-pointer]: rule 
 		< k > return V:Value ; ...</ k >
-		< parameters >... [BagItem(Parameter-Declaration(unsigned-int, I:Id)) => .Bag] ...</ parameters >	
+		< parameters >... [BagItem(Parameter-Declaration(int, Pointer(I:Id))) => .Bag] ...</ parameters >	
 		< env >... I:Id |-> Loc:Nat ...</ env >
 		< mem >... [Loc:Nat |-> ? => .Map] ...</ mem >
 		: KSentence .
-	
-	mb [return-value]: rule 
-		< k > [return V:Value ; ~> ? => V:Value ~> K:K] </ k >
+	mb [return-clean-params]: rule 
+		< k > return ; ...</ k >
+		< parameters >... [BagItem(Parameter-Declaration(int, I:Id)) => .Bag] ...</ parameters >	
+		< env >... I:Id |-> Loc:Nat ...</ env >
+		< mem >... [Loc:Nat |-> ? => .Map] ...</ mem >
+		: KSentence .
+	mb [return-clean-params-pointer]: rule 
+		< k > return ; ...</ k >
+		< parameters >... [BagItem(Parameter-Declaration(int, Pointer(I:Id))) => .Bag] ...</ parameters >	
+		< env >... I:Id |-> Loc:Nat ...</ env >
+		< mem >... [Loc:Nat |-> ? => .Map] ...</ mem >
+		: KSentence .
+
+	mb [return]: rule 
+		< k > [return ; ~> ? => skipval ~> K:K] </ k >
 		< env > [? => E:Map] </ env >
-		< parameters > [.Bag => P:Bag ] </ parameters >
-		< locals > [.Bag => L:Bag ] </ locals >
+		< parameters > [.Bag => P:Bag] </ parameters >
+		< locals > [.Bag => L:Bag] </ locals >
+		< sizes > [S':Map => S:Map] </ sizes >
+		< loopStack > [LS':List => LS:List] </ loopStack >
 		< callStack >
 			[List(
 				< stackFrame >...
@@ -311,6 +372,29 @@ mod COMMON-KERNEL-C-SEMANTICS is
 					< parameters > P:Bag </ parameters >
 					< locals > L:Bag </ locals >
 					< env > E:Map </ env >
+					< sizes > S:Map </ sizes >
+					< loopStack > LS:List </ loopStack >
+				</ stackFrame >
+			) => .List]
+		...</ callStack >
+		: KSentence .
+		
+	mb [return-value]: rule 
+		< k > [return V:Value ; ~> ? => V:Value ~> K:K] </ k >
+		< env > [? => E:Map] </ env >
+		< parameters > [.Bag => P:Bag] </ parameters >
+		< locals > [.Bag => L:Bag] </ locals >
+		< sizes > [S':Map => S:Map] </ sizes >
+		< loopStack > [LS':List => LS:List] </ loopStack >
+		< callStack >
+			[List(
+				< stackFrame >...
+					< continuation > K:K </ continuation >
+					< parameters > P:Bag </ parameters >
+					< locals > L:Bag </ locals >
+					< env > E:Map </ env >
+					< sizes > S:Map </ sizes >
+					< loopStack > LS:List </ loopStack >
 				</ stackFrame >
 			) => .List]
 		...</ callStack >
@@ -321,6 +405,20 @@ mod COMMON-KERNEL-C-SEMANTICS is
 		< k > [Deref(Loc:Nat) ++ => V:Int] ...</ k >
 		< mem >... Loc:Nat |-> [V:Int => V:Int +Int 1] ...</ mem >
 		: KSentence .	
+	mb [post-decrement]: rule
+		< k > [Deref(Loc:Nat) -- => V:Int] ...</ k >
+		< mem >... Loc:Nat |-> [V:Int => _-Int_(V:Int, 1)] ...</ mem >
+		: KSentence .
+		
+	
+	---- FIXME 
+	mb [sizeof-array-lookup]: rule
+		< k > [sizeof(E1:Expression[E2:Expression]) => 1] ...</ k >
+	: KSentence .
+	mb [sizeof]: rule
+		< k > [sizeof(E:Expression) => V:Value] ...</ k >
+		< sizes >... E:Expression |-> V:Value ...</ sizes >
+	: KSentence .
 		
 	--- keq <k> [[return V ; -> K ==> K'' -> V -> K']] </k>
 		--- <env> [[E ==> E']] </env>

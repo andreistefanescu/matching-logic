@@ -27,7 +27,7 @@ Retrieved from: http://en.literateprograms.org/Insertion_sort_(C)?oldid=15530
 //#include <stdio.h>
 
 void insertion_sort(int a[], int length);
-void checkThatArrayIsSorted (int array[], int length);
+int checkThatArrayIsSorted (int array[], int length);
 
 /* Sort an array of integers */
 void insertion_sort(int a[], int length)
@@ -48,16 +48,19 @@ void insertion_sort(int a[], int length)
   }
 }
 
-void checkThatArrayIsSorted (int array[], int length)
+int checkThatArrayIsSorted (int array[], int length)
 {
+	int sorted = 0;
     int i;
     for (i = 1; i < length; i+=1)
     {
-       if (array[i-1] > array[i])
+       if (array[i-1] <= array[i])
        {
+          sorted++;
           //printf("The array is not in sorted order at position %d\n", i-1);
        }
     } 
+	return sorted;
 }
 
 
@@ -72,9 +75,7 @@ int main(void)
         //printf("%d\n", a[i]);
     }
 
-    checkThatArrayIsSorted(a, sizeof(a)/sizeof(*a));
-
-    return 0;
+    return checkThatArrayIsSorted(a, sizeof(a)/sizeof(*a));
 }
 
 

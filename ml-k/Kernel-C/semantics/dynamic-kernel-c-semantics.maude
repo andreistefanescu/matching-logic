@@ -9,9 +9,11 @@ mod DYNAMIC-KERNEL-C-SEMANTICS is
 			< mem > .Map </ mem >  
 			< output > .List </ output >
 			< callStack > .List </ callStack >
+			< loopStack > .List </ loopStack > 
 			< nextLoc > 0 </ nextLoc >
 			< locals > .Bag </ locals >
 			< parameters > .Bag </ parameters >
+			< sizes > .Map </ sizes >
 			---< form > .Bag </ form >
 		</ T > .
 	

@@ -327,15 +327,16 @@ mod COMMON-KERNEL-C-SYNTAX is
 	--- --- TODO op __ : Type-Qualifier-List Type-Qualifier -> Type-Qualifier-List .
 	
 	sort Parameter-Type-List .
-	sort Parameter-Type-List-Aux .
+	sort List{Parameter} .
 	---subsort Parameter-Type-List-Aux < Parameter-Type-List .
-	subsort Parameter-Declaration < Parameter-Type-List-Aux .
+	subsort Parameter-Declaration < List{Parameter} .
 	---subsort Parameter-Type-List-Aux < List{Expression} .
-	op _,.,_ : Parameter-Type-List-Aux Parameter-Type-List-Aux -> Parameter-Type-List-Aux [assoc] .
+	op .List{Parameter} : -> List{Parameter} .
+	op _,.,_ : List{Parameter} List{Parameter} -> List{Parameter} [assoc id: .List`{Parameter`}] .
 	---subsort Parameter-List < Parameter-Type-List .
 	---op .Parameter-Type-List : -> Parameter-Type-List .
 	---op Parameter-Type-List : Declaration-Specifiers -> Parameter-Type-List .
-	op Parameter-Type-List : Parameter-Type-List-Aux -> Parameter-Type-List .
+	op Parameter-Type-List : List{Parameter} -> Parameter-Type-List .
 	---op _`,... : Parameter-Declaration -> Parameter-Type-List .
 	--- --- TODO
 	

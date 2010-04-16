@@ -32,4 +32,4 @@ gcc-output: $(addsuffix .gcc,$(ALL_PROGRAMS))
 	gcc $(PEDANTRY_OPTIONS) -o $@ $<
 		
 clean:
-	rm -f *.prepre.gen.c *.pre.gen.c *.gen.maude *.gcc
+	rm -f *.prepre.gen *.pre.gen *.gen.maude *.gcc
