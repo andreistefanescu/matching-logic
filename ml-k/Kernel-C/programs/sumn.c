@@ -1,3 +1,4 @@
+int sum(int n);
 int main() {
 	return sum(10);
 }

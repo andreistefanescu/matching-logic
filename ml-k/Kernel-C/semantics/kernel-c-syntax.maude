@@ -106,10 +106,14 @@ mod COMMON-KERNEL-C-SYNTAX is
 	---op .Expression-List : -> Expression-List .
 	---op _,_ : Expression-List Expression-List -> Expression-List [prec 70 assoc id: .Expression-List] .
 	
+	---sort Comma-List .
 	sort List{Expression} .
+	---subsort Expression < Comma-List .
 	subsort Expression < List{Expression} .
 	op .List{Expression} : -> List{Expression} .
+	---op _,_ : Comma-List Comma-List -> Comma-List [prec 70 assoc] .
 	op _,List`{Expression`}_ : List{Expression} List{Expression} -> List{Expression} [assoc id: .List`{Expression`}] .
+	----  
 
 	
 	--- ---sort Argument-Expression-List .
@@ -410,6 +414,7 @@ mod COMMON-KERNEL-C-SYNTAX is
 
 	---op Block`(`{`}`) : -> Compound-Statement .
 	op Block : SeqList -> Compound-Statement .
+	op Block`(`) : -> Compound-Statement .
 	--- op Compound-Statement : Block-Item-List -> Compound-Statement .
 	--- ---format (ni++ o --ni o)
 	---sort Block-Item-List .
