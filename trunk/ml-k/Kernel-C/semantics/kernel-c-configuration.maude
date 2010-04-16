@@ -10,7 +10,7 @@ mod KERNEL-C-CONFIGURATION is
 	--- subsort Bool < KResult .
 	---subsort Identifier < Id < Expression . --- hack
 	
-	subsort Parameter-Type-List-Aux < K .
+	subsort List{Parameter} < K .
 	
 	subsort Block-Item < K .
 	subsort Compound-Statement < K .
@@ -49,10 +49,12 @@ mod KERNEL-C-CONFIGURATION is
 			< mem > .Map </ mem >  
 			< output > .List </ output > 
 			< callStack > .List </ callStack >
+			< loopStack > .List </ loopStack >
 			< nextLoc > 0 </ nextLoc >
 			< locals > .Bag </ locals >
 			< parameters > .Bag </ parameters >
 			< form > .K </ form >
+			< sizes > .Map </ sizes >
 		</ T > 
 		< resultValue > .K </ resultValue >
 		< resultOutput > .List </ resultOutput > 
