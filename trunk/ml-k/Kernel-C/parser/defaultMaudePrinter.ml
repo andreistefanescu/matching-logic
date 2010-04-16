@@ -69,7 +69,23 @@ with
 let mostNeg32BitInt : int64 = (Int64.of_string "-0x80000000")
 let mostNeg64BitInt : int64 = (Int64.of_string "-0x8000000000000000")
 
-
+let d_ikind () = function
+    IChar -> text "char"
+  | ISChar -> text "signed-char"
+  | IUChar -> text "unsigned-char"
+  | IBool -> text "_Bool"
+  | IInt -> text "int"
+  | IUInt -> text "unsigned-int"
+  | IShort -> text "short"
+  | IUShort -> text "unsigned-short"
+  | ILong -> text "long"
+  | IULong -> text "unsigned-long"
+  | ILongLong -> 
+      if !msvcMode then text "__int64" else text "long-long"
+  | IULongLong -> 
+      if !msvcMode then text "unsigned __int64" 
+      else text "unsigned-long-long"
+	  
 	(* constant *)
 let d_const () c = 
   match c with

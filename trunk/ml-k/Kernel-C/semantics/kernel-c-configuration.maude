@@ -28,11 +28,9 @@ mod KERNEL-C-CONFIGURATION is
 	---subsort Identifier < Id < Expression . --- hack
 	
 	subsort Block-Item < K .
-	subsort Block-Item-List < K .
 	subsort Compound-Statement < K .
 	subsort Constant < K .
 	subsort Declaration < K .
-	subsort Declaration-Specifiers < K .
 	subsort Declarator < K .
 	subsort Direct-Declarator < K .
 	subsort Expression < K .
@@ -50,10 +48,10 @@ mod KERNEL-C-CONFIGURATION is
 	subsort Parameter-Declaration < K .
 	subsort Parameter-Type-List < K .
 	subsort Selection-Statement < K .
-	subsort Specifier-Qualifier-List < K .
+	subsort TogetherList < K .
+	subsort SeqList < K .
 	subsort Storage-Class-Specifier < K .
 	subsort Statement < K .
-	subsort Translation-Unit < K .
 	subsort Type-Name < K .
 	subsort Type-Specifier < K .
 	
