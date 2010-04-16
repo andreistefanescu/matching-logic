@@ -5,7 +5,7 @@ SEMANTICS = match
 # match or dynamic semantics
 VPATH = programs
 
-.PHONY: all clean run test force cparser maude-fragments build-all dynamic match fix
+.PHONY: all clean run test force cparser maude-fragments build-all dynamic match fix kcompile
 
 all: cparser maude-fragments 
 
@@ -26,8 +26,10 @@ cparser:
 maude-fragments: cparser
 	@make -C $(C_DIR)
 
-build-all: maude-fragments $(C_DIR)/*.gen.maude
+kcompile: $(C_DIR)/*.gen.maude
 	@make -C $(SEMANTICS_DIR) $(SEMANTICS) INPUT="$(realpath $^)"
+	
+build-all: maude-fragments kcompile
 		
 run: 
 	@maude $(SEMANTICS_DIR)/test.maude
