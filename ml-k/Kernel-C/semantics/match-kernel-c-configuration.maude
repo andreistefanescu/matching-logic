@@ -24,6 +24,7 @@ mod MATCH-KERNEL-C-CONFIGURATION is
 	op parameters : -> CellLabel .
 	op sizes : -> CellLabel .
 	op loopStack : -> CellLabel .
+	op malloced : -> CellLabel .
 	
 	---subsort AExp BExp Stmt < K .
 	--- subsort Program < K .

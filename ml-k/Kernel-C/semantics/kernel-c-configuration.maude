@@ -55,6 +55,7 @@ mod KERNEL-C-CONFIGURATION is
 			< parameters > .Bag </ parameters >
 			< form > .K </ form >
 			< sizes > .Map </ sizes >
+			< malloced > .Map </ malloced >
 		</ T > 
 		< resultValue > .K </ resultValue >
 		< resultOutput > .List </ resultOutput > 

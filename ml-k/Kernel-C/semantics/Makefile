@@ -7,7 +7,9 @@ K-PRELUDE = $(K-MAUDE-BASE)/k-prelude
 ADDITIONAL_SYNTAX = "including MATCH-KERNEL-C-SYNTAX ."
 
 
-.PHONY: all clean force
+.PHONY: all clean force check-input dynamic match
+
+.SECONDARY:
 
 all: dynamic 
 
@@ -18,11 +20,18 @@ ifeq ($(INPUT),)
 	exit 1
 endif
 
-kernel-c.maude: check-input c-maude.template Makefile
-	@printf "`cat c-maude.template`" $(K-PRELUDE) $(ADDITIONAL_SYNTAX) "`cat $(INPUT)`" $(SEMANTICS_FILE) $(SEMANTICS_MODULE) > kernel-c.maude
+programs-gen.maude: programs-gen.template check-input Makefile
+	@printf "`cat programs-gen.template`" $(ADDITIONAL_SYNTAX) > programs-gen.maude
+	for i in $(INPUT); do cat $$i >> programs-gen.maude; done
+	echo endm >> programs-gen.maude
+	
+#"`cat $(INPUT)`" $(SEMANTICS_FILE) $(SEMANTICS_MODULE) > kernel-c.maude
+
+kernel-c.maude: programs-gen.maude check-input c-maude.template Makefile
+	printf "`cat c-maude.template`" $(K-PRELUDE) $(SEMANTICS_FILE) $(SEMANTICS_MODULE) > kernel-c.maude
 	
 kernel-c-compiled.maude: kernel-c.maude kernel-c-syntax.maude match-kernel-c-syntax.maude kernel-c-configuration.maude kernel-c-semantics.maude  
-	@$(K-MAUDE) kernel-c.maude KERNEL-C
+	$(K-MAUDE) kernel-c.maude KERNEL-C
 	
 dynamic: SEMANTICS_MODULE = "DYNAMIC-KERNEL-C-SEMANTICS" 
 dynamic: SEMANTICS_FILE = "dynamic-kernel-c-semantics"
