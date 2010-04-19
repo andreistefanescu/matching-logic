@@ -12,6 +12,8 @@ mod COMMON-KERNEL-C-SYNTAX is
 	
 	op debug : -> Statement .
 	op main : -> Id [ctor] .
+	op malloc : -> Id [ctor] .
+	op free : -> Id [ctor] .
 	
 	--- ---- A.1.5 Constants
 	--- --- 6.4.4
@@ -218,6 +220,7 @@ mod COMMON-KERNEL-C-SYNTAX is
 		short unsigned-short
 		long unsigned-long long-long unsigned-long-long
 		: -> Type-Specifier [ctor] .
+	op Pointer : Type-Specifier -> Type-Specifier .
 	--- ----ops `_Bool `_Complex : -> Type-Specifier [ctor] .
 	--- --- TODO
 	
@@ -296,9 +299,10 @@ mod COMMON-KERNEL-C-SYNTAX is
 	subsort Direct-Declarator < Declarator .
 	subsort Direct-Declarator < Expression .
 
+	subsort Type-Specifier < Direct-Declarator .
 
 	subsort Id < Direct-Declarator .
-	op Pointer : Direct-Declarator -> Direct-Declarator .
+	op Pointer : Direct-Declarator -> Direct-Declarator [ditto] .
 	op Pointer`(`) : -> Direct-Declarator .
 	--- --- op `(_`) : Declarator -> Declarator . --- problem with (_)
 	--- op _`[`] : Declarator -> Declarator .
@@ -347,7 +351,8 @@ mod COMMON-KERNEL-C-SYNTAX is
 	--- --- TODO op hackpd_hackpd : List{Parameter-Declaration} -> List{Parameter-Declaration} .
 	
 	sort Parameter-Declaration .
-
+	op Pointer : TogetherList -> TogetherList [ditto] .
+	
 	---subsort Declaration-Specifiers < Parameter-Declaration .
 	op Parameter-Declaration : TogetherList -> Parameter-Declaration .
 	op Parameter-Declaration : TogetherList Declarator -> Parameter-Declaration .

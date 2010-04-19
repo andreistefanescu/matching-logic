@@ -70,6 +70,9 @@ mod COMMON-KERNEL-C-SEMANTICS is
 	
 	--- simplify compound assignments (if E1 op= E2, need to ensure E1 only gets evaluated once to be correct)
 	mb [assign-plus]: rule [E1:Expression += E2:Expression => E1:Expression := E1:Expression + E2:Expression] : KSentence .
+	mb [assign-times]: rule [E1:Expression *= E2:Expression => E1:Expression := E1:Expression * E2:Expression] : KSentence .
+	mb [assign-subtract]: rule [E1:Expression -= E2:Expression => E1:Expression := E1:Expression - E2:Expression] : KSentence .
+	mb [assign-divide]: rule [E1:Expression /= E2:Expression => E1:Expression := E1:Expression / E2:Expression] : KSentence .
 	
 
 	----- end simple transformations -----
@@ -112,6 +115,14 @@ mod COMMON-KERNEL-C-SEMANTICS is
 		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
 		< sizes >... [.Map => Pointer(I:Id) |-> 1 ] ...</ sizes > 
 		: KSentence .
+	mb [void-pointer-declaration]: rule
+		< k > [Declaration(void, Pointer(I:Id)) => .K] ...</ k >
+		< env >... [.Map => I:Id |-> Loc:Nat] ...</ env >
+		< mem >... [.Map => Loc:Nat |-> unknown] ...</ mem >
+		< locals >... [.Bag => Bag(Declaration(int, I:Id))] ...</ locals >
+		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
+		< sizes >... [.Map => Pointer(I:Id) |-> 1 ] ...</ sizes > 
+		: KSentence .
 	mb [array-declaration]: rule
 		< k > [Declaration(int, X:Id[I:Int]) => .K] ...</ k >
 		< env >... [.Map => X:Id |-> Loc:Nat] ...</ env >
@@ -128,6 +139,8 @@ mod COMMON-KERNEL-C-SEMANTICS is
 	ceq N:Nat to N':Nat = (N:Nat,,((N:Nat +Nat 1) to N':Nat))
 		if N:Nat <Nat N':Nat .
 	
+	
+	mb rule [Declaration(DS:TogetherList, Pointer(DFD:Direct-Declarator)) => Declaration(Pointer(DS:TogetherList), DFD:Direct-Declarator)] : KSentence .
 	
 	***(
 	Declaration-Specifiers Identifier(Parameter-Type-List){
@@ -254,6 +267,11 @@ mod COMMON-KERNEL-C-SEMANTICS is
 		---< env >... X:Id |-> Loc:Nat ...</ env >
 		---< mem >... Loc:Nat |-> I:Int ...</ mem >
 		: KSentence .
+	mb [cast-pointer-int]: rule
+		< k > [Cast(Pointer(int), I:Int) => I:Int] ...</ k >
+		---< env >... X:Id |-> Loc:Nat ...</ env >
+		---< mem >... Loc:Nat |-> I:Int ...</ mem >
+		: KSentence .
 		
 	
 	--------------- Start Expressions ---------------
@@ -267,8 +285,8 @@ mod COMMON-KERNEL-C-SEMANTICS is
 	mb rule [I1:Int <= I2:Int => if (I1:Int <=Int I2:Int) then 1 else 0 fi] : KSentence .
 	mb rule [I1:Int > I2:Int => if (I1:Int >Int I2:Int) then 1 else 0 fi] : KSentence .
 	mb rule [I1:Int >= I2:Int => if (I1:Int >=Int I2:Int) then 1 else 0 fi] : KSentence .
-	--- mb rule [V1 == V2 => V1 ==Bool V2] : KSentence .
-	--- mb rule [V1 != V2 => V1 =/=Bool V2] : KSentence .
+	mb rule [I1:Int == I2:Int => if (I1:Int ==Bool I2:Int) then 1 else 0 fi] : KSentence .
+	mb rule [I1:Int != I2:Int => if (I1:Int =/=Bool I2:Int) then 1 else 0 fi] : KSentence .
 	--- mb rule [T1 and T2 => T1 andBool T2] : KSentence .
 	--- mb rule [T1 or T2 => T1 orBool T2] : KSentence .
 	--- mb rule [not(T) => notBool(T)] : KSentence .
@@ -425,4 +443,20 @@ mod COMMON-KERNEL-C-SEMANTICS is
 		--- <envStack> [[env(E') ==> .nil]] ...</envStack>
 		--- <callStack> [[funk(K') ==> .nil]] ...</callStack>
 		--- <onReturn> [[K'' ==> .K]] </onReturn>
+		
+		
+---- C standard library
+	---- op builtin : Id -> KResult . --- i want this :(
+	op builtin : Id -> Value .
+	mb [malloc-is-value]: rule
+		< k > [malloc => builtin(malloc)] ...</ k >
+	: KSentence .
+	
+	mb [malloc]: rule
+		< k > [Apply(builtin(malloc), N:Nat) => Loc:Nat] ...</ k >
+		< mem >... [.Map => Loc:Nat to (Loc:Nat +Nat N:Nat) |-> unknown] ...</ mem >
+		< malloced >... [.Map => Loc:Nat |-> N:Nat] ...</ malloced >
+		< nextLoc > [Loc:Nat => Loc:Nat +Nat N:Nat] </ nextLoc >
+	: KSentence .
+	
 endm

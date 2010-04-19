@@ -296,7 +296,11 @@ method private pLvalPrec (contextprec: int) () lv =
     | TInt (ikind,a) -> text ""
 		++ paren (d_ikind () ikind)
 		++ if (name = nil) then (nil) else (text ", ")
-		(*++ if (name = nil) then (nil) else (text " xx " ++ name ++ text " xx, ")*)
+		(* ++ if (name = nil) then (nil) else (text " xx " ++ name ++ text " xx, ") *)
+		(*if (name = nil) then (nil) else (
+			match name with 
+			(* text ", " *)
+		)*)
 		++ (self#pAttrs () a)
 		++ text " "
 		++ name
@@ -340,10 +344,15 @@ method private pLvalPrec (contextprec: int) () lv =
             Some p -> p ++ name' ++ text ")" 
           | _ -> name' 
         in
-        self#pType 
-          (Some name'')
-          () 
-          bt'
+		if (name = nil) then (
+			text "Pointer(" ++ self#pType None () bt' ++ text ")"
+		) else (
+			self#pType 
+			(Some name'')
+			() 
+			bt'
+		)
+
 
     | TArray (elemt, lo, a) -> 
         (* ignore the const attribute for arrays *)

@@ -14,6 +14,7 @@ mod DYNAMIC-KERNEL-C-SEMANTICS is
 			< locals > .Bag </ locals >
 			< parameters > .Bag </ parameters >
 			< sizes > .Map </ sizes >
+			< malloced > .Map </ malloced >
 			---< form > .Bag </ form >
 		</ T > .
 	
