@@ -7,11 +7,11 @@ mod KERNEL-C-SYNTAX is
 	%s
 endm
 
-load match-kernel-c-configuration
+load common-kernel-c-configuration
 
 mod KERNEL-C-PROGRAM is
 	including KERNEL-C-SYNTAX .
 	including MATCH-KERNEL-C-SYNTAX .
-	including MATCH-KERNEL-C-CONFIGURATION .
+	including COMMON-KERNEL-C-CONFIGURATION .
 
 	

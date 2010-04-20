@@ -1,7 +1,6 @@
 mod MATCH-KERNEL-C-SEMANTICS is
 	including COMMON-KERNEL-C-SEMANTICS .
 
-	
 	subsort Annotation-Statement < K .
 
 	--- [| 0,0,<config>
@@ -13,18 +12,52 @@ mod MATCH-KERNEL-C-SEMANTICS is
 		--- <newSym> 0 </newSym>
 		--- <newImpl> 0 </newImpl>
 	--- </config> |]
-	--- eq eval(P:Program) = 
-		--- < T >
-			--- < k > P:Program ~> Apply(main) </ k > 
-			--- < env > .Map </ env > 
-			--- < genv > .Map </ genv > 
-			--- < mem > .Map </ mem >  
-			--- < output > .List </ output >
-			--- < callStack > .List </ callStack >
-			--- < nextLoc > 0 </ nextLoc >
-			--- < locals > .Bag </ locals >
-			--- < parameters > .Bag </ parameters >
-			--- ---< form > TrueFormula </ form >
-		--- </ T > .
+	
+	op loc : -> Nat .
+	
+	eq eval(P:Program) = 
+		< T >
+			< Task >
+				< k > P:Program </ k > 
+				< env > .Map </ env > 
+				< genv > .Map </ genv > 
+				< mem > .Map </ mem >  
+				< output > .List </ output >
+				< callStack > .List </ callStack >
+				< loopStack > .List </ loopStack > 
+				< nextLoc > loc </ nextLoc >
+				< locals > .Bag </ locals >
+				< parameters > .Bag </ parameters >
+				< sizes > .Map </ sizes >
+				< malloced > .Map </ malloced >
+				< form > .Bag </ form >
+				< todo > .K </ todo >
+			</ Task >
+		</ T > .
+		
+	--- mb [function-declaration]: rule 
+		--- < k > [
+			--- Declaration(DS:TogetherList, Direct-Function-Declarator(I:Id, PTL:Parameter-Type-List)){
+				--- B:TogetherList
+			--- }
+			--- => .K]
+		--- ...</ k >
+		--- < todo > [.K => I:Id] ...</ todo >
+		--- < genv > [E:Map => E:Map[Loc:Nat / I:Id]]  </ genv >
+		--- < mem > [M:Map => M:Map[Closure(Declaration(DS:TogetherList, Direct-Function-Declarator(I:Id, PTL:Parameter-Type-List)){ B:TogetherList }) / Loc:Nat]] </ mem >
+		--- < nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
+		--- : KSentence .
+		
+	mb [move-pre-through-block]: rule
+		['Block(annotation pre(C:Bag) ; ~> S:Statement) => annotation pre(C:Bag) ; ~> Block(S:Statement)]
+	: KSentence .
+	mb [move-pre-through-declarations]: rule
+		[Declaration(T:TogetherList, DL:Init-Declarator-List) ~> annotation pre(C:Bag) ; => annotation pre(C:Bag) ; ~> Declaration(T:TogetherList, DL:Init-Declarator-List)]
+	: KSentence .
+	mb [move-post-through-all]: rule
+		[annotation post(C:Bag) ; ~> K:NeK => K:NeK ~> annotation post(C:Bag) ;]
+	: KSentence .
+		
+		
 	
 endm

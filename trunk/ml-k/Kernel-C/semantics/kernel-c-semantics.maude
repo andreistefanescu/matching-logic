@@ -1,6 +1,7 @@
 --- clearly need to distinguish between parts of my config, i.e., not be flat
 
 mod COMMON-KERNEL-C-SEMANTICS is
+	including KERNEL-C-SYNTAX .
 	including KERNEL-C-CONFIGURATION .
 	including K-CONTEXTS .
 	
@@ -141,23 +142,6 @@ mod COMMON-KERNEL-C-SEMANTICS is
 	
 	
 	mb rule [Declaration(DS:TogetherList, Pointer(DFD:Direct-Declarator)) => Declaration(Pointer(DS:TogetherList), DFD:Direct-Declarator)] : KSentence .
-	
-	***(
-	Declaration-Specifiers Identifier(Parameter-Type-List){
-		Block-Item-List
-	}
-	***)
-	mb [function-definition]: rule 
-		< k > [
-			Declaration(DS:TogetherList, Direct-Function-Declarator(I:Id, PTL:Parameter-Type-List)){
-				B:TogetherList
-			}
-			=> .K]
-		...</ k >
-		< genv > [E:Map => E:Map[Loc:Nat / I:Id]]  </ genv >
-		< mem > [M:Map => M:Map[Closure(Declaration(DS:TogetherList, Direct-Function-Declarator(I:Id, PTL:Parameter-Type-List)){ B:TogetherList }) / Loc:Nat]] </ mem >
-		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
-		: KSentence .
 	
 
 	op bind : -> KLabel .
