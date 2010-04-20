@@ -12,7 +12,7 @@ all: cparser maude-fragments
 dynamic: SEMANTICS=dynamic
 dynamic: build-all run
 
-match: SEMANTICS=match build-all
+match: SEMANTICS=match
 match: build-all run
 
 fix: 

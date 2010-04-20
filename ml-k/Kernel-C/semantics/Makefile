@@ -7,9 +7,9 @@ K-PRELUDE = $(K-MAUDE-BASE)/k-prelude
 ADDITIONAL_SYNTAX = "including MATCH-KERNEL-C-SYNTAX ."
 
 
-.PHONY: all clean force check-input dynamic match
+.PHONY: all clean force check-input dynamic match semantics
 
-.SECONDARY:
+#.SECONDARY:
 
 all: dynamic 
 
@@ -28,17 +28,19 @@ programs-gen.maude: programs-gen.template check-input Makefile
 #"`cat $(INPUT)`" $(SEMANTICS_FILE) $(SEMANTICS_MODULE) > kernel-c.maude
 
 kernel-c.maude: programs-gen.maude check-input c-maude.template Makefile
-	printf "`cat c-maude.template`" $(K-PRELUDE) $(SEMANTICS_FILE) $(SEMANTICS_MODULE) > kernel-c.maude
+	printf "`cat c-maude.template`" $(K-PRELUDE) $(CONFIGURATION_FILE) $(SEMANTICS_FILE) $(SEMANTICS_MODULE) > kernel-c.maude
 	
 kernel-c-compiled.maude: kernel-c.maude kernel-c-syntax.maude match-kernel-c-syntax.maude kernel-c-configuration.maude kernel-c-semantics.maude  
 	$(K-MAUDE) kernel-c.maude KERNEL-C
 	
 dynamic: SEMANTICS_MODULE = "DYNAMIC-KERNEL-C-SEMANTICS" 
 dynamic: SEMANTICS_FILE = "dynamic-kernel-c-semantics"
+dynamic: CONFIGURATION_FILE = "dynamic-kernel-c-configuration"
 dynamic: semantics
 
 match: SEMANTICS_MODULE = "MATCH-KERNEL-C-SEMANTICS"
 match: SEMANTICS_FILE = "match-kernel-c-semantics"
+match: CONFIGURATION_FILE = "match-kernel-c-configuration"
 match: semantics
 
 semantics: kernel-c-compiled.maude test.maude
@@ -48,6 +50,6 @@ test.maude: force
 	@printf "`cat test.template`" "`echo -e "$(foreach var,$(INPUT), rew eval(\\"program-$(notdir $(var))\\"(.List{K})) . \n)\n"`" > test.maude
 
 clean:
-	rm -f kernel-c-compiled.maude kernel-c.maude
+	rm -f kernel-c-compiled.maude kernel-c.maude test.maude programs-gen.maude
 
 force: ;

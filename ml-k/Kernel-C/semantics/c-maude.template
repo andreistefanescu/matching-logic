@@ -2,7 +2,7 @@ load %s
 
 load programs-gen
 
-load kernel-c-configuration
+load %s
 load kernel-c-semantics
 load %s
 

@@ -21,5 +21,22 @@ mod DYNAMIC-KERNEL-C-SEMANTICS is
 	--- throw away annotations
 	mb [no-annotations]: rule [annotation(?); => .K] : KSentence .
 	
+	***(
+	Declaration-Specifiers Identifier(Parameter-Type-List){
+		Block-Item-List
+	}
+	***)
+	mb [function-definition]: rule 
+		< k > [
+			Declaration(DS:TogetherList, Direct-Function-Declarator(I:Id, PTL:Parameter-Type-List)){
+				B:TogetherList
+			}
+			=> .K]
+		...</ k >
+		< genv > [E:Map => E:Map[Loc:Nat / I:Id]]  </ genv >
+		< mem > [M:Map => M:Map[Closure(Declaration(DS:TogetherList, Direct-Function-Declarator(I:Id, PTL:Parameter-Type-List)){ B:TogetherList }) / Loc:Nat]] </ mem >
+		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
+		: KSentence .
+	
 	
 endm

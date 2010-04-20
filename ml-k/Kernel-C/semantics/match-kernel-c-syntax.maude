@@ -2,6 +2,13 @@ mod MATCH-KERNEL-C-SYNTAX is
 	including COMMON-KERNEL-C-SYNTAX .
 	including K .
 	
+	
+	subsort Id < K .
+	subsort Formula < K .
+	subsort Annotation < K .
+	
+	op form : -> CellLabel .
+	
 	sort Annotation-Statement .
 	subsort Annotation-Statement < Statement .
 	sort Annotation .
@@ -11,6 +18,8 @@ mod MATCH-KERNEL-C-SYNTAX is
 	op assume : Bag -> Annotation .
 	op assert : Bag -> Annotation .
 	op invariant : Bag -> Annotation .
+	op pre : Bag -> Annotation .
+	op post : Bag -> Annotation .
 	
 	ops ?l1 ?l2 ?sum ?n : -> Int .
 	ops #n0 : -> Int .

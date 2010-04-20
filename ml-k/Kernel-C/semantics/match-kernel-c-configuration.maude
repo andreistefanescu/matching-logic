@@ -1,65 +1,32 @@
-mod MATCH-KERNEL-C-CONFIGURATION is
+mod KERNEL-C-CONFIGURATION is
 	including KERNEL-C-SYNTAX .
+	including COMMON-KERNEL-C-CONFIGURATION .
 	including PL-BUILTINS .
 
-	subsort Id < K .
-	subsort Formula < K .
-	---subsort Expression < K .
-	subsort Annotation < K .
+	op Task : -> CellLabel .
+	op todo : -> CellLabel .
 	
-	op k : -> CellLabel .
-	op output : -> CellLabel .
-	op env : -> CellLabel .
-	op genv : -> CellLabel .
-	op mem : -> CellLabel .
-	op nextLoc : -> CellLabel .
-	op resultValue : -> CellLabel .
-	op resultOutput : -> CellLabel .
-	op form : -> CellLabel .
-
-	op callStack : -> CellLabel .
-	op stackFrame : -> CellLabel .
-	op continuation : -> CellLabel .
-	op locals : -> CellLabel .
-	op parameters : -> CellLabel .
-	op sizes : -> CellLabel .
-	op loopStack : -> CellLabel .
-	op malloced : -> CellLabel .
-	
-	---subsort AExp BExp Stmt < K .
-	--- subsort Program < K .
-
-	--- subsort Int < KResult .
-	--- subsort Bool < KResult .
-	---subsort Identifier < Id < Expression . --- hack
-	
-	--- subsort Block-Item < K .
-	--- subsort Compound-Statement < K .
-	--- subsort Constant < K .
-	--- subsort Declaration < K .
-	--- subsort Declarator < K .
-	--- subsort Direct-Declarator < K .
-	--- subsort Expression < K .
-	--- subsort External-Declaration < K .
-
-	--- subsort Function-Definition < K .
-	--- subsort Constant < K .
-	--- subsort Id < K .
-	--- subsort Init-Declarator < K .
-	--- subsort Init-Declarator-List < K .
-	--- subsort Integer-Constant < K .
-	--- subsort Iteration-Statement < K .
-	--- subsort Jump-Statement < K .
-	--- subsort List{Expression} < K .
-	--- subsort Parameter-Declaration < K .
-	--- subsort Parameter-Type-List < K .
-	--- subsort Selection-Statement < K .
-	--- subsort TogetherList < K .
-	--- subsort SeqList < K .
-	--- subsort Storage-Class-Specifier < K .
-	--- subsort Statement < K .
-	--- subsort Type-Name < K .
-	--- subsort Type-Specifier < K .
-	
+	mb configuration 
+		< T > 
+			< Task >
+				< k > .K </ k >
+				< env > .Map </ env > 
+				< genv > .Map </ genv > 
+				< mem > .Map </ mem >  
+				< output > .List </ output > 
+				< callStack > .List </ callStack >
+				< loopStack > .List </ loopStack >
+				< nextLoc > 0 </ nextLoc >
+				< locals > .Bag </ locals >
+				< parameters > .Bag </ parameters >
+				< form > .K </ form >
+				< sizes > .Map </ sizes >
+				< malloced > .Map </ malloced >
+				< todo > .K </ todo >
+			</ Task >
+		</ T > 
+		< resultValue > .K </ resultValue >
+		< resultOutput > .List </ resultOutput > 
+		: KSentence .
 	
 endm

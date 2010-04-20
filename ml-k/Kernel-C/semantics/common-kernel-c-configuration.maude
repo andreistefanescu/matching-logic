@@ -1,17 +1,29 @@
-mod KERNEL-C-CONFIGURATION is
+mod COMMON-KERNEL-C-CONFIGURATION is
 	including KERNEL-C-SYNTAX .
-	including MATCH-KERNEL-C-CONFIGURATION .
 	including PL-BUILTINS .
-
-	---subsort AExp BExp Stmt < K .
+	including KERNEL-C-SYNTAX .
+	including MATCH-KERNEL-C-SYNTAX .
+	
+	op k : -> CellLabel .
+	op output : -> CellLabel .
+	op env : -> CellLabel .
+	op genv : -> CellLabel .
+	op mem : -> CellLabel .
+	op nextLoc : -> CellLabel .
+	op resultValue : -> CellLabel .
+	op resultOutput : -> CellLabel .
+	op callStack : -> CellLabel .
+	op stackFrame : -> CellLabel .
+	op continuation : -> CellLabel .
+	op locals : -> CellLabel .
+	op parameters : -> CellLabel .
+	op sizes : -> CellLabel .
+	op loopStack : -> CellLabel .
+	op malloced : -> CellLabel .
+	
+	
 	subsort Program < K .
-
-	--- subsort Int < KResult .
-	--- subsort Bool < KResult .
-	---subsort Identifier < Id < Expression . --- hack
-	
 	subsort List{Parameter} < K .
-	
 	subsort Block-Item < K .
 	subsort Compound-Statement < K .
 	subsort Constant < K .
@@ -20,10 +32,8 @@ mod KERNEL-C-CONFIGURATION is
 	subsort Direct-Declarator < K .
 	subsort Expression < K .
 	subsort External-Declaration < K .
-
 	subsort Function-Definition < K .
 	subsort Constant < K .
-
 	subsort Init-Declarator < K .
 	subsort Init-Declarator-List < K .
 	subsort Integer-Constant < K .
@@ -40,25 +50,5 @@ mod KERNEL-C-CONFIGURATION is
 	subsort Type-Name < K .
 	subsort Type-Specifier < K .
 	
-	
-	mb configuration 
-		< T > 
-			< k > .K </ k >
-			< env > .Map </ env > 
-			< genv > .Map </ genv > 
-			< mem > .Map </ mem >  
-			< output > .List </ output > 
-			< callStack > .List </ callStack >
-			< loopStack > .List </ loopStack >
-			< nextLoc > 0 </ nextLoc >
-			< locals > .Bag </ locals >
-			< parameters > .Bag </ parameters >
-			< form > .K </ form >
-			< sizes > .Map </ sizes >
-			< malloced > .Map </ malloced >
-		</ T > 
-		< resultValue > .K </ resultValue >
-		< resultOutput > .List </ resultOutput > 
-		: KSentence .
 	
 endm
