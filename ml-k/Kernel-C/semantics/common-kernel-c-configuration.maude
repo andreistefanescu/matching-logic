@@ -20,6 +20,7 @@ mod COMMON-KERNEL-C-CONFIGURATION is
 	op sizes : -> CellLabel .
 	op loopStack : -> CellLabel .
 	op malloced : -> CellLabel .
+	op local : -> CellLabel .
 	
 	
 	subsort Program < K .

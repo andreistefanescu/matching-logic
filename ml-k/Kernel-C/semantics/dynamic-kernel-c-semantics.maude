@@ -37,6 +37,34 @@ mod DYNAMIC-KERNEL-C-SEMANTICS is
 		< mem > [M:Map => M:Map[Closure(Declaration(DS:TogetherList, Direct-Function-Declarator(I:Id, PTL:Parameter-Type-List)){ B:TogetherList }) / Loc:Nat]] </ mem >
 		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
 		: KSentence .
+		
+	mb [function-application]: rule
+		< k > [Apply(Closure(Declaration(DS:TogetherList, Direct-Function-Declarator(I:Id, PTL:Parameter-Type-List)){ B:TogetherList }), L:List{Expression}) ~> K:K => bind(L:List{Expression},, PTL:Parameter-Type-List) ~> B:TogetherList] </ k >
+		< env > [E:Map => G:Map] </ env >
+		< genv > G:Map </ genv >
+		< locals > [L:Bag => .Bag] </ locals >
+		< parameters > [P:Bag => .Bag] </ parameters >
+		< sizes > [S:Map => .Map] </ sizes >
+		< loopStack > [LS:List => .List] </ loopStack >
+		< callStack > [.List => List(
+			< stackFrame > 
+				< continuation > K:K </ continuation >
+				< parameters > P:Bag </ parameters >
+				< locals > L:Bag </ locals >
+				< env > E:Map </ env >
+				< sizes > S:Map </ sizes >
+				< loopStack > LS:List </ loopStack >
+			</ stackFrame >
+			)] ...</ callStack >
+		: KSentence .
+	
+	
+	mb [terminate]: rule 
+		[< T >... < k > V:Value </ k > < output > O:List </ output > ...</ T >
+		=>
+		< resultValue > V:Value </ resultValue >
+		< resultOutput > O:List </ resultOutput >]
+		: KSentence .
 	
 	
 endm
