@@ -18,9 +18,11 @@ int main(void){
 	listAppend(head, 35);
 	
 	int sum1 = listSum(head);
+	int first = *head;
 	head = listReverse(head);
+	int last = *head;
 	int sum2 = listSum(head);
-	return sum1 - sum2;
+	return (sum1 - sum2) + (last - first); // should be 15
 }
 
 int* listAppend(int* p, int n){
@@ -65,17 +67,16 @@ int listSum(int* p){
 }
 
 int* listReverse(int* p){
-	//if (p != NULL) { }
-    //if (p != NULL) {
-		//int* x = *(p + 1);
-        // *(p + 1) = NULL;
-        // while(x != NULL) {
-            // int* tmp = *(x + 1);
-            // *(x + 1) = p;
-            // p = x;
-            // x = tmp;
-        // }
-    //}
+    if (p != NULL) {
+		int* x = *(p + 1);
+        *(p + 1) = NULL;
+        while(x != NULL) {
+            int* tmp = *(x + 1);
+            *(x + 1) = p;
+            p = x;
+            x = tmp;
+        }
+    }
 	return p;
 }
 
