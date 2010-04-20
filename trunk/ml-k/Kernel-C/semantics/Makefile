@@ -30,7 +30,7 @@ programs-gen.maude: programs-gen.template check-input Makefile
 kernel-c.maude: programs-gen.maude check-input c-maude.template Makefile
 	printf "`cat c-maude.template`" $(K-PRELUDE) $(CONFIGURATION_FILE) $(SEMANTICS_FILE) $(SEMANTICS_MODULE) > kernel-c.maude
 	
-kernel-c-compiled.maude: kernel-c.maude kernel-c-syntax.maude match-kernel-c-syntax.maude kernel-c-configuration.maude kernel-c-semantics.maude  
+kernel-c-compiled.maude: kernel-c.maude kernel-c-syntax.maude match-kernel-c-syntax.maude common-kernel-c-configuration.maude kernel-c-semantics.maude  
 	$(K-MAUDE) kernel-c.maude KERNEL-C
 	
 dynamic: SEMANTICS_MODULE = "DYNAMIC-KERNEL-C-SEMANTICS" 
@@ -50,6 +50,6 @@ test.maude: force
 	@printf "`cat test.template`" "`echo -e "$(foreach var,$(INPUT), rew eval(\\"program-$(notdir $(var))\\"(.List{K})) . \n)\n"`" > test.maude
 
 clean:
-	rm -f kernel-c-compiled.maude kernel-c.maude test.maude programs-gen.maude
+	rm -f kernel-c-compiled.maude kernel-c.maude test.maude programs-gen.maude kcompile_*
 
 force: ;

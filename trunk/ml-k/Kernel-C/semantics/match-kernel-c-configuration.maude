@@ -5,25 +5,23 @@ mod KERNEL-C-CONFIGURATION is
 
 	op Task : -> CellLabel .
 	op todo : -> CellLabel .
+	op fresh : -> CellLabel .
 	
 	mb configuration 
 		< T > 
-			< Task >
+			< Task * >
 				< k > .K </ k >
 				< env > .Map </ env > 
-				< genv > .Map </ genv > 
 				< mem > .Map </ mem >  
-				< output > .List </ output > 
-				< callStack > .List </ callStack >
-				< loopStack > .List </ loopStack >
-				< nextLoc > 0 </ nextLoc >
-				< locals > .Bag </ locals >
-				< parameters > .Bag </ parameters >
+				< loopStack > .List </ loopStack >				
 				< form > .K </ form >
 				< sizes > .Map </ sizes >
 				< malloced > .Map </ malloced >
-				< todo > .K </ todo >
-			</ Task >
+			</ Task * >
+			< todo > .K </ todo >
+			< nextLoc > 1 </ nextLoc >
+			< fresh > 1 </ fresh >
+			< genv > .Map </ genv > 
 		</ T > 
 		< resultValue > .K </ resultValue >
 		< resultOutput > .List </ resultOutput > 

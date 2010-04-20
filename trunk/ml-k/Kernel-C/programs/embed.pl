@@ -107,6 +107,7 @@ $linenum++;
   #$var =~ s/([CHARLIST])/\\$1/g;
 	
 	my @vars = ();
+	my @atvars = ();
 	#print "$line\n";
 	while ($line =~ m/(\@(\w+))\b/g) {
 		#print "Found '$&'\n";
@@ -122,6 +123,8 @@ $linenum++;
 	if ($line =~ s/\/\/\@\s*assert(\:?)\s*(.*)$/fslAnnotation("assert ($2)"$varstr);/i) {
 	} elsif ($line =~ s/\/\/\@\s*assume(\:?)\s*(.*)$/fslAnnotation("assume ($2)"$varstr);/i) {
 	} elsif ($line =~ s/\/\/\@\s*invariant(\:?)\s*(.*)$/fslAnnotation("invariant ($2)"$varstr);/i) {
+	} elsif ($line =~ s/\/\/\@\s*pre(\:?)\s*(.*)$/fslAnnotation("pre ($2)"$varstr);/i) {
+	} elsif ($line =~ s/\/\/\@\s*post(\:?)\s*(.*)$/fslAnnotation("post ($2)"$varstr);/i) {
 	}
   
 
