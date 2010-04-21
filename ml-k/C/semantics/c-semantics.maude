@@ -1,8 +1,8 @@
 --- clearly need to distinguish between parts of my config, i.e., not be flat
 
-mod COMMON-KERNEL-C-SEMANTICS is
-	including KERNEL-C-SYNTAX .
-	including KERNEL-C-CONFIGURATION .
+mod COMMON-C-SEMANTICS is
+	including C-SYNTAX .
+	including C-CONFIGURATION .
 	including K-CONTEXTS .
 	
 	sort Value .

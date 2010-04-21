@@ -2,16 +2,16 @@
 load c-syntax
 load match-c-syntax
 
-mod KERNEL-C-SYNTAX is
-	including COMMON-KERNEL-C-SYNTAX .
+mod C-SYNTAX is
+	including COMMON-C-SYNTAX .
 	%s
 endm
 
 load common-c-configuration
 
-mod KERNEL-C-PROGRAM is
-	including KERNEL-C-SYNTAX .
-	including MATCH-KERNEL-C-SYNTAX .
-	including COMMON-KERNEL-C-CONFIGURATION .
+mod C-PROGRAM is
+	including C-SYNTAX .
+	including MATCH-C-SYNTAX .
+	including COMMON-C-CONFIGURATION .
 
 	

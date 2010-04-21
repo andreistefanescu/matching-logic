@@ -1,5 +1,5 @@
-mod DYNAMIC-KERNEL-C-SEMANTICS is
-	including COMMON-KERNEL-C-SEMANTICS .
+mod DYNAMIC-C-SEMANTICS is
+	including COMMON-C-SEMANTICS .
 	
 	eq eval(P:Program) = 
 		< T >

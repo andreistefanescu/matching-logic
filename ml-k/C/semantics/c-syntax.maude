@@ -1,4 +1,4 @@
-mod COMMON-KERNEL-C-SYNTAX is
+mod COMMON-C-SYNTAX is
 	including PL-BUILTINS .
 	
 	--- subsort 

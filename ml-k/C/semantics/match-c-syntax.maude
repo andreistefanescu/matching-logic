@@ -1,5 +1,5 @@
-mod MATCH-KERNEL-C-SYNTAX is
-	including COMMON-KERNEL-C-SYNTAX .
+mod MATCH-C-SYNTAX is
+	including COMMON-C-SYNTAX .
 	including K .
 	
 	

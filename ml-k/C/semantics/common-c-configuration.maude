@@ -1,8 +1,8 @@
-mod COMMON-KERNEL-C-CONFIGURATION is
-	including KERNEL-C-SYNTAX .
+mod COMMON-C-CONFIGURATION is
+	including C-SYNTAX .
 	including PL-BUILTINS .
-	including KERNEL-C-SYNTAX .
-	including MATCH-KERNEL-C-SYNTAX .
+	including C-SYNTAX .
+	including MATCH-C-SYNTAX .
 	
 	op k : -> CellLabel .
 	op output : -> CellLabel .

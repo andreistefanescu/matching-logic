@@ -1,6 +1,6 @@
 load c-compiled
-mod KERNEL-C-TEST is
-	including KERNEL-C .
+mod C-TEST is
+	including C .
 endm
 
 ---rew eval("program"(.List{K})) .
