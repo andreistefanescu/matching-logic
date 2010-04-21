@@ -401,7 +401,7 @@ method private pLvalPrec (contextprec: int) () lv =
                           in
                           (docList ~sep:(text " ,., " ++ break) pArg) () 
                             (argsToList args))
-                          ++ (if isvararg then break ++ text ", ..." else nil))
+                          ++ (if isvararg then break ++ text ",., ..." else nil))
                       ++ unalign)
                 ++ text ")") "Direct-Function-Declarator"))
           ()

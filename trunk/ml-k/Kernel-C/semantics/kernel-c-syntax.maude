@@ -14,6 +14,7 @@ mod COMMON-KERNEL-C-SYNTAX is
 	op main : -> Id [ctor] .
 	op malloc : -> Id [ctor] .
 	op free : -> Id [ctor] .
+	op printf : -> Id [ctor] .
 	
 	--- ---- A.1.5 Constants
 	--- --- 6.4.4
@@ -63,7 +64,8 @@ mod COMMON-KERNEL-C-SYNTAX is
 	--- --- TODO
 	
 	--- --- 6.4.5
-	--- sort String-Literal .
+	sort String-Literal .
+	---subsort String < String-Literal .
 	--- --- TODO
 	
 	--- --- TODO
@@ -74,6 +76,7 @@ mod COMMON-KERNEL-C-SYNTAX is
 	---subsort Primary-Expression < K .
 	--- ---subsort Identifier Constant String-Literal Expression < Primary-Expression .
 	---subsort Identifier Constant < Expression .
+	--- String-Literal
 	subsort Id Constant < Expression .
 
 	---subsort Expression < Primary-Expression .
@@ -352,6 +355,7 @@ mod COMMON-KERNEL-C-SYNTAX is
 	
 	sort Parameter-Declaration .
 	op Pointer : TogetherList -> TogetherList [ditto] .
+	op ... : -> Parameter-Declaration .
 	
 	---subsort Declaration-Specifiers < Parameter-Declaration .
 	op Parameter-Declaration : TogetherList -> Parameter-Declaration .
