@@ -11,14 +11,14 @@ void main() {
    item * curr, * head;
    int i;
 
-   // head = NULL;
+   head = NULL;
 
-   // for(i=1;i<=10;i++) {
-      // curr = (item *)malloc(sizeof(item));
-      // curr->val = i;
-      // curr->next  = head;
-      // head = curr;
-   // }
+   for(i=1;i<=10;i++) {
+      curr = (item *)malloc(sizeof(item));
+      curr->val = i;
+      curr->next  = head;
+      head = curr;
+   }
 
    // curr = head;
 

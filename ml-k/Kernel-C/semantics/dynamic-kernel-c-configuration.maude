@@ -18,6 +18,7 @@ mod KERNEL-C-CONFIGURATION is
 			< sizes > .Map </ sizes >
 			< malloced > .Map </ malloced >
 			< statics > .Map </ statics >
+			< typedefs > .Map </ typedefs >
 		</ T > 
 		< resultValue > .K </ resultValue >
 		< resultOutput > "" </ resultOutput > 

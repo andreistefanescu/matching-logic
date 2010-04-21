@@ -22,6 +22,7 @@ mod COMMON-KERNEL-C-CONFIGURATION is
 	op malloced : -> CellLabel .
 	op local : -> CellLabel .
 	op statics : -> CellLabel .
+	op typedefs : -> CellLabel .
 	
 	
 	subsort Program < K .

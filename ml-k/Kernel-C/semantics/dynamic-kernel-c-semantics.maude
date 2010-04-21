@@ -16,6 +16,7 @@ mod DYNAMIC-KERNEL-C-SEMANTICS is
 			< sizes > .Map </ sizes >
 			< malloced > .Map </ malloced >
 			< statics > .Map </ statics >
+			< typedefs > .Map </ typedefs >
 		</ T > .
 	
 	--- throw away annotations
