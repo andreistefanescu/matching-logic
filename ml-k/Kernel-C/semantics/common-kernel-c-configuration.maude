@@ -46,6 +46,7 @@ mod COMMON-KERNEL-C-CONFIGURATION is
 	subsort Selection-Statement < K .
 	subsort TogetherList < K .
 	subsort SeqList < K .
+	subsort String-Literal < K .
 	subsort Storage-Class-Specifier < K .
 	subsort Statement < K .
 	subsort Type-Name < K .
