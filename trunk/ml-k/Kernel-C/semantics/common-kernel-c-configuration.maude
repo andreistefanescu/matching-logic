@@ -53,6 +53,8 @@ mod COMMON-KERNEL-C-CONFIGURATION is
 	subsort Statement < K .
 	subsort Type-Name < K .
 	subsort Type-Specifier < K .
+	subsort Struct-Or-Union-Specifier < K .
+	subsort Struct-Declaration < K .
 	
 	subsort String < Builtins .
 endm

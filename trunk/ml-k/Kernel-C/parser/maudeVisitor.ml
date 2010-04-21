@@ -62,12 +62,29 @@ class maudeVisitor = object inherit nopCilVisitor
 	
 	method vglob (g:global) = begin
 		( match g with 
-			| GType(typeinfo, location) -> typedefList <- (replace "_" "u" typeinfo.tname) :: typedefList (*typeinfo.ttype*)
-			| GVarDecl(varinfo, location) -> identifierList <- (replace "_" "u" varinfo.vname) :: identifierList (*typeinfo.ttype*)
+			| GType(typeinfo, location) -> typedefList <- (replace "_" "u" typeinfo.tname) :: typedefList
+			| GVarDecl(varinfo, location) -> identifierList <- (replace "_" "u" varinfo.vname) :: identifierList
+			| GCompTag (comp, l) -> begin
+				identifierList <- (replace "_" "u" comp.cname) :: identifierList;
+				let fieldVisit = fun fi -> 
+					(* print_string (fi.fname ^ "\n"); *)
+					identifierList <- (replace "_" "u" fi.fname) :: identifierList
+			      in
+			      List.iter fieldVisit comp.cfields;
+			      (*comp.cattr <- visitCilAttributes vis comp.cattr;*)
+			end
+			
 			| _ -> ()
 		) ;
 		DoChildren
 	end
+	
+	(* method vattr: attribute -> attribute list visitAction  *)
+	(* method vattr (Attr (s, params)) = begin
+		identifierList <- (replace "_" "u" s) :: identifierList;
+		print_string (s ^ "\n");
+		DoChildren
+	end *)
 	
 	method vinit (forg: varinfo) (off: offset) (i:init) = begin
 		identifierList <- (replace "_" "u" forg.vname) :: identifierList;
@@ -91,5 +108,6 @@ class maudeVisitor = object inherit nopCilVisitor
 		) ;
 		DoChildren
 	end
+	
 	
 end

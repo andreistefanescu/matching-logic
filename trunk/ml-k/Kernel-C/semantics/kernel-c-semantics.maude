@@ -103,10 +103,10 @@ mod COMMON-KERNEL-C-SEMANTICS is
 		< sizes >... [.Map => I:Id |-> 1 ] ...</ sizes > 
 		: KSentence .
 	mb [pointer-declaration]: rule
-		< k > [Declaration(int, Pointer(I:Id)) => .K] ...</ k >
+		< k > [Declaration(Pointer(T:Type-Specifier), I:Id) => .K] ...</ k >
 		< env >... [.Map => I:Id |-> Loc:Nat] ...</ env >
 		< mem >... [.Map => Loc:Nat |-> unknown] ...</ mem >
-		< locals >... [.Bag => Bag(Declaration(int, I:Id))] ...</ locals >
+		< locals >... [.Bag => Bag(Declaration(Pointer(T:Type-Specifier), I:Id))] ...</ locals >
 		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
 		< sizes >... [.Map => Pointer(I:Id) |-> 1 ] ...</ sizes > 
 		: KSentence .
@@ -181,6 +181,7 @@ mod COMMON-KERNEL-C-SEMANTICS is
 	
 	
 	mb rule [Declaration(DS:TogetherList, Pointer(DFD:Direct-Declarator)) => Declaration(Pointer(DS:TogetherList), DFD:Direct-Declarator)] : KSentence .
+	mb rule [Parameter-Declaration(DS:TogetherList, Pointer(DFD:Direct-Declarator)) => Parameter-Declaration(Pointer(DS:TogetherList), DFD:Direct-Declarator)] : KSentence .
 	
 
 	op bind : -> KLabel .
@@ -272,8 +273,8 @@ mod COMMON-KERNEL-C-SEMANTICS is
 		---< env >... X:Id |-> Loc:Nat ...</ env >
 		---< mem >... Loc:Nat |-> I:Int ...</ mem >
 		: KSentence .
-	mb [cast-pointer-int]: rule
-		< k > [Cast(Pointer(int), I:Int) => I:Int] ...</ k >
+	mb [cast-pointer-type]: rule
+		< k > [Cast(Pointer(T:Type-Specifier), I:Int) => I:Int] ...</ k >
 		---< env >... X:Id |-> Loc:Nat ...</ env >
 		---< mem >... Loc:Nat |-> I:Int ...</ mem >
 		: KSentence .
@@ -329,7 +330,13 @@ mod COMMON-KERNEL-C-SEMANTICS is
 		: KSentence .
 	mb [return-clean-local-pointer]: rule 
 		< k > return ; ...</ k >
-		< locals >... [BagItem(Declaration(int, Pointer(I:Id))) => .Bag] ...</ locals >	
+		< locals >... [BagItem(Declaration(Pointer(T:Type-Specifier), I:Id)) => .Bag] ...</ locals >	
+		< env >... I:Id |-> Loc:Nat ...</ env >
+		< mem >... [Loc:Nat |-> ? => .Map] ...</ mem >
+		: KSentence .
+	mb [return-value-clean-local-pointer]: rule 
+		< k > return V:Value ; ...</ k >
+		< locals >... [BagItem(Declaration(Pointer(T:Type-Specifier), I:Id)) => .Bag] ...</ locals >	
 		< env >... I:Id |-> Loc:Nat ...</ env >
 		< mem >... [Loc:Nat |-> ? => .Map] ...</ mem >
 		: KSentence .
@@ -364,7 +371,7 @@ mod COMMON-KERNEL-C-SEMANTICS is
 		: KSentence .
 	mb [return-value-clean-params-pointer]: rule 
 		< k > return V:Value ; ...</ k >
-		< parameters >... [BagItem(Parameter-Declaration(int, Pointer(I:Id))) => .Bag] ...</ parameters >	
+		< parameters >... [BagItem(Parameter-Declaration(Pointer(T:Type-Specifier), I:Id)) => .Bag] ...</ parameters >	
 		< env >... I:Id |-> Loc:Nat ...</ env >
 		< mem >... [Loc:Nat |-> ? => .Map] ...</ mem >
 		: KSentence .
@@ -376,7 +383,7 @@ mod COMMON-KERNEL-C-SEMANTICS is
 		: KSentence .
 	mb [return-clean-params-pointer]: rule 
 		< k > return ; ...</ k >
-		< parameters >... [BagItem(Parameter-Declaration(int, Pointer(I:Id))) => .Bag] ...</ parameters >	
+		< parameters >... [BagItem(Parameter-Declaration(Pointer(T:Type-Specifier), I:Id)) => .Bag] ...</ parameters >	
 		< env >... I:Id |-> Loc:Nat ...</ env >
 		< mem >... [Loc:Nat |-> ? => .Map] ...</ mem >
 		: KSentence .
