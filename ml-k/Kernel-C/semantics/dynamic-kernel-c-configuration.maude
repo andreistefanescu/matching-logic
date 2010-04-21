@@ -1,0 +1,26 @@
+mod KERNEL-C-CONFIGURATION is
+	including KERNEL-C-SYNTAX .
+	including COMMON-KERNEL-C-CONFIGURATION .
+	including PL-BUILTINS .
+
+	mb configuration 
+		< T > 
+			< k > .K </ k >
+			< env > .Map </ env > 
+			< genv > .Map </ genv > 
+			< mem > .Map </ mem >  
+			< output > "" </ output >
+			< callStack > .List </ callStack >
+			< loopStack > .List </ loopStack >
+			< nextLoc > 0 </ nextLoc >
+			< locals > .Bag </ locals >
+			< parameters > .Bag </ parameters >
+			< sizes > .Map </ sizes >
+			< malloced > .Map </ malloced >
+			< statics > .Map </ statics >
+			< typedefs > .Map </ typedefs >
+		</ T > 
+		< resultValue > .K </ resultValue >
+		< resultOutput > "" </ resultOutput > 
+		: KSentence .
+endm

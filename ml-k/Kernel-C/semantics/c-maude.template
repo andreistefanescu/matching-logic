@@ -1,0 +1,18 @@
+load %s
+
+load programs-gen
+
+load %s
+load kernel-c-semantics
+load %s
+
+mod KERNEL-C-SEMANTICS is
+	including KERNEL-C-CONFIGURATION .
+	including COMMON-KERNEL-C-SEMANTICS .
+	including %s .
+endm
+
+mod KERNEL-C is 
+	including KERNEL-C-PROGRAM .
+	including KERNEL-C-SEMANTICS . 
+endm

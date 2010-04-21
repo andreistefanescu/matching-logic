@@ -1,0 +1,30 @@
+mod KERNEL-C-CONFIGURATION is
+	including KERNEL-C-SYNTAX .
+	including COMMON-KERNEL-C-CONFIGURATION .
+	including PL-BUILTINS .
+
+	op Task : -> CellLabel .
+	op todo : -> CellLabel .
+	op fresh : -> CellLabel .
+	
+	mb configuration 
+		< T > 
+			< Task * >
+				< k > .K </ k >
+				< env > .Map </ env > 
+				< mem > .Map </ mem >  
+				< loopStack > .List </ loopStack >				
+				< form > .K </ form >
+				< sizes > .Map </ sizes >
+				< malloced > .Map </ malloced >
+			</ Task * >
+			< todo > .K </ todo >
+			< nextLoc > 1 </ nextLoc >
+			< fresh > 1 </ fresh >
+			< genv > .Map </ genv > 
+		</ T > 
+		< resultValue > .K </ resultValue >
+		< resultOutput > .List </ resultOutput > 
+		: KSentence .
+	
+endm
