@@ -66,7 +66,8 @@ mod COMMON-KERNEL-C-SEMANTICS is
 	--- for now, just ignore global wrapper
 	---mb [remove-global-marker]: rule [Global(D:Declaration ;) => D:Declaration ;] : KSentence .
 	--- for now, just ignore globals
-	mb [remove-global-marker]: rule [Global(D:Declaration) => .K] : KSentence .
+	---mb [remove-global-marker]: rule [Global(D:Declaration) => .K] : KSentence .
+	mb [remove-global-marker]: rule [Global(D:Declaration) => D:Declaration] : KSentence .
 	mb [remove-global-marker-empty]: rule [Global() => .K] : KSentence .
 	
 	--- simplify compound assignments (if E1 op= E2, need to ensure E1 only gets evaluated once to be correct)
@@ -171,6 +172,27 @@ mod COMMON-KERNEL-C-SEMANTICS is
 		: KSentence .
 	mb [butFirstChar]: rule
 		[butFirstChar(S:String) => substrString(S:String, 1, lengthString(S:String))]
+		: KSentence .
+	
+	mb [function-prototype]: rule 
+		< k > [Declaration(DS:TogetherList, Direct-Function-Declarator(I:Id, PTL:Parameter-Type-List)) => .K] ...</ k >
+		: KSentence .
+	mb [typedef-declaration]: rule 
+		< k > [Typedef(DS:TogetherList, X:Typedef-Name) => .K] ...</ k >
+		< typedefs >... [.Map => X:Typedef-Name |-> DS:TogetherList] ...</ typedefs >
+		: KSentence .
+		
+	op calcStructSize : SeqList -> Nat .
+	mb [struct-declaration]: rule 
+		< k > [struct(X:Id, DS:TogetherList) => skipval] ...</ k >
+		< sizes >... [.Map => X:Id |-> calcStructSize(DS:TogetherList)] ...</ sizes >
+		< typedefs >... [.Map => X:Id |-> struct(X:Id, DS:TogetherList)] ...</ typedefs >
+		: KSentence .
+	
+	--- TODO 
+	mb [calcStructSize]: rule
+		[calcStructSize(Field(int, D:Declarator) DS:SeqList) 
+			=> calcStructSize(DS:SeqList) +Nat 1]
 		: KSentence .
 	
 	
