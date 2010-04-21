@@ -1,7 +1,0 @@
-load kernel-c-compiled
-mod KERNEL-C-TEST is
-	including KERNEL-C .
-endm
-
----rew eval("program"(.List{K})) .
-%s
