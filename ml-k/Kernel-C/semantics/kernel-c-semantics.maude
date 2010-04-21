@@ -249,7 +249,7 @@ mod COMMON-KERNEL-C-SEMANTICS is
 	mb rule [I1:Int != I2:Int => if (I1:Int =/=Bool I2:Int) then 1 else 0 fi] : KSentence .
 	--- mb rule [T1 and T2 => T1 andBool T2] : KSentence .
 	--- mb rule [T1 or T2 => T1 orBool T2] : KSentence .
-	--- mb rule [not(T) => notBool(T)] : KSentence .
+	mb rule [!(I:Int) => if (I:Int ==Bool 0) then 1 else 0 fi] : KSentence .
 	--------------- End Expressions ---------------
 	
 	op loopMarked : -> Statement .
