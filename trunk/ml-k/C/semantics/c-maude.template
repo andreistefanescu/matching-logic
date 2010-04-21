@@ -3,7 +3,7 @@ load %s
 load programs-gen
 
 load %s
-load kernel-c-semantics
+load c-semantics
 load %s
 
 mod KERNEL-C-SEMANTICS is
