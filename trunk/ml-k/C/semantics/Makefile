@@ -30,7 +30,7 @@ programs-gen.maude: programs-gen.template check-input Makefile
 c.maude: programs-gen.maude check-input c-maude.template Makefile
 	printf "`cat c-maude.template`" $(K-PRELUDE) $(CONFIGURATION_FILE) $(SEMANTICS_FILE) $(SEMANTICS_MODULE) > c.maude
 	
-c-compiled.maude: c.maude c-syntax.maude match-c-syntax.maude common-c-configuration.maude c-semantics.maude  
+c-compiled.maude: c.maude common-c-syntax.maude match-c-syntax.maude common-c-configuration.maude common-c-semantics.maude  
 	$(K-MAUDE) c.maude C
 	
 dynamic: SEMANTICS_MODULE = "DYNAMIC-C-SEMANTICS" 

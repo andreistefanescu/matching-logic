@@ -3,7 +3,7 @@ load %s
 load programs-gen
 
 load %s
-load c-semantics
+load common-c-semantics
 load %s
 
 mod C-SEMANTICS is
