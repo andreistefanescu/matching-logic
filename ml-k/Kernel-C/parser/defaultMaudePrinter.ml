@@ -313,8 +313,10 @@ method private pLvalPrec (contextprec: int) () lv =
 
     | TComp (comp, a) -> (* A reference to a struct *)
         let su = if comp.cstruct then "struct" else "union" in
-        text (su ^ " " ^ comp.cname ^ " ") 
+          text (su ^ " ")
+		  ++ text (comp.cname ^ " " )
           ++ self#pAttrs () a 
+		  ++ if (name = nil) then (nil) else (text ", ")
           ++ name
           
     | TEnum (enum, a) -> 
@@ -408,7 +410,9 @@ method private pLvalPrec (contextprec: int) () lv =
           restyp
 
   | TNamed (t, a) ->
-      text t.tname ++ text ", " ++ self#pAttrs () a ++ text " " ++ name
+      text t.tname 
+	  ++ if (name = nil) then (nil) else (text ", ")
+	  ++ self#pAttrs () a ++ text " " ++ name
 
   | TBuiltin_va_list a -> 
       text "__builtin_va_list"
@@ -710,7 +714,7 @@ method private pLvalPrec (contextprec: int) () lv =
       Var vi, o -> self#pOffset (self#pVar vi) o
     | Mem e, Field(fi, o) ->
         self#pOffset
-          ((self#pExpPrec arrowLevel () e) ++ text ("->" ^ fi.fname)) o
+          ((self#pExpPrec arrowLevel () e) ++ text (" -> " ^ fi.fname)) o
     | Mem e, NoOffset -> 
         (* text "*" ++ self#pExpPrec derefStarLevel () e *)
 		wrap (self#pExpPrec derefStarLevel () e) "Deref"
@@ -797,20 +801,20 @@ method private pLvalPrec (contextprec: int) () lv =
           text ("enum " ^ enum.ename ^ ";\n")
 
     | GCompTag (comp, l) -> (* This is a definition of a tag *)
-        let n = comp.cname in
+        let n = (replace "_" "u" comp.cname) in
         let su, su1, su2 =
           if comp.cstruct then "struct", "str", "uct"
           else "union",  "uni", "on"
         in
         let sto_mod, rest_attr = separateStorageModifiers comp.cattr in
         self#pLineDirective ~forcefile:true l ++
-          text su1 ++ (align ++ text su2 ++ chr ' ' ++ (self#pAttrs () sto_mod)
-                         ++ text n
-                         ++ text " {" ++ line
-                         ++ ((docList ~sep:line (self#pFieldDecl ())) () 
-                               comp.cfields)
+          text su1 ++ (align ++ text su2 ++ chr ' ' ++ paren ((self#pAttrs () sto_mod)
+                         ++ text n ++ text ", "
+                         ++ text " (" ++ line
+                         ++ ((docList ~sep:line ((self#pFieldDecl ()) )) () 
+                               comp.cfields))
                          ++ unalign)
-          ++ line ++ text "}" ++
+          ++ line ++ text ")" ++
           (self#pAttrs () rest_attr) ++ text ";\n"
 
     | GCompTagDecl (comp, l) -> (* This is a declaration of a tag *)
@@ -1115,5 +1119,14 @@ method private pLvalPrec (contextprec: int) () lv =
     | Block b -> align ++ self#pBlock () b
 	| _ -> E.s (E.bug "Not handling this stmtkind")
 
+	method pFieldDecl () fi = 
+     (self#pType
+        (Some (text (if fi.fname = missingFieldName then "" else fi.fname)))
+        () 
+        fi.ftype)
+       ++ text " "
+       ++ (match fi.fbitfield with None -> nil 
+       | Some i -> text ": " ++ num i ++ text " ")
+       ++ self#pAttrs () fi.fattr
 
 end (* class defaultCilPrinterClass *)

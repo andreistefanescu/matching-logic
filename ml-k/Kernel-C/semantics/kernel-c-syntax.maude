@@ -95,8 +95,8 @@ mod COMMON-KERNEL-C-SYNTAX is
 	op Apply : Expression List{Expression} -> Expression [metadata "strict"] .
 	op Apply : Expression -> Expression [metadata "strict"] .
 	--- op _`(`) : Postfix-Expression -> Postfix-Expression [strict renameTo applyNil] .
-	--- op _._ : Postfix-Expression Identifier -> Postfix-Expression .
-	--- op _->_ : Postfix-Expression Identifier -> Postfix-Expression .
+	op _._ : Expression Id -> Expression [prec 21] .
+	op _->_ : Expression Id -> Expression [prec 21] .
 	op _++ : Expression -> Expression [prec 21] .
 	op _-- : Expression -> Expression [prec 21] .
 	--- op `(_`)`{_`} : Type-Name Initializer-List -> Postfix-Expression .
@@ -215,7 +215,7 @@ mod COMMON-KERNEL-C-SYNTAX is
 	--- --- 6.7.2
 	sort Type-Specifier .
 	--- subsort Struct-Or-Union-Specifier Enum-Specifier < Type-Specifier .
-	subsort Typedef-Name < Type-Specifier .
+	subsort Typedef-Name Struct-Or-Union-Specifier < Type-Specifier .
 	ops void float double signed unsigned 
 		char signed-char unsigned-char 
 		int unsigned-int 
@@ -227,22 +227,25 @@ mod COMMON-KERNEL-C-SYNTAX is
 	--- --- TODO
 	
 	--- --- 6.7.2.1
-	--- sort Struct-Or-Union-Specifier .
+	sort Struct-Or-Union-Specifier .
 	--- --- Note: CIL gives names to all anonymous struct/unions
-	--- ---op struct`{_`} : Struct-Declaration-List -> Struct-Or-Union-Specifier .
+	---op struct`{_`} : SeqList -> Struct-Or-Union-Specifier .
 	--- ---op union`{_`} : Struct-Declaration-List -> Struct-Or-Union-Specifier .
-	--- op struct_`{_`} : Identifier Struct-Declaration-List -> Struct-Or-Union-Specifier .
+	op struct : Id SeqList -> Struct-Or-Union-Specifier .
 	--- op union_`{_`} : Identifier Struct-Declaration-List -> Struct-Or-Union-Specifier .
-	--- op struct_ : Identifier -> Struct-Or-Union-Specifier .
+	op struct_ : Id -> Struct-Or-Union-Specifier .
 	--- op union_ : Identifier -> Struct-Or-Union-Specifier .
 	
 	--- sort Struct-Declaration-List .
 	--- subsort Struct-Declaration < Struct-Declaration-List .
 	--- --- TODO
 	
-	--- sort Struct-Declaration .
+	sort Struct-Declaration .
+	---- op Struct-Declaration : -> 
 	--- --- TODO op __; : Specifier-Qualifier-List Struct-Declarator-List -> Struct-Declarator .
 	--- --- TODO
+	op Field : TogetherList Declarator -> Struct-Declaration .
+	subsort Struct-Declaration < SeqList .
 	
 	---sort Specifier-Qualifier-List .
 	---subsort Type-Specifier Type-Qualifier < Specifier-Qualifier-List .

@@ -74,7 +74,7 @@ class maudePrinter = object(self)
 	method pBlock () (b:block) = wrap (super#pBlock () b) "Block"
     
     (** A field declaration *)
-	(* method pFieldDecl () (f:fieldinfo) = wrap (super#pFieldDecl () f) "FieldDeclaration" *)
+	method pFieldDecl () (f:fieldinfo) = wrap (super#pFieldDecl () f) "Field"
 	
     (** Print initializers. This can be slow and is used by {!Cil.printGlobal} *)
 	method pInit () (i:init) = wrap (super#pInit () i) "Initializer"
