@@ -7,7 +7,7 @@ mod DYNAMIC-KERNEL-C-SEMANTICS is
 			< env > .Map </ env > 
 			< genv > .Map </ genv > 
 			< mem > .Map </ mem >  
-			< output > .List </ output >
+			< output > "" </ output >
 			< callStack > .List </ callStack >
 			< loopStack > .List </ loopStack > 
 			< nextLoc > 0 </ nextLoc >
@@ -15,7 +15,7 @@ mod DYNAMIC-KERNEL-C-SEMANTICS is
 			< parameters > .Bag </ parameters >
 			< sizes > .Map </ sizes >
 			< malloced > .Map </ malloced >
-			---< form > .Bag </ form >
+			< statics > .Map </ statics >
 		</ T > .
 	
 	--- throw away annotations
@@ -60,10 +60,10 @@ mod DYNAMIC-KERNEL-C-SEMANTICS is
 	
 	
 	mb [terminate]: rule 
-		[< T >... < k > V:Value </ k > < output > O:List </ output > ...</ T >
+		[< T >... < k > V:Value </ k > < output > S:String </ output > ...</ T >
 		=>
 		< resultValue > V:Value </ resultValue >
-		< resultOutput > O:List </ resultOutput >]
+		< resultOutput > S:String </ resultOutput >]
 		: KSentence .
 	
 	

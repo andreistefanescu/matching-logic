@@ -65,7 +65,7 @@ mod COMMON-KERNEL-C-SYNTAX is
 	
 	--- --- 6.4.5
 	sort String-Literal .
-	---subsort String < String-Literal .
+	subsort String < String-Literal .
 	--- --- TODO
 	
 	--- --- TODO
@@ -76,8 +76,7 @@ mod COMMON-KERNEL-C-SYNTAX is
 	---subsort Primary-Expression < K .
 	--- ---subsort Identifier Constant String-Literal Expression < Primary-Expression .
 	---subsort Identifier Constant < Expression .
-	--- String-Literal
-	subsort Id Constant < Expression .
+	subsort Id Constant String-Literal < Expression .
 
 	---subsort Expression < Primary-Expression .
 	---op `(_`) : Expression -> Expression .
