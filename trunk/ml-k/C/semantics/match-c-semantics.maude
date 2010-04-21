@@ -1,5 +1,5 @@
-mod MATCH-KERNEL-C-SEMANTICS is
-	including COMMON-KERNEL-C-SEMANTICS .
+mod MATCH-C-SEMANTICS is
+	including COMMON-C-SEMANTICS .
 
 	subsort Annotation-Statement < K .
 

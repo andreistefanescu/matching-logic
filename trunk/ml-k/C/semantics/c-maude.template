@@ -6,13 +6,13 @@ load %s
 load c-semantics
 load %s
 
-mod KERNEL-C-SEMANTICS is
-	including KERNEL-C-CONFIGURATION .
-	including COMMON-KERNEL-C-SEMANTICS .
+mod C-SEMANTICS is
+	including C-CONFIGURATION .
+	including COMMON-C-SEMANTICS .
 	including %s .
 endm
 
-mod KERNEL-C is 
-	including KERNEL-C-PROGRAM .
-	including KERNEL-C-SEMANTICS . 
+mod C is 
+	including C-PROGRAM .
+	including C-SEMANTICS . 
 endm
