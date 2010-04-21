@@ -132,8 +132,8 @@ mod COMMON-KERNEL-C-SYNTAX is
 	op Deref : Expression -> Expression [metadata "strict"] .
 	---op +_ : Expression -> Expression [prec 22] .
 	---op -_ : Expression -> Expression [prec 22] .
-	op ~_ : Expression -> Expression [prec 22] .
-	op !_ : Expression -> Expression [prec 22] .
+	op ~_ : Expression -> Expression [prec 22 metadata "strict"] .
+	op !_ : Expression -> Expression [prec 22 metadata "strict"] .
 	op sizeof_ : Expression -> Expression .
 	---op sizeof_ : Type-Name -> Unary-Expression .
 	
