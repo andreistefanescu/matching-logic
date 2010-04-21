@@ -1,4 +1,4 @@
-load kernel-c-compiled
+load c-compiled
 mod KERNEL-C-TEST is
 	including KERNEL-C .
 endm
