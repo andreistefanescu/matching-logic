@@ -127,6 +127,51 @@ mod COMMON-KERNEL-C-SEMANTICS is
 		< sizes >... [.Map => X:Id |-> I:Int] ...</ sizes > 
 		if I:Int >=Int 0
 		: KSentence .
+		
+	op allocString : String -> K .
+	
+	op firstChar : String -> Char .
+	op butFirstChar : String -> String .
+	op charToAscii : String -> Nat .
+	
+	--- requires that nothing else happen to allocate memory
+	mb [const-string-notfound]: rule
+		< k > [S:String => allocString(S:String) ~> Loc:Nat] ...</ k >
+		< nextLoc > Loc:Nat </ nextLoc >
+		< statics > [M:Map => M:Map[Loc:Nat / S:String]] </ statics >
+		if notBool($hasMapping(M:Map, S:String))
+		: KSentence .
+	mb [alloc-string]: rule
+		< k > [allocString(S:String) => allocString(butFirstChar(S:String))] ...</ k >
+		< mem >... [.Map => Loc:Nat |-> charToAscii(firstChar(S:String))] ...</ mem >
+		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
+		if lengthString(S:String) >Int 0
+		: KSentence .
+	mb [alloc-empty-string]: rule
+		< k > [allocString("") => .K] ...</ k >
+		< mem >... [.Map => Loc:Nat |-> 0] ...</ mem >
+		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
+		: KSentence .
+	--- mb [const-empty-string]: rule
+		--- < k > [S:String => butFirstChar(S:String)] ...</ k >
+		--- --- < env >... [.Map => X:Id |-> Loc:Nat] ...</ env >
+		--- --- < mem >... [.Map => Loc:Nat |-> sNat(Loc:Nat)  sNat(Loc:Nat) to (sNat(Loc:Nat) +Nat absInt(I:Int)) |-> unknown] ...</ mem >
+		--- --- < locals >... [.Bag => Bag(Declaration(int, X:Id[absInt(I:Int)]))] ...</ locals >
+		--- --- < nextLoc > [Loc:Nat => (sNat(Loc:Nat) +Nat absInt(I:Int))] </ nextLoc >
+		--- --- < sizes >... [.Map => X:Id |-> I:Int] ...</ sizes > 
+		--- if lengthString(S:String) >Int 0
+		--- : KSentence .
+		
+		
+	mb [firstChar]: rule
+		[firstChar(S:String) => substrString(S:String, 0, 1)]
+		: KSentence .
+	mb [charToAscii]: rule
+		[charToAscii(C:Char) => asciiString(C:Char)]
+		: KSentence .
+	mb [butFirstChar]: rule
+		[butFirstChar(S:String) => substrString(S:String, 1, lengthString(S:String))]
+		: KSentence .
 	
 	
 	op _to_ : Nat Nat -> List{K} .  
@@ -417,6 +462,27 @@ mod COMMON-KERNEL-C-SEMANTICS is
 		< mem >... [.Map => Loc:Nat to (Loc:Nat +Nat N:Nat) |-> unknown] ...</ mem >
 		< malloced >... [.Map => Loc:Nat |-> N:Nat] ...</ malloced >
 		< nextLoc > [Loc:Nat => Loc:Nat +Nat N:Nat] </ nextLoc >
+	: KSentence .
+	
+	mb [printf-is-value]: rule
+		< k > [printf => builtin(printf)] ...</ k >
+	: KSentence .
+	
+	op printf-aux : Nat Nat List{Expression} -> K .
+	mb [printf-start]: rule
+		< k > [Apply(builtin(printf), Loc:Nat) => printf-aux(0, Loc:Nat, .List{Expression})] ...</ k >
+	: KSentence .
+	
+	mb [printf-normal]: rule
+		< k > [printf-aux(Len:Nat, Loc:Nat, L:List{Expression}) => printf-aux(sNat(Len:Nat), sNat(Loc:Nat), L:List{Expression})] ...</ k >
+		< mem >... Loc:Nat |-> N:Nat ...</ mem >
+		< output > [S:String => S:String +String charString(N:Nat)] </ output >
+		if notBool(N:Nat ==Bool asciiString("%")) 
+		andBool notBool(N:Nat ==Bool 0)
+	: KSentence .
+	mb [printf-done]: rule
+		< k > [printf-aux(Len:Nat, Loc:Nat, L:List{Expression}) => Len:Nat] ...</ k >
+		< mem >... Loc:Nat |-> 0 ...</ mem >
 	: KSentence .
 	
 endm

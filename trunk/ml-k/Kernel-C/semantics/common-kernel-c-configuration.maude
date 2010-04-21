@@ -21,6 +21,7 @@ mod COMMON-KERNEL-C-CONFIGURATION is
 	op loopStack : -> CellLabel .
 	op malloced : -> CellLabel .
 	op local : -> CellLabel .
+	op statics : -> CellLabel .
 	
 	
 	subsort Program < K .
@@ -47,10 +48,11 @@ mod COMMON-KERNEL-C-CONFIGURATION is
 	subsort TogetherList < K .
 	subsort SeqList < K .
 	subsort String-Literal < K .
+	subsort String < K .
 	subsort Storage-Class-Specifier < K .
 	subsort Statement < K .
 	subsort Type-Name < K .
 	subsort Type-Specifier < K .
 	
-	
+	subsort String < Builtins .
 endm

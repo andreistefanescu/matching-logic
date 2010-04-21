@@ -1,7 +1,5 @@
 #include "fsl.h"
 
 int main(void) {
-	//printf("Hello world\n");
-
-	return 0;
+	return printf("Hello world\n");
 }
