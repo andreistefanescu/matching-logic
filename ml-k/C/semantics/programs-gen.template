@@ -1,5 +1,5 @@
 
-load c-syntax
+load common-c-syntax
 load match-c-syntax
 
 mod C-SYNTAX is
