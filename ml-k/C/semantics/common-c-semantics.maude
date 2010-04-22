@@ -58,6 +58,7 @@ mod COMMON-C-SEMANTICS is
 	
 	--- turn variables into references when appropriate
 	mb [make-assign-ref]: rule < k > [I:Id := E:Expression => Deref(&(I:Id)) := E:Expression] ...</ k > : KSentence .
+	mb [make-assign-arrow-ref]: rule < k > [(E1:Expression -> X:Id) := E2:Expression => Deref(&(E1:Expression -> X:Id)) := E2:Expression] ...</ k > : KSentence .
 	mb [make-call-ref]: rule < k > [Apply(I:Id, L:List{Expression}) => Apply(Deref(&(I:Id)), L:List{Expression})] ...</ k > : KSentence .
 	mb [make-postinc-ref]: rule < k > [I:Id ++ => Deref(&(I:Id)) ++] ...</ k > : KSentence .
 	mb [make-postdec-ref]: rule < k > [I:Id -- => Deref(&(I:Id)) --] ...</ k > : KSentence .
@@ -253,6 +254,44 @@ mod COMMON-C-SEMANTICS is
 		< k > [&(I:Id) => Loc:Nat] ...</ k >
 		< env >... I:Id |-> Loc:Nat ...</ env >
 		: KSentence .
+	op getOffset : K K -> Expression .
+	mb [ref-arrow]: rule
+		< k > [&(E1:Expression -> X:Id) => E1:Expression + getOffset(E1:Expression, X:Id)] ...</ k >
+		: KSentence .
+		
+	mb [arrow]: rule
+		< k > [E1:Expression -> X:Id => Deref(E1:Expression + getOffset(E1:Expression, X:Id))] ...</ k >
+		: KSentence .
+		
+	mb [getOffset-exp-to-type]: rule
+		< k > [getOffset(E1:Expression, X:Id) => getOffset(T:Type, X:Id)] ...</ k >
+		< types >... E1:Expression |-> T:Type ...</ types >
+		: KSentence .
+	mb [getOffset-typedef]: rule
+		< k > [getOffset(Pointer(T:Type-Specifier), X:Id) => getOffset(T':Type, X:Id)] ...</ k >
+		< typedefs >... T:Type-Specifier |-> T':Type ...</ typedefs >
+		: KSentence .
+	--- mb [getOffset-struct]: rule
+		--- < k > [getOffset(struct(X:Id), X':Id) => calcStructSize(Fields1:SeqList)] ...</ k >
+		--- < typedefs >... X:Id |-> struct(X:Id, (Fields1:SeqList Field(T:TogetherList, X':Id))) ...</ typedefs >
+		--- : KSentence .
+	--- mb [getOffset-struct]: rule  ---- doesn't work
+		--- < k > [getOffset(struct(X:Id), X':Id) => calcStructSize(Fields1:SeqList)] ...</ k >
+		--- < typedefs >... X:Id |-> struct(X:Id, (Fields1:SeqList Field(T:TogetherList, X':Id) Fields2:SeqList)) ...</ typedefs >
+		--- : KSentence .
+	mb [getOffset-struct]: rule  ---- works
+		< k > [getOffset(struct(X:Id), X':Id) => calcStructSize(Fields1:SeqList)] ...</ k >
+		< typedefs >... X:Id |-> 'struct(X:Id,, (Fields1:SeqList ~> Field(T:TogetherList, X':Id) ~>  Fields2:SeqList)) ...</ typedefs >
+		: KSentence .
+		
+	--- mb [getOffset-struct]: rule  ---- works
+		--- < k > [getOffset(struct(X:Id), X':Id) => calcStructSize(Fields1:SeqList)] ...</ k >
+		--- < typedefs >... X:Id |-> 'struct(X:Id,, ('__('__(Fields1:SeqList,, Field(T:TogetherList, X':Id)),,  Fields2:SeqList))) ...</ typedefs >
+		--- : KSentence .
+		
+		
+	--- < k > [sizeof(struct(X:Id)) => calcStructSize(Fields:SeqList)] ...</ k >
+		--- < typedefs >... X:Id |-> struct(X:Id, Fields:SeqList) ...</ typedefs >
 		
 	mb [deref]: rule
 		< k > [Deref(Loc:Nat) => V:Value] ...</ k >
@@ -529,8 +568,9 @@ mod COMMON-C-SEMANTICS is
 	: KSentence .
 	
 	op printf-aux : Nat Nat List{Expression} -> K .
+	op printf-% : Nat Nat List{Expression} -> K .
 	mb [printf-start]: rule
-		< k > [Apply(builtin(printf), Loc:Nat) => printf-aux(0, Loc:Nat, .List{Expression})] ...</ k >
+		< k > [Apply(builtin(printf), (Loc:Nat .,. L:List{Expression})) => printf-aux(0, Loc:Nat, L:List{Expression})] ...</ k >
 	: KSentence .
 	
 	mb [printf-normal]: rule
@@ -543,6 +583,18 @@ mod COMMON-C-SEMANTICS is
 	mb [printf-done]: rule
 		< k > [printf-aux(Len:Nat, Loc:Nat, L:List{Expression}) => Len:Nat] ...</ k >
 		< mem >... Loc:Nat |-> 0 ...</ mem >
+	: KSentence .
+	
+	mb [printf-%]: rule
+		< k > [printf-aux(Len:Nat, Loc:Nat, L:List{Expression}) => printf-%(Len:Nat, sNat(Loc:Nat), L:List{Expression})] ...</ k >
+		< mem >... Loc:Nat |-> N:Nat ...</ mem >
+		if (N:Nat ==Bool asciiString("%"))
+	: KSentence .
+	mb [printf-%d]: rule
+		< k > [printf-%(Len:Nat, Loc:Nat, (D:Nat .,. L:List{Expression})) => printf-aux(Len:Nat +Nat lengthString(rat2stringConversion(D:Nat, 10)), sNat(Loc:Nat), L:List{Expression})] ...</ k >
+		< mem >... Loc:Nat |-> N:Nat ...</ mem >
+		< output > [S:String => S:String +String rat2stringConversion(D:Nat, 10)] </ output >
+		if N:Nat ==Bool asciiString("d") 
 	: KSentence .
 	
 endm

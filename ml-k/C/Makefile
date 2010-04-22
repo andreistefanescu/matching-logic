@@ -16,7 +16,7 @@ match: SEMANTICS=match
 match: build-all run
 
 fix: 
-	maude $(SEMANTICS_DIR)/kernel-c.maude
+	maude $(SEMANTICS_DIR)/c.maude
 
 force: ;
 
