@@ -7,7 +7,7 @@ struct list_el {
 
 typedef struct list_el item;
 
-void main() {
+int main() {
    item * curr, * head;
    int i;
 
@@ -20,10 +20,11 @@ void main() {
       head = curr;
    }
 
-   // curr = head;
+   curr = head;
 
-   // while(curr) {
-      // printf("%d\n", curr->val);
-      // curr = curr->next ;
-   // }
+   while(curr) {
+      printf("%d\n", curr->val);
+      curr = curr->next ;
+   }
+   return 0;
 }

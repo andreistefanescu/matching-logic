@@ -69,6 +69,9 @@ try
 with
 | e -> false
 
+let replace input output =
+    Str.global_replace (Str.regexp_string input) output
+
 (* variables to help generate maude.  These get set by calling the maude visitor *)
 let identifierList : string list ref = ref []
 let typedefList : string list ref = ref []
@@ -133,7 +136,7 @@ let myDumpFile (pp: cilPrinter) (out : out_channel) (outfile: string) file =
 	printTypedefList out !typedefList;
 	printNewline out;
 	
-	let programName = "program-" ^ outfile in
+	let programName = replace ".tmp" "" ("program-" ^ outfile)  in
 		fprintf out "%s\n" ("op " ^ programName ^ " : -> Program .");
 		fprintf out "%s\n" ("eq " ^ programName ^ " = ("); 
 	

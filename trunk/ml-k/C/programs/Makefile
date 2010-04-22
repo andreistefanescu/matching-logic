@@ -22,7 +22,8 @@ benchmark: $(addsuffix .gen.maude,$(TEST_PROGRAMS))
 	@gcc $(PEDANTRY_OPTIONS) -E -I. -o $@ $<
 
 %.gen.maude: %.pre.gen $(PARSER)
-	@$(PARSER) $(CIL_FLAGS) --out $@ $<
+	@$(PARSER) $(CIL_FLAGS) --out $@.tmp $<
+	@mv $@.tmp $@
 #tail $@
 
 gcc-output: $(addsuffix .gcc,$(ALL_PROGRAMS))
@@ -32,4 +33,4 @@ gcc-output: $(addsuffix .gcc,$(ALL_PROGRAMS))
 	gcc $(PEDANTRY_OPTIONS) -o $@ $<
 		
 clean:
-	rm -f *.prepre.gen *.pre.gen *.gen.maude *.gcc
+	rm -f *.prepre.gen *.pre.gen *.gen.maude *.gcc *.tmp

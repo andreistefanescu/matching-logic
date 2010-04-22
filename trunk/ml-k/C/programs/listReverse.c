@@ -17,9 +17,22 @@ int main(void){
 	listAppend(head, 10);
 	listAppend(head, 35);
 	
+	int* curr = head;
+	while (curr != NULL){
+		printf("%d,", *curr);
+		curr = *(curr + 1);
+	}
+	printf("\n");
+	
 	int sum1 = listSum(head);
 	int first = *head;
 	head = listReverse(head);
+	curr = head;
+	while (curr != NULL){
+		printf("%d,", *curr);
+		curr = *(curr + 1);
+	}
+	printf("\n");	
 	int last = *head;
 	int sum2 = listSum(head);
 	return (sum1 - sum2) + (last - first); // should be 15

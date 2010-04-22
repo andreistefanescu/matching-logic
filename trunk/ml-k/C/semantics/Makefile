@@ -22,13 +22,13 @@ endif
 
 programs-gen.maude: programs-gen.template check-input Makefile
 	@printf "`cat programs-gen.template`" $(ADDITIONAL_SYNTAX) > programs-gen.maude
-	for i in $(INPUT); do cat $$i >> programs-gen.maude; done
-	echo endm >> programs-gen.maude
+	@for i in $(INPUT); do cat $$i >> programs-gen.maude; done
+	@echo endm >> programs-gen.maude
 	
 #"`cat $(INPUT)`" $(SEMANTICS_FILE) $(SEMANTICS_MODULE) > c.maude
 
 c.maude: programs-gen.maude check-input c-maude.template Makefile
-	printf "`cat c-maude.template`" $(K-PRELUDE) $(CONFIGURATION_FILE) $(SEMANTICS_FILE) $(SEMANTICS_MODULE) > c.maude
+	@printf "`cat c-maude.template`" $(K-PRELUDE) $(CONFIGURATION_FILE) $(SEMANTICS_FILE) $(SEMANTICS_MODULE) > c.maude
 	
 c-compiled.maude: c.maude common-c-syntax.maude match-c-syntax.maude common-c-configuration.maude common-c-semantics.maude  
 	$(K-MAUDE) c.maude C
