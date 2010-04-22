@@ -13,13 +13,14 @@ mod C-CONFIGURATION is
 			< malloced > .Map </ malloced >
 			< statics > .Map </ statics >
 			< typedefs > .Map </ typedefs >
+			< sizes > .Map </ sizes >
 			< local >
 				< k > .K </ k >
 				< env > .Map </ env >
 				< loopStack > .List </ loopStack >
 				< locals > .Bag </ locals >
 				< parameters > .Bag </ parameters >
-				< sizes > .Map </ sizes >
+				< types > .Map </ types >
 			</ local >
 		</ T > 
 		< resultValue > .K </ resultValue >

@@ -6,6 +6,8 @@ mod COMMON-C-SEMANTICS is
 	including K-CONTEXTS .
 	
 	sort Value .
+	sort Type . 
+	subsort TogetherList < Type < Expression < K .
 	
 	op Closure : Function-Definition -> Value .
 	
@@ -101,7 +103,8 @@ mod COMMON-C-SEMANTICS is
 		< mem >... [.Map => Loc:Nat |-> unknown] ...</ mem >
 		< locals >... [.Bag => Bag(Declaration(int, I:Id))] ...</ locals >
 		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
-		< sizes >... [.Map => I:Id |-> 1 ] ...</ sizes > 
+		< types >... [.Map => I:Id |-> int] ...</ types >
+		---< sizes >... [.Map => I:Id |-> 1 ] ...</ sizes > 
 		: KSentence .
 	mb [pointer-declaration]: rule
 		< k > [Declaration(Pointer(T:Type-Specifier), I:Id) => .K] ...</ k >
@@ -109,15 +112,8 @@ mod COMMON-C-SEMANTICS is
 		< mem >... [.Map => Loc:Nat |-> unknown] ...</ mem >
 		< locals >... [.Bag => Bag(Declaration(Pointer(T:Type-Specifier), I:Id))] ...</ locals >
 		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
-		< sizes >... [.Map => Pointer(I:Id) |-> 1 ] ...</ sizes > 
-		: KSentence .
-	mb [void-pointer-declaration]: rule
-		< k > [Declaration(void, Pointer(I:Id)) => .K] ...</ k >
-		< env >... [.Map => I:Id |-> Loc:Nat] ...</ env >
-		< mem >... [.Map => Loc:Nat |-> unknown] ...</ mem >
-		< locals >... [.Bag => Bag(Declaration(int, I:Id))] ...</ locals >
-		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
-		< sizes >... [.Map => Pointer(I:Id) |-> 1 ] ...</ sizes > 
+		< types >... [.Map => I:Id |-> Pointer(T:Type-Specifier)] ...</ types >
+		---< sizes >... [.Map => Pointer(I:Id) |-> 1 ] ...</ sizes > 
 		: KSentence .
 	mb [array-declaration]: rule
 		< k > [Declaration(int, X:Id[I:Int]) => .K] ...</ k >
@@ -125,8 +121,13 @@ mod COMMON-C-SEMANTICS is
 		< mem >... [.Map => Loc:Nat |-> sNat(Loc:Nat)  sNat(Loc:Nat) to (sNat(Loc:Nat) +Nat absInt(I:Int)) |-> unknown] ...</ mem >
 		< locals >... [.Bag => Bag(Declaration(int, X:Id[absInt(I:Int)]))] ...</ locals >
 		< nextLoc > [Loc:Nat => (sNat(Loc:Nat) +Nat absInt(I:Int))] </ nextLoc >
-		< sizes >... [.Map => X:Id |-> I:Int] ...</ sizes > 
+		< types >... [.Map => X:Id |-> int[I:Int]] ...</ types >
+		---< sizes >... [.Map => X:Id |-> I:Int] ...</ sizes > 
 		if I:Int >=Int 0
+		: KSentence .
+	mb [struct-declaration]: rule 
+		< k > [struct(X:Id, DS:TogetherList) => skipval] ...</ k >
+		< typedefs >... [.Map => X:Id |-> struct(X:Id, DS:TogetherList)] ...</ typedefs >
 		: KSentence .
 		
 	op allocString : String -> K .
@@ -177,23 +178,12 @@ mod COMMON-C-SEMANTICS is
 	mb [function-prototype]: rule 
 		< k > [Declaration(DS:TogetherList, Direct-Function-Declarator(I:Id, PTL:Parameter-Type-List)) => .K] ...</ k >
 		: KSentence .
-	mb [typedef-declaration]: rule 
+	mb [typedef-declaration]: rule
 		< k > [Typedef(DS:TogetherList, X:Typedef-Name) => .K] ...</ k >
 		< typedefs >... [.Map => X:Typedef-Name |-> DS:TogetherList] ...</ typedefs >
+		---< sizes >... [.Map => X:Typedef-Name |-> ] ...</ sizes >
 		: KSentence .
 		
-	op calcStructSize : SeqList -> Nat .
-	mb [struct-declaration]: rule 
-		< k > [struct(X:Id, DS:TogetherList) => skipval] ...</ k >
-		< sizes >... [.Map => X:Id |-> calcStructSize(DS:TogetherList)] ...</ sizes >
-		< typedefs >... [.Map => X:Id |-> struct(X:Id, DS:TogetherList)] ...</ typedefs >
-		: KSentence .
-	
-	--- TODO 
-	mb [calcStructSize]: rule
-		[calcStructSize(Field(int, D:Declarator) DS:SeqList) 
-			=> calcStructSize(DS:SeqList) +Nat 1]
-		: KSentence .
 	
 	
 	op _to_ : Nat Nat -> List{K} .  
@@ -201,9 +191,15 @@ mod COMMON-C-SEMANTICS is
 	ceq N:Nat to N':Nat = (N:Nat,,((N:Nat +Nat 1) to N':Nat))
 		if N:Nat <Nat N':Nat .
 	
-	
-	mb rule [Declaration(DS:TogetherList, Pointer(DFD:Direct-Declarator)) => Declaration(Pointer(DS:TogetherList), DFD:Direct-Declarator)] : KSentence .
-	mb rule [Parameter-Declaration(DS:TogetherList, Pointer(DFD:Direct-Declarator)) => Parameter-Declaration(Pointer(DS:TogetherList), DFD:Direct-Declarator)] : KSentence .
+	mb rule 
+		[Declaration(DS:TogetherList, Pointer(DFD:Direct-Declarator)) => Declaration(Pointer(DS:TogetherList), DFD:Direct-Declarator)]
+		: KSentence [metadata "structural"] .
+	mb rule 
+		[Parameter-Declaration(DS:TogetherList, Pointer(DFD:Direct-Declarator)) => Parameter-Declaration(Pointer(DS:TogetherList), DFD:Direct-Declarator)]
+		: KSentence [metadata "structural"] .
+	mb rule 
+		[Field(T:TogetherList, Pointer(D:Direct-Declarator)) => Field(Pointer(T:TogetherList), D:Direct-Declarator)]  
+		: KSentence [metadata "structural"] .
 	
 
 	op bind : -> KLabel .
@@ -231,13 +227,13 @@ mod COMMON-C-SEMANTICS is
 		: KSentence .
 	mb [bind-one-int-pointer]: rule 
 		< k > [bind((V:Value .,. L:List{Expression}),, 
-				Parameter-Type-List(Parameter-Declaration(int, Pointer(I:Id)) ,., P:List{Parameter})) =>
+				Parameter-Type-List(Parameter-Declaration(Pointer(int), I:Id) ,., P:List{Parameter})) =>
 			bind((.List{Expression} .,. L:List{Expression}),, 
 				Parameter-Type-List(.List{Parameter} ,., P:List{Parameter}))]
 				...</ k > 
 		< env >... [.Map => I:Id |-> Loc:Nat] ...</ env >
 		< mem >... [.Map => Loc:Nat |-> V:Value] ...</ mem >
-		< parameters >... [.Bag => Bag(Parameter-Declaration(int, Pointer(I:Id)))] ...</ parameters >
+		< parameters >... [.Bag => Bag(Parameter-Declaration(Pointer(int), I:Id))] ...</ parameters >
 		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
 		: KSentence .
 		
@@ -415,8 +411,9 @@ mod COMMON-C-SEMANTICS is
 		< env > [? => E:Map] </ env >
 		< parameters > [.Bag => P:Bag] </ parameters >
 		< locals > [.Bag => L:Bag] </ locals >
-		< sizes > [S':Map => S:Map] </ sizes >
-		< loopStack > [LS':List => LS:List] </ loopStack >
+		---< sizes > [S':Map => S:Map] </ sizes >
+		< loopStack > [? => LS:List] </ loopStack >
+		< types > [? => T:Map] </ types >
 		< callStack >
 			[List(
 				< stackFrame >...
@@ -424,8 +421,9 @@ mod COMMON-C-SEMANTICS is
 					< parameters > P:Bag </ parameters >
 					< locals > L:Bag </ locals >
 					< env > E:Map </ env >
-					< sizes > S:Map </ sizes >
+					---< sizes > S:Map </ sizes >
 					< loopStack > LS:List </ loopStack >
+					< types > T:Map </ types >
 				</ stackFrame >
 			) => .List]
 		...</ callStack >
@@ -436,7 +434,7 @@ mod COMMON-C-SEMANTICS is
 		< env > [? => E:Map] </ env >
 		< parameters > [.Bag => P:Bag] </ parameters >
 		< locals > [.Bag => L:Bag] </ locals >
-		< sizes > [S':Map => S:Map] </ sizes >
+		---< sizes > [S':Map => S:Map] </ sizes >
 		< loopStack > [LS':List => LS:List] </ loopStack >
 		< callStack >
 			[List(
@@ -445,7 +443,7 @@ mod COMMON-C-SEMANTICS is
 					< parameters > P:Bag </ parameters >
 					< locals > L:Bag </ locals >
 					< env > E:Map </ env >
-					< sizes > S:Map </ sizes >
+					---< sizes > S:Map </ sizes >
 					< loopStack > LS:List </ loopStack >
 				</ stackFrame >
 			) => .List]
@@ -465,20 +463,53 @@ mod COMMON-C-SEMANTICS is
 	
 	---- FIXME 
 	mb [sizeof-array-lookup]: rule
-		< k > [sizeof(E1:Expression[E2:Expression]) => 1] ...</ k >
+		< k > [sizeof(X:Id[?]) => 1] ...</ k >
+		< types >... X:Id |-> int[N:Nat] ...</ types >
 	: KSentence .
-	mb [sizeof]: rule
-		< k > [sizeof(E:Expression) => V:Value] ...</ k >
-		< sizes >... E:Expression |-> V:Value ...</ sizes >
+	mb [sizeof-array]: rule
+		< k > [sizeof(X:Id) => N:Nat] ...</ k >
+		< types >... X:Id |-> int[N:Nat] ...</ types >
 	: KSentence .
+	mb [sizeof-typedef]: rule
+		< k > [sizeof(TD:Typedef-Name) => sizeof(T:Type)] ...</ k >
+		< typedefs >... TD:Typedef-Name |-> T:Type ...</ typedefs >
+	: KSentence .
+	mb [sizeof-pointer]: rule
+		< k > [sizeof(Pointer(TD:Typedef-Name)) => 1] ...</ k >
+	: KSentence .
+	mb [sizeof-int]: rule
+		< k > [sizeof(int) => 1] ...</ k >
+	: KSentence .
+	mb [sizeof-struct]: rule
+		< k > [sizeof(struct(X:Id)) => calcStructSize(Fields:SeqList)] ...</ k >
+		< typedefs >... X:Id |-> struct(X:Id, Fields:SeqList) ...</ typedefs >
+	: KSentence .
+
+
+	op calcStructSize : SeqList -> K .
+	mb [calcStructSize-int]: rule
+		< k > ['calcStructSize(Field(TD:Typedef-Name, D:Declarator) ~> DS:SeqList) 
+			=> '_+_(sizeof(TD:Typedef-Name),, calcStructSize(DS:SeqList))] ...</ k >
+		: KSentence .
+	mb [calcStructSize-done]: rule
+		['calcStructSize(.K) => 0]
+		: KSentence .		
+	
 		
-	--- keq <k> [[return V ; -> K ==> K'' -> V -> K']] </k>
-		--- <env> [[E ==> E']] </env>
-		--- <envStack> [[env(E') ==> .nil]] ...</envStack>
-		--- <callStack> [[funk(K') ==> .nil]] ...</callStack>
-		--- <onReturn> [[K'' ==> .K]] </onReturn>
-		
-		
+	--- op KtoNat : K -> Nat .
+	--- eq KtoNat(N:Nat) = N:Nat .
+	--- --- TODO 
+	--- mb [calcStructSize-int]: rule
+		--- ['calcStructSize(Field(int, D:Declarator) ~> DS:SeqList) 
+			--- => KtoNat(calcStructSize(DS:SeqList)) +Nat 1]
+		--- : KSentence .
+	--- mb [calcStructSize-pointer]: rule
+		--- ['calcStructSize(Field(Pointer(T:TogetherList), D:Declarator) ~> DS:SeqList) 
+			--- => KtoNat(calcStructSize(DS:SeqList)) +Nat 1]
+		--- : KSentence .
+
+
+------------------------------------------------
 ---- C standard library
 	---- op builtin : Id -> KResult . --- i want this :(
 	op builtin : Id -> Value .

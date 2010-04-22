@@ -7,10 +7,11 @@ mod DYNAMIC-C-SEMANTICS is
 				< k > P:Program ~> Apply(main) </ k >
 				< env > .Map </ env >
 				< loopStack > .List </ loopStack >
-				< sizes > .Map </ sizes >
 				< locals > .Bag </ locals >
 				< parameters > .Bag </ parameters >
+				< types > .Map </ types >
 			</ local >
+			< sizes > .Map </ sizes >
 			< genv > .Map </ genv > 
 			< mem > .Map </ mem >  
 			< output > "" </ output >
@@ -47,7 +48,8 @@ mod DYNAMIC-C-SEMANTICS is
 		< genv > G:Map </ genv >
 		< locals > [L:Bag => .Bag] </ locals >
 		< parameters > [P:Bag => .Bag] </ parameters >
-		< sizes > [S:Map => .Map] </ sizes >
+		---< sizes > [S:Map => .Map] </ sizes >
+		< types > [T:Map => .Map ] </ types >
 		< loopStack > [LS:List => .List] </ loopStack >
 		< callStack > [.List => List(
 			< stackFrame > 
@@ -55,7 +57,8 @@ mod DYNAMIC-C-SEMANTICS is
 				< parameters > P:Bag </ parameters >
 				< locals > L:Bag </ locals >
 				< env > E:Map </ env >
-				< sizes > S:Map </ sizes >
+				---< sizes > S:Map </ sizes >
+				< types > T:Map </ types >
 				< loopStack > LS:List </ loopStack >
 			</ stackFrame >
 			)] ...</ callStack >
