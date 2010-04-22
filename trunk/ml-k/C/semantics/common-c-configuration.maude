@@ -23,6 +23,7 @@ mod COMMON-C-CONFIGURATION is
 	op local : -> CellLabel .
 	op statics : -> CellLabel .
 	op typedefs : -> CellLabel .
+	op global : -> CellLabel .
 	
 	
 	subsort Program < K .

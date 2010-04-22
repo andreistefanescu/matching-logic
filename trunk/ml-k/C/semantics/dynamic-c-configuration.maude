@@ -5,20 +5,22 @@ mod C-CONFIGURATION is
 
 	mb configuration 
 		< T > 
-			< k > .K </ k >
-			< env > .Map </ env > 
 			< genv > .Map </ genv > 
 			< mem > .Map </ mem >  
 			< output > "" </ output >
 			< callStack > .List </ callStack >
-			< loopStack > .List </ loopStack >
 			< nextLoc > 0 </ nextLoc >
-			< locals > .Bag </ locals >
-			< parameters > .Bag </ parameters >
-			< sizes > .Map </ sizes >
 			< malloced > .Map </ malloced >
 			< statics > .Map </ statics >
 			< typedefs > .Map </ typedefs >
+			< local >
+				< k > .K </ k >
+				< env > .Map </ env >
+				< loopStack > .List </ loopStack >
+				< locals > .Bag </ locals >
+				< parameters > .Bag </ parameters >
+				< sizes > .Map </ sizes >
+			</ local >
 		</ T > 
 		< resultValue > .K </ resultValue >
 		< resultOutput > "" </ resultOutput > 
