@@ -282,6 +282,17 @@ mod COMMON-C-SEMANTICS is
 		< parameters >... [.Bag => Bag(Parameter-Declaration(Pointer(T:Type-Specifier), I:Id))] ...</ parameters >
 		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
 		: KSentence .
+	mb [bind-one-func-pointer]: rule 
+		< k > [bind((V:Value .,. L:List{Expression}),, 
+				Parameter-Type-List(Parameter-Declaration(T:Type-Specifier, Direct-Function-Declarator(Pointer(I:Id), Parameter-Type-List(PTL:List{Parameter}))) ,., P:List{Parameter})) =>
+			bind((.List{Expression} .,. L:List{Expression}),, 
+				Parameter-Type-List(.List{Parameter} ,., P:List{Parameter}))]
+				...</ k > 
+		< env >... [.Map => I:Id |-> Loc:Nat] ...</ env >
+		< mem >... [.Map => Loc:Nat |-> V:Value] ...</ mem >
+		< parameters >... [.Bag => Bag(Parameter-Declaration(T:Type-Specifier, Direct-Function-Declarator(Pointer(I:Id), Parameter-Type-List(PTL:List{Parameter}))))] ...</ parameters >
+		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
+		: KSentence .
 		
 
 --- bind(("_`,List`{Expression`}_").KHybridLabel("Int" 2(.List{K})),, ("Parameter-Type-List").KProperLabel(("Parameter-Declaration").KProperLabel(("int").KProperLabel(.List{K}),,("n").KProperLabel(.List{
@@ -482,6 +493,15 @@ mod COMMON-C-SEMANTICS is
 		< env >... I:Id |-> Loc:Nat ...</ env >
 		< mem >... [Loc:Nat |-> ? => .Map] ...</ mem >
 		: KSentence .
+		
+	mb [return-value-clean-func-pointer]: rule 
+		< k > return V:Value ; ...</ k >
+		< parameters >... [BagItem(Parameter-Declaration(T:Type-Specifier, Direct-Function-Declarator(Pointer(I:Id), Parameter-Type-List(PTL:List{Parameter})))) => .Bag] ...</ parameters >	
+		< env >... I:Id |-> Loc:Nat ...</ env >
+		< mem >... [Loc:Nat |-> ? => .Map] ...</ mem >
+		: KSentence .	
+		
+	
 	mb [return-clean-params]: rule 
 		< k > return ; ...</ k >
 		< parameters >... [BagItem(Parameter-Declaration(int, I:Id)) => .Bag] ...</ parameters >	
