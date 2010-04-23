@@ -266,7 +266,7 @@ method private pLvalPrec (contextprec: int) () lv =
   method pOffset (base: doc) = function
     | NoOffset -> base
     | Field (fi, o) -> 
-        self#pOffset (base ++ text "." ++ text fi.fname) o
+        self#pOffset (base ++ text " . " ++ text fi.fname) o
     | Index (e, o) ->
         self#pOffset (base ++ text "[" ++ self#pExp () e ++ text "]") o
 

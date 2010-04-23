@@ -43,7 +43,7 @@ let replace input output =
     Str.global_replace (Str.regexp_string input) output
 
 
-class maudeVisitor = object inherit nopCilVisitor
+class maudeVisitor = object (self) inherit nopCilVisitor
 	val mutable identifierList : string list = []
 	val mutable typedefList : string list = []
 	
@@ -51,6 +51,7 @@ class maudeVisitor = object inherit nopCilVisitor
 	method getTypedefList = typedefList
 	
 	method vvdec (v:varinfo) = begin
+		(*print_string (v.vname ^ "\n");*)
 		identifierList <- (replace "_" "u" v.vname) :: identifierList;
 		DoChildren
 	end
@@ -62,8 +63,15 @@ class maudeVisitor = object inherit nopCilVisitor
 	
 	method vglob (g:global) = begin
 		( match g with 
+			(* | GFun(fundec, l) -> begin
+				let formalVisit = fun fi -> 
+					print_string (fi.vname ^ "\n");
+					identifierList <- (replace "_" "u" fi.vname) :: identifierList
+				in List.iter formalVisit fundec.sformals;
+			end *)
 			| GType(typeinfo, location) -> typedefList <- (replace "_" "u" typeinfo.tname) :: typedefList
-			| GVarDecl(varinfo, location) -> identifierList <- (replace "_" "u" varinfo.vname) :: identifierList
+			| GVarDecl(varinfo, location) -> 
+				identifierList <- (replace "_" "u" varinfo.vname) :: identifierList
 			| GCompTag (comp, l) -> begin
 				identifierList <- (replace "_" "u" comp.cname) :: identifierList;
 				let fieldVisit = fun fi -> 
@@ -93,15 +101,25 @@ class maudeVisitor = object inherit nopCilVisitor
 	
 	method vtype (t:typ) = begin
 		( match t with 
-			| TFun (restyp, args, isvararg, a) -> 
-				(match args with
+			| TFun (restyp, args, isvararg, a) -> begin
+				let argVisit = fun fi -> 
+					match fi with
+					| (aname, atype, aattr) -> 
+						if (String.length(aname) != 0) then (
+							identifierList <- (replace "_" "u" aname) :: identifierList;
+						)
+			      in match args with
+					| Some xs -> List.iter argVisit xs
+					| None -> () ;
+			end
+				 (* (match args with
 				| Some ((aname, atype, aattr)::xs) -> 
 					if (String.length(aname) != 0) then (
 						identifierList <- (replace "_" "u" aname) :: identifierList;
 					) else (
 					)
-				| _ -> () ;
-				)
+				| _ -> () ; 
+				)*)
 			(* | TNamed (typeinfo, attributes) -> *)
 			(* typedefList <- (replace "_" "u" typeinfo.tname) :: typedefList (*typeinfo.ttype*) *)
 			| _ -> ()
