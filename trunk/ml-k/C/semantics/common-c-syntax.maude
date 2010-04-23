@@ -204,6 +204,7 @@ mod COMMON-C-SYNTAX is
 	sort Init-Declarator .
 
 	subsort Declarator < Init-Declarator .
+	---subsort Declaration < Expression .  --- so wrong
 	--- fixme
 	--- SHOULD BE DECLARATOR
 	---op _=_ : Declarator Initializer -> Init-Declarator .
