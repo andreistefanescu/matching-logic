@@ -314,6 +314,7 @@ mod COMMON-C-SYNTAX is
 
 	subsort Id < Direct-Declarator .
 	op Pointer : Direct-Declarator -> Direct-Declarator [ditto] .
+	op Pointer : Direct-Declarator Direct-Declarator -> Direct-Declarator .
 	op Pointer`(`) : -> Direct-Declarator .
 	--- --- op `(_`) : Declarator -> Declarator . --- problem with (_)
 	--- op _`[`] : Declarator -> Declarator .
@@ -327,6 +328,7 @@ mod COMMON-C-SYNTAX is
 	--- op _`[_*`] : Declarator Type-Qualifier-List -> Declarator .
 	--- op _`(_`) : Direct-Declarator Parameter-Type-List -> Direct-Declarator . --- Ex: main(void)
 	op Direct-Function-Declarator : Direct-Declarator Parameter-Type-List -> Direct-Declarator .
+	op Direct-Function-Declarator : Parameter-Type-List -> Direct-Declarator .
 	--- --- TODO op _`(`) : Declarator -> Declarator .
 	--- --- TODO op _`(_`) : Declarator Identifier-List -> Declarator .
 	
@@ -382,6 +384,7 @@ mod COMMON-C-SYNTAX is
 	---op __ : Specifier-Qualifier-List Declarator -> Type-Name [ditto] .
 	sort TogetherList .
 	op __ : TogetherList TogetherList -> TogetherList [prec 85 assoc] .
+	subsort Declarator < TogetherList .
 	--- --- TODO op __ : Specifier-Qualifier-List Abstract-Declarator -> Type-Name .
 	
 	--- --- Note: Collapsed Abstract-Declarator with Direct-Abstract-Declarator
