@@ -187,6 +187,7 @@ mod COMMON-C-SYNTAX is
 	
 	sort Init-Declarator-List .
 	subsort Init-Declarator < Init-Declarator-List .
+	subsort Init-Declarator < Block-Item .
 
 	--- --- TODO subsort List{Init-Declarator} < Init-Declarator-List .
 	
@@ -203,6 +204,10 @@ mod COMMON-C-SYNTAX is
 	sort Init-Declarator .
 
 	subsort Declarator < Init-Declarator .
+	--- fixme
+	--- SHOULD BE DECLARATOR
+	---op _=_ : Declarator Initializer -> Init-Declarator .
+	op _=_ : Declaration Initializer -> Init-Declarator .
 	--- --- Note: CIL separates declaration from initialization
 	--- --- op _=_ : Declarator Initializer -> Init-Declarator .
 	
@@ -390,7 +395,8 @@ mod COMMON-C-SYNTAX is
 	---subsort Identifier < Typedef-Name .
 	
 	--- --- 6.7.8
-	--- sort Initializer .
+	sort Initializer .
+	subsort Expression < Initializer .
 	--- subsort Assignment-Expression < Initializer .
 	--- op `{_`} : Initializer-List -> Initializer .
 	--- op `{_`,`} : Initializer-List -> Initializer .
@@ -440,7 +446,7 @@ mod COMMON-C-SYNTAX is
 	---op __ : Block-Item-List Block-Item-List -> Block-Item-List [ditto] . --- [assoc prec 85] .
 	
 	sort Block-Item .
-
+	
 	--- --- op Block-Item : Statement -> Block-Item .
 	subsort Statement < Block-Item .
 	subsort Declaration < Block-Item .
@@ -463,21 +469,7 @@ mod COMMON-C-SYNTAX is
 	sort Iteration-Statement .
 
 	op while`(_`)_ : Expression Statement -> Iteration-Statement .
-	op do_while`(_`) : Statement Expression -> Iteration-Statement .
-	op for`(_;_;_`)_ : Expression Expression Expression Statement -> Iteration-Statement .
-	op for`(;_;_`)_ : Expression Expression Statement -> Iteration-Statement .
-	op for`(_;`;_`)_ : Expression Expression Statement -> Iteration-Statement .
-	op for`(_;_;`)_ : Expression Expression Statement -> Iteration-Statement .
-	op for`(;`;_`)_ : Expression Statement -> Iteration-Statement .
-	op for`(_;`;`)_ : Expression Statement -> Iteration-Statement .
-	op for`(;_;`)_ : Expression Statement -> Iteration-Statement .
-	op for`(;`;`)_ : Statement -> Iteration-Statement .
-	
-	op for`(__;_`)_ : Declaration Expression Expression Statement -> Iteration-Statement .
-	op for`(_;_`)_ : Declaration Expression Statement -> Iteration-Statement .
-	op for`(__;`)_ : Declaration Expression Statement -> Iteration-Statement .
-	op for`(_;`)_ : Declaration Statement -> Iteration-Statement .
-	
+
 	--- --- 6.8.6
 	sort Jump-Statement .
 

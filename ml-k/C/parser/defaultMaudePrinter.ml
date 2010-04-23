@@ -916,7 +916,8 @@ method private pLvalPrec (contextprec: int) () lv =
 
      | GVar (vi, {init = Some i}, l) -> begin
          fprint out !lineLength 
-           (self#pLineDirective ~forcefile:true l ++
+			
+           (text "(" ++ self#pLineDirective ~forcefile:true l ++
               self#pVDecl () vi
               ++ text " = " 
               ++ (let islong = 
@@ -928,7 +929,7 @@ method private pLvalPrec (contextprec: int) () lv =
                 line ++ self#pLineDirective l ++ text "  " 
               else nil)); 
          self#dInit out 3 i;
-         output_string out ";\n"
+         output_string out ")\n"
      end
 
      | g -> fprint out !lineLength (self#pGlobal () g)	  
