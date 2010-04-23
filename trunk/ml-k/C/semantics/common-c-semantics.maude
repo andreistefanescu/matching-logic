@@ -144,6 +144,10 @@ mod COMMON-C-SEMANTICS is
 		< statics > [M:Map => M:Map[Loc:Nat / S:String]] </ statics >
 		if notBool($hasMapping(M:Map, S:String))
 		: KSentence .
+	mb [const-string-found]: rule
+		< k > [S:String => Loc:Nat] ...</ k >
+		< statics >... S:String |-> Loc:Nat ...</ statics >
+		: KSentence .
 	mb [alloc-string]: rule
 		< k > [allocString(S:String) => allocString(butFirstChar(S:String))] ...</ k >
 		< mem >... [.Map => Loc:Nat |-> charToAscii(firstChar(S:String))] ...</ mem >
