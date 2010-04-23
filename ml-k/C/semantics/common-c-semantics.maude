@@ -100,8 +100,9 @@ mod COMMON-C-SEMANTICS is
 		: KSentence .
 	
 		
+		
 	mb [global-variable-declaration]: rule
-		< k > [Declaration(int, I:Id) = E:Expression => Deref(Loc:Nat) := E:Expression ;] ...</ k >
+		< k > [Global(Declaration(int, I:Id)) => .K] ...</ k >
 		< env >... [.Map => I:Id |-> Loc:Nat] ...</ env >
 		< genv >... [.Map => I:Id |-> Loc:Nat] ...</ genv >
 		< mem >... [.Map => Loc:Nat |-> unknown] ...</ mem >
@@ -109,12 +110,18 @@ mod COMMON-C-SEMANTICS is
 		< types >... [.Map => I:Id |-> int] ...</ types >
 		: KSentence .
 	mb [global-pointer-declaration]: rule
-		< k > [Declaration(Pointer(T:Type-Specifier), I:Id) = E:Expression => Deref(Loc:Nat) := E:Expression ; ] ...</ k >
+		< k > [Global(Declaration(Pointer(T:Type-Specifier), I:Id)) => .K] ...</ k >
 		< env >... [.Map => I:Id |-> Loc:Nat] ...</ env >
 		< genv >... [.Map => I:Id |-> Loc:Nat] ...</ genv >
 		< mem >... [.Map => Loc:Nat |-> unknown] ...</ mem >
 		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
 		< types >... [.Map => I:Id |-> Pointer(T:Type-Specifier)] ...</ types >
+		: KSentence .
+	mb [global-variable-declaration-init]: rule
+		< k > [Declaration(int, I:Id) = E:Expression => Global(Declaration(int, I:Id)) ~> Deref(&(I:Id)) := E:Expression ;] ...</ k >
+		: KSentence .
+	mb [global-pointer-declaration-init]: rule
+		< k > [Declaration(Pointer(T:Type-Specifier), I:Id) = E:Expression => Global(Declaration(Pointer(T:Type-Specifier), I:Id)) ~> Deref(&(I:Id)) := E:Expression ; ] ...</ k >
 		: KSentence .
 	
 	mb [variable-declaration]: rule

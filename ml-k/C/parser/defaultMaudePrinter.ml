@@ -837,7 +837,7 @@ method private pLvalPrec (contextprec: int) () lv =
                   line ++ self#pLineDirective l ++ text "  " 
                 else nil) ++
                 (self#pInit () i))
-          ++ text ";\n"
+          ++ text "\n"
       
     (* print global variable 'extern' declarations, and function prototypes *)    
     | GVarDecl (vi, l) ->
