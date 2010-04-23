@@ -117,12 +117,27 @@ mod COMMON-C-SEMANTICS is
 		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
 		< types >... [.Map => I:Id |-> Pointer(T:Type-Specifier)] ...</ types >
 		: KSentence .
+	mb [global-func-pointer-declaration]: rule
+		< k > [Global(Declaration(T:Type-Specifier, Direct-Function-Declarator(Pointer(I:Id), PTL:Parameter-Type-List))) => .K] ...</ k >
+		< env >... [.Map => I:Id |-> Loc:Nat] ...</ env >
+		< genv >... [.Map => I:Id |-> Loc:Nat] ...</ genv >
+		< mem >... [.Map => Loc:Nat |-> unknown] ...</ mem >
+		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
+		< types >... [.Map => I:Id |-> Direct-Function-Declarator(Pointer(I:Id), PTL:Parameter-Type-List)] ...</ types >
+		: KSentence .	
+		
+		
 	mb [global-variable-declaration-init]: rule
 		< k > [Declaration(int, I:Id) = E:Expression => Global(Declaration(int, I:Id)) ~> Deref(&(I:Id)) := E:Expression ;] ...</ k >
 		: KSentence .
 	mb [global-pointer-declaration-init]: rule
 		< k > [Declaration(Pointer(T:Type-Specifier), I:Id) = E:Expression => Global(Declaration(Pointer(T:Type-Specifier), I:Id)) ~> Deref(&(I:Id)) := E:Expression ; ] ...</ k >
 		: KSentence .
+		
+	mb [global-func-pointer-declaration-init]: rule
+		< k > [Declaration(T:Type-Specifier, Direct-Function-Declarator(Pointer(I:Id), PTL:Parameter-Type-List)) = E:Expression => Global(Declaration(T:Type-Specifier, Direct-Function-Declarator(Pointer(I:Id), PTL:Parameter-Type-List))) ~> Deref(&(I:Id)) := E:Expression ; ] ...</ k >
+		: KSentence .
+		
 	
 	mb [variable-declaration]: rule
 		< k > [Declaration(int, I:Id) => .K] ...</ k >
@@ -258,13 +273,13 @@ mod COMMON-C-SEMANTICS is
 		: KSentence .
 	mb [bind-one-int-pointer]: rule 
 		< k > [bind((V:Value .,. L:List{Expression}),, 
-				Parameter-Type-List(Parameter-Declaration(Pointer(int), I:Id) ,., P:List{Parameter})) =>
+				Parameter-Type-List(Parameter-Declaration(Pointer(T:Type-Specifier), I:Id) ,., P:List{Parameter})) =>
 			bind((.List{Expression} .,. L:List{Expression}),, 
 				Parameter-Type-List(.List{Parameter} ,., P:List{Parameter}))]
 				...</ k > 
 		< env >... [.Map => I:Id |-> Loc:Nat] ...</ env >
 		< mem >... [.Map => Loc:Nat |-> V:Value] ...</ mem >
-		< parameters >... [.Bag => Bag(Parameter-Declaration(Pointer(int), I:Id))] ...</ parameters >
+		< parameters >... [.Bag => Bag(Parameter-Declaration(Pointer(T:Type-Specifier), I:Id))] ...</ parameters >
 		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
 		: KSentence .
 		
@@ -362,6 +377,11 @@ mod COMMON-C-SEMANTICS is
 		: KSentence .
 	mb [cast-pointer-type]: rule
 		< k > [Cast(Pointer(T:Type-Specifier), I:Int) => I:Int] ...</ k >
+		---< env >... X:Id |-> Loc:Nat ...</ env >
+		---< mem >... Loc:Nat |-> I:Int ...</ mem >
+		: KSentence .
+	mb [cast-func-pointer-type]: rule
+		< k > [Cast(Pointer(T:Type-Specifier, T':Type-Specifier), I:Int) => I:Int] ...</ k >
 		---< env >... X:Id |-> Loc:Nat ...</ env >
 		---< mem >... Loc:Nat |-> I:Int ...</ mem >
 		: KSentence .
@@ -625,6 +645,17 @@ mod COMMON-C-SEMANTICS is
 		< mem >... Loc:Nat |-> N:Nat ...</ mem >
 		< output > [S:String => S:String +String rat2stringConversion(D:Nat, 10)] </ output >
 		if N:Nat ==Bool asciiString("d") 
+	: KSentence .
+	mb [printf-%s]: rule
+		< k > [printf-%(Len:Nat, Loc:Nat, (S:Nat .,. L:List{Expression})) => 
+			printf-aux(0, S:Nat, .List{Expression})
+			~> printf-aux(Len:Nat, sNat(Loc:Nat), L:List{Expression})] ...</ k >
+		< mem >... Loc:Nat |-> N:Nat ...</ mem >
+		if N:Nat ==Bool asciiString("s") 
+	: KSentence .
+	mb [printf-%s-done]: rule
+		< k > [Len':Nat ~> printf-aux(Len:Nat, Loc:Nat, L:List{Expression}) => 
+			printf-aux(Len:Nat +Nat Len':Nat, Loc:Nat, L:List{Expression})] ...</ k >
 	: KSentence .
 	
 endm

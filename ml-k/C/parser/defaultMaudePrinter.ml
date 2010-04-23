@@ -374,14 +374,14 @@ method private pLvalPrec (contextprec: int) () lv =
           
     | TFun (restyp, args, isvararg, a) -> 
         let name' = 
-          if a == [] then name else 
+          if a == [] then (name ++ if name = nil then nil else text ", ") else 
           if nameOpt == None then printAttributes a else
-          text "(" ++ printAttributes a ++ name ++ text ")" 
+          text "(" ++ printAttributes a ++ name ++ text "), " 
         in
         self#pType 
           (Some
              (wrap (name'
-                ++ text ", Parameter-Type-List("
+                ++ text " Parameter-Type-List("
                 ++ (align 
                       ++ 
                       (if args = Some [] && isvararg then 

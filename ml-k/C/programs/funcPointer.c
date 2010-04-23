@@ -2,8 +2,8 @@
 // Copyright © 2000–2010 Denis Defreyne
 // This work is licensed under a Creative Commons Attribution-ShareAlike 3.0 License
 
-void main(void){}
-/*
+//void main(void){}
+
 #include "fsl.h"
 
 // shouting
@@ -33,4 +33,3 @@ int main(void)
 
 	return 0;
 }
-*/
