@@ -37,8 +37,9 @@ mod DYNAMIC-C-SEMANTICS is
 			}
 			=> .K]
 		...</ k >
-		< genv > [E:Map => E:Map[Loc:Nat / I:Id]]  </ genv >
-		< mem > [M:Map => M:Map[Closure(Declaration(DS:TogetherList, Direct-Function-Declarator(I:Id, PTL:Parameter-Type-List)){ B:TogetherList }) / Loc:Nat]] </ mem >
+		< env >... [.Map => I:Id |-> Loc:Nat] ...</ env >
+		< genv >... [.Map => I:Id |-> Loc:Nat] ...</ genv >
+		< mem >... [.Map => Loc:Nat |-> Closure(Declaration(DS:TogetherList, Direct-Function-Declarator(I:Id, PTL:Parameter-Type-List)){ B:TogetherList })] </ mem >
 		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
 		: KSentence .
 		
