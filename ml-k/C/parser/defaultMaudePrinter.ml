@@ -303,7 +303,9 @@ method private pLvalPrec (contextprec: int) () lv =
 		)*)
 		++ (self#pAttrs () a)
 		++ text " "
+		(* ++ if (name = nil) then (nil) else (text " x") *)
 		++ name
+		(* ++ if (name = nil) then (nil) else (text "x")*)
 
     | TFloat(fkind, a) -> 
         d_fkind () fkind 
@@ -395,8 +397,10 @@ method private pLvalPrec (contextprec: int) () lv =
                             let stom, rest = separateStorageModifiers aattr in
                             (* First the storage modifiers *)
 							  wrap (
+							  let optionName = 
+									if aname = "" then None else Some (text aname) in
                               (self#pAttrs () stom)
-                              ++ (self#pType (Some (text aname)) () atype)
+                              ++ (self#pType optionName () atype)
                               ++ text " "
                               ++ self#pAttrs () rest
 								) "Parameter-Declaration"
