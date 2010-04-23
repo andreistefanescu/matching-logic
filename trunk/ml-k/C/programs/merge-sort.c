@@ -1,16 +1,21 @@
 #include "fsl.h"
 
-int* listAppend(int* p, int n);
+int* listCons(int* p, int n);
 int* mergesort(int* p);
 int main() {
 	int* head = NULL;
 	
-	head = listAppend(head, 20);	
-	head = listAppend(head, 25);
-	head = listAppend(head, 15);
-	head = listAppend(head, 30);
-	head = listAppend(head, 10);
-	head = listAppend(head, 35);
+	head = listCons(head, 20);	
+	head = listCons(head, 25);
+	head = listCons(head, 15);
+	head = listCons(head, 30);
+	head = listCons(head, 10);
+	head = listCons(head, 35);
+	
+	// for (int i = 0; i < 1000; i++){
+		// head = listCons(head, i);
+		// head = listCons(head, 1000-i);
+	// }
 	
 	head = mergesort(head);
 	int* curr = head;
@@ -21,24 +26,11 @@ int main() {
 	return 0;
 }
 
-int* listAppend(int* p, int n){
-	int* x;
-	if (p == NULL){
-		int* next = malloc(2);
-		*next = n;
-		*(next + 1) = NULL;
-		return next;
-	} else {
-        x = p;
-        while (*(x + 1) != NULL) {
-            x = *(x + 1);
-        }		
-		int* next = malloc(2);
-        *(x + 1) = next;
-		*next = n;
-		*(next + 1) = NULL;
-    }
-	return p;
+int* listCons(int* p, int n){
+	int* next = malloc(2);
+	*next = n;
+	*(next + 1) = p;
+	return next;
 }
 
 int* mergesort(int* l) {

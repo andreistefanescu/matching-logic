@@ -14,6 +14,7 @@ mod COMMON-C-SEMANTICS is
 	mb context Deref([HOLE]) := ? : KSentence .
 	mb context Deref([HOLE]) ++ : KSentence .
 	mb context Deref([HOLE]) -- : KSentence .
+	---mb context GlobalDeclaration(int, I:Id) = E:Expression
 	
 	subsort Int < Value < Expression KResult .
 	---subsort Value < List{Expression} .
@@ -70,7 +71,7 @@ mod COMMON-C-SEMANTICS is
 	---mb [remove-global-marker]: rule [Global(D:Declaration ;) => D:Declaration ;] : KSentence .
 	--- for now, just ignore globals
 	---mb [remove-global-marker]: rule [Global(D:Declaration) => .K] : KSentence .
-	mb [remove-global-marker]: rule [Global(D:Declaration) => D:Declaration] : KSentence .
+	---mb [remove-global-marker]: rule [Global(D:Declaration) => D:Declaration] : KSentence .
 	mb [remove-global-marker-empty]: rule [Global() => .K] : KSentence .
 	
 	--- simplify compound assignments (if E1 op= E2, need to ensure E1 only gets evaluated once to be correct)
@@ -84,18 +85,36 @@ mod COMMON-C-SEMANTICS is
 
 	
 	--- special case lookup for main, since genv hasn't been put into env yet
-	mb [lookup-main]: rule
-		< k > [main => V:Value] ...</ k >
-		< env > .Map </ env >
-		< genv >... main |-> Loc:Nat ...</ genv >
-		< mem >... Loc:Nat |-> V:Value ...</ mem >
-		: KSentence .
+	--- mb [lookup-main]: rule
+		--- < k > [main => V:Value] ...</ k >
+		--- < env > .Map </ env >
+		--- < genv >... main |-> Loc:Nat ...</ genv >
+		--- < mem >... Loc:Nat |-> V:Value ...</ mem >
+		--- : KSentence .
 		
 	--- generic lookup
 	mb [lookup]: rule
 		< k > [I:Id => V:Value] ...</ k >
 		< env >... I:Id |-> Loc:Nat ...</ env >
 		< mem >... Loc:Nat |-> V:Value ...</ mem >
+		: KSentence .
+	
+		
+	mb [global-variable-declaration]: rule
+		< k > [Declaration(int, I:Id) = E:Expression => Deref(Loc:Nat) := E:Expression ;] ...</ k >
+		< env >... [.Map => I:Id |-> Loc:Nat] ...</ env >
+		< genv >... [.Map => I:Id |-> Loc:Nat] ...</ genv >
+		< mem >... [.Map => Loc:Nat |-> unknown] ...</ mem >
+		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
+		< types >... [.Map => I:Id |-> int] ...</ types >
+		: KSentence .
+	mb [global-pointer-declaration]: rule
+		< k > [Declaration(Pointer(T:Type-Specifier), I:Id) = E:Expression => Deref(Loc:Nat) := E:Expression ; ] ...</ k >
+		< env >... [.Map => I:Id |-> Loc:Nat] ...</ env >
+		< genv >... [.Map => I:Id |-> Loc:Nat] ...</ genv >
+		< mem >... [.Map => Loc:Nat |-> unknown] ...</ mem >
+		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
+		< types >... [.Map => I:Id |-> Pointer(T:Type-Specifier)] ...</ types >
 		: KSentence .
 	
 	mb [variable-declaration]: rule
@@ -127,7 +146,7 @@ mod COMMON-C-SEMANTICS is
 		if I:Int >=Int 0
 		: KSentence .
 	mb [struct-declaration]: rule 
-		< k > [struct(X:Id, DS:TogetherList) => skipval] ...</ k >
+		< k > [Global(struct(X:Id, DS:TogetherList) ;) => .K] ...</ k >
 		< typedefs >... [.Map => X:Id |-> struct(X:Id, DS:TogetherList)] ...</ typedefs >
 		: KSentence .
 		
@@ -181,10 +200,10 @@ mod COMMON-C-SEMANTICS is
 		: KSentence .
 	
 	mb [function-prototype]: rule 
-		< k > [Declaration(DS:TogetherList, Direct-Function-Declarator(I:Id, PTL:Parameter-Type-List)) => .K] ...</ k >
+		< k > [Global(Declaration(DS:TogetherList, Direct-Function-Declarator(I:Id, PTL:Parameter-Type-List))) => .K] ...</ k >
 		: KSentence .
 	mb [typedef-declaration]: rule
-		< k > [Typedef(DS:TogetherList, X:Typedef-Name) => .K] ...</ k >
+		< k > [Global(Typedef(DS:TogetherList, X:Typedef-Name)) => .K] ...</ k >
 		< typedefs >... [.Map => X:Typedef-Name |-> DS:TogetherList] ...</ typedefs >
 		---< sizes >... [.Map => X:Typedef-Name |-> ] ...</ sizes >
 		: KSentence .
