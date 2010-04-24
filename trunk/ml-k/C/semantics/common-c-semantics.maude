@@ -52,6 +52,7 @@ mod COMMON-C-SEMANTICS is
 	mb rule [U(I:Int) => I:Int] : KSentence [metadata "structural"] .
 	mb rule [unsigned-int => int] : KSentence [metadata "structural"] .
 	mb rule [unsigned-char => int] : KSentence [metadata "structural"] .
+	mb rule [char => int] : KSentence [metadata "structural"] .
 	
 	--- dissolve blocks
 	mb rule < k > [Block(B:TogetherList) => B:TogetherList] ...</ k > : KSentence .
@@ -595,6 +596,12 @@ bind(("_.`,._").KHybridLabel(
 		< env >... I:Id |-> Loc:Nat ...</ env >
 		< mem >... [Loc:Nat |-> ? => .Map] ...</ mem >
 		: KSentence .
+	mb [return-clean-func-pointer]: rule 
+		< k > return ; ...</ k >
+		< parameters >... [BagItem(Parameter-Declaration(T:Type-Specifier, Direct-Function-Declarator(Pointer(I:Id), Parameter-Type-List(PTL:List{Parameter})))) => .Bag] ...</ parameters >	
+		< env >... I:Id |-> Loc:Nat ...</ env >
+		< mem >... [Loc:Nat |-> ? => .Map] ...</ mem >
+		: KSentence .
 
 	mb [return]: rule 
 		< k > [return ; ~> ? => skipval ~> K:K] </ k >
@@ -822,7 +829,15 @@ bind(("_.`,._").KHybridLabel(
 		< malloced >... [.Map => Loc:Nat |-> N:Nat] ...</ malloced >
 		< nextLoc > [Loc:Nat => Loc:Nat +Nat N:Nat] </ nextLoc >
 	: KSentence .
-	
+	--------------------------------------------
+	mb [putchar-is-value]: rule
+		< k > [putchar => builtin(putchar)] ...</ k >
+	: KSentence .
+	mb [putchar]: rule
+		< k > [Apply(builtin(putchar), (N:Nat)) => N:Nat] ...</ k >
+		< output > [S:String => S:String +String charString(N:Nat)] </ output >
+	: KSentence .
+	--------------------------------------------
 	mb [printf-is-value]: rule
 		< k > [printf => builtin(printf)] ...</ k >
 	: KSentence .
@@ -855,9 +870,9 @@ bind(("_.`,._").KHybridLabel(
 		if (N:Nat ==Bool asciiString("%"))
 	: KSentence .
 	mb [printf-%d]: rule
-		< k > [printf-%(Len:Nat, Loc:Nat, (D:Nat .,. L:List{Expression})) => printf-aux(Len:Nat +Nat lengthString(rat2stringConversion(D:Nat, 10)), sNat(Loc:Nat), L:List{Expression})] ...</ k >
+		< k > [printf-%(Len:Nat, Loc:Nat, (D:Int .,. L:List{Expression})) => printf-aux(Len:Nat +Nat lengthString(rat2stringConversion(D:Int, 10)), sNat(Loc:Nat), L:List{Expression})] ...</ k >
 		< mem >... Loc:Nat |-> N:Nat ...</ mem >
-		< output > [S:String => S:String +String rat2stringConversion(D:Nat, 10)] </ output >
+		< output > [S:String => S:String +String rat2stringConversion(D:Int, 10)] </ output >
 		if N:Nat ==Bool asciiString("d") 
 	: KSentence .
 	mb [printf-%s]: rule

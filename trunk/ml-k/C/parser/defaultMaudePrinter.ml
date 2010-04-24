@@ -152,7 +152,8 @@ let d_const () c =
       (* we cannot print L"\xabcd" "feedme" as L"\xabcdfeedme" --
        * the former has 7 wide characters and the later has 3. *)
 
-  | CChr(c) -> text ("'" ^ escape_char c ^ "'")
+  (*| CChr(c) -> text ("'" ^ escape_char c ^ "'") *)
+  | CChr(c) -> text (string_of_int (int_of_char c))
   | CReal(_, _, Some s) -> text s
   | CReal(f, fsize, None) -> 
       text (string_of_float f) ++
