@@ -430,13 +430,13 @@ mod COMMON-C-SYNTAX is
 	sort Statement .
 
 	
-	--- subsort Labeled-Statement < Statement .
-	subsort Jump-Statement Compound-Statement Iteration-Statement Expression-Statement Selection-Statement < Statement .
+	--- subsort  < Statement .
+	subsort Labeled-Statement Jump-Statement Compound-Statement Iteration-Statement Expression-Statement Selection-Statement < Statement .
 	
 	
 	--- --- 6.8.1
-	--- sort Labeled-Statement .
-	--- op _:_ : Identifier Statement -> Labeled-Statement .
+	sort Labeled-Statement .
+	op _:_ : Id Statement -> Labeled-Statement .
 	--- op case_:_ : Constant-Expression Statement -> Labeled-Statement .
 	--- op default`:_ : Statement -> Labeled-Statement .
 	

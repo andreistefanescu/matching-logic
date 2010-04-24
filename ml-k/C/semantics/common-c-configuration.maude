@@ -59,6 +59,7 @@ mod COMMON-C-CONFIGURATION is
 	subsort Struct-Or-Union-Specifier < K .
 	subsort Struct-Declaration < K .
 	subsort Initializer < K .
+	subsort Labeled-Statement < K .
 	
 	subsort String < Builtins .
 endm
