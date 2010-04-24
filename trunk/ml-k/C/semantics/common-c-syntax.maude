@@ -13,6 +13,10 @@ mod COMMON-C-SYNTAX is
 	op debug : -> Statement .
 	op main : -> Id [ctor] .
 	op malloc : -> Id [ctor] .
+	op calloc : -> Id [ctor] .
+	op strlen : -> Id [ctor] .
+	op strcpy : -> Id [ctor] .
+	op strcmp : -> Id [ctor] .
 	op free : -> Id [ctor] .
 	op printf : -> Id [ctor] .
 	
