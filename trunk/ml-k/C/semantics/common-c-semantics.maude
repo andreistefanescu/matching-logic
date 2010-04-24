@@ -180,12 +180,13 @@ mod COMMON-C-SEMANTICS is
 		< typedefs >... X:Id |-> struct(X:Id, DS:TogetherList) ...</ typedefs >
 		: KSentence .
 
+	op struct-aux : Id Id Nat -> K .
 	mb [local-struct-declaration]: rule
 		< k > [Len:Nat ~> Declaration(struct(X:Id), X':Id) => .K] ...</ k >
 		< env >... [.Map => X':Id |-> Loc:Nat] ...</ env >
-		< mem >... [.Map => Loc:Nat |-> sNat(Loc:Nat) sNat(Loc:Nat) to (sNat(Loc:Nat) +Nat Len:Nat) |-> unknown] ...</ mem >
-		< locals >... [.Bag => Bag(Declaration(int, X':Id[Len:Nat]))] ...</ locals >
-		< nextLoc > [Loc:Nat => (sNat(Loc:Nat) +Nat Len:Nat)] </ nextLoc >
+		< mem >... [.Map => Loc:Nat to (Loc:Nat +Nat Len:Nat) |-> unknown] ...</ mem >
+		< locals >... [.Bag => Bag(struct-aux(X:Id, X':Id, Len:Nat))] ...</ locals >
+		< nextLoc > [Loc:Nat => (Loc:Nat +Nat Len:Nat)] </ nextLoc >
 		< types >... [.Map => X':Id |-> struct(X:Id)] ...</ types >
 		< typedefs >... X:Id |-> struct(X:Id, DS:TogetherList) ...</ typedefs >
 		: KSentence .
@@ -356,6 +357,9 @@ bind(("_.`,._").KHybridLabel(
 		< k > [E1:Expression . X:Id => (& E1:Expression) -> X:Id] ...</ k >
 		: KSentence .
 		
+	---x Deref((hashtbl -> nodes) + i) -> key
+	---x Deref(Deref((hashtbl -> nodes) + i) + getOffset(Deref((hashtbl -> nodes) + i), key))
+		
 	mb [getOffset-exp-to-type]: rule
 		< k > [getOffset(E1:Expression, X:Id) => getOffset(T:Type, X:Id)] ...</ k >
 		< types >... E1:Expression |-> T:Type ...</ types >
@@ -503,7 +507,44 @@ bind(("_.`,._").KHybridLabel(
 		< k > [break ; ~> ? => K:K ] </ k >
 		< loopStack > [ListItem(_~>_(_~>_((while (B:Expression) S:Statement), popLoop), K:K)) => .List] ...</ loopStack >
 		: KSentence .
+
+	mb [return-value-clean-local-pointer]: rule 
+		< k > return V:Value ; ...</ k >
+		< locals >... [BagItem(Declaration(Pointer(T:Type-Specifier), I:Id)) => .Bag] ...</ locals >	
+		< env >... I:Id |-> Loc:Nat ...</ env >
+		< mem >... [Loc:Nat |-> ? => .Map] ...</ mem >
+		: KSentence .
+	mb [return-value-clean-local]: rule 
+		< k > return V:Value ; ...</ k >
+		< locals >... [BagItem(Declaration(int, I:Id)) => .Bag] ...</ locals >	
+		< env >... I:Id |-> Loc:Nat ...</ env >
+		< mem >... [Loc:Nat |-> ? => .Map] ...</ mem >
+		: KSentence .
 		
+	--- this rule is bad
+	--- fixme
+	--- BagItem(("Declaration").KProperLabel(("int").KProperLabel(.List{K}),,("_`[_`]").KProperLabel("Id" newtbl(.List{K}),,"Int" 3(.List{K}))))
+	--- < env >... "Id" newtbl(.List{K}) |-> "Int" 554(.List{K}) ...</ env >
+	--- < mem >... "Int" 554(.List{K}) |-> "Int" 8(.List{K}) ...</ mem > 
+	mb [return-value-clean-local-array]: rule 
+		< k > return V:Value ; ...</ k >
+		< locals >... [BagItem(Declaration(int, I:Id[N:Nat])) => .Bag] ...</ locals >	
+		< env >... I:Id |-> Loc:Nat ...</ env >
+		< mem > [M:Map Loc:Nat |-> Start:Nat => cleanMap(M:Map, Start:Nat, N:Nat)] </ mem >
+		: KSentence .
+	--- fixme
+	mb [return-value-clean-local-struct]: rule 
+		< k > return V:Value ; ...</ k >
+		< locals >... [BagItem(struct-aux(X:Id, X':Id, Len:Nat)) => .Bag] ...</ locals >	
+		--- < env >... I:Id |-> Loc:Nat ...</ env >
+		--- < mem > [M:Map => cleanMap(M:Map, Loc:Nat, Len:Nat)] </ mem >
+		: KSentence .
+	mb [return-clean-local-array]: rule 
+		< k > return ; ...</ k >
+		< locals >... [BagItem(Declaration(int, I:Id[N:Nat])) => .Bag] ...</ locals >	
+		< env >... I:Id |-> Loc:Nat ...</ env >
+		< mem > [M:Map Loc:Nat |-> Start:Nat => cleanMap(M:Map, Start:Nat, N:Nat)] </ mem >
+		: KSentence .
 	mb [return-clean-local]: rule 
 		< k > return ; ...</ k >
 		< locals >... [BagItem(Declaration(int, I:Id)) => .Bag] ...</ locals >	
@@ -515,30 +556,6 @@ bind(("_.`,._").KHybridLabel(
 		< locals >... [BagItem(Declaration(Pointer(T:Type-Specifier), I:Id)) => .Bag] ...</ locals >	
 		< env >... I:Id |-> Loc:Nat ...</ env >
 		< mem >... [Loc:Nat |-> ? => .Map] ...</ mem >
-		: KSentence .
-	mb [return-value-clean-local-pointer]: rule 
-		< k > return V:Value ; ...</ k >
-		< locals >... [BagItem(Declaration(Pointer(T:Type-Specifier), I:Id)) => .Bag] ...</ locals >	
-		< env >... I:Id |-> Loc:Nat ...</ env >
-		< mem >... [Loc:Nat |-> ? => .Map] ...</ mem >
-		: KSentence .
-	mb [return-clean-local-array]: rule 
-		< k > return ; ...</ k >
-		< locals >... [BagItem(Declaration(int, I:Id[N:Nat])) => .Bag] ...</ locals >	
-		< env >... I:Id |-> Loc:Nat ...</ env >
-		< mem > [M:Map Loc:Nat |-> Start:Nat => cleanMap(M:Map, Start:Nat, N:Nat)] </ mem >
-		: KSentence .
-	mb [return-value-clean-local]: rule 
-		< k > return V:Value ; ...</ k >
-		< locals >... [BagItem(Declaration(int, I:Id)) => .Bag] ...</ locals >	
-		< env >... I:Id |-> Loc:Nat ...</ env >
-		< mem >... [Loc:Nat |-> ? => .Map] ...</ mem >
-		: KSentence .
-	mb [return-value-clean-local-array]: rule 
-		< k > return V:Value ; ...</ k >
-		< locals >... [BagItem(Declaration(int, I:Id[N:Nat])) => .Bag] ...</ locals >	
-		< env >... I:Id |-> Loc:Nat ...</ env >
-		< mem > [M:Map Loc:Nat |-> Start:Nat => cleanMap(M:Map, Start:Nat, N:Nat)] </ mem >
 		: KSentence .
 		
 	op cleanMap : Map Nat Nat -> Map .
@@ -764,6 +781,14 @@ bind(("_.`,._").KHybridLabel(
 		< mem >... Src:Nat |-> 0 Dest:Nat |-> [? => 0] ...</ mem >
 	: KSentence .
 	--------------------------------------------
+	***(
+	"Id" key(.List{K}) |-> "Int" 261(.List{K}) 
+	"Id" node(.List{K}) |-> "Int" 263(.List{K}) 
+	***)
+	***(
+	"Int" 261(.List{K}) |-> "Int" 249(.List{K})
+	"Int" 263(.List{K}) |-> "Int" 196(.List{K}) 
+	***)
 	mb [strcmp-is-value]: rule
 		< k > [strcmp => builtin(strcmp)] ...</ k >
 	: KSentence .
@@ -773,9 +798,9 @@ bind(("_.`,._").KHybridLabel(
 		< k > [Apply(builtin(strcmp), (Loc1:Nat .,. Loc2:Nat)) => strcmp-aux(Loc1:Nat, Loc2:Nat)] ...</ k >
 	: KSentence .
 	
-	mb [strcmp-same-addy]: rule
-		< k > [strcmp-aux(Loc:Nat, Loc:Nat) => 0] ...</ k >
-		: KSentence .
+	--- mb [strcmp-same-addy]: rule
+		--- < k > [strcmp-aux(Loc:Nat, Loc:Nat) => 0] ...</ k >
+		--- : KSentence .
 	mb [strcmp-same]: rule
 		< k > [strcmp-aux(Loc1:Nat, Loc2:Nat) => strcmp-aux(sNat(Loc1:Nat), sNat(Loc2:Nat))] ...</ k >
 		< mem >... Loc1:Nat |-> N:Nat Loc2:Nat |-> N:Nat ...</ mem >
@@ -818,6 +843,10 @@ bind(("_.`,._").KHybridLabel(
 		< k > [printf-aux(Len:Nat, Loc:Nat, L:List{Expression}) => Len:Nat] ...</ k >
 		< mem >... Loc:Nat |-> 0 ...</ mem >
 	: KSentence .
+	mb [printf-null]: rule
+		< k > [printf-aux(0, 0, .List{Expression}) => 6] ...</ k >
+		< output > [S:String => S:String +String "(null)"] </ output >
+	: KSentence .
 	
 	mb [printf-%]: rule
 		< k > [printf-aux(Len:Nat, Loc:Nat, L:List{Expression}) => printf-%(Len:Nat, sNat(Loc:Nat), L:List{Expression})] ...</ k >
@@ -837,6 +866,7 @@ bind(("_.`,._").KHybridLabel(
 		< mem >... Loc:Nat |-> N:Nat ...</ mem >
 		if N:Nat ==Bool asciiString("s") 
 	: KSentence .
+
 	mb [printf-%s-done]: rule
 		< k > [Len':Nat ~> printf-aux(Len:Nat, Loc:Nat, L:List{Expression}) => 
 			printf-aux(Len:Nat +Nat Len':Nat, Loc:Nat, L:List{Expression})] ...</ k >

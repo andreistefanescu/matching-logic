@@ -125,7 +125,12 @@ HASHTBL *hashtbl_create(hash_size size, hash_size (*hashfunc)(const char *))
 
 	if(hashfunc) hashtbl->hashfunc=hashfunc;
 	else hashtbl->hashfunc=def_hashfunc;
-
+	
+	for (int i = 0; i < 16; i++){
+		struct hashnode_s* entry = hashtbl->nodes[i];
+		printf("%d: %s\n", i, entry);
+	}
+	
 	return hashtbl;
 }
 
@@ -154,8 +159,7 @@ int hashtbl_insert(HASHTBL *hashtbl, const char *key, void *data)
 	struct hashnode_s *node;
 	hash_size hash=hashtbl->hashfunc(key)%hashtbl->size;
 
-
-//	fprintf(stderr, "hashtbl_insert() key=%s, hash=%d, data=%s\n", key, hash, (char*)data);
+	printf("hashtbl_insert() key=%s, hash=%d, data=%s\n", key, hash, (char*)data);
 
 	node=hashtbl->nodes[hash];
 	while(node) {
@@ -208,11 +212,22 @@ void *hashtbl_get(HASHTBL *hashtbl, const char *key)
 	struct hashnode_s *node;
 	hash_size hash=hashtbl->hashfunc(key)%hashtbl->size;
 
-//	fprintf(stderr, "hashtbl_get() key=%s, hash=%d\n", key, hash);
+	printf("hashtbl_get() key=%s, hash=%d\n", key, hash);
 
+	for (int i = 0; i < 16; i++){
+		struct hashnode_s* entry = hashtbl->nodes[i];
+		if (entry == NULL){
+			printf("%d: %s\n", i, entry);
+		} else {
+			printf("%d: %s -> %s\n", i, entry->key, entry->data);
+		}
+	}
+	
 	node=hashtbl->nodes[hash];
 	while(node) {
-		if(!strcmp(node->key, key)) return node->data;
+		if(!strcmp(node->key, key)) {
+			return node->data;
+		}
 		node=node->next;
 	}
 
@@ -240,7 +255,7 @@ int hashtbl_resize(HASHTBL *hashtbl, hash_size size)
 	}
 
 	free(hashtbl->nodes);
-	debug(0);
+
 	hashtbl->size=newtbl.size;
 	hashtbl->nodes=newtbl.nodes;
 
@@ -287,37 +302,42 @@ int main()
 	}
 
 	hashtbl_insert(hashtbl, "France", "Paris");
-	hashtbl_insert(hashtbl, "England", "London");
-	hashtbl_insert(hashtbl, "Sweden", "Stockholm");
-	hashtbl_insert(hashtbl, "Germany", "Berlin");
-	hashtbl_insert(hashtbl, "Norway", "Oslo");
-	hashtbl_insert(hashtbl, "Italy", "Rome");
-	hashtbl_insert(hashtbl, "Spain", "Madrid");
-	hashtbl_insert(hashtbl, "Estonia", "Tallinn");
-	hashtbl_insert(hashtbl, "Netherlands", "Amsterdam");
-	hashtbl_insert(hashtbl, "Ireland", "Dublin");
-
+	
 	printf("After insert:\n");
-	italy=hashtbl_get(hashtbl, "Italy");
-	printf("Italy: %s\n", italy?italy:"-");
-	spain=hashtbl_get(hashtbl, "Spain");
-	printf("Spain: %s\n", spain?spain:"-");
+	char* france=hashtbl_get(hashtbl, "France");
+	printf("France: %s\n", france?france:"-");
+	
+	// hashtbl_insert(hashtbl, "England", "London");
+	// hashtbl_insert(hashtbl, "Sweden", "Stockholm");
+	// hashtbl_insert(hashtbl, "Germany", "Berlin");
+	// hashtbl_insert(hashtbl, "Norway", "Oslo");
+	// hashtbl_insert(hashtbl, "Italy", "Rome");
+	// hashtbl_insert(hashtbl, "Spain", "Madrid");
+	// hashtbl_insert(hashtbl, "Estonia", "Tallinn");
+	// hashtbl_insert(hashtbl, "Netherlands", "Amsterdam");
+	// hashtbl_insert(hashtbl, "Ireland", "Dublin");
+
+	// printf("After insert:\n");
+	// italy=hashtbl_get(hashtbl, "Italy");
+	// printf("Italy: %s\n", italy?italy:"-");
+	// spain=hashtbl_get(hashtbl, "Spain");
+	// printf("Spain: %s\n", spain?spain:"-");
 
 
-	hashtbl_remove(hashtbl, "Spain");
+	// hashtbl_remove(hashtbl, "Spain");
 
-	printf("After remove:\n");
-	spain=hashtbl_get(hashtbl, "Spain");
-	printf("Spain: %s\n", spain?spain:"-");
+	// printf("After remove:\n");
+	// spain=hashtbl_get(hashtbl, "Spain");
+	// printf("Spain: %s\n", spain?spain:"-");
 
 
-	hashtbl_resize(hashtbl, 8);
+	// hashtbl_resize(hashtbl, 8);
 
-	printf("After resize:\n");
-	italy=hashtbl_get(hashtbl, "Italy");
-	printf("Italy: %s\n", italy?italy:"-");
+	// printf("After resize:\n");
+	// italy=hashtbl_get(hashtbl, "Italy");
+	// printf("Italy: %s\n", italy?italy:"-");
 
-	hashtbl_destroy(hashtbl);
+	// hashtbl_destroy(hashtbl);
 
 	return 0;
 }
