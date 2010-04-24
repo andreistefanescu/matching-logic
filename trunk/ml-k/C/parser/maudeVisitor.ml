@@ -87,6 +87,15 @@ class maudeVisitor = object (self) inherit nopCilVisitor
 		DoChildren
 	end
 	
+	
+	method vstmt (s: stmt) : stmt visitAction = 
+		let labelVisit = fun fi -> match fi with 
+			| Label (s, _, true) -> identifierList <- (replace "_" "u" s) :: identifierList
+			| Label (s, _, false) -> identifierList <- (replace "_" "u" s) :: identifierList	
+		in List.iter labelVisit s.labels;
+		DoChildren
+		
+	
 	(* method vattr: attribute -> attribute list visitAction  *)
 	(* method vattr (Attr (s, params)) = begin
 		identifierList <- (replace "_" "u" s) :: identifierList;

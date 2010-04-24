@@ -10,6 +10,7 @@ void exit(int status);
 void debug(int i);
 int atoi ( const char * str );
 
+
 // stdio.h
 int printf(const char *format, ...);
 int putchar ( int character );
@@ -18,4 +19,4 @@ int putchar ( int character );
 size_t strlen( char *str );
 int strcmp( const char *str1, const char *str2 );
 char *strcpy(char *restrict s1, const char *restrict s2);
-
+void * memset ( void * ptr, int value, size_t num );

@@ -66,6 +66,9 @@ try
 with
 | e -> false
 
+let noscores s = 
+	(replace "_" "u" s)
+
 let mostNeg32BitInt : int64 = (Int64.of_string "-0x80000000")
 let mostNeg64BitInt : int64 = (Int64.of_string "-0x8000000000000000")
 
@@ -102,11 +105,11 @@ let d_const () c =
         | IULongLong -> if !msvcMode then "UL" else "ULL"
         | _ -> ""
       in
-      let prefix : string = 
-        if suffix <> "" then "" 
-        else if ik = IInt then ""
-        else "(" ^ (sprint !lineLength (d_ikind () ik)) ^ ")"
-      in
+      let prefix, cast  = 
+        if suffix <> "" then "", false 
+        else if ik = IInt then "", false
+        else " Cast(" ^ (sprint !lineLength (d_ikind () ik)) ^ ",", true
+      in let rest = 
       (* Watch out here for negative integers that we should be printing as 
        * large positive ones *)
       if i < Int64.zero 
@@ -135,7 +138,7 @@ let d_const () c =
           text (prefix ^ "(-0x7FFFFFFFFFFFFFFF-1)")
         else
           text (prefix ^ suffix ^ "(" ^ (Int64.to_string i ^ ")"))
-      )
+      ) in if cast then rest ++ text ")" else rest
 
   | CStr(s) -> text ("\"" ^ escape_string s ^ "\"")
   | CWStr(s) -> 
@@ -631,8 +634,8 @@ method private pLvalPrec (contextprec: int) () lv =
 						) in let rec f (s, m) = (
 							match m with
 							| (pattern :: replacement :: ms) -> 
-								let var1 = (replace "_" "u" (newe () pattern)) in
-								let var2 = (replace "_" "u" (newe () replacement)) in
+								let var1 = noscores (newe () pattern) in
+								let var2 = noscores (newe () replacement) in
 								f (((replace var1 var2) s), ms)
 							| [] -> text ("(annotation(" ^ s ^ ") ;) ")
 						) in f (s, m)
@@ -712,6 +715,12 @@ method private pLvalPrec (contextprec: int) () lv =
       else
         (if s.labels <> [] then line else nil) 
           ++ self#pStmtKind next () s.skind)
+		  
+	method private pLabel () = function
+      Label (s, _, true) -> text (noscores s ^ " : ")
+    | Label (s, _, false) -> text (noscores s ^ " : ") (*  CIL Label  *)
+    | Case (e, _) -> text "case " ++ self#pExp () e ++ text " : "
+    | Default _ -> text "default : "		  
 	
 (*** L-VALUES ***)
   method pLval () (lv:lval) =  (* lval (base is 1st field)  *)
@@ -806,7 +815,7 @@ method private pLvalPrec (contextprec: int) () lv =
           text ("enum " ^ enum.ename ^ ";\n")
 
     | GCompTag (comp, l) -> (* This is a definition of a tag *)
-        let n = (replace "_" "u" comp.cname) in
+        let n = noscores comp.cname in
         let su, su1, su2 =
           if comp.cstruct then "struct", "str", "uct"
           else "union",  "uni", "on"
@@ -1005,7 +1014,7 @@ method private pLvalPrec (contextprec: int) () lv =
           | _ :: rest -> pickLabel rest
         in
         match pickLabel !sref.labels with
-          Some l -> text ("goto " ^ l ^ " ;")
+          Some l -> text ("goto " ^ (noscores l) ^ " ;")
         | None -> 
             ignore (error "Cannot find label for target of goto");
             text "goto __invalid_label ;"
