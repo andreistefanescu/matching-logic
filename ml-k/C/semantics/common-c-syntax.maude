@@ -10,7 +10,7 @@ mod COMMON-C-SYNTAX is
 	
 	sort Program .
 	
-	op debug : -> Statement .
+	---op debug : -> Statement .
 	op main : -> Id [ctor] .
 	op malloc : -> Id [ctor] .
 	op calloc : -> Id [ctor] .

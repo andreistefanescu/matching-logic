@@ -7,6 +7,7 @@ void *malloc(size_t size);
 void free(void *pointer);
 void *calloc(size_t nelem, size_t elsize);
 void exit(int status);
+void debug(int i);
 
 // stdio.h
 int printf(const char *format, ...);
