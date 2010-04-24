@@ -798,13 +798,13 @@ bind(("_.`,._").KHybridLabel(
 		< k > [Apply(builtin(strcmp), (Loc1:Nat .,. Loc2:Nat)) => strcmp-aux(Loc1:Nat, Loc2:Nat)] ...</ k >
 	: KSentence .
 	
-	--- mb [strcmp-same-addy]: rule
-		--- < k > [strcmp-aux(Loc:Nat, Loc:Nat) => 0] ...</ k >
-		--- : KSentence .
+	mb [strcmp-same-addy]: rule
+		< k > [strcmp-aux(Loc:Nat, Loc:Nat) => 0] ...</ k >
+		: KSentence .
 	mb [strcmp-same]: rule
 		< k > [strcmp-aux(Loc1:Nat, Loc2:Nat) => strcmp-aux(sNat(Loc1:Nat), sNat(Loc2:Nat))] ...</ k >
 		< mem >... Loc1:Nat |-> N:Nat Loc2:Nat |-> N:Nat ...</ mem >
-		if notBool(N:Nat ==Bool 0)
+		if N:Nat =/=Bool 0
 		: KSentence .
 	mb [strcmp-done]: rule
 		< k > [strcmp-aux(Loc1:Nat, Loc2:Nat) => 0] ...</ k >
@@ -813,6 +813,7 @@ bind(("_.`,._").KHybridLabel(
 	mb [strcmp-different]: rule
 		< k > [strcmp-aux(Loc1:Nat, Loc2:Nat) => if N1:Nat >Nat N2:Nat then 1 else -1 fi] ...</ k >
 		< mem >... Loc1:Nat |-> N1:Nat Loc2:Nat |-> N2:Nat ...</ mem >
+		if N1:Nat =/=Bool N2:Nat
 		: KSentence .
 	--------------------------------------------
 	mb [calloc]: rule
