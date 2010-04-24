@@ -50,6 +50,7 @@ mod COMMON-C-SEMANTICS is
 	--- we're ignoring types for now
 	mb rule [U(I:Int) => I:Int] : KSentence [metadata "structural"] .
 	mb rule [unsigned-int => int] : KSentence [metadata "structural"] .
+	mb rule [unsigned-char => int] : KSentence [metadata "structural"] .
 	
 	--- dissolve blocks
 	mb rule < k > [Block(B:TogetherList) => B:TogetherList] ...</ k > : KSentence .
@@ -136,6 +137,11 @@ mod COMMON-C-SEMANTICS is
 		
 	mb [global-func-pointer-declaration-init]: rule
 		< k > [Declaration(T:Type-Specifier, Direct-Function-Declarator(Pointer(I:Id), PTL:Parameter-Type-List)) = E:Expression => Global(Declaration(T:Type-Specifier, Direct-Function-Declarator(Pointer(I:Id), PTL:Parameter-Type-List))) ~> Deref(&(I:Id)) := E:Expression ; ] ...</ k >
+		: KSentence .
+		
+	mb [declaration-using-typedef]: rule
+		< k > [Declaration(T:Type-Specifier, I:Id) => Declaration(T':Type-Specifier, I:Id)] ...</ k >
+		< typedefs >... T:Type-Specifier |-> T':Type-Specifier ...</ typedefs >
 		: KSentence .
 		
 	
@@ -294,8 +300,20 @@ mod COMMON-C-SEMANTICS is
 		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
 		: KSentence .
 		
-
---- bind(("_`,List`{Expression`}_").KHybridLabel("Int" 2(.List{K})),, ("Parameter-Type-List").KProperLabel(("Parameter-Declaration").KProperLabel(("int").KProperLabel(.List{K}),,("n").KProperLabel(.List{
+	mb [bind-one-typedef]: rule 
+		< k > [bind(L:List{Expression},, 
+				Parameter-Type-List(Parameter-Declaration(T:Type-Specifier, DFD:Direct-Declarator) ,., P:List{Parameter})) =>
+			bind(L:List{Expression},, 
+				Parameter-Type-List(Parameter-Declaration(T':Type-Specifier, DFD:Direct-Declarator) ,., P:List{Parameter}))]
+				...</ k > 
+		< typedefs >... T:Type-Specifier |-> T':Type-Specifier ...</ typedefs >
+		: KSentence .
+		
+***(
+bind(("_.`,._").KHybridLabel(
+	"Int" 16(.List{K}),,"Int" 0(.List{K})),,
+	("Parameter-Type-List").KProperLabel(("_`,.`,_").KHybridLabel(("Parameter-Declaration").KProperLabel(("hashusize").KProperLabel(.List{K}),, "Id" size(.List{K})),, ("Parameter-Declaration").KProperLabel(("hashusize").KProperLabel(.List{K}),, ("Direct-Function-Declarator").KProperLabel(("Pointer").KProperLabel("Id" hashfunc(.List{K})),, ("Parameter-Type-List").KProperLabel((    "_`,.`,_").KHybridLabel(("Parameter-Declaration").KProperLabel(("Pointer").KProperLabel(("char").KProperLabel(.List{K}))))))))))
+***)
 		
 	mb [assign]: rule
 		< k > [Deref(Loc:Nat) := V:Value => V:Value] ...</ k >
@@ -323,22 +341,42 @@ mod COMMON-C-SEMANTICS is
 		< k > [getOffset(E1:Expression, X:Id) => getOffset(T:Type, X:Id)] ...</ k >
 		< types >... E1:Expression |-> T:Type ...</ types >
 		: KSentence .
-	mb [getOffset-typedef]: rule
+	mb [getOffset-typedef-pointer]: rule
 		< k > [getOffset(Pointer(T:Type-Specifier), X:Id) => getOffset(T':Type, X:Id)] ...</ k >
 		< typedefs >... T:Type-Specifier |-> T':Type ...</ typedefs >
 		: KSentence .
-	--- mb [getOffset-struct]: rule
-		--- < k > [getOffset(struct(X:Id), X':Id) => calcStructSize(Fields1:SeqList)] ...</ k >
-		--- < typedefs >... X:Id |-> struct(X:Id, (Fields1:SeqList Field(T:TogetherList, X':Id))) ...</ typedefs >
-		--- : KSentence .
-	--- mb [getOffset-struct]: rule  ---- doesn't work
-		--- < k > [getOffset(struct(X:Id), X':Id) => calcStructSize(Fields1:SeqList)] ...</ k >
-		--- < typedefs >... X:Id |-> struct(X:Id, (Fields1:SeqList Field(T:TogetherList, X':Id) Fields2:SeqList)) ...</ typedefs >
-		--- : KSentence .
-	mb [getOffset-struct]: rule  ---- works
+	mb [getOffset-struct-pointer]: rule
+		< k > [getOffset(Pointer(struct(X:Id)), X':Id) => getOffset(struct(X:Id), X':Id)] ...</ k >
+		: KSentence .
+	mb [getOffset-struct-implied]: rule
+		< k > [getOffset(X:Id, X':Id) => getOffset(struct(X:Id), X':Id)] ...</ k >
+		< typedefs >... X:Id |-> struct(X:Id, ?) ...</ typedefs >
+		: KSentence .
+	mb [getOffset-struct]: rule
 		< k > [getOffset(struct(X:Id), X':Id) => calcStructSize(Fields1:SeqList)] ...</ k >
 		< typedefs >... X:Id |-> 'struct(X:Id,, (Fields1:SeqList ~> Field(T:TogetherList, X':Id) ~>  Fields2:SeqList)) ...</ typedefs >
 		: KSentence .
+	mb [getOffset-func-pointer-struct]: rule
+		< k > [getOffset(struct(X:Id), X':Id) => calcStructSize(Fields1:SeqList)] ...</ k >
+		< typedefs >... X:Id |-> 'struct(X:Id,, (Fields1:SeqList ~> Field(T:TogetherList, Direct-Function-Declarator(Pointer(X':Id), ?)) ~>  Fields2:SeqList)) ...</ typedefs >
+		: KSentence .
+		
+	***(
+	("getOffset").KProperLabel(
+		("struct_").KProperLabel("Id" hashtbl(.List{K})),,
+		"Id" hashfunc(.List{K})
+	)
+	
+	"Id" hashtbl(.List{K}) |->
+    ("struct").KProperLabel("Id" hashtbl(.List{K}),, 
+	("Field").KProperLabel(("hashusize").KProperLabel(.List{K}),,"Id" size(.List{K})) ~> 
+	("Field").KProperLabel(("Pointer").KProperLabel(
+		("Pointer").KProperLabel(("struct_").KProperLabel("Id" hashnodeus(.List{K})))),,
+		"Id" nodes(.List{K})) ~> 
+	("Field").KProperLabel(("hashusize").KProperLabel(.List{K}),,
+("Direct-Function-Declarator").KProperLabel(("Pointer").KProperLabel("Id" hashfunc(.List{K})),,
+("Parameter-Type-List").KProperLabel(("_`,.`,_").KHybridLabel(("Parameter-Declaration").KProperLabel(("Pointer").KProperLabel(("char").KProperLabel(.List{K}))))))))  
+	***) 	
 		
 	--- mb [getOffset-struct]: rule  ---- works
 		--- < k > [getOffset(struct(X:Id), X':Id) => calcStructSize(Fields1:SeqList)] ...</ k >
@@ -395,6 +433,10 @@ mod COMMON-C-SEMANTICS is
 		< k > [Cast(Pointer(T:Type-Specifier, T':Type-Specifier), I:Int) => I:Int] ...</ k >
 		---< env >... X:Id |-> Loc:Nat ...</ env >
 		---< mem >... Loc:Nat |-> I:Int ...</ mem >
+		: KSentence .
+	mb [cast-typedef]: rule
+		< k > [Cast(T:Type-Specifier, I:Int) => Cast(T':Type-Specifier, I:Int)] ...</ k >
+		< typedefs >... T:Type-Specifier |-> T':Type-Specifier ...</ typedefs >
 		: KSentence .
 		
 	
@@ -545,6 +587,7 @@ mod COMMON-C-SEMANTICS is
 		< locals > [.Bag => L:Bag] </ locals >
 		---< sizes > [S':Map => S:Map] </ sizes >
 		< loopStack > [LS':List => LS:List] </ loopStack >
+		< types > [? => T:Map] </ types >
 		< callStack >
 			[List(
 				< stackFrame >...
@@ -554,6 +597,7 @@ mod COMMON-C-SEMANTICS is
 					< env > E:Map </ env >
 					---< sizes > S:Map </ sizes >
 					< loopStack > LS:List </ loopStack >
+					< types > T:Map </ types >
 				</ stackFrame >
 			) => .List]
 		...</ callStack >
@@ -629,6 +673,87 @@ mod COMMON-C-SEMANTICS is
 	mb [malloc]: rule
 		< k > [Apply(builtin(malloc), N:Nat) => Loc:Nat] ...</ k >
 		< mem >... [.Map => Loc:Nat to (Loc:Nat +Nat N:Nat) |-> unknown] ...</ mem >
+		< malloced >... [.Map => Loc:Nat |-> N:Nat] ...</ malloced >
+		< nextLoc > [Loc:Nat => Loc:Nat +Nat N:Nat] </ nextLoc >
+	: KSentence .
+	
+	mb [calloc-is-value]: rule
+		< k > [calloc => builtin(calloc)] ...</ k >
+	: KSentence .
+	
+	--- ignoring size for now
+	--- fixme
+	mb [calloc]: rule
+		< k > [Apply(builtin(calloc), (N:Nat .,. Size:Nat)) => Loc:Nat] ...</ k >
+		< mem >... [.Map => Loc:Nat to (Loc:Nat +Nat N:Nat) |-> 0] ...</ mem >
+		< malloced >... [.Map => Loc:Nat |-> N:Nat] ...</ malloced >
+		< nextLoc > [Loc:Nat => Loc:Nat +Nat N:Nat] </ nextLoc >
+	: KSentence .
+	--------------------------------------------
+	mb [strlen-is-value]: rule
+		< k > [strlen => builtin(strlen)] ...</ k >
+	: KSentence .
+	
+	op strlen-aux : Nat Nat -> K .
+	mb [strlen-start]: rule
+		< k > [Apply(builtin(strlen), Loc:Nat) => strlen-aux(0, Loc:Nat)] ...</ k >
+	: KSentence .
+	
+	mb [strlen-nz]: rule
+		< k > [strlen-aux(Len:Nat, Loc:Nat) => strlen-aux(sNat(Len:Nat), sNat(Loc:Nat))] ...</ k >
+		< mem >... Loc:Nat |-> N:Nat ...</ mem >
+		if notBool(N:Nat ==Bool 0)
+	: KSentence .
+	mb [strlen-z]: rule
+		< k > [strlen-aux(Len:Nat, Loc:Nat) => Len:Nat] ...</ k >
+		< mem >... Loc:Nat |-> 0 ...</ mem >
+	: KSentence .
+	--------------------------------------------
+	mb [strcpy-is-value]: rule
+		< k > [strcpy => builtin(strcpy)] ...</ k >
+	: KSentence .
+	
+	op strcpy-aux : Nat Nat Nat -> K .
+	mb [strcpy-start]: rule
+		< k > [Apply(builtin(strcpy), (Dest:Nat .,. Src:Nat)) => strcpy-aux(Src:Nat, Dest:Nat, Dest:Nat)] ...</ k >
+	: KSentence .
+	
+	mb [strcpy-nz]: rule
+		< k > [strcpy-aux(Src:Nat, Dest:Nat, Orig:Nat) => strcpy-aux(sNat(Src:Nat), sNat(Dest:Nat), Orig:Nat)] ...</ k >
+		< mem >... Src:Nat |-> N:Nat Dest:Nat |-> [? => N:Nat] ...</ mem >
+		if notBool(N:Nat ==Bool 0)
+	: KSentence .
+	mb [strcpy-z]: rule
+		< k > [strcpy-aux(Src:Nat, Dest:Nat, Orig:Nat) => Orig:Nat] ...</ k >
+		< mem >... Src:Nat |-> 0 Dest:Nat |-> [? => 0] ...</ mem >
+	: KSentence .
+	--------------------------------------------
+	mb [strcmp-is-value]: rule
+		< k > [strcmp => builtin(strcmp)] ...</ k >
+	: KSentence .
+	
+	op strcmp-aux : Nat Nat -> K .
+	mb [strcmp-start]: rule
+		< k > [Apply(builtin(strcmp), (Loc1:Nat .,. Loc2:Nat)) => strcmp-aux(Loc1:Nat, Loc2:Nat)] ...</ k >
+	: KSentence .
+	
+	mb [strcmp-same]: rule
+		< k > [strcmp-aux(Loc1:Nat, Loc2:Nat) => strcmp-aux(sNat(Loc1:Nat), sNat(Loc2:Nat))] ...</ k >
+		< mem >... Loc1:Nat |-> N:Nat Loc2:Nat |-> N:Nat ...</ mem >
+		if notBool(N:Nat ==Bool 0)
+	: KSentence .
+	mb [strcmp-done]: rule
+		< k > [strcmp-aux(Loc1:Nat, Loc2:Nat) => 0] ...</ k >
+		< mem >... Loc1:Nat |-> 0 Loc2:Nat |-> 0 ...</ mem >
+	: KSentence .
+	mb [strcmp-different]: rule
+		< k > [strcmp-aux(Loc1:Nat, Loc2:Nat) => if N1:Nat >Nat N2:Nat then 1 else -1 fi] ...</ k >
+		< mem >... Loc1:Nat |-> N1:Nat Loc2:Nat |-> N2:Nat ...</ mem >
+	: KSentence .
+	--------------------------------------------
+	mb [calloc]: rule
+		< k > [Apply(builtin(calloc), (N:Nat .,. Size:Nat)) => Loc:Nat] ...</ k >
+		< mem >... [.Map => Loc:Nat to (Loc:Nat +Nat N:Nat) |-> 0] ...</ mem >
 		< malloced >... [.Map => Loc:Nat |-> N:Nat] ...</ malloced >
 		< nextLoc > [Loc:Nat => Loc:Nat +Nat N:Nat] </ nextLoc >
 	: KSentence .
