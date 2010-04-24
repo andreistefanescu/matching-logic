@@ -8,9 +8,11 @@ void free(void *pointer);
 void *calloc(size_t nelem, size_t elsize);
 void exit(int status);
 void debug(int i);
+int atoi ( const char * str );
 
 // stdio.h
 int printf(const char *format, ...);
+int putchar ( int character );
 
 // string.h
 size_t strlen( char *str );
