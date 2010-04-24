@@ -23,8 +23,8 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 // Retrieved from: http://en.literateprograms.org/Hash_table_(C)?oldid=16632
-void main(void){}
-/*
+//void main(void){}
+
 
 #ifndef HASHTBL_H_INCLUDE_GUARD
 #define HASHTBL_H_INCLUDE_GUARD
@@ -240,6 +240,7 @@ int hashtbl_resize(HASHTBL *hashtbl, hash_size size)
 	}
 
 	free(hashtbl->nodes);
+	debug(0);
 	hashtbl->size=newtbl.size;
 	hashtbl->nodes=newtbl.nodes;
 
@@ -321,4 +322,3 @@ int main()
 	return 0;
 }
 
-*/

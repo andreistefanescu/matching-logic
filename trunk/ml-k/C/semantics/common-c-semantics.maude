@@ -1,4 +1,5 @@
 --- clearly need to distinguish between parts of my config, i.e., not be flat
+--- doesn't handle call with no arguments
 
 mod COMMON-C-SEMANTICS is
 	including C-SYNTAX .
@@ -61,6 +62,7 @@ mod COMMON-C-SEMANTICS is
 	--- turn variables into references when appropriate
 	mb [make-assign-ref]: rule < k > [I:Id := E:Expression => Deref(&(I:Id)) := E:Expression] ...</ k > : KSentence .
 	mb [make-assign-arrow-ref]: rule < k > [(E1:Expression -> X:Id) := E2:Expression => Deref(&(E1:Expression -> X:Id)) := E2:Expression] ...</ k > : KSentence .
+	mb [make-assign-arrow-ref]: rule < k > [(E1:Expression . X:Id) := E2:Expression => Deref(&((& E1:Expression) -> X:Id)) := E2:Expression] ...</ k > : KSentence .
 	mb [make-call-ref]: rule < k > [Apply(I:Id, L:List{Expression}) => Apply(Deref(&(I:Id)), L:List{Expression})] ...</ k > : KSentence .
 	mb [make-postinc-ref]: rule < k > [I:Id ++ => Deref(&(I:Id)) ++] ...</ k > : KSentence .
 	mb [make-postdec-ref]: rule < k > [I:Id -- => Deref(&(I:Id)) --] ...</ k > : KSentence .
@@ -172,6 +174,20 @@ mod COMMON-C-SEMANTICS is
 		< types >... [.Map => X:Id |-> int[I:Int]] ...</ types >
 		---< sizes >... [.Map => X:Id |-> I:Int] ...</ sizes > 
 		if I:Int >=Int 0
+		: KSentence .
+	mb [local-struct-declaration-start]: rule
+		< k > [Declaration(struct(X:Id), X':Id) => calcStructSize(DS:TogetherList) ~> Declaration(struct(X:Id), X':Id)] ...</ k >
+		< typedefs >... X:Id |-> struct(X:Id, DS:TogetherList) ...</ typedefs >
+		: KSentence .
+
+	mb [local-struct-declaration]: rule
+		< k > [Len:Nat ~> Declaration(struct(X:Id), X':Id) => .K] ...</ k >
+		< env >... [.Map => X':Id |-> Loc:Nat] ...</ env >
+		< mem >... [.Map => Loc:Nat |-> sNat(Loc:Nat) sNat(Loc:Nat) to (sNat(Loc:Nat) +Nat Len:Nat) |-> unknown] ...</ mem >
+		< locals >... [.Bag => Bag(Declaration(int, X':Id[Len:Nat]))] ...</ locals >
+		< nextLoc > [Loc:Nat => (sNat(Loc:Nat) +Nat Len:Nat)] </ nextLoc >
+		< types >... [.Map => X':Id |-> struct(X:Id)] ...</ types >
+		< typedefs >... X:Id |-> struct(X:Id, DS:TogetherList) ...</ typedefs >
 		: KSentence .
 	mb [struct-declaration]: rule 
 		< k > [Global(struct(X:Id, DS:TogetherList) ;) => .K] ...</ k >
@@ -336,6 +352,9 @@ bind(("_.`,._").KHybridLabel(
 	mb [arrow]: rule
 		< k > [E1:Expression -> X:Id => Deref(E1:Expression + getOffset(E1:Expression, X:Id))] ...</ k >
 		: KSentence .
+	mb [dot]: rule
+		< k > [E1:Expression . X:Id => (& E1:Expression) -> X:Id] ...</ k >
+		: KSentence .
 		
 	mb [getOffset-exp-to-type]: rule
 		< k > [getOffset(E1:Expression, X:Id) => getOffset(T:Type, X:Id)] ...</ k >
@@ -344,6 +363,9 @@ bind(("_.`,._").KHybridLabel(
 	mb [getOffset-typedef-pointer]: rule
 		< k > [getOffset(Pointer(T:Type-Specifier), X:Id) => getOffset(T':Type, X:Id)] ...</ k >
 		< typedefs >... T:Type-Specifier |-> T':Type ...</ typedefs >
+		: KSentence .
+	mb [getOffset-address]: rule
+		< k > [getOffset(&(E:Expression), X:Id) => getOffset(E:Expression, X:Id)] ...</ k >
 		: KSentence .
 	mb [getOffset-struct-pointer]: rule
 		< k > [getOffset(Pointer(struct(X:Id)), X':Id) => getOffset(struct(X:Id), X':Id)] ...</ k >
@@ -562,7 +584,6 @@ bind(("_.`,._").KHybridLabel(
 		< env > [? => E:Map] </ env >
 		< parameters > [.Bag => P:Bag] </ parameters >
 		< locals > [.Bag => L:Bag] </ locals >
-		---< sizes > [S':Map => S:Map] </ sizes >
 		< loopStack > [? => LS:List] </ loopStack >
 		< types > [? => T:Map] </ types >
 		< callStack >
@@ -572,7 +593,6 @@ bind(("_.`,._").KHybridLabel(
 					< parameters > P:Bag </ parameters >
 					< locals > L:Bag </ locals >
 					< env > E:Map </ env >
-					---< sizes > S:Map </ sizes >
 					< loopStack > LS:List </ loopStack >
 					< types > T:Map </ types >
 				</ stackFrame >
@@ -585,7 +605,6 @@ bind(("_.`,._").KHybridLabel(
 		< env > [? => E:Map] </ env >
 		< parameters > [.Bag => P:Bag] </ parameters >
 		< locals > [.Bag => L:Bag] </ locals >
-		---< sizes > [S':Map => S:Map] </ sizes >
 		< loopStack > [LS':List => LS:List] </ loopStack >
 		< types > [? => T:Map] </ types >
 		< callStack >
@@ -595,7 +614,6 @@ bind(("_.`,._").KHybridLabel(
 					< parameters > P:Bag </ parameters >
 					< locals > L:Bag </ locals >
 					< env > E:Map </ env >
-					---< sizes > S:Map </ sizes >
 					< loopStack > LS:List </ loopStack >
 					< types > T:Map </ types >
 				</ stackFrame >
@@ -638,7 +656,7 @@ bind(("_.`,._").KHybridLabel(
 		< typedefs >... X:Id |-> struct(X:Id, Fields:SeqList) ...</ typedefs >
 	: KSentence .
 
-
+	
 	op calcStructSize : SeqList -> K .
 	mb [calcStructSize-int]: rule
 		< k > ['calcStructSize(Field(TD:Typedef-Name, D:Declarator) ~> DS:SeqList) 
@@ -649,8 +667,8 @@ bind(("_.`,._").KHybridLabel(
 		: KSentence .		
 	
 		
-	--- op KtoNat : K -> Nat .
-	--- eq KtoNat(N:Nat) = N:Nat .
+	op KToNat : K -> Nat .
+	eq KToNat(N:Nat) = N:Nat .
 	--- --- TODO 
 	--- mb [calcStructSize-int]: rule
 		--- ['calcStructSize(Field(int, D:Declarator) ~> DS:SeqList) 
@@ -675,6 +693,24 @@ bind(("_.`,._").KHybridLabel(
 		< mem >... [.Map => Loc:Nat to (Loc:Nat +Nat N:Nat) |-> unknown] ...</ mem >
 		< malloced >... [.Map => Loc:Nat |-> N:Nat] ...</ malloced >
 		< nextLoc > [Loc:Nat => Loc:Nat +Nat N:Nat] </ nextLoc >
+	: KSentence .
+	
+	mb [free-is-value]: rule
+		< k > [free => builtin(free)] ...</ k >
+	: KSentence .
+	--- fixme
+	--- mb [fake-free]: rule
+		--- < k > [Apply(builtin(free), Loc:Nat) => skipval] ...</ k >
+		--- < malloced >... [Loc:Nat |-> N:Nat => .Map] ...</ malloced >
+	--- : KSentence .
+	mb [free]: rule
+		< k > [Apply(builtin(free), Loc:Nat) => Apply(builtin(free), sNat(Loc:Nat))] ...</ k >
+		< mem >...  [Loc:Nat |-> ? => .Map] ...</ mem >
+		< malloced >... [Loc:Nat |-> sNat(N:Nat) => sNat(Loc:Nat) |-> N:Nat] ...</ malloced >
+	: KSentence .
+	mb [free-done]: rule
+		< k > [Apply(builtin(free), Loc:Nat) => skipval] ...</ k >
+		< malloced >... [Loc:Nat |-> 0 => .Map] ...</ malloced >
 	: KSentence .
 	
 	mb [calloc-is-value]: rule
@@ -737,19 +773,22 @@ bind(("_.`,._").KHybridLabel(
 		< k > [Apply(builtin(strcmp), (Loc1:Nat .,. Loc2:Nat)) => strcmp-aux(Loc1:Nat, Loc2:Nat)] ...</ k >
 	: KSentence .
 	
+	mb [strcmp-same-addy]: rule
+		< k > [strcmp-aux(Loc:Nat, Loc:Nat) => 0] ...</ k >
+		: KSentence .
 	mb [strcmp-same]: rule
 		< k > [strcmp-aux(Loc1:Nat, Loc2:Nat) => strcmp-aux(sNat(Loc1:Nat), sNat(Loc2:Nat))] ...</ k >
 		< mem >... Loc1:Nat |-> N:Nat Loc2:Nat |-> N:Nat ...</ mem >
 		if notBool(N:Nat ==Bool 0)
-	: KSentence .
+		: KSentence .
 	mb [strcmp-done]: rule
 		< k > [strcmp-aux(Loc1:Nat, Loc2:Nat) => 0] ...</ k >
 		< mem >... Loc1:Nat |-> 0 Loc2:Nat |-> 0 ...</ mem >
-	: KSentence .
+		: KSentence .
 	mb [strcmp-different]: rule
 		< k > [strcmp-aux(Loc1:Nat, Loc2:Nat) => if N1:Nat >Nat N2:Nat then 1 else -1 fi] ...</ k >
 		< mem >... Loc1:Nat |-> N1:Nat Loc2:Nat |-> N2:Nat ...</ mem >
-	: KSentence .
+		: KSentence .
 	--------------------------------------------
 	mb [calloc]: rule
 		< k > [Apply(builtin(calloc), (N:Nat .,. Size:Nat)) => Loc:Nat] ...</ k >
