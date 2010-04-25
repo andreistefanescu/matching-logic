@@ -54,6 +54,9 @@ mod COMMON-C-SEMANTICS is
 	mb rule [unsigned-char => int] : KSentence [metadata "structural"] .
 	mb rule [char => int] : KSentence [metadata "structural"] .
 	
+	--- skip labels
+	mb rule < k > [L:Id : S:Statement => S:Statement] ...</ k > : KSentence .
+	
 	--- dissolve blocks
 	mb rule < k > [Block(B:TogetherList) => B:TogetherList] ...</ k > : KSentence .
 
@@ -736,7 +739,7 @@ bind(("_.`,._").KHybridLabel(
 		< k > [Apply(builtin(free), Loc:Nat) => skipval] ...</ k >
 		< malloced >... [Loc:Nat |-> 0 => .Map] ...</ malloced >
 	: KSentence .
-	
+	--------------------------------------------
 	mb [calloc-is-value]: rule
 		< k > [calloc => builtin(calloc)] ...</ k >
 	: KSentence .
@@ -748,6 +751,15 @@ bind(("_.`,._").KHybridLabel(
 		< mem >... [.Map => Loc:Nat to (Loc:Nat +Nat N:Nat) |-> 0] ...</ mem >
 		< malloced >... [.Map => Loc:Nat |-> N:Nat] ...</ malloced >
 		< nextLoc > [Loc:Nat => Loc:Nat +Nat N:Nat] </ nextLoc >
+	: KSentence .
+	--------------------------------------------
+	mb [memset-is-value]: rule
+		< k > [memset => builtin(memset)] ...</ k >
+	: KSentence .
+	
+	mb [memset]: rule
+		< k > [Apply(builtin(memset), (Loc:Nat .,. N:Nat .,. Len:Nat)) => Loc:Nat] ...</ k >
+		< mem > [M:Map => M:Map[N:Nat / Loc:Nat to (Loc:Nat +Nat Len:Nat)]] </ mem >
 	: KSentence .
 	--------------------------------------------
 	mb [strlen-is-value]: rule
@@ -822,13 +834,6 @@ bind(("_.`,._").KHybridLabel(
 		< mem >... Loc1:Nat |-> N1:Nat Loc2:Nat |-> N2:Nat ...</ mem >
 		if N1:Nat =/=Bool N2:Nat
 		: KSentence .
-	--------------------------------------------
-	mb [calloc]: rule
-		< k > [Apply(builtin(calloc), (N:Nat .,. Size:Nat)) => Loc:Nat] ...</ k >
-		< mem >... [.Map => Loc:Nat to (Loc:Nat +Nat N:Nat) |-> 0] ...</ mem >
-		< malloced >... [.Map => Loc:Nat |-> N:Nat] ...</ malloced >
-		< nextLoc > [Loc:Nat => Loc:Nat +Nat N:Nat] </ nextLoc >
-	: KSentence .
 	--------------------------------------------
 	mb [putchar-is-value]: rule
 		< k > [putchar => builtin(putchar)] ...</ k >
