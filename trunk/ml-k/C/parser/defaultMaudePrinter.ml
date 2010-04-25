@@ -607,8 +607,8 @@ method private pLvalPrec (contextprec: int) () lv =
           ++ text ", (" ++ 
           (align
              (* Now the arguments *)
-             ++ (docList ~sep:(text " .,. " ++ break) 
-                   (self#pExp ()) () args)
+			 
+             ++ if (List.length args = 0) then text ".List{Expression}" else (docList ~sep:(text " .,. " ++ break) (self#pExp ()) () args)
              ++ unalign)
 		++ text ")"
         ++ text (")" ^ (self#getPrintInstrTerminator ())))
@@ -710,7 +710,7 @@ method private pLvalPrec (contextprec: int) () lv =
       (* print the statement itself. If the labels are non-empty and the
       * statement is empty, print a semicolon  *)
       ++ 
-      (if s.skind = Instr [] && s.labels <> [] then
+      paren(if s.skind = Instr [] && s.labels <> [] then
         text ";"
       else
         (if s.labels <> [] then line else nil) 

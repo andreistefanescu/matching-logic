@@ -19,14 +19,16 @@ mod COMMON-C-SYNTAX is
 	op strcmp : -> Id [ctor] .
 	op putchar : -> Id [ctor] .
 	op memset : -> Id [ctor] .
+	op srand : -> Id [ctor] .
+	op rand : -> Id [ctor] .
 	op free : -> Id [ctor] .
 	op printf : -> Id [ctor] .
 	
 	--- ---- A.1.5 Constants
 	--- --- 6.4.4
 	sort Constant .
-	--- subsort Integer-Constant Floating-Constant Enumeration-Constant Character-Constant < Constant .
-	subsort Integer-Constant < Constant .
+	--- subsort Integer-Constant Enumeration-Constant Character-Constant < Constant .
+	subsort Integer-Constant Floating-Constant < Constant .
 	
 	--- --- 6.4.4.1
 	sort Integer-Constant .
@@ -50,7 +52,8 @@ mod COMMON-C-SYNTAX is
 	--- --- TODO
 	
 	--- --- 6.4.4.2
-	--- sort Floating-Constant .
+	sort Floating-Constant .
+	subsort Float < Floating-Constant .
 	--- subsort Decimal-Floating-Constant Hexadecimal-Floating-Constant < Floating-Constant .
 	
 	--- sort Decimal-Floating-Constant .
@@ -437,7 +440,8 @@ mod COMMON-C-SYNTAX is
 	
 	--- --- 6.8.1
 	sort Labeled-Statement .
-	op _:_ : Id Statement -> Labeled-Statement .
+	---op _:_ : Id Statement -> Labeled-Statement .
+	op _:_ : Id SeqList -> Labeled-Statement .
 	--- op case_:_ : Constant-Expression Statement -> Labeled-Statement .
 	--- op default`:_ : Statement -> Labeled-Statement .
 	
