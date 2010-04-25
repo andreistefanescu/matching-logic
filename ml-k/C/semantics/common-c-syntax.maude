@@ -18,6 +18,7 @@ mod COMMON-C-SYNTAX is
 	op strcpy : -> Id [ctor] .
 	op strcmp : -> Id [ctor] .
 	op putchar : -> Id [ctor] .
+	op memset : -> Id [ctor] .
 	op free : -> Id [ctor] .
 	op printf : -> Id [ctor] .
 	
