@@ -7,7 +7,7 @@ ALL_PROGRAMS = $(basename $(ALL_FILES))
 CIL_FLAGS = --noWrap --decil --noPrintLn --warnall --strictcheck --nokeepunused 
 PEDANTRY_OPTIONS=-Wall -Wextra -Werror -Wmissing-prototypes -pedantic -x c -std=c99
 
-.SECONDARY:
+#.SECONDARY:
 
 .PHONY: all clean benchmark
 
