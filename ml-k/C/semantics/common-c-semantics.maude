@@ -713,6 +713,7 @@ bind(("_.`,._").KHybridLabel(
 ---- C standard library
 	---- op builtin : Id -> KResult . --- i want this :(
 	op builtin : Id -> Value .
+	--------------------------------------------
 	mb [malloc-is-value]: rule
 		< k > [malloc => builtin(malloc)] ...</ k >
 	: KSentence .
@@ -723,7 +724,15 @@ bind(("_.`,._").KHybridLabel(
 		< malloced >... [.Map => Loc:Nat |-> N:Nat] ...</ malloced >
 		< nextLoc > [Loc:Nat => Loc:Nat +Nat N:Nat] </ nextLoc >
 	: KSentence .
-	
+	--------------------------------------------
+	mb [rand-is-value]: rule
+		< k > [rand => builtin(rand)] ...</ k >
+	: KSentence .
+	mb [rand]: rule
+		< k > [Apply(builtin(rand), .List{Expression}) => randomRandom(Loc:Nat)] ...</ k >
+		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
+	: KSentence .
+	--------------------------------------------
 	mb [free-is-value]: rule
 		< k > [free => builtin(free)] ...</ k >
 	: KSentence .
