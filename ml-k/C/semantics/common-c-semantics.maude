@@ -105,8 +105,6 @@ mod COMMON-C-SEMANTICS is
 		< env >... I:Id |-> Loc:Nat ...</ env >
 		< mem >... Loc:Nat |-> V:Value ...</ mem >
 		: KSentence .
-	
-		
 		
 	mb [global-variable-declaration]: rule
 		< k > [Global(Declaration(int, I:Id)) => .K] ...</ k >
@@ -384,6 +382,10 @@ bind(("_.`,._").KHybridLabel(
 		: KSentence .
 	mb [getOffset-struct]: rule
 		< k > [getOffset(struct(X:Id), X':Id) => calcStructSize(Fields1:SeqList)] ...</ k >
+		< typedefs >... X:Id |-> 'struct(X:Id,, (Fields1:SeqList ~> Field(T:TogetherList, X':Id) ~>  Fields2:SeqList)) ...</ typedefs >
+		: KSentence .
+	mb [getOffset-arrow]: rule
+		< k > [getOffset(X:Id -> X':Id, X'':Id) => getOffset(T:TogetherList, X'':Id)] ...</ k >
 		< typedefs >... X:Id |-> 'struct(X:Id,, (Fields1:SeqList ~> Field(T:TogetherList, X':Id) ~>  Fields2:SeqList)) ...</ typedefs >
 		: KSentence .
 	mb [getOffset-func-pointer-struct]: rule

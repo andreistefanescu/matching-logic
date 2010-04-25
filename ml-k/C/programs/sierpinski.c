@@ -78,7 +78,7 @@ void run_and_display(size_t niters)
 
 int main()
 {
-	run_and_display(4);
+	run_and_display(2);
 	
 	return 0;
 }

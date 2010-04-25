@@ -3,12 +3,15 @@
 typedef unsigned int size_t;
 
 // stdlib.h
+# define RAND_MAX 2147483647
 void *malloc(size_t size);
 void free(void *pointer);
 void *calloc(size_t nelem, size_t elsize);
 void exit(int status);
 void debug(int i);
 int atoi ( const char * str );
+void srand (unsigned int seed);
+int rand (void);
 
 
 // stdio.h

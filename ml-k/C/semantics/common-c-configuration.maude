@@ -60,6 +60,7 @@ mod COMMON-C-CONFIGURATION is
 	subsort Struct-Declaration < K .
 	subsort Initializer < K .
 	subsort Labeled-Statement < K .
+	subsort Floating-Constant < K .
 	
 	subsort String < Builtins .
 endm
