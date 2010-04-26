@@ -3,6 +3,7 @@ mod COMMON-INCLUDE is
 	including C-SYNTAX .
 	including C-CONFIGURATION .
 	including K-CONTEXTS .
+	including K-PROPER .
 	
 	op List : BagItem -> ListItem .
 	op unknown : -> K .
@@ -10,6 +11,7 @@ mod COMMON-INCLUDE is
 	op closure : -> KLabel .
 	sort Value .
 	sort Type . 
+	subsort Struct-Or-Union-Specifier < Value .
 	subsort Int < Value < Expression KResult .
 	subsort TogetherList < Type < Expression < K .
 	
@@ -230,6 +232,68 @@ mod COMMON-C-STANDARD-LIBRARY is
 	: KSentence .
 endm
 
+mod COMMON-PARAMETER-BINDING is
+	including COMMON-INCLUDE .
+	op bind : -> KLabel .
+
+		
+	--- empty binding
+	mb [bind-empty-void]: rule 
+		< k > [bind(.List{Expression},, Parameter-Type-List(Parameter-Declaration(void))) => .K] ...</ k > 
+		: KSentence .
+	mb [bind-empty]: rule 
+		< k > [bind(.List{Expression},, Parameter-Type-List(.List{Parameter})) => .K] ...</ k > 
+		: KSentence .
+	--- bind one
+	--- consider same variable name
+	mb [bind-one-int]: rule 
+		< k > [bind((V:Value .,. L:List{Expression}),, 
+				Parameter-Type-List(Parameter-Declaration(int, I:Id) ,., P:List{Parameter})) =>
+			bind((.List{Expression} .,. L:List{Expression}),, 
+				Parameter-Type-List(.List{Parameter} ,., P:List{Parameter}))]
+				...</ k > 
+		< env >... [.Map => I:Id |-> Loc:Nat] ...</ env >
+		< mem >... [.Map => Loc:Nat |-> V:Value] ...</ mem >
+		< parameters >... [.Bag => Bag(Parameter-Declaration(int, I:Id))] ...</ parameters >
+		< types >... [.Map => I:Id |-> int] ...</ types >
+		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
+		: KSentence .
+	mb [bind-one-int-pointer]: rule 
+		< k > [bind((V:Value .,. L:List{Expression}),, 
+				Parameter-Type-List(Parameter-Declaration(Pointer(T:Type-Specifier), I:Id) ,., P:List{Parameter})) =>
+			bind((.List{Expression} .,. L:List{Expression}),, 
+				Parameter-Type-List(.List{Parameter} ,., P:List{Parameter}))]
+				...</ k > 
+		< env >... [.Map => I:Id |-> Loc:Nat] ...</ env >
+		< mem >... [.Map => Loc:Nat |-> V:Value] ...</ mem >
+		< parameters >... [.Bag => Bag(Parameter-Declaration(Pointer(T:Type-Specifier), I:Id))] ...</ parameters >
+		< types >... [.Map => I:Id |-> Pointer(T:Type-Specifier)] ...</ types >
+		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
+		: KSentence .
+	mb [bind-one-func-pointer]: rule 
+		< k > [bind((V:Value .,. L:List{Expression}),, 
+				Parameter-Type-List(Parameter-Declaration(T:Type-Specifier, Direct-Function-Declarator(Pointer(I:Id), Parameter-Type-List(PTL:List{Parameter}))) ,., P:List{Parameter})) =>
+			bind((.List{Expression} .,. L:List{Expression}),, 
+				Parameter-Type-List(.List{Parameter} ,., P:List{Parameter}))]
+				...</ k > 
+		< env >... [.Map => I:Id |-> Loc:Nat] ...</ env >
+		< mem >... [.Map => Loc:Nat |-> V:Value] ...</ mem >
+		< parameters >... [.Bag => Bag(Parameter-Declaration(T:Type-Specifier, Direct-Function-Declarator(Pointer(I:Id), Parameter-Type-List(PTL:List{Parameter}))))] ...</ parameters >
+		---< types >... [.Map => I:Id |-> Pointer(T:Type-Specifier)] ...</ types >
+		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
+		: KSentence .
+		
+	mb [bind-one-typedef]: rule 
+		< k > [bind(L:List{Expression},, 
+				Parameter-Type-List(Parameter-Declaration(T:Type-Specifier, DFD:Direct-Declarator) ,., P:List{Parameter})) =>
+			bind(L:List{Expression},, 
+				Parameter-Type-List(Parameter-Declaration(T':Type-Specifier, DFD:Direct-Declarator) ,., P:List{Parameter}))]
+				...</ k > 
+		< typedefs >... T:Type-Specifier |-> T':Type-Specifier ...</ typedefs >
+		: KSentence .
+		
+endm
+
 mod COMMON-GLOBAL-DECLARATION is
 	including COMMON-INCLUDE .
 	mb [global-variable-declaration]: rule
@@ -281,8 +345,8 @@ mod COMMON-LOCAL-DECLARATION is
 	including COMMON-INCLUDE .
 	
 	mb [declaration-using-typedef]: rule
-		< k > [Declaration(T:Type-Specifier, I:Id) => Declaration(T':Type-Specifier, I:Id)] ...</ k >
-		< typedefs >... T:Type-Specifier |-> T':Type-Specifier ...</ typedefs >
+		< k > ['Declaration(Kp:KProper,, I:Id) => Declaration(T':Type-Specifier, I:Id)] ...</ k >
+		< typedefs >... Kp:KProper |-> T':Type-Specifier ...</ typedefs >
 		: KSentence .
 		
 	mb [variable-declaration]: rule
@@ -311,7 +375,7 @@ mod COMMON-LOCAL-DECLARATION is
 		: KSentence .
 	mb [local-struct-declaration-start]: rule
 		< k > [Declaration(struct(X:Id), X':Id) => calcStructSize(DS:TogetherList) ~> Declaration(struct(X:Id), X':Id)] ...</ k >
-		< typedefs >... X:Id |-> struct(X:Id, DS:TogetherList) ...</ typedefs >
+		< typedefs >... struct(X:Id) |-> struct(X:Id, DS:TogetherList) ...</ typedefs >
 		: KSentence .
 
 	op struct-aux : Id Id Nat -> K .
@@ -322,12 +386,34 @@ mod COMMON-LOCAL-DECLARATION is
 		< locals >... [.Bag => Bag(struct-aux(X:Id, X':Id, Len:Nat))] ...</ locals >
 		< nextLoc > [Loc:Nat => (Loc:Nat +Nat Len:Nat)] </ nextLoc >
 		< types >... [.Map => X':Id |-> struct(X:Id)] ...</ types >
-		< typedefs >... X:Id |-> struct(X:Id, DS:TogetherList) ...</ typedefs >
+		< typedefs >... struct(X:Id) |-> struct(X:Id, DS:TogetherList) ...</ typedefs >
 		: KSentence .
 	mb [struct-declaration]: rule 
 		< k > [Global(struct(X:Id, DS:TogetherList) ;) => .K] ...</ k >
-		< typedefs >... [.Map => X:Id |-> struct(X:Id, DS:TogetherList)] ...</ typedefs >
+		< typedefs >... [.Map => struct(X:Id) |-> struct(X:Id, DS:TogetherList)] ...</ typedefs >
 		: KSentence .
+endm
+
+mod COMMON-EXPRESSIONS is
+	including COMMON-INCLUDE .
+
+	mb rule [I1:Int + I2:Int => I1:Int +Int I2:Int] : KSentence .
+	mb rule [_-_(I1:Int,I2:Int) => _-Int_(I1:Int,I2:Int)] : KSentence .
+	mb rule [I1:Int * I2:Int => I1:Int *Int I2:Int] : KSentence .
+	mb rule [I1:Int / I2:Int => I1:Int /Int I2:Int] if I2:Int =/=Bool 0 : KSentence .
+	mb rule [I1:Int % I2:Int => I1:Int %Int I2:Int] if I2:Int =/=Bool 0 : KSentence .
+	--- mb rule [- I => -Int I] : KSentence .
+	mb rule [I1:Int < I2:Int => if (I1:Int <Int I2:Int) then 1 else 0 fi] : KSentence .
+	mb rule [I1:Int <= I2:Int => if (I1:Int <=Int I2:Int) then 1 else 0 fi] : KSentence .
+	mb rule [I1:Int > I2:Int => if (I1:Int >Int I2:Int) then 1 else 0 fi] : KSentence .
+	mb rule [I1:Int >= I2:Int => if (I1:Int >=Int I2:Int) then 1 else 0 fi] : KSentence .
+	mb rule [I1:Int == I2:Int => if (I1:Int ==Bool I2:Int) then 1 else 0 fi] : KSentence .
+	mb rule [I1:Int != I2:Int => if (I1:Int =/=Bool I2:Int) then 1 else 0 fi] : KSentence .
+	--- mb rule [T1 and T2 => T1 andBool T2] : KSentence .
+	--- mb rule [T1 or T2 => T1 orBool T2] : KSentence .
+	mb rule [!(I:Int) => if (I:Int ==Bool 0) then 1 else 0 fi] : KSentence .
+
+	
 endm
 
 mod COMMON-C-SEMANTICS is
@@ -335,6 +421,8 @@ mod COMMON-C-SEMANTICS is
 	including COMMON-GLOBAL-DECLARATION .
 	including COMMON-LOCAL-DECLARATION .
 	including COMMON-C-STANDARD-LIBRARY .
+	including COMMON-EXPRESSIONS .
+	including COMMON-PARAMETER-BINDING .
 	
 	mb context Deref([HOLE]) := ? : KSentence .
 	mb context Deref([HOLE]) ++ : KSentence .
@@ -439,62 +527,6 @@ mod COMMON-C-SEMANTICS is
 		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
 		: KSentence .
 
-	op bind : -> KLabel .
-
-		
-	--- empty binding
-	mb [bind-empty-void]: rule 
-		< k > [bind(.List{Expression},, Parameter-Type-List(Parameter-Declaration(void))) => .K] ...</ k > 
-		: KSentence .
-	mb [bind-empty]: rule 
-		< k > [bind(.List{Expression},, Parameter-Type-List(.List{Parameter})) => .K] ...</ k > 
-		: KSentence .
-	--- bind one
-	--- consider same variable name
-	mb [bind-one-int]: rule 
-		< k > [bind((V:Value .,. L:List{Expression}),, 
-				Parameter-Type-List(Parameter-Declaration(int, I:Id) ,., P:List{Parameter})) =>
-			bind((.List{Expression} .,. L:List{Expression}),, 
-				Parameter-Type-List(.List{Parameter} ,., P:List{Parameter}))]
-				...</ k > 
-		< env >... [.Map => I:Id |-> Loc:Nat] ...</ env >
-		< mem >... [.Map => Loc:Nat |-> V:Value] ...</ mem >
-		< parameters >... [.Bag => Bag(Parameter-Declaration(int, I:Id))] ...</ parameters >
-		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
-		: KSentence .
-	mb [bind-one-int-pointer]: rule 
-		< k > [bind((V:Value .,. L:List{Expression}),, 
-				Parameter-Type-List(Parameter-Declaration(Pointer(T:Type-Specifier), I:Id) ,., P:List{Parameter})) =>
-			bind((.List{Expression} .,. L:List{Expression}),, 
-				Parameter-Type-List(.List{Parameter} ,., P:List{Parameter}))]
-				...</ k > 
-		< env >... [.Map => I:Id |-> Loc:Nat] ...</ env >
-		< mem >... [.Map => Loc:Nat |-> V:Value] ...</ mem >
-		< parameters >... [.Bag => Bag(Parameter-Declaration(Pointer(T:Type-Specifier), I:Id))] ...</ parameters >
-		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
-		: KSentence .
-	mb [bind-one-func-pointer]: rule 
-		< k > [bind((V:Value .,. L:List{Expression}),, 
-				Parameter-Type-List(Parameter-Declaration(T:Type-Specifier, Direct-Function-Declarator(Pointer(I:Id), Parameter-Type-List(PTL:List{Parameter}))) ,., P:List{Parameter})) =>
-			bind((.List{Expression} .,. L:List{Expression}),, 
-				Parameter-Type-List(.List{Parameter} ,., P:List{Parameter}))]
-				...</ k > 
-		< env >... [.Map => I:Id |-> Loc:Nat] ...</ env >
-		< mem >... [.Map => Loc:Nat |-> V:Value] ...</ mem >
-		< parameters >... [.Bag => Bag(Parameter-Declaration(T:Type-Specifier, Direct-Function-Declarator(Pointer(I:Id), Parameter-Type-List(PTL:List{Parameter}))))] ...</ parameters >
-		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
-		: KSentence .
-		
-	mb [bind-one-typedef]: rule 
-		< k > [bind(L:List{Expression},, 
-				Parameter-Type-List(Parameter-Declaration(T:Type-Specifier, DFD:Direct-Declarator) ,., P:List{Parameter})) =>
-			bind(L:List{Expression},, 
-				Parameter-Type-List(Parameter-Declaration(T':Type-Specifier, DFD:Direct-Declarator) ,., P:List{Parameter}))]
-				...</ k > 
-		< typedefs >... T:Type-Specifier |-> T':Type-Specifier ...</ typedefs >
-		: KSentence .
-		
-
 	mb [assign]: rule
 		< k > [Deref(Loc:Nat) := V:Value => V:Value] ...</ k >
 		< mem >... Loc:Nat |-> [? => V:Value] ...</ mem >
@@ -504,52 +536,127 @@ mod COMMON-C-SEMANTICS is
 		< k > [V:Value == V':Value => if (V:Value ==Bool V':Value) then 1 else 0 fi] ...</ k >
 		: KSentence .
 		
+		
+	---op evalDesignator : Expression -> K .
+	
 	mb [ref]: rule
 		< k > [&(I:Id) => Loc:Nat] ...</ k >
 		< env >... I:Id |-> Loc:Nat ...</ env >
 		: KSentence .
-	op getOffset : K K -> Expression .
-	mb [ref-arrow]: rule
-		< k > [&(E1:Expression -> X:Id) => E1:Expression + getOffset(E1:Expression, X:Id)] ...</ k >
-		: KSentence .
-		
+	
+	--- mb [arrow]: rule
+		--- < k > [E1:Expression -> X:Id => Deref(E1:Expression + getOffset(E1:Expression, X:Id))] ...</ k >
+		--- : KSentence .
 	mb [arrow]: rule
-		< k > [E1:Expression -> X:Id => Deref(E1:Expression + getOffset(E1:Expression, X:Id))] ...</ k >
+		< k > [E1:Expression -> X:Id => Deref(& (E1:Expression -> X:Id))] ...</ k >
 		: KSentence .
 	mb [dot]: rule
 		< k > [E1:Expression . X:Id => (& E1:Expression) -> X:Id] ...</ k >
 		: KSentence .
 		
-	mb [getOffset-exp-to-type]: rule
-		< k > [getOffset(E1:Expression, X:Id) => getOffset(T:Type, X:Id)] ...</ k >
-		< types >... E1:Expression |-> T:Type ...</ types >
+	op getOffset : K K -> Expression .
+	mb [ref-arrow]: rule
+		< k > [&(E1:Expression -> X:Id) => E1:Expression + getOffset(Deref(E1:Expression), X:Id)] ...</ k >
 		: KSentence .
-	mb [getOffset-typedef-pointer]: rule
-		< k > [getOffset(Pointer(T:Type-Specifier), X:Id) => getOffset(T':Type, X:Id)] ...</ k >
-		< typedefs >... T:Type-Specifier |-> T':Type ...</ typedefs >
+	mb [ref-dot]: rule
+		< k > [&(E1:Expression . X:Id) => (& (E1:Expression)) + getOffset(E1:Expression, X:Id)] ...</ k >
 		: KSentence .
-	mb [getOffset-address]: rule
-		< k > [getOffset(&(E:Expression), X:Id) => getOffset(E:Expression, X:Id)] ...</ k >
+		
+	op evalToType : -> K .
+	op HOLE : -> Expression .
+	
+	mb [getOffset-heat]: rule
+		< k > [getOffset(E:Expression, X:Id) => evalToType ~> getOffset(HOLE, X:Id)] ...</ k >
+		[.Bag => < type > E:Expression </ type >]
 		: KSentence .
-	mb [getOffset-struct-pointer]: rule
-		< k > [getOffset(Pointer(struct(X:Id)), X':Id) => getOffset(struct(X:Id), X':Id)] ...</ k >
+
+	mb [getOffset-cool]: rule
+		< k > [evalToType ~> getOffset(HOLE, X':Id) => calcStructSize(Fields1:SeqList)] ...</ k >
+		[< type > struct(X:Id) </ type > => .Bag]
+		< typedefs >... struct(X:Id) |-> 'struct(X:Id,, (Fields1:SeqList ~> Field(T:TogetherList, X':Id) ~>  Fields2:SeqList)) ...</ typedefs >
 		: KSentence .
-	mb [getOffset-struct-implied]: rule
-		< k > [getOffset(X:Id, X':Id) => getOffset(struct(X:Id), X':Id)] ...</ k >
-		< typedefs >... X:Id |-> struct(X:Id, ?) ...</ typedefs >
+	mb [getOffset-cool-func-pointer]: rule
+		< k > [evalToType ~> getOffset(HOLE, X':Id) => calcStructSize(Fields1:SeqList)] ...</ k >
+		[< type > struct(X:Id) </ type > => .Bag]
+		< typedefs >... struct(X:Id) |-> 'struct(X:Id,, (Fields1:SeqList ~> Field(T:TogetherList, Direct-Function-Declarator(Pointer(X':Id), PTL:Parameter-Type-List)) ~>  Fields2:SeqList)) ...</ typedefs >
 		: KSentence .
-	mb [getOffset-struct]: rule
-		< k > [getOffset(struct(X:Id), X':Id) => calcStructSize(Fields1:SeqList)] ...</ k >
-		< typedefs >... X:Id |-> 'struct(X:Id,, (Fields1:SeqList ~> Field(T:TogetherList, X':Id) ~>  Fields2:SeqList)) ...</ typedefs >
+		
+	
+	mb rule < type > [Deref(& E:Expression) => E:Expression] ...</ type > : KSentence [metadata "structural"] .
+	mb rule < type > [Deref(Pointer(T:TogetherList)) => T:TogetherList] ...</ type > : KSentence [metadata "structural"] .
+	
+	mb [evalToType-exp-to-type]: rule
+		< type > [E:Expression => T:Type] ...</ type >
+		< types >... E:Expression |-> T:Type ...</ types >
 		: KSentence .
-	mb [getOffset-arrow]: rule
-		< k > [getOffset(X:Id -> X':Id, X'':Id) => getOffset(T:TogetherList, X'':Id)] ...</ k >
-		< typedefs >... X:Id |-> 'struct(X:Id,, (Fields1:SeqList ~> Field(T:TogetherList, X':Id) ~>  Fields2:SeqList)) ...</ typedefs >
+	mb [deref-heat]: rule
+		< type > ['Deref(Kp:KProper) => Kp:KProper ~> 'Deref(HOLE)] ...</ type >
 		: KSentence .
-	mb [getOffset-func-pointer-struct]: rule
-		< k > [getOffset(struct(X:Id), X':Id) => calcStructSize(Fields1:SeqList)] ...</ k >
-		< typedefs >... X:Id |-> 'struct(X:Id,, (Fields1:SeqList ~> Field(T:TogetherList, Direct-Function-Declarator(Pointer(X':Id), ?)) ~>  Fields2:SeqList)) ...</ typedefs >
+	mb [deref-cool]: rule
+		< type > [Kr:KResult ~> 'Deref(HOLE) => 'Deref(Kr:KResult)] ...</ type >
 		: KSentence .
+	mb [pointer-heat]: rule
+		< type > ['Pointer(Kp:KProper) => Kp:KProper ~> 'Pointer(HOLE)] ...</ type >
+		: KSentence .
+	mb [pointer-cool]: rule
+		< type > [Kr:KResult ~> 'Pointer(HOLE) => 'Pointer(Kr:KResult)] ...</ type >
+		: KSentence .
+	mb [dot-heat]: rule
+		< type > ['_._(Kp:KProper,, X:Id) => Kp:KProper ~> '_._(HOLE,, X:Id)] ...</ type >
+		: KSentence .
+	mb [dot-cool]: rule
+		< type > [Kr:KResult ~> '_._(HOLE,, X:Id) => '_._(Kr:KResult,, X:Id)] ...</ type >
+		: KSentence .
+	mb [dot-lookup]: rule
+		< type > ['_._(struct(SName:Id),, FName:Id) => T:TogetherList] ...</ type >
+		< typedefs >... struct(SName:Id) |-> 'struct(SName:Id,, (Fields1:SeqList ~> Field(T:TogetherList, FName:Id) ~>  Fields2:SeqList)) ...</ typedefs >
+		: KSentence .
+	mb [typedef-lookup]: rule
+		< type > [Kp:KProper => T:Type] ...</ type >
+		< typedefs >... Kp:KProper |-> T:Type ...</ typedefs >
+		: KSentence .
+		
+	--- mb : rule
+		--- < k > [evalToType(struct(X:Id), X':Id) => calcStructSize(Fields1:SeqList)] ...</ k >
+		--- < typedefs >... X:Id |-> 'struct(X:Id,, (Fields1:SeqList ~> Field(T:TogetherList, X':Id) ~>  Fields2:SeqList)) ...</ typedefs >
+		--- : KSentence .
+	
+		
+	--- mb [getOffset-exp-to-type]: rule
+		--- < k > [getOffset(E1:Expression, X:Id) => getOffset(T:Type, X:Id)] ...</ k >
+		--- < types >... E1:Expression |-> T:Type ...</ types >
+		--- : KSentence .
+		
+	--- mb [getOffset-exp-to-type]: rule
+		--- < k > [getOffset(E1:Expression, X:Id) => getOffset(T:Type, X:Id)] ...</ k >
+		--- < types >... E1:Expression |-> T:Type ...</ types >
+		--- : KSentence .
+	--- mb [getOffset-typedef-pointer]: rule
+		--- < k > [getOffset(Pointer(T:Type-Specifier), X:Id) => getOffset(T':Type, X:Id)] ...</ k >
+		--- < typedefs >... T:Type-Specifier |-> T':Type ...</ typedefs >
+		--- : KSentence .
+	--- mb [getOffset-address]: rule
+		--- < k > [getOffset(&(E:Expression), X:Id) => getOffset(E:Expression, X:Id)] ...</ k >
+		--- : KSentence .
+	--- mb [getOffset-struct-pointer]: rule
+		--- < k > [getOffset(Pointer(struct(X:Id)), X':Id) => getOffset(struct(X:Id), X':Id)] ...</ k >
+		--- : KSentence .
+	--- mb [getOffset-struct-implied]: rule
+		--- < k > [getOffset(X:Id, X':Id) => getOffset(struct(X:Id), X':Id)] ...</ k >
+		--- < typedefs >... X:Id |-> struct(X:Id, ?) ...</ typedefs >
+		--- : KSentence .
+	--- mb [getOffset-struct]: rule
+		--- < k > [getOffset(struct(X:Id), X':Id) => calcStructSize(Fields1:SeqList)] ...</ k >
+		--- < typedefs >... X:Id |-> 'struct(X:Id,, (Fields1:SeqList ~> Field(T:TogetherList, X':Id) ~>  Fields2:SeqList)) ...</ typedefs >
+		--- : KSentence .
+	--- mb [getOffset-arrow]: rule
+		--- < k > [getOffset(X:Id -> X':Id, X'':Id) => getOffset(T:TogetherList, X'':Id)] ...</ k >
+		--- < typedefs >... X:Id |-> 'struct(X:Id,, (Fields1:SeqList ~> Field(T:TogetherList, X':Id) ~>  Fields2:SeqList)) ...</ typedefs >
+		--- : KSentence .
+	--- mb [getOffset-func-pointer-struct]: rule
+		--- < k > [getOffset(struct(X:Id), X':Id) => calcStructSize(Fields1:SeqList)] ...</ k >
+		--- < typedefs >... X:Id |-> 'struct(X:Id,, (Fields1:SeqList ~> Field(T:TogetherList, Direct-Function-Declarator(Pointer(X':Id), ?)) ~>  Fields2:SeqList)) ...</ typedefs >
+		--- : KSentence .
 		
 	
 	mb [deref]: rule
@@ -604,24 +711,6 @@ mod COMMON-C-SEMANTICS is
 		< typedefs >... T:Type-Specifier |-> T':Type-Specifier ...</ typedefs >
 		: KSentence .
 		
-	
-	--------------- Start Expressions ---------------
-	mb rule [I1:Int + I2:Int => I1:Int +Int I2:Int] : KSentence .
-	mb rule [_-_(I1:Int,I2:Int) => _-Int_(I1:Int,I2:Int)] : KSentence .
-	mb rule [I1:Int * I2:Int => I1:Int *Int I2:Int] : KSentence .
-	mb rule [I1:Int / I2:Int => I1:Int /Int I2:Int] if I2:Int =/=Bool 0 : KSentence .
-	mb rule [I1:Int % I2:Int => I1:Int %Int I2:Int] if I2:Int =/=Bool 0 : KSentence .
-	--- mb rule [- I => -Int I] : KSentence .
-	mb rule [I1:Int < I2:Int => if (I1:Int <Int I2:Int) then 1 else 0 fi] : KSentence .
-	mb rule [I1:Int <= I2:Int => if (I1:Int <=Int I2:Int) then 1 else 0 fi] : KSentence .
-	mb rule [I1:Int > I2:Int => if (I1:Int >Int I2:Int) then 1 else 0 fi] : KSentence .
-	mb rule [I1:Int >= I2:Int => if (I1:Int >=Int I2:Int) then 1 else 0 fi] : KSentence .
-	mb rule [I1:Int == I2:Int => if (I1:Int ==Bool I2:Int) then 1 else 0 fi] : KSentence .
-	mb rule [I1:Int != I2:Int => if (I1:Int =/=Bool I2:Int) then 1 else 0 fi] : KSentence .
-	--- mb rule [T1 and T2 => T1 andBool T2] : KSentence .
-	--- mb rule [T1 or T2 => T1 orBool T2] : KSentence .
-	mb rule [!(I:Int) => if (I:Int ==Bool 0) then 1 else 0 fi] : KSentence .
-	--------------- End Expressions ---------------
 	
 	op loopMarked : -> Statement .
 	op popLoop : -> K .
@@ -797,9 +886,12 @@ mod COMMON-C-SEMANTICS is
 		< k > [sizeof(X:Id) => N:Nat] ...</ k >
 		< types >... X:Id |-> int[N:Nat] ...</ types >
 	: KSentence .
+	
+	---- Advisory: could not find a constant "sizeof" of sort KLabel in meta-module C.
+
 	mb [sizeof-typedef]: rule
-		< k > [sizeof(TD:Typedef-Name) => sizeof(T:Type)] ...</ k >
-		< typedefs >... TD:Typedef-Name |-> T:Type ...</ typedefs >
+		< k > ['sizeof_(Kp:KProper) => sizeof(T:Type)] ...</ k >
+		< typedefs >... Kp:KProper |-> T:Type ...</ typedefs >
 	: KSentence .
 	mb [sizeof-pointer]: rule
 		< k > [sizeof(Pointer(TD:Typedef-Name)) => 1] ...</ k >
@@ -809,7 +901,7 @@ mod COMMON-C-SEMANTICS is
 	: KSentence .
 	mb [sizeof-struct]: rule
 		< k > [sizeof(struct(X:Id)) => calcStructSize(Fields:SeqList)] ...</ k >
-		< typedefs >... X:Id |-> struct(X:Id, Fields:SeqList) ...</ typedefs >
+		< typedefs >... struct(X:Id) |-> struct(X:Id, Fields:SeqList) ...</ typedefs >
 	: KSentence .
 
 	

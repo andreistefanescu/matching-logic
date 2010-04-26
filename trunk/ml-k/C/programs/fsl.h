@@ -16,6 +16,7 @@ int rand (void);
 
 // stdio.h
 int printf(const char *format, ...);
+//extern int printf (__const char *__restrict __format, ...);
 int putchar ( int character );
 
 // string.h

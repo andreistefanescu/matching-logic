@@ -16,6 +16,7 @@ mod C-CONFIGURATION is
 			< sizes > .Map </ sizes >
 			< local >
 				< k > .K </ k >
+				< type > .K </ type >
 				< env > .Map </ env >
 				< loopStack > .List </ loopStack >
 				< locals > .Bag </ locals >
