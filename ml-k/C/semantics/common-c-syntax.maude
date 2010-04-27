@@ -217,7 +217,8 @@ mod COMMON-C-SYNTAX is
 	--- fixme
 	--- SHOULD BE DECLARATOR
 	---op _=_ : Declarator Initializer -> Init-Declarator .
-	op _=_ : Declaration Initializer -> Init-Declarator .
+	op _=_ : Declaration Expression -> Init-Declarator .
+	op _=`{_`} : Declaration List{Expression} -> Init-Declarator .
 	--- --- Note: CIL separates declaration from initialization
 	--- --- op _=_ : Declarator Initializer -> Init-Declarator .
 	
@@ -408,13 +409,15 @@ mod COMMON-C-SYNTAX is
 	---subsort Identifier < Typedef-Name .
 	
 	--- --- 6.7.8
-	sort Initializer .
-	subsort Expression < Initializer .
+	---sort Initializer .
+	---subsort Expression < Initializer .
 	--- subsort Assignment-Expression < Initializer .
-	--- op `{_`} : Initializer-List -> Initializer .
+	---op `{_`} : Initializer-List -> Initializer .
 	--- op `{_`,`} : Initializer-List -> Initializer .
+	---op _,_ : Initializer-List Initializer-List -> Initializer-List [assoc] .
+	---subsort Expression < Initializer-List .
 	
-	--- sort Initializer-List .
+	---sort Initializer-List .
 	--- subsort Initializer < Initializer-List .
 	--- --- TODO 
 	
