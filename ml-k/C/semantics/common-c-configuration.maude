@@ -63,4 +63,5 @@ mod COMMON-C-CONFIGURATION is
 	subsort Floating-Constant < K .
 	---subsort Initializer-List < K .
 	subsort String < Builtins .
+	subsort Typedef-Name < Builtins .
 endm
