@@ -240,18 +240,10 @@ class virtual defaultMaudePrinterClass = object (self)
 
   method private setCurrentFormals (fms : varinfo list) =
     currentFormals <- fms
-
-	
-method private pLvalPrec (contextprec: int) () lv = 
-    if getParenthLevel (Lval(lv)) >= contextprec then
-      text "(" ++ self#pLval () lv ++ text ")"
-    else
-      self#pLval () lv	
 	
   (*** VARIABLES ***)
   (* variable use *)
   method pVar (v:varinfo) = text v.vname (* ++ (text "/*" ++ v.vdescr ++ text "*/") *)
-
   
   
   (* variable declaration *)
@@ -440,21 +432,21 @@ method private pLvalPrec (contextprec: int) () lv =
           BinOp((PlusA|PlusPI|IndexPI),Lval(lv'),Const(CInt64(one,_,_)),_)
             when Util.equals lv lv' && one = Int64.one && not !printCilAsIs ->
               self#pLineDirective l
-                ++ self#pLvalPrec indexLevel () lv
+                ++ self#pLval () lv
                 ++ text (" ++ " ^ self#getPrintInstrTerminator ())
 
         | BinOp((MinusA|MinusPI),Lval(lv'),
                 Const(CInt64(one,_,_)), _) 
             when Util.equals lv lv' && one = Int64.one && not !printCilAsIs ->
                   self#pLineDirective l
-                    ++ self#pLvalPrec indexLevel () lv
+                    ++ self#pLval () lv
                     ++ text (" -- " ^ self#getPrintInstrTerminator ()) 
 
         | BinOp((PlusA|PlusPI|IndexPI),Lval(lv'),Const(CInt64(mone,_,_)),_)
             when Util.equals lv lv' && mone = Int64.minus_one 
                 && not !printCilAsIs ->
               self#pLineDirective l
-                ++ self#pLvalPrec indexLevel () lv
+                ++ self#pLval () lv
                 ++ text (" -- " ^ self#getPrintInstrTerminator ())
 
         | BinOp((PlusA|PlusPI|IndexPI|MinusA|MinusPP|MinusPI|BAnd|BOr|BXor|
@@ -580,23 +572,6 @@ method private pLvalPrec (contextprec: int) () lv =
                     text "(" ++ self#pType None () destt ++ text ")"
                 | _ -> nil))
           (* Now the function name *)
-		  
-		  (*
-		 let myv = (match lv with
-			| (Var fslv, _) -> Some fslv.vname
-			| (Mem _, _) -> None ) in
-			match myv with
-			| Some name -> 
-				if strcontains name "fslAnnotation" then 
-					match e with
-					| CastE(t,Const(CStr(s))) -> 
-				          (text "/* "
-							++ text s
-							(* ++ self#pExp () e*)
-							++ text " */" )
-				else f
-			| None -> f
-		  *)
 		  ++
 		  let f = 
 		  (text "Apply(" ++ 
@@ -728,31 +703,12 @@ method private pLvalPrec (contextprec: int) () lv =
       Var vi, o -> self#pOffset (self#pVar vi) o
     | Mem e, Field(fi, o) ->
         self#pOffset
-          ((self#pExpPrec arrowLevel () e) ++ text (" -> " ^ fi.fname)) o
+          (((self#pExp () e)) ++ text (" -> " ^ fi.fname)) o
     | Mem e, NoOffset -> 
-        (* text "*" ++ self#pExpPrec derefStarLevel () e *)
-		wrap (self#pExpPrec derefStarLevel () e) "Deref"
+		wrap (self#pExp () e) "Deref"
     | Mem e, o ->
         self#pOffset
-          (text "(*" ++ self#pExpPrec derefStarLevel () e ++ text ")") o
-
- (* Print an expression, given the precedence of the context in which it 
-   * appears. *)
-  method private pExpPrec (contextprec: int) () (e: exp) = 
-    let thisLevel = getParenthLevel e in
-    let needParens =
-      if thisLevel >= contextprec then
-	true
-      else if contextprec == bitwiseLevel then
-        (* quiet down some GCC warnings *)
-	thisLevel == additiveLevel || thisLevel == comparativeLevel
-      else
-	false
-    in
-    if needParens then
-      chr '(' ++ self#pExp () e ++ chr ')'
-    else
-      self#pExp () e	
+          (text "(*" ++ self#pExp () e ++ text ")") o
 
   method private pFunDecl () f =
       self#pVDecl () f.svar
@@ -952,27 +908,27 @@ method private pLvalPrec (contextprec: int) () lv =
 	 
 	  (*** EXPRESSIONS ***)
   method pExp () (e: exp) : doc = 
-    let level = getParenthLevel e in
+    paren(
     match e with
       Const(c) -> d_const () c
     | Lval(l) -> self#pLval () l
     | UnOp(u,e1,_) -> 
-        (d_unop () u) ++ chr ' ' ++ (self#pExpPrec level () e1)
+        (d_unop () u) ++ chr ' ' ++ (self#pExp () e1)
           
     | BinOp(b,e1,e2,_) -> 
         align 
-          ++ (self#pExpPrec level () e1)
+          ++ (self#pExp () e1)
           ++ chr ' ' 
           ++ (d_binop () b)
           ++ chr ' '
-          ++ (self#pExpPrec level () e2)
+          ++ (self#pExp () e2)
           ++ unalign
 
     | CastE(t,e) -> 
         text "Cast((" 
           ++ self#pType None () t
           ++ text "),("
-          ++ self#pExpPrec level () e
+          ++ self#pExp () e
 		  ++ text "))"
 
     | SizeOf (t) -> 
@@ -990,10 +946,10 @@ method private pLvalPrec (contextprec: int) () lv =
     | AlignOfE (e) -> 
         text "__alignof__(" ++ self#pExp () e ++ chr ')'
     | AddrOf(lv) -> 
-        text "& " ++ (self#pLvalPrec addrOfLevel () lv)
+        text "& " ++ (self#pLval () lv)
           
     | StartOf(lv) -> self#pLval () lv
-	 
+	)
 	 
 	method private pStmtKind (next: stmt) () = function
       Return(None, l) ->
