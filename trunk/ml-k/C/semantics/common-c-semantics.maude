@@ -887,8 +887,6 @@ mod COMMON-C-SEMANTICS is
 		< types >... X:Id |-> int[N:Nat] ...</ types >
 	: KSentence .
 	
-	---- Advisory: could not find a constant "sizeof" of sort KLabel in meta-module C.
-
 	mb [sizeof-typedef]: rule
 		< k > ['sizeof_(Kp:KProper) => sizeof(T:Type)] ...</ k >
 		< typedefs >... Kp:KProper |-> T:Type ...</ typedefs >
@@ -903,11 +901,6 @@ mod COMMON-C-SEMANTICS is
 		< k > [sizeof(struct(X:Id)) => calcStructSize(Fields:SeqList)] ...</ k >
 		< typedefs >... struct(X:Id) |-> struct(X:Id, Fields:SeqList) ...</ typedefs >
 	: KSentence .
-
-	
-	
-	
-	
 
 
 

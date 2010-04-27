@@ -18,12 +18,27 @@ int rand (void);
 int printf(const char *format, ...);
 //extern int printf (__const char *__restrict __format, ...);
 int putchar ( int character );
+int sprintf ( char * str, const char * format, ... );
 
 // string.h
 size_t strlen( char *str );
 int strcmp( const char *str1, const char *str2 );
 char *strcpy(char *restrict s1, const char *restrict s2);
 void * memset ( void * ptr, int value, size_t num );
+void * memcpy ( void * destination, const void * source, size_t num );
 
 // assert.h
 void assert (int expression);
+
+
+// from http://www.danielvik.com/2010/02/fast-memcpy-in-c.html
+// by Daniel Vik
+void* memcpy(void* dest, const void* src, size_t count) {
+	char* dst8 = (char*)dest;
+	char* src8 = (char*)src;
+
+	while (count--) {
+		*dst8++ = *src8++;
+	}
+	return dest;
+}
