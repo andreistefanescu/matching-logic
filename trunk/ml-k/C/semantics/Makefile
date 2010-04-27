@@ -26,7 +26,7 @@ ifeq ($(INPUT),)
 	exit 1
 endif
 
-programs-gen.maude: programs-gen.template Makefile
+programs-gen.maude: programs-gen.template $(INPUT) Makefile
 ifeq ($(INPUT),)
 	exit 1
 endif
@@ -42,7 +42,7 @@ ifeq ($(INPUT),)
 endif
 	@printf "`cat c-maude.template`" $(K-PRELUDE) $(CONFIGURATION_FILE) $(SEMANTICS_FILE) $(SEMANTICS_MODULE) > c.maude
 	
-c-compiled.maude: c.maude common-c-syntax.maude match-c-syntax.maude common-c-configuration.maude common-c-semantics.maude  
+c-compiled.maude: force c.maude common-c-syntax.maude match-c-syntax.maude common-c-configuration.maude common-c-semantics.maude  
 #echo $(PROGRAM_NAMES)
 	$(K-MAUDE) c.maude C
 	
@@ -57,7 +57,7 @@ match: CONFIGURATION_FILE = "match-c-configuration"
 match: semantics
 
 # $(PROGRAM_TARGET) 
-semantics: c-compiled.maude test.maude
+semantics: c-compiled.maude test.maude 
 
 #program-%-compiled.maude: $(PROGRAM_DIR)/% programs-gen.maude
 #	$(K-PROGRAM-COMPILE) sepcomp.maude C C-PROGRAM program-$(notdir $<)

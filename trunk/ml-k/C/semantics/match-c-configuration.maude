@@ -6,25 +6,52 @@ mod C-CONFIGURATION is
 	op Task : -> CellLabel .
 	op todo : -> CellLabel .
 	op fresh : -> CellLabel .
+	op exchangable : -> CellLabel .
+	op gmem : -> CellLabel .
 	
 	mb configuration 
-		< T > 
+		--- < T > 
+			--- < Task * >
+				--- < exchangable >
+					--- < k > .K </ k >
+					--- < env > .Map </ env > 
+					--- < mem > .Map </ mem > 
+					--- < malloced > .Map </ malloced >	
+					--- < output > "" </ output >					
+					--- < form > .K </ form >
+				--- </ exchangable >
+				--- < types > .Map </ types >
+				--- < sizes > .Map </ sizes >
+				--- < loopStack > .List </ loopStack >
+			--- </ Task * >
+			--- < statics > .Map </ statics >
+			--- < todo > .K </ todo >
+			--- < nextLoc > 1 </ nextLoc >
+			--- < fresh > 1 </ fresh >
+			--- < genv > .Map </ genv >
+			--- < typedefs > .Map </ typedefs >
+		--- </ T > 
+		< T >
 			< Task * >
-				< k > .K </ k >
-				< env > .Map </ env > 
-				< mem > .Map </ mem >  
-				< loopStack > .List </ loopStack >				
-				< form > .K </ form >
-				< sizes > .Map </ sizes >
+				< k > P:Program </ k >
+				< env > .Map </ env >
+				< loopStack > .List </ loopStack >
+				< locals > .Bag </ locals >
+				< parameters > .Bag </ parameters >
+				< types > .Map </ types >
+				< output > "" </ output >
 				< malloced > .Map </ malloced >
+				< mem > .Map </ mem >
+				< statics > .Map </ statics >
+				< form > TrueFormula </ form >
 			</ Task * >
 			< todo > .K </ todo >
-			< nextLoc > 1 </ nextLoc >
-			< fresh > 1 </ fresh >
+			< typedefs > .Map </ typedefs >
+			< callStack > .List </ callStack >
+			< nextLoc > 0 </ nextLoc >
 			< genv > .Map </ genv > 
-		</ T > 
-		< resultValue > .K </ resultValue >
-		< resultOutput > .List </ resultOutput > 
+			< gmem > .Map </ gmem > 
+		</ T >
 		: KSentence .
 	
 endm

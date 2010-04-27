@@ -1,6 +1,8 @@
 int sum(int n);
 int main() {
+	//@xxx pre ?Bag
 	return sum(10);
+	//@xxx post ?Bag
 }
 
 int sum(int n) {
