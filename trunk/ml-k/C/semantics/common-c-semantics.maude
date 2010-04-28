@@ -1,4 +1,5 @@
 --- not evaluating inside initializers
+--- $(value $var) gives what we want for pipestatus
 mod COMMON-INCLUDE is
 	including K .
 	including C-SYNTAX .
@@ -350,14 +351,32 @@ mod COMMON-GLOBAL-DECLARATION is
 		< typedefs >... [.Map => X:Typedef-Name |-> DS:TogetherList] ...</ typedefs >
 		: KSentence .
 		
-			
+	op initArray : List{K} List{K} -> K .
 	mb [global-array-declaration-init]: rule
-		< k > [Declaration(T:Type-Specifier, X:Id[N:Nat]) = { L:List{Expression} } => .K] ...</ k >
+		< k > [Declaration(T:Type-Specifier, X:Id[N:Nat]) = { L:List{Expression} } => initArray(getList{K}(L:List{Expression}), sNat(Loc:Nat) to (sNat(Loc:Nat) +Nat N:Nat))] ...</ k >
 		< env >... [.Map => X:Id |-> Loc:Nat] ...</ env >
 		< genv >... [.Map => X:Id |-> Loc:Nat] ...</ genv >
-		< mem >... [.Map => Loc:Nat |-> sNat(Loc:Nat)  sNat(Loc:Nat) to (sNat(Loc:Nat) +Nat N:Nat) |-> getList{K}(L:List{Expression})] ...</ mem >
-		< nextLoc > [Loc:Nat => (sNat(Loc:Nat) +Nat N:Nat)] </ nextLoc >
+		< mem >... [.Map => Loc:Nat |-> sNat(Loc:Nat)  sNat(Loc:Nat) to (sNat(Loc:Nat) +Nat N:Nat) |-> unknown] ...</ mem >
+		< nextLoc > [Loc:Nat => sNat(Loc:Nat) +Nat N:Nat] </ nextLoc >
 		< types >... [.Map => X:Id |-> T:Type-Specifier[N:Nat]] ...</ types >
+		: KSentence .
+		
+	op initItem : K K -> K [metadata "strict(1)"] .
+	mb [initArray-empty]: rule
+		< k > [initArray((Item:K,, Items:List{K}), (Loc:K,, Locs:List{K})) => initItem(Item:K, Loc:K) ~> initArray(Items:List{K}, Locs:List{K})] ...</ k >
+		: KSentence .
+	mb [initArray-empty]: rule
+		< k > [initArray(.List{K}, .List{K}) => .K] ...</ k >
+		: KSentence .
+		
+	mb rule
+		< k > [initItem(V:Value, Loc:K) => .K] ...</ k >
+		< mem >... Loc:K |-> [? => V:Value] ...</ mem >
+		: KSentence .
+		
+	mb [struct-declaration]: rule 
+		< k > [Global(struct(X:Id, DS:TogetherList) ;) => .K] ...</ k >
+		< typedefs >... [.Map => struct(X:Id) |-> struct(X:Id, DS:TogetherList)] ...</ typedefs >
 		: KSentence .
 endm
 
@@ -368,50 +387,91 @@ mod COMMON-LOCAL-DECLARATION is
 		< k > ['Declaration(Kp:KProper,, I:Id) => Declaration(T':Type-Specifier, I:Id)] ...</ k >
 		< typedefs >... Kp:KProper |-> T':Type-Specifier ...</ typedefs >
 		: KSentence .
+				
+	op declare : K K -> K .
+	op declare-aux : K K List{K} -> K .
+	op funcptr : K K -> Type-Specifier .
+	op HOLE : -> K .
+	op locs : List{K} -> KResult .
+	---Direct-Function-Declarator(Pointer(I:Id), PTL:Parameter-Type-List)
+	mb [start-declare]: rule
+		< k > [Declaration(T:Type-Specifier, D:Declarator) => '_;(declare(T:Type-Specifier, D:Declarator))] ...</ k >
+		: KSentence .
 		
-	mb [variable-declaration]: rule
-		< k > [Declaration(int, I:Id) => .K] ...</ k >
-		< env >... [.Map => I:Id |-> Loc:Nat] ...</ env >
-		< mem >... [.Map => Loc:Nat |-> unknown] ...</ mem >
-		< locals >... [.Bag => Bag(Declaration(int, I:Id))] ...</ locals >
-		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
-		< types >... [.Map => I:Id |-> int] ...</ types >
+	mb [declaration-heat-array]: rule
+		< k > [declare(T:Type-Specifier, '_`[_`](Kp:KProper,, N:Nat)) => declare(T:Type-Specifier[N:Nat], Kp:KProper) ~> declare(T:Type-Specifier, '_`[_`](HOLE,, N:Nat))] ...</ k >
 		: KSentence .
-	mb [pointer-declaration]: rule
-		< k > [Declaration(Pointer(T:Type-Specifier), I:Id) => .K] ...</ k >
-		< env >... [.Map => I:Id |-> Loc:Nat] ...</ env >
-		< mem >... [.Map => Loc:Nat |-> unknown] ...</ mem >
-		< locals >... [.Bag => Bag(Declaration(Pointer(T:Type-Specifier), I:Id))] ...</ locals >
-		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
-		< types >... [.Map => I:Id |-> Pointer(T:Type-Specifier)] ...</ types >
+	mb [declaration-cool-array]: rule
+		< k > [Kr:KResult ~> declare(T:Type-Specifier, '_`[_`](HOLE,, N:Nat)) => declare-aux(T:Type-Specifier, '_`[_`](Kr:KResult,, N:Nat), .List{K})] ...</ k >
 		: KSentence .
-	mb [array-declaration]: rule
-		< k > [Declaration(T:Type-Specifier, X:Id[N:Nat]) => .K] ...</ k >
-		< env >... [.Map => X:Id |-> Loc:Nat] ...</ env >
-		< mem >... [.Map => Loc:Nat |-> sNat(Loc:Nat)  sNat(Loc:Nat) to (sNat(Loc:Nat) +Nat N:Nat) |-> unknown] ...</ mem >
-		< locals >... [.Bag => Bag(Declaration(T:Type-Specifier, X:Id[N:Nat]))] ...</ locals >
-		< nextLoc > [Loc:Nat => (sNat(Loc:Nat) +Nat N:Nat)] </ nextLoc >
-		< types >... [.Map => X:Id |-> T:Type-Specifier[N:Nat]] ...</ types >
-		: KSentence .
-	mb [local-struct-declaration-start]: rule
-		< k > [Declaration(struct(X:Id), X':Id) => calcStructSize(DS:TogetherList) ~> Declaration(struct(X:Id), X':Id)] ...</ k >
-		< typedefs >... struct(X:Id) |-> struct(X:Id, DS:TogetherList) ...</ typedefs >
+	--- pointer type, so "tail recursive" :)
+	mb [declaration-heat-func-pointer]: rule
+		< k > [declare(T:Type-Specifier, 'Direct-Function-Declarator('Pointer(Kp:KProper),, PTL:Parameter-Type-List)) => declare(funcptr(T:Type-Specifier, PTL:Parameter-Type-List), Kp:KProper)] ...</ k >
 		: KSentence .
 
+	mb rule
+		< k > [declare-aux(T:Type-Specifier, '_`[_`](locs((ALoc:Nat,, Locs:List{K})),, N:Nat), Pre:List{K}) => declare-aux(T:Type-Specifier, '_`[_`](locs(Locs:List{K}),, N:Nat), (Loc:Nat to (Loc:Nat +Nat N:Nat),, Pre:List{K}))] ...</ k >
+		< mem >... ALoc:Nat |-> [? => Loc:Nat] [.Map => Loc:Nat to (Loc:Nat +Nat N:Nat) |-> unknown] ...</ mem >
+		< locals >... [.Bag => Bag(Loc:Nat to (Loc:Nat +Nat N:Nat))] ...</ locals >
+		< nextLoc > [Loc:Nat => (Loc:Nat +Nat N:Nat)] </ nextLoc >
+		: KSentence .
+	mb [declaration-array-done]: rule
+		< k > [declare-aux(T:Type-Specifier, '_`[_`](locs(.List{K}),, N:Nat), Pre:List{K}) => locs(Pre:List{K})] ...</ k >
+		: KSentence .
+	
 	op struct-aux : Id Id Nat -> K .
+	--- need to initialize inside struct
+	--- fixme
 	mb [local-struct-declaration]: rule
-		< k > [Len:Nat ~> Declaration(struct(X:Id), X':Id) => .K] ...</ k >
+		< k > [Len:Nat ~> declare(struct(X:Id), X':Id) => locs(Loc:Nat)] ...</ k >
 		< env >... [.Map => X':Id |-> Loc:Nat] ...</ env >
 		< mem >... [.Map => Loc:Nat to (Loc:Nat +Nat Len:Nat) |-> unknown] ...</ mem >
-		< locals >... [.Bag => Bag(struct-aux(X:Id, X':Id, Len:Nat))] ...</ locals >
+		< locals >... [.Bag => Bag(Loc:Nat to (Loc:Nat +Nat Len:Nat))] ...</ locals >
 		< nextLoc > [Loc:Nat => (Loc:Nat +Nat Len:Nat)] </ nextLoc >
 		< types >... [.Map => X':Id |-> struct(X:Id)] ...</ types >
 		< typedefs >... struct(X:Id) |-> struct(X:Id, DS:TogetherList) ...</ typedefs >
 		: KSentence .
-	mb [struct-declaration]: rule 
-		< k > [Global(struct(X:Id, DS:TogetherList) ;) => .K] ...</ k >
-		< typedefs >... [.Map => struct(X:Id) |-> struct(X:Id, DS:TogetherList)] ...</ typedefs >
+	
+	--- these should become a single rule once declarations are finished being unified
+	mb [declaration-id-array]: rule
+		< k > [declare(T:Type-Specifier[N:Nat], I:Id) => locs(Loc:Nat)] ...</ k >
+		< env >... [.Map => I:Id |-> Loc:Nat] ...</ env >
+		< mem >... [.Map => Loc:Nat |-> unknown] ...</ mem >
+		< locals >... [.Bag => BagItem(Loc:Nat)] ...</ locals >
+		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
+		< types >... [.Map => I:Id |-> T:Type-Specifier[N:Nat]] ...</ types >
 		: KSentence .
+	mb [declaration-id-func-pointer]: rule
+		< k > [declare(funcptr(K1:K, K2:K), I:Id) => locs(Loc:Nat)] ...</ k >
+		< env >... [.Map => I:Id |-> Loc:Nat] ...</ env >
+		< mem >... [.Map => Loc:Nat |-> unknown] ...</ mem >
+		< locals >... [.Bag => BagItem(Loc:Nat)] ...</ locals >
+		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
+		< types >... [.Map => I:Id |-> funcptr(K1:K, K2:K)] ...</ types >
+		: KSentence .
+	mb [declaration-id-pointer]: rule
+		< k > [declare(Pointer(T:Type-Specifier), I:Id) => locs(Loc:Nat)] ...</ k >
+		< env >... [.Map => I:Id |-> Loc:Nat] ...</ env >
+		< mem >... [.Map => Loc:Nat |-> unknown] ...</ mem >
+		< locals >... [.Bag => BagItem(Loc:Nat)] ...</ locals >
+		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
+		< types >... [.Map => I:Id |-> Pointer(T:Type-Specifier)] ...</ types >
+		: KSentence .
+	mb [declaration-id-base]: rule
+		< k > [declare(int, I:Id) => locs(Loc:Nat)] ...</ k >
+		< env >... [.Map => I:Id |-> Loc:Nat] ...</ env >
+		< mem >... [.Map => Loc:Nat |-> unknown] ...</ mem >
+		< locals >... [.Bag => BagItem(Loc:Nat)] ...</ locals >
+		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
+		< types >... [.Map => I:Id |-> int] ...</ types >
+		: KSentence .
+		
+	mb [local-struct-declaration-start]: rule
+		< k > [declare(struct(X:Id), X':Id) => calcStructSize(DS:TogetherList) ~> declare(struct(X:Id), X':Id)] ...</ k >
+		< typedefs >... struct(X:Id) |-> struct(X:Id, DS:TogetherList) ...</ typedefs >
+		: KSentence .
+
+
 
 endm
 
@@ -469,6 +529,7 @@ mod COMMON-C-SEMANTICS is
 	mb rule [U(I:Int) => I:Int] : KSentence [metadata "structural"] .
 	mb rule [UL(I:Int) => I:Int] : KSentence [metadata "structural"] .
 	mb rule [unsigned-int => int] : KSentence [metadata "structural"] .
+	mb rule [unsigned-short => int] : KSentence [metadata "structural"] .
 	mb rule [unsigned-char => int] : KSentence [metadata "structural"] .
 	mb rule [char => int] : KSentence [metadata "structural"] .
 	mb rule [float => int] : KSentence [metadata "structural"] .
@@ -606,6 +667,7 @@ mod COMMON-C-SEMANTICS is
 		[.Bag => < type > E:Expression </ type >]
 		: KSentence .
 
+	--- fixme
 	mb [getOffset-cool]: rule
 		< k > [evalToType ~> getOffset(HOLE, X':Id) => calcStructSize(Fields1:SeqList)] ...</ k >
 		[< type > struct(X:Id) </ type > => .Bag]
@@ -616,6 +678,12 @@ mod COMMON-C-SEMANTICS is
 		[< type > struct(X:Id) </ type > => .Bag]
 		< typedefs >... struct(X:Id) |-> 'struct(X:Id,, (Fields1:SeqList ~> Field(T:TogetherList, Direct-Function-Declarator(Pointer(X':Id), PTL:Parameter-Type-List)) ~>  Fields2:SeqList)) ...</ typedefs >
 		: KSentence .
+	mb [getOffset-cool-func-pointer-array]: rule
+		< k > [evalToType ~> getOffset(HOLE, X':Id) => calcStructSize(Fields1:SeqList)] ...</ k >
+		[< type > struct(X:Id) </ type > => .Bag]
+		< typedefs >... struct(X:Id) |-> 'struct(X:Id,, (Fields1:SeqList ~> Field(T:TogetherList, Direct-Function-Declarator(Pointer(X':Id[N:Nat]), PTL:Parameter-Type-List)) ~>  Fields2:SeqList)) ...</ typedefs >
+		: KSentence .
+
 		
 	
 	mb rule < type > [Deref(& E:Expression) => E:Expression] ...</ type > : KSentence [metadata "structural"] .
@@ -729,47 +797,14 @@ mod COMMON-C-SEMANTICS is
 		< loopStack > [ListItem(_~>_(_~>_((while (B:Expression) S:Statement), popLoop), K:K)) => .List] ...</ loopStack >
 		: KSentence .
 
-	mb [return-value-clean-local-pointer]: rule 
-		< k > return V:Value ; ...</ k >
-		< locals >... [BagItem(Declaration(Pointer(T:Type-Specifier), I:Id)) => .Bag] ...</ locals >	
-		< env >... I:Id |-> Loc:Nat ...</ env >
-		< mem >... [Loc:Nat |-> ? => .Map] ...</ mem >
-		: KSentence .
 	mb [return-value-clean-local]: rule 
 		< k > return V:Value ; ...</ k >
-		< locals >... [BagItem(Declaration(int, I:Id)) => .Bag] ...</ locals >	
-		< env >... I:Id |-> Loc:Nat ...</ env >
+		< locals >... [BagItem(Loc:Nat) => .Bag] ...</ locals >	
 		< mem >... [Loc:Nat |-> ? => .Map] ...</ mem >
-		: KSentence .
-		
-	mb [return-value-clean-local-array]: rule 
-		< k > return V:Value ; ...</ k >
-		< locals >... [BagItem(Declaration(T:Type-Specifier, I:Id[N:Nat])) => .Bag] ...</ locals >	
-		< env >... I:Id |-> Loc:Nat ...</ env >
-		< mem > [M:Map Loc:Nat |-> Start:Nat => cleanMap(M:Map, Start:Nat, N:Nat)] </ mem >
-		: KSentence .
-	mb [return-value-clean-local-struct]: rule 
-		< k > return V:Value ; ...</ k >
-		< locals >... [BagItem(struct-aux(X:Id, X':Id, Len:Nat)) => .Bag] ...</ locals >	
-		< env >... X':Id |-> Loc:Nat ...</ env >
-		< mem > [M:Map => cleanMap(M:Map, Loc:Nat, Len:Nat)] </ mem >
-		: KSentence .
-	mb [return-clean-local-array]: rule 
-		< k > return ; ...</ k >
-		< locals >... [BagItem(Declaration(int, I:Id[N:Nat])) => .Bag] ...</ locals >	
-		< env >... I:Id |-> Loc:Nat ...</ env >
-		< mem > [M:Map Loc:Nat |-> Start:Nat => cleanMap(M:Map, Start:Nat, N:Nat)] </ mem >
 		: KSentence .
 	mb [return-clean-local]: rule 
 		< k > return ; ...</ k >
-		< locals >... [BagItem(Declaration(int, I:Id)) => .Bag] ...</ locals >	
-		< env >... I:Id |-> Loc:Nat ...</ env >
-		< mem >... [Loc:Nat |-> ? => .Map] ...</ mem >
-		: KSentence .
-	mb [return-clean-local-pointer]: rule 
-		< k > return ; ...</ k >
-		< locals >... [BagItem(Declaration(Pointer(T:Type-Specifier), I:Id)) => .Bag] ...</ locals >	
-		< env >... I:Id |-> Loc:Nat ...</ env >
+		< locals >... [BagItem(Loc:Nat) => .Bag] ...</ locals >	
 		< mem >... [Loc:Nat |-> ? => .Map] ...</ mem >
 		: KSentence .
 		
