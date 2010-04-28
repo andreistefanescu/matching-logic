@@ -80,29 +80,28 @@ typedef unsigned int u32;
 
 u16* primes;
 
-// void generate_prime_list(int max) {
-    // unsigned char* is_not_prime = (unsigned char*)calloc(max+1, 1);
-    // int i, j, num_primes = 1;
-    // for(i = 2; i <= max; i++) {
-        // if (is_not_prime[i]) {
-			// continue;
-		// }
-        // num_primes++;
-        // for(j = i + i; j <= max; j += i) {
-            // is_not_prime[j] = 1;
-        // }
-    // }
-    // primes = (u16*)malloc(sizeof(u16) * (num_primes + 1));
-    // j = 0;
-    // for(i = 2; i <= max; i++) {
-        // if (!is_not_prime[i]) {
-            // primes[j] = i;
-            // j++;
-        // }
-    // }
-    // primes[j] = 0;
-    // free(is_not_prime);
-// }
+void generate_prime_list(int max) {
+    unsigned char* is_not_prime = (unsigned char*)calloc(max+1, 1);
+    int i, j, num_primes = 1;
+    for(i = 2; i <= max; i++) {
+        if (!is_not_prime[i]) {
+	        num_primes++;
+	        for(j = i + i; j <= max; j += i) {
+	            is_not_prime[j] = 1;
+	        }
+		}
+    }
+    primes = (u16*)malloc(sizeof(u16) * (num_primes + 1));
+    j = 0;
+    for(i = 2; i <= max; i++) {
+        if (!is_not_prime[i]) {
+            primes[j] = i;
+            j++;
+        }
+    }
+    primes[j] = 0;
+    free(is_not_prime);
+}
 
 
 u32 trial_division_primes(u32 n) {
@@ -122,13 +121,13 @@ int main(void) {
     int i;
 	int n;
 	//generate_prime_list(65536);
-	//generate_prime_list(1024);
+	generate_prime_list(128);
 	
 	n = 241333;
 	printf("%d\n", trial_division_sqrt(n));
 	printf("%d\n", trial_division_squaring(n));
 	printf("%d\n", trial_division_odd(n));
-	//printf("%d\n", trial_division_primes(n));
+	printf("%d\n", trial_division_primes(n));
 
 	printf("------\n");
 	
@@ -136,7 +135,7 @@ int main(void) {
 	printf("%d\n", trial_division_sqrt(n));
 	printf("%d\n", trial_division_squaring(n));
 	printf("%d\n", trial_division_odd(n));
-	//printf("%d\n", trial_division_primes(n));
+	printf("%d\n", trial_division_primes(n));
 	
     return 0;
 }
