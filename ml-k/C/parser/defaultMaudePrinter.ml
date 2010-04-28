@@ -758,7 +758,7 @@ class virtual defaultMaudePrinterClass = object (self)
         self#pLineDirective l ++
           text "enum" ++ align ++ text (" " ^ enum.ename) ++
           text " {" ++ line
-          ++ (docList ~sep:(chr ',' ++ line)
+          ++ (docList ~sep:(text ".,." ++ line)
                 (fun (n,i, loc) -> 
                   text (n ^ " = ") 
                     ++ self#pExp () i)
@@ -1099,5 +1099,78 @@ class virtual defaultMaudePrinterClass = object (self)
        ++ (match fi.fbitfield with None -> nil 
        | Some i -> text ": " ++ num i ++ text " ")
        ++ self#pAttrs () fi.fattr
-
+	   
+	   
+  method pInit () =	
+	(print_string ("asdf");
+  function 
+      SingleInit e -> self#pExp () e
+    | CompoundInit (t, initl) -> 
+      (* We do not print the type of the Compound *)
+        let printDesignator = 
+          if not !msvcMode then begin
+            (* Print only for union when we do not initialize the first field *)
+            match unrollType t, initl with
+              TComp(ci, _), [(Field(f, NoOffset), _)] -> 
+                if not (ci.cstruct) && ci.cfields != [] && 
+                  (List.hd ci.cfields) != f then
+                  true
+                else
+                  false
+            | _ -> false
+          end else 
+            false 
+        in
+        let d_oneInit = function
+            Field(f, NoOffset), i -> 
+              (if printDesignator then 
+                text ("." ^ f.fname ^ " = ") 
+              else nil) ++ self#pInit () i
+          | Index(e, NoOffset), i -> 
+              (if printDesignator then 
+                text "[" ++ self#pExp () e ++ text "] = " else nil) ++ 
+                self#pInit () i
+          | _ -> E.s (unimp "Trying to print malformed initializer")
+        in
+        chr '{' ++ (align 
+                      ++ ((docList ~sep:(text ".,." ++ break) d_oneInit) () initl) 
+                      ++ unalign)
+          ++ chr '}')
+		  
+ (* dump initializers to a file. *)
+  method dInit (out: out_channel) (ind: int) (i: init) = 
+    (* Dump an array *)
+    let dumpArray (bt: typ) (il: 'a list) (getelem: 'a -> init) = 
+      let onALine = (* How many elements on a line *)
+        match unrollType bt with TComp _ | TArray _ -> 1 | _ -> 4
+      in
+      let rec outputElements (isfirst: bool) (room_on_line: int) = function
+          [] -> output_string out "}"
+        | (i: 'a) :: rest -> 
+            if not isfirst then output_string out ".,. ";
+            let new_room_on_line = 
+              if room_on_line == 0 then begin 
+                output_string out "\n"; output_string out (String.make ind ' ');
+                onALine - 1
+              end else 
+                room_on_line - 1
+            in
+            self#dInit out (ind + 2) (getelem i);
+            outputElements false new_room_on_line rest
+      in
+      output_string out "{ ";
+      outputElements true onALine il
+    in
+    match i with 
+      SingleInit e -> 
+        fprint out !lineLength (indent ind (self#pExp () e))
+    | CompoundInit (t, initl) -> begin 
+        match unrollType t with 
+          TArray(bt, _, _) -> 
+            dumpArray bt initl (fun (_, i) -> i)
+        | _ -> 
+            (* Now a structure or a union *)
+            fprint out !lineLength (indent ind (self#pInit () i))
+    end
+		  
 end (* class defaultCilPrinterClass *)

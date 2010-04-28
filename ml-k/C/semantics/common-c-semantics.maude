@@ -1,3 +1,4 @@
+--- not evaluating inside initializers
 mod COMMON-INCLUDE is
 	including K .
 	including C-SYNTAX .
@@ -178,7 +179,7 @@ mod COMMON-C-STANDARD-LIBRARY is
 	: KSentence .
 	mb [putchar]: rule
 		< k > [Apply(builtin(putchar), (N:Nat)) => N:Nat] ...</ k >
-		< output > [S:String => S:String +String charString(N:Nat)] </ output >
+		< output > [S:String => S:String +String charString(N:Nat %Nat 256)] </ output >
 	: KSentence .
 	--------------------------------------------
 	mb [printf-is-value]: rule
@@ -194,7 +195,7 @@ mod COMMON-C-STANDARD-LIBRARY is
 	mb [printf-normal]: rule
 		< k > [printf-aux(Len:Nat, Loc:Nat, L:List{Expression}) => printf-aux(sNat(Len:Nat), sNat(Loc:Nat), L:List{Expression})] ...</ k >
 		< mem >... Loc:Nat |-> N:Nat ...</ mem >
-		< output > [S:String => S:String +String charString(N:Nat)] </ output >
+		< output > [S:String => S:String +String charString(N:Nat %Nat 256)] </ output >
 		if notBool(N:Nat ==Bool asciiString("%")) 
 		andBool notBool(N:Nat ==Bool 0)
 	: KSentence .
@@ -339,6 +340,16 @@ mod COMMON-GLOBAL-DECLARATION is
 		< k > [Global(Typedef(DS:TogetherList, X:Typedef-Name)) => .K] ...</ k >
 		< typedefs >... [.Map => X:Typedef-Name |-> DS:TogetherList] ...</ typedefs >
 		: KSentence .
+		
+			
+	mb [global-array-declaration-init]: rule
+		< k > [Declaration(T:Type-Specifier, X:Id[N:Nat]) = { L:List{Expression} } => .K] ...</ k >
+		< env >... [.Map => X:Id |-> Loc:Nat] ...</ env >
+		< genv >... [.Map => X:Id |-> Loc:Nat] ...</ genv >
+		< mem >... [.Map => Loc:Nat |-> sNat(Loc:Nat)  sNat(Loc:Nat) to (sNat(Loc:Nat) +Nat N:Nat) |-> getList{K}(L:List{Expression})] ...</ mem >
+		< nextLoc > [Loc:Nat => (sNat(Loc:Nat) +Nat N:Nat)] </ nextLoc >
+		< types >... [.Map => X:Id |-> T:Type-Specifier[N:Nat]] ...</ types >
+		: KSentence .
 endm
 
 mod COMMON-LOCAL-DECLARATION is
@@ -392,6 +403,7 @@ mod COMMON-LOCAL-DECLARATION is
 		< k > [Global(struct(X:Id, DS:TogetherList) ;) => .K] ...</ k >
 		< typedefs >... [.Map => struct(X:Id) |-> struct(X:Id, DS:TogetherList)] ...</ typedefs >
 		: KSentence .
+
 endm
 
 mod COMMON-EXPRESSIONS is
@@ -412,6 +424,12 @@ mod COMMON-EXPRESSIONS is
 	--- mb rule [T1 and T2 => T1 andBool T2] : KSentence .
 	--- mb rule [T1 or T2 => T1 orBool T2] : KSentence .
 	mb rule [!(I:Int) => if (I:Int ==Bool 0) then 1 else 0 fi] : KSentence .
+	
+	mb rule [I:Int >> N:Nat => I:Int >>Int N:Nat] : KSentence .
+	mb rule [I:Int << N:Nat => I:Int <<Int N:Nat] : KSentence .
+	mb rule [I1:Int | I2:Int => I1:Int |Int I2:Int] : KSentence .
+	mb rule [_&_(I1:Int, I2:Int) => I1:Int &Int I2:Int] : KSentence .
+	mb rule [~ I:Int => ~Int I:Int] : KSentence .
 
 	
 endm
@@ -646,27 +664,27 @@ mod COMMON-C-SEMANTICS is
 		
 	--- throwing away casts now
 	mb [cast-int]: rule
-		< k > [Cast(int, I:Int) => I:Int] ...</ k >
+		[Cast(int, I:Int) => I:Int]
 		---< env >... X:Id |-> Loc:Nat ...</ env >
 		---< mem >... Loc:Nat |-> I:Int ...</ mem >
 		: KSentence .
 	mb [cast-unsigned-long]: rule
-		< k > [Cast(unsigned-long, I:Int) => I:Int] ...</ k >
+		[Cast(unsigned-long, I:Int) => I:Int]
 		---< env >... X:Id |-> Loc:Nat ...</ env >
 		---< mem >... Loc:Nat |-> I:Int ...</ mem >
 		: KSentence .
 	mb [cast-unsigned-int]: rule
-		< k > [Cast(unsigned-int, I:Int) => I:Int] ...</ k >
+		[Cast(unsigned-int, I:Int) => I:Int]
 		---< env >... X:Id |-> Loc:Nat ...</ env >
 		---< mem >... Loc:Nat |-> I:Int ...</ mem >
 		: KSentence .
 	mb [cast-pointer-type]: rule
-		< k > [Cast(Pointer(T:Type-Specifier), I:Int) => I:Int] ...</ k >
+		[Cast(Pointer(T:Type-Specifier), I:Int) => I:Int]
 		---< env >... X:Id |-> Loc:Nat ...</ env >
 		---< mem >... Loc:Nat |-> I:Int ...</ mem >
 		: KSentence .
 	mb [cast-func-pointer-type]: rule
-		< k > [Cast(Pointer(T:Type-Specifier, T':Type-Specifier), I:Int) => I:Int] ...</ k >
+		[Cast(Pointer(T:Type-Specifier, T':Type-Specifier), I:Int) => I:Int]
 		---< env >... X:Id |-> Loc:Nat ...</ env >
 		---< mem >... Loc:Nat |-> I:Int ...</ mem >
 		: KSentence .
