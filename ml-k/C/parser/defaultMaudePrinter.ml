@@ -305,6 +305,7 @@ class virtual defaultMaudePrinterClass = object (self)
 
     | TFloat(fkind, a) -> 
         d_fkind () fkind 
+		++ if (name = nil) then (nil) else (text ", ")
           ++ self#pAttrs () a 
           ++ text " " 
           ++ name
