@@ -33,7 +33,7 @@ int checkThatArrayIsSorted (int array[], int length);
 void insertion_sort(int a[], int length)
 {
   int i;
-  for (i=0; i < length; i++)
+  for (i=1; i < length; i++)
   {
       /* Insert a[i] into the sorted sublist */
       int j, v = a[i];
