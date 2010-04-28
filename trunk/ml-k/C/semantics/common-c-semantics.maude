@@ -38,8 +38,8 @@ mod COMMON-INCLUDE is
 		
 	op calcStructSize : SeqList -> K .
 	mb [calcStructSize-int]: rule
-		< k > ['calcStructSize(Field(TD:Typedef-Name, D:Declarator) ~> DS:SeqList) 
-			=> '_+_(sizeof(TD:Typedef-Name),, calcStructSize(DS:SeqList))] ...</ k >
+		< k > ['calcStructSize(Field(TD:Type-Specifier, D:Declarator) ~> DS:SeqList) 
+			=> '_+_(sizeof(TD:Type-Specifier),, calcStructSize(DS:SeqList))] ...</ k >
 		: KSentence .
 	mb [calcStructSize-done]: rule
 		['calcStructSize(.K) => 0]
@@ -440,6 +440,7 @@ mod COMMON-C-SEMANTICS is
 		
 	--- we're ignoring types for now
 	mb rule [U(I:Int) => I:Int] : KSentence [metadata "structural"] .
+	mb rule [UL(I:Int) => I:Int] : KSentence [metadata "structural"] .
 	mb rule [unsigned-int => int] : KSentence [metadata "structural"] .
 	mb rule [unsigned-char => int] : KSentence [metadata "structural"] .
 	mb rule [char => int] : KSentence [metadata "structural"] .
@@ -530,7 +531,13 @@ mod COMMON-C-SEMANTICS is
 	mb [assign]: rule
 		< k > [Deref(Loc:Nat) := V:Value => V:Value] ...</ k >
 		< mem >... Loc:Nat |-> [? => V:Value] ...</ mem >
+		---if N:Nat <Int 1000000000
 		: KSentence .
+	--- mb [assign]: rule
+		--- < k > [Deref(Loc:Nat) := N:Nat => N:Nat] ...</ k >
+		--- < mem >... Loc:Nat |-> [? => N:Nat] ...</ mem >
+		--- ---if N:Nat <Int 1000000000
+		--- : KSentence .
 		
 	mb [equality]: rule
 		< k > [V:Value == V':Value => if (V:Value ==Bool V':Value) then 1 else 0 fi] ...</ k >
@@ -615,49 +622,6 @@ mod COMMON-C-SEMANTICS is
 		< type > [Kp:KProper => T:Type] ...</ type >
 		< typedefs >... Kp:KProper |-> T:Type ...</ typedefs >
 		: KSentence .
-		
-	--- mb : rule
-		--- < k > [evalToType(struct(X:Id), X':Id) => calcStructSize(Fields1:SeqList)] ...</ k >
-		--- < typedefs >... X:Id |-> 'struct(X:Id,, (Fields1:SeqList ~> Field(T:TogetherList, X':Id) ~>  Fields2:SeqList)) ...</ typedefs >
-		--- : KSentence .
-	
-		
-	--- mb [getOffset-exp-to-type]: rule
-		--- < k > [getOffset(E1:Expression, X:Id) => getOffset(T:Type, X:Id)] ...</ k >
-		--- < types >... E1:Expression |-> T:Type ...</ types >
-		--- : KSentence .
-		
-	--- mb [getOffset-exp-to-type]: rule
-		--- < k > [getOffset(E1:Expression, X:Id) => getOffset(T:Type, X:Id)] ...</ k >
-		--- < types >... E1:Expression |-> T:Type ...</ types >
-		--- : KSentence .
-	--- mb [getOffset-typedef-pointer]: rule
-		--- < k > [getOffset(Pointer(T:Type-Specifier), X:Id) => getOffset(T':Type, X:Id)] ...</ k >
-		--- < typedefs >... T:Type-Specifier |-> T':Type ...</ typedefs >
-		--- : KSentence .
-	--- mb [getOffset-address]: rule
-		--- < k > [getOffset(&(E:Expression), X:Id) => getOffset(E:Expression, X:Id)] ...</ k >
-		--- : KSentence .
-	--- mb [getOffset-struct-pointer]: rule
-		--- < k > [getOffset(Pointer(struct(X:Id)), X':Id) => getOffset(struct(X:Id), X':Id)] ...</ k >
-		--- : KSentence .
-	--- mb [getOffset-struct-implied]: rule
-		--- < k > [getOffset(X:Id, X':Id) => getOffset(struct(X:Id), X':Id)] ...</ k >
-		--- < typedefs >... X:Id |-> struct(X:Id, ?) ...</ typedefs >
-		--- : KSentence .
-	--- mb [getOffset-struct]: rule
-		--- < k > [getOffset(struct(X:Id), X':Id) => calcStructSize(Fields1:SeqList)] ...</ k >
-		--- < typedefs >... X:Id |-> 'struct(X:Id,, (Fields1:SeqList ~> Field(T:TogetherList, X':Id) ~>  Fields2:SeqList)) ...</ typedefs >
-		--- : KSentence .
-	--- mb [getOffset-arrow]: rule
-		--- < k > [getOffset(X:Id -> X':Id, X'':Id) => getOffset(T:TogetherList, X'':Id)] ...</ k >
-		--- < typedefs >... X:Id |-> 'struct(X:Id,, (Fields1:SeqList ~> Field(T:TogetherList, X':Id) ~>  Fields2:SeqList)) ...</ typedefs >
-		--- : KSentence .
-	--- mb [getOffset-func-pointer-struct]: rule
-		--- < k > [getOffset(struct(X:Id), X':Id) => calcStructSize(Fields1:SeqList)] ...</ k >
-		--- < typedefs >... X:Id |-> 'struct(X:Id,, (Fields1:SeqList ~> Field(T:TogetherList, Direct-Function-Declarator(Pointer(X':Id), ?)) ~>  Fields2:SeqList)) ...</ typedefs >
-		--- : KSentence .
-		
 	
 	mb [deref]: rule
 		< k > [Deref(Loc:Nat) => V:Value] ...</ k >
@@ -892,7 +856,7 @@ mod COMMON-C-SEMANTICS is
 		< typedefs >... Kp:KProper |-> T:Type ...</ typedefs >
 	: KSentence .
 	mb [sizeof-pointer]: rule
-		< k > [sizeof(Pointer(TD:Typedef-Name)) => 1] ...</ k >
+		< k > [sizeof(Pointer(TD:Type-Specifier)) => 1] ...</ k >
 	: KSentence .
 	mb [sizeof-int]: rule
 		< k > [sizeof(int) => 1] ...</ k >

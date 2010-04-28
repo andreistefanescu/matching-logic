@@ -20,17 +20,17 @@ int printf(const char *format, ...);
 int putchar ( int character );
 int sprintf ( char * str, const char * format, ... );
 
+int puts (const char * str);
+int puts(const char * str){
+	return printf("%s\n", str);
+}
+
 // string.h
 size_t strlen( char *str );
 int strcmp( const char *str1, const char *str2 );
 char *strcpy(char *restrict s1, const char *restrict s2);
 void * memset ( void * ptr, int value, size_t num );
 void * memcpy ( void * destination, const void * source, size_t num );
-
-// assert.h
-void assert (int expression);
-
-
 // from http://www.danielvik.com/2010/02/fast-memcpy-in-c.html
 // by Daniel Vik
 void* memcpy(void* dest, const void* src, size_t count) {
@@ -42,3 +42,12 @@ void* memcpy(void* dest, const void* src, size_t count) {
 	}
 	return dest;
 }
+
+// assert.h
+void assert (int expression);
+
+// time.h
+typedef unsigned int time_t;
+time_t time ( time_t * timer );
+
+
