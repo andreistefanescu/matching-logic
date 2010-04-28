@@ -13,6 +13,8 @@ int atoi ( const char * str );
 void srand (unsigned int seed);
 int rand (void);
 
+// math.h
+double sqrt (double x);
 
 // stdio.h
 int printf(const char *format, ...);

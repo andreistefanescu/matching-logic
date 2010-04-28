@@ -23,6 +23,7 @@ mod COMMON-C-SYNTAX is
 	op rand : -> Id [ctor] .
 	op free : -> Id [ctor] .
 	op printf : -> Id [ctor] .
+	op sqrt : -> Id [ctor] .
 	
 	--- ---- A.1.5 Constants
 	--- --- 6.4.4

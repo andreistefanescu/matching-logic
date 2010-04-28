@@ -13,7 +13,7 @@ mod COMMON-INCLUDE is
 	sort Value .
 	sort Type . 
 	subsort Struct-Or-Union-Specifier < Value .
-	subsort Int < Value < Expression KResult .
+	subsort Int Rat < Value < Expression KResult .
 	subsort TogetherList < Type < Expression < K .
 	
 	op Closure : Function-Definition -> Value .
@@ -53,6 +53,15 @@ mod COMMON-C-STANDARD-LIBRARY is
 	including COMMON-INCLUDE .
 	
 	op builtin : Id -> Value .
+	
+	--------------------------------------------
+	mb [sqrt-is-value]: rule
+		< k > [sqrt => builtin(sqrt)] ...</ k >
+	: KSentence .
+	mb [sqrt]: rule
+		< k > [Apply(builtin(sqrt), I:Int) => truncRat(float2ratConversion(sqrtFloat(rat2floatConversion(I:Int))))] ...</ k >
+	: KSentence .
+	
 	--------------------------------------------
 	mb [malloc-is-value]: rule
 		< k > [malloc => builtin(malloc)] ...</ k >
@@ -462,6 +471,8 @@ mod COMMON-C-SEMANTICS is
 	mb rule [unsigned-int => int] : KSentence [metadata "structural"] .
 	mb rule [unsigned-char => int] : KSentence [metadata "structural"] .
 	mb rule [char => int] : KSentence [metadata "structural"] .
+	mb rule [float => int] : KSentence [metadata "structural"] .
+	mb rule [double => int] : KSentence [metadata "structural"] .
 	
 	--- skip labels
 	mb [skip-label]: rule < k > [L:Id : S:Statement => S:Statement] ...</ k > : KSentence .
