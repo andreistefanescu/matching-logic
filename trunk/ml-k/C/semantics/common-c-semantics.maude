@@ -247,10 +247,11 @@ mod COMMON-PARAMETER-BINDING is
 	including COMMON-INCLUDE .
 	op bind : -> KLabel .
 
+	mb [void-to-id]: rule
+		---[Parameter-Type-List(Parameter-Declaration([void => .List{Parameter}]))] : KSentence . 
+		[Parameter-Type-List(Parameter-Declaration(void)) => Parameter-Type-List(.List{Parameter})] : KSentence . 
+	
 	--- empty binding
-	mb [bind-empty-void]: rule 
-		< k > [bind(.List{Expression},, Parameter-Type-List(Parameter-Declaration(void))) => .K] ...</ k > 
-		: KSentence .
 	mb [bind-empty]: rule 
 		< k > [bind(.List{Expression},, Parameter-Type-List(.List{Parameter})) => .K] ...</ k > 
 		: KSentence .
