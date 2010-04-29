@@ -21,7 +21,6 @@ mod C-CONFIGURATION is
 					--- < form > .K </ form >
 				--- </ exchangable >
 				--- < types > .Map </ types >
-				--- < sizes > .Map </ sizes >
 				--- < loopStack > .List </ loopStack >
 			--- </ Task * >
 			--- < statics > .Map </ statics >

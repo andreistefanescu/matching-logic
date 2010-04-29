@@ -3,7 +3,7 @@ mod MATCH-C-SYNTAX is
 	including K .
 	
 	--- sort ?Bag .
-	--- subsort ?Bag < Builtins Bag .
+	--- subsort ?Bag < Bag .
 	--- ops ?Bag : -> ?Bag .
 	
 	subsort Id < K .

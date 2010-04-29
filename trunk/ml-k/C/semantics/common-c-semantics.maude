@@ -271,18 +271,6 @@ mod COMMON-PARAMETER-BINDING is
 		< typedefs > TypeDefs:Map </ typedefs >
 		if notBool($hasMapping(TypeDefs:Map, T:Type-Specifier))
 		: KSentence .
-	--- mb [bind-one-int-pointer]: rule 
-		--- < k > [bind((V:Value .,. L:List{Expression}),, 
-				--- Parameter-Type-List(Parameter-Declaration(Pointer(T:Type-Specifier), I:Id) ,., P:List{Parameter})) =>
-			--- bind((.List{Expression} .,. L:List{Expression}),, 
-				--- Parameter-Type-List(.List{Parameter} ,., P:List{Parameter}))]
-				--- ...</ k > 
-		--- < env >... [.Map => I:Id |-> Loc:Nat] ...</ env >
-		--- < mem >... [.Map => Loc:Nat |-> V:Value] ...</ mem >
-		--- < locals >... [.Bag => Bag(Loc:Nat)] ...</ locals >
-		--- < types >... [.Map => I:Id |-> Pointer(T:Type-Specifier)] ...</ types >
-		--- < nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
-		--- : KSentence .
 	mb [bind-one-func-pointer]: rule 
 		< k > [bind((V:Value .,. L:List{Expression}),, 
 				Parameter-Type-List(Parameter-Declaration(T:Type-Specifier, Direct-Function-Declarator(Pointer(I:Id), Parameter-Type-List(PTL:List{Parameter}))) ,., P:List{Parameter})) =>
