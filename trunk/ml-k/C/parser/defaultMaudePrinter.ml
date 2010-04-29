@@ -366,7 +366,8 @@ class virtual defaultMaudePrinterClass = object (self)
        (self#pType 
           None
           ()
-          elemt) ++ ((name'
+          elemt) ++ ((
+			if (name' = nil) then (nil) else (text ", ") ++ name'
                    ++ text "[" 
                    ++ (match lo with None -> nil | Some e -> self#pExp () e)
                    ++ text "]"))
