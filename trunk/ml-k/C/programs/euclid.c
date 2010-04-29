@@ -30,8 +30,8 @@ Retrieved from: http://en.literateprograms.org/Euclidean_algorithm_(C)?oldid=699
 
 int euclidean_gcd(int a, int b) {
 	if (b > a) { int t = a; a = b; b = t; }
-	printf(".");
 	while (b != 0) {
+		printf(".");
 		int m = a % b;
 		a = b;
 		b = m;
