@@ -1,0 +1,77 @@
+mod DYNAMIC-C-SEMANTICS is
+	including COMMON-C-SEMANTICS .
+	
+	eq eval(P:Program) = 
+		< T >
+			< local >
+				< k > P:Program ~> Apply(main) </ k >
+				< env > .Map </ env >
+				< loopStack > .List </ loopStack >
+				< locals > .Bag </ locals >
+				< parameters > .Bag </ parameters >
+				< types > .Map </ types >
+			</ local >
+			< sizes > .Map </ sizes >
+			< genv > .Map </ genv > 
+			< mem > .Map </ mem >  
+			< output > "" </ output >
+			< callStack > .List </ callStack >
+			< nextLoc > 0 </ nextLoc >
+			< malloced > .Map </ malloced >
+			< statics > .Map </ statics >
+			< typedefs > .Map </ typedefs >
+		</ T > .
+	
+	--- throw away annotations
+	mb [no-annotations]: rule [annotation(?); => .K] : KSentence .
+	
+	***(
+	Declaration-Specifiers Identifier(Parameter-Type-List){
+		Block-Item-List
+	}
+	***)
+	mb [function-definition]: rule 
+		< k > [
+			Declaration(DS:TogetherList, Direct-Function-Declarator(I:Id, PTL:Parameter-Type-List)){
+				B:TogetherList
+			}
+			=> .K]
+		...</ k >
+		< env >... [.Map => I:Id |-> Loc:Nat] ...</ env >
+		< genv >... [.Map => I:Id |-> Loc:Nat] ...</ genv >
+		< mem >... [.Map => Loc:Nat |-> Closure(Declaration(DS:TogetherList, Direct-Function-Declarator(I:Id, PTL:Parameter-Type-List)){ B:TogetherList })] </ mem >
+		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
+		: KSentence .
+		
+	mb [function-application]: rule
+		< k > [Apply(Closure(Declaration(DS:TogetherList, Direct-Function-Declarator(I:Id, PTL:Parameter-Type-List)){ B:TogetherList }), L:List{Expression}) ~> K:K => bind(L:List{Expression},, PTL:Parameter-Type-List) ~> B:TogetherList] </ k >
+		< env > [E:Map => G:Map] </ env >
+		< genv > G:Map </ genv >
+		< locals > [L:Bag => .Bag] </ locals >
+		< parameters > [P:Bag => .Bag] </ parameters >
+		---< sizes > [S:Map => .Map] </ sizes >
+		< types > [T:Map => .Map ] </ types >
+		< loopStack > [LS:List => .List] </ loopStack >
+		< callStack > [.List => List(
+			< stackFrame > 
+				< continuation > K:K </ continuation >
+				< parameters > P:Bag </ parameters >
+				< locals > L:Bag </ locals >
+				< env > E:Map </ env >
+				---< sizes > S:Map </ sizes >
+				< types > T:Map </ types >
+				< loopStack > LS:List </ loopStack >
+			</ stackFrame >
+			)] ...</ callStack >
+		: KSentence .
+	
+	
+	mb [terminate]: rule 
+		[< T >... < k > V:Value </ k > < output > S:String </ output > ...</ T >
+		=>
+		< resultValue > V:Value </ resultValue >
+		< resultOutput > S:String </ resultOutput >]
+		: KSentence .
+	
+	
+endm

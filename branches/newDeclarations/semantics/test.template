@@ -1,0 +1,7 @@
+load c-compiled
+mod C-TEST is
+	including C .
+endm
+
+---rew eval("program"(.List{K})) .
+%s

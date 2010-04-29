@@ -1,0 +1,30 @@
+mod C-CONFIGURATION is
+	including C-SYNTAX .
+	including COMMON-C-CONFIGURATION .
+	including PL-BUILTINS .
+
+	mb configuration 
+		< T > 
+			< genv > .Map </ genv > 
+			< mem > .Map </ mem >  
+			< output > "" </ output >
+			< callStack > .List </ callStack >
+			< nextLoc > 0 </ nextLoc >
+			< malloced > .Map </ malloced >
+			< statics > .Map </ statics >
+			< typedefs > .Map </ typedefs >
+			< sizes > .Map </ sizes >
+			< local >
+				< k > .K </ k >
+				< type > .K </ type >
+				< env > .Map </ env >
+				< loopStack > .List </ loopStack >
+				< locals > .Bag </ locals >
+				< parameters > .Bag </ parameters >
+				< types > .Map </ types >
+			</ local >
+		</ T > 
+		< resultValue > .K </ resultValue >
+		< resultOutput > "" </ resultOutput > 
+		: KSentence .
+endm
