@@ -247,7 +247,6 @@ mod COMMON-PARAMETER-BINDING is
 	including COMMON-INCLUDE .
 	op bind : -> KLabel .
 
-		
 	--- empty binding
 	mb [bind-empty-void]: rule 
 		< k > [bind(.List{Expression},, Parameter-Type-List(Parameter-Declaration(void))) => .K] ...</ k > 
@@ -265,7 +264,7 @@ mod COMMON-PARAMETER-BINDING is
 				...</ k > 
 		< env >... [.Map => I:Id |-> Loc:Nat] ...</ env >
 		< mem >... [.Map => Loc:Nat |-> V:Value] ...</ mem >
-		< parameters >... [.Bag => Bag(Parameter-Declaration(int, I:Id))] ...</ parameters >
+		< locals >... [.Bag => Bag(Loc:Nat)] ...</ locals >
 		< types >... [.Map => I:Id |-> int] ...</ types >
 		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
 		: KSentence .
@@ -277,7 +276,7 @@ mod COMMON-PARAMETER-BINDING is
 				...</ k > 
 		< env >... [.Map => I:Id |-> Loc:Nat] ...</ env >
 		< mem >... [.Map => Loc:Nat |-> V:Value] ...</ mem >
-		< parameters >... [.Bag => Bag(Parameter-Declaration(Pointer(T:Type-Specifier), I:Id))] ...</ parameters >
+		< locals >... [.Bag => Bag(Loc:Nat)] ...</ locals >
 		< types >... [.Map => I:Id |-> Pointer(T:Type-Specifier)] ...</ types >
 		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
 		: KSentence .
@@ -289,8 +288,7 @@ mod COMMON-PARAMETER-BINDING is
 				...</ k > 
 		< env >... [.Map => I:Id |-> Loc:Nat] ...</ env >
 		< mem >... [.Map => Loc:Nat |-> V:Value] ...</ mem >
-		< parameters >... [.Bag => Bag(Parameter-Declaration(T:Type-Specifier, Direct-Function-Declarator(Pointer(I:Id), Parameter-Type-List(PTL:List{Parameter}))))] ...</ parameters >
-		---< types >... [.Map => I:Id |-> Pointer(T:Type-Specifier)] ...</ types >
+		< locals >... [.Bag => Bag(Loc:Nat)] ...</ locals >
 		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
 		: KSentence .
 		
@@ -807,55 +805,10 @@ mod COMMON-C-SEMANTICS is
 		< locals >... [BagItem(Loc:Nat) => .Bag] ...</ locals >	
 		< mem >... [Loc:Nat |-> ? => .Map] ...</ mem >
 		: KSentence .
-		
-	op cleanMap : Map Nat Nat -> Map .
-	eq cleanMap((M:Map (N:Nat |-> ?)), N:Nat, sNat(N':Nat)) = cleanMap(M:Map, sNat(N:Nat), N':Nat) .
-	eq cleanMap(M:Map, N:Nat, 0) = M:Map .
-		
-	mb [return-value-clean-params]: rule 
-		< k > return V:Value ; ...</ k >
-		< parameters >... [BagItem(Parameter-Declaration(int, I:Id)) => .Bag] ...</ parameters >	
-		< env >... I:Id |-> Loc:Nat ...</ env >
-		< mem >... [Loc:Nat |-> ? => .Map] ...</ mem >
-		: KSentence .
-	mb [return-value-clean-params-pointer]: rule 
-		< k > return V:Value ; ...</ k >
-		< parameters >... [BagItem(Parameter-Declaration(Pointer(T:Type-Specifier), I:Id)) => .Bag] ...</ parameters >	
-		< env >... I:Id |-> Loc:Nat ...</ env >
-		< mem >... [Loc:Nat |-> ? => .Map] ...</ mem >
-		: KSentence .
-		
-	mb [return-value-clean-func-pointer]: rule 
-		< k > return V:Value ; ...</ k >
-		< parameters >... [BagItem(Parameter-Declaration(T:Type-Specifier, Direct-Function-Declarator(Pointer(I:Id), Parameter-Type-List(PTL:List{Parameter})))) => .Bag] ...</ parameters >	
-		< env >... I:Id |-> Loc:Nat ...</ env >
-		< mem >... [Loc:Nat |-> ? => .Map] ...</ mem >
-		: KSentence .	
-		
-	
-	mb [return-clean-params]: rule 
-		< k > return ; ...</ k >
-		< parameters >... [BagItem(Parameter-Declaration(int, I:Id)) => .Bag] ...</ parameters >	
-		< env >... I:Id |-> Loc:Nat ...</ env >
-		< mem >... [Loc:Nat |-> ? => .Map] ...</ mem >
-		: KSentence .
-	mb [return-clean-params-pointer]: rule 
-		< k > return ; ...</ k >
-		< parameters >... [BagItem(Parameter-Declaration(Pointer(T:Type-Specifier), I:Id)) => .Bag] ...</ parameters >	
-		< env >... I:Id |-> Loc:Nat ...</ env >
-		< mem >... [Loc:Nat |-> ? => .Map] ...</ mem >
-		: KSentence .
-	mb [return-clean-func-pointer]: rule 
-		< k > return ; ...</ k >
-		< parameters >... [BagItem(Parameter-Declaration(T:Type-Specifier, Direct-Function-Declarator(Pointer(I:Id), Parameter-Type-List(PTL:List{Parameter})))) => .Bag] ...</ parameters >	
-		< env >... I:Id |-> Loc:Nat ...</ env >
-		< mem >... [Loc:Nat |-> ? => .Map] ...</ mem >
-		: KSentence .
 
 	mb [return]: rule 
 		< k > [return ; ~> ? => skipval ~> K:K] </ k >
 		< env > [? => E:Map] </ env >
-		< parameters > [.Bag => P:Bag] </ parameters >
 		< locals > [.Bag => L:Bag] </ locals >
 		< loopStack > [? => LS:List] </ loopStack >
 		< types > [? => T:Map] </ types >
@@ -863,7 +816,6 @@ mod COMMON-C-SEMANTICS is
 			[List(
 				< stackFrame >...
 					< continuation > K:K </ continuation >
-					< parameters > P:Bag </ parameters >
 					< locals > L:Bag </ locals >
 					< env > E:Map </ env >
 					< loopStack > LS:List </ loopStack >
@@ -876,7 +828,6 @@ mod COMMON-C-SEMANTICS is
 	mb [return-value]: rule 
 		< k > [return V:Value ; ~> ? => V:Value ~> K:K] </ k >
 		< env > [? => E:Map] </ env >
-		< parameters > [.Bag => P:Bag] </ parameters >
 		< locals > [.Bag => L:Bag] </ locals >
 		< loopStack > [LS':List => LS:List] </ loopStack >
 		< types > [? => T:Map] </ types >
@@ -884,7 +835,6 @@ mod COMMON-C-SEMANTICS is
 			[List(
 				< stackFrame >...
 					< continuation > K:K </ continuation >
-					< parameters > P:Bag </ parameters >
 					< locals > L:Bag </ locals >
 					< env > E:Map </ env >
 					< loopStack > LS:List </ loopStack >

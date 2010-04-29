@@ -16,7 +16,6 @@ mod COMMON-C-CONFIGURATION is
 	op stackFrame : -> CellLabel .
 	op continuation : -> CellLabel .
 	op locals : -> CellLabel .
-	op parameters : -> CellLabel .
 	op sizes : -> CellLabel .
 	op loopStack : -> CellLabel .
 	op malloced : -> CellLabel .
