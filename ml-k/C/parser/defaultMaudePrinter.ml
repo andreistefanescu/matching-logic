@@ -363,13 +363,13 @@ class virtual defaultMaudePrinterClass = object (self)
           if nameOpt == None then printAttributes a' else 
           text "(" ++ printAttributes a' ++ name ++ text ")" 
         in
-        self#pType 
-          (Some (name'
+       (self#pType 
+          None
+          ()
+          elemt) ++ ((name'
                    ++ text "[" 
                    ++ (match lo with None -> nil | Some e -> self#pExp () e)
                    ++ text "]"))
-          ()
-          elemt
           
     | TFun (restyp, args, isvararg, a) -> 
         let name' = 
