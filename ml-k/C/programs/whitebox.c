@@ -66,23 +66,23 @@ int main(void){
 	
 	int (*fpArray[])(void)  = {main, main, main, main, main, main, main, main, main, main, main, main};
 	
-	int multidem[2][2][2];
-	multidem[0][0][0] = 1;
-	multidem[0][0][1] = 2;
-	multidem[0][1][0] = 3;
-	multidem[0][1][1] = 4;
-	multidem[1][0][0] = 5;
-	multidem[1][0][1] = 6;
-	multidem[1][1][0] = 7;
-	multidem[1][1][1] = 8;
+	// int multidem[2][2][2];
+	// multidem[0][0][0] = 1;
+	// multidem[0][0][1] = 2;
+	// multidem[0][1][0] = 3;
+	// multidem[0][1][1] = 4;
+	// multidem[1][0][0] = 5;
+	// multidem[1][0][1] = 6;
+	// multidem[1][1][0] = 7;
+	// multidem[1][1][1] = 8;
 	
-	for (int i = 0; i < 2; i++){
-		for (int j = 0; j < 2; j++){
-			for (int k = 0; k < 2; k++){
-				x += multidem[i][j][k]; // x += 36, x == 63
-			}
-		}
-	}
+	// for (int i = 0; i < 2; i++){
+		// for (int j = 0; j < 2; j++){
+			// for (int k = 0; k < 2; k++){
+				// x += multidem[i][j][k]; // x += 36, x == 63
+			// }
+		// }
+	// }
 	
 	
 	printf("%d\n",x);
