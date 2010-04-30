@@ -88,7 +88,30 @@ let d_ikind () = function
   | IULongLong -> 
       if !msvcMode then text "unsigned __int64" 
       else text "unsigned-long-long"
-	  
+	
+let d_binop () b =
+	match b with
+	| PlusA -> text "+"
+	| PlusPI | IndexPI -> text "+o"
+	| MinusA -> text "-"
+	| MinusPP | MinusPI -> text "-o"
+	| Mult -> text "*"
+	| Div -> text "/"
+	| Mod -> text "%"
+	| Shiftlt -> text "<<"
+	| Shiftrt -> text ">>"
+	| Lt -> text "<"
+	| Gt -> text ">"
+	| Le -> text "<="
+	| Ge -> text ">="
+	| Eq -> text "=="
+	| Ne -> text "!="
+	| BAnd -> text "&"
+	| BXor -> text "^"
+	| BOr -> text "|"
+	| LAnd -> text "&&"
+	| LOr -> text "||"
+		
 	(* constant *)
 let d_const () c = 
   match c with
@@ -1174,5 +1197,7 @@ class virtual defaultMaudePrinterClass = object (self)
             (* Now a structure or a union *)
             fprint out !lineLength (indent ind (self#pInit () i))
     end
-		  
+
+
+			  
 end (* class defaultCilPrinterClass *)
