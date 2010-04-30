@@ -4,64 +4,60 @@
 // };
 // struct bob bob(int);
 
+#define OK { printf("OK\n"); }
+
 int main(void){
 	int arr[2][2] = {{1, 2}, {3, 4}};
 	
+	if ((int*)(&arr) != (int*)(arr)) {
+		printf("&arr != arr\n");
+	} else OK
+	if ((int*)(&arr[0]) != (int*)(arr)) {
+		printf("&arr[0] != arr\n");
+	} else OK
+	if ((int*)(&*(arr + 0)) != (int*)(arr)) {
+		printf("&*(arr + 0) != arr\n");
+	} else OK
+	if ((int*)((arr + 0)) != (int*)(arr)) {
+		printf("arr + 0 != arr\n");
+	} else OK
+	if ((int*)(&(*(*(arr + 0) + 0))) != (int*)(arr)) {
+		printf("&(*(*(arr + 0) + 0)) != arr\n");
+	} else OK
+	
 	if (*((int*)arr + 0) != 1){
 		printf("*((int*)arr + 0) != 1\n");
-	} else {
-		printf("OK\n");
-	}
+	} else OK
 	if (*((int*)arr + 1) != 2){
 		printf("*((int*)arr + 1) != 2\n");
-	} else {
-		printf("OK\n");
-	}
+	} else OK
 	if (*((int*)arr + 2) != 3){
 		printf("*((int*)arr + 2) != 3\n");
-	} else {
-		printf("OK\n");
-	}
+	} else OK
 	if (*((int*)arr + 3) != 4){
 		printf("*((int*)arr + 3) != 4\n");
-	} else {
-		printf("OK\n");
-	}
+	} else OK
 	
 	if (*((*(arr + 0)) + 0) != 1){
 		printf("*((*(arr + 0)) + 0) != 1\n");
-	} else {
-		printf("OK\n");
-	}
+	} else OK
 	if (*((*(arr + 0)) + 1) != 2){
 		printf("*((*(arr + 0)) + 1) != 2\n");
-	} else {
-		printf("OK\n");
-	}
+	} else OK
 	if (*((*(arr + 1)) + 0) != 3){
 		printf("*((*(arr + 1)) + 0) != 3\n");
-	} else {
-		printf("OK\n");
-	}
+	} else OK
 	if (*((*(arr + 1)) + 1) != 4){
 		printf("*((*(arr + 1)) + 1) != 4\n");
-	} else {
-		printf("OK\n");
-	}
+	} else OK
 	
 	if ((int*)&arr[0] != (int*)&arr[0][0]){
 		printf("&arr[0] != &arr[0][0]\n");
-	} else {
-		printf("OK\n");
-	}
+	} else OK
 	if ((int*)&arr[1] != (int*)&arr[1][0]){
 		printf("&arr[1] != &arr[1][0]\n");
-	} else {
-		printf("OK\n");
-	}
-
-	
-	
+	} else OK
+		
 	
 	// int x1 = 5;
 	// unsigned int x2 = 5;
