@@ -1,0 +1,29 @@
+load %s
+
+load programs-gen
+--------
+--- load common-c-syntax
+--- load match-c-syntax
+
+--- mod C-SYNTAX is
+	--- including COMMON-C-SYNTAX .
+	--- including MATCH-C-SYNTAX .
+--- endm
+
+--- load common-c-configuration
+--------
+load %s
+load common-c-semantics
+load %s
+
+mod C-SEMANTICS is
+	including C-SYNTAX .
+	including C-CONFIGURATION .
+	including COMMON-C-SEMANTICS .
+	including %s .
+endm
+
+mod C is 
+	including C-PROGRAM .
+	including C-SEMANTICS . 
+endm

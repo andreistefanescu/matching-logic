@@ -1,0 +1,67 @@
+mod DYNAMIC-C-SEMANTICS is
+	including COMMON-C-SEMANTICS .
+	
+	eq eval(P:Program) = 
+		< T >
+			< local >
+				< k > P:Program ~> Apply(main) </ k >
+				< env > .Map </ env >
+				< loopStack > .List </ loopStack >
+				< locals > .Bag </ locals >
+				< types > .Map </ types >
+			</ local >
+			< sizes > .Map </ sizes >
+			< genv > .Map </ genv > 
+			< mem > .Map </ mem >  
+			< output > "" </ output >
+			< callStack > .List </ callStack >
+			< nextLoc > 0 </ nextLoc >
+			< malloced > .Map </ malloced >
+			< statics > .Map </ statics >
+			< gtypes > .Map </ gtypes >
+		</ T > .
+	
+	--- throw away annotations
+	mb [no-annotations]: rule [annotation(?); => .K] : KSentence .
+	
+	***(
+	Declaration-Specifiers Identifier(Parameter-Type-List){
+		Block-Item-List
+	}
+	***)
+
+		
+	mb [function-application]: rule
+		< k > [
+			---Apply(Closure(Declaration(funcptr(ParamTypes:K, Params:List{K}), X:Id){ B:TogetherList }), L:List{Expression}) ~> K:K 
+			'Apply('Closure('_`{_`}('Declaration(funcptr(ParamTypes:K, Params:List{K}),, X:Id),, B:TogetherList)),, L:List{Expression}) ~> K:K 
+			=> 
+			bind(L:List{Expression}, Params:List{K}) ~> B:TogetherList
+			] </ k >
+		< env > [E:Map => G:Map] </ env >
+		< genv > G:Map </ genv >
+		< locals > [L:Bag => .Bag] </ locals >
+		< types > [T:Map => GT:Map ] </ types >
+		< gtypes > GT:Map </ gtypes >
+		< loopStack > [LS:List => .List] </ loopStack >
+		< callStack > [.List => List(
+			< stackFrame > 
+				< continuation > K:K </ continuation >
+				< locals > L:Bag </ locals >
+				< env > E:Map </ env >
+				< types > T:Map </ types >
+				< loopStack > LS:List </ loopStack >
+			</ stackFrame >
+			)] ...</ callStack >
+		: KSentence .
+	
+	
+	mb [terminate]: rule 
+		[< T >... < k > V:Value </ k > < output > S:String </ output > ...</ T >
+		=>
+		< resultValue > V:Value </ resultValue >
+		< resultOutput > S:String </ resultOutput >]
+		: KSentence .
+	
+	
+endm
