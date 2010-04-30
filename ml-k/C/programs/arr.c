@@ -1,8 +1,8 @@
 #include "fsl.h"
-// struct bob {
-	// int x;
-// };
-// struct bob bob(int);
+struct point {
+	int x;
+	int y;
+};
 
 #define OK { printf("OK\n"); }
 
@@ -38,6 +38,14 @@ int main(void){
 		printf("*((int*)arr + 3) != 4\n");
 	} else OK
 	
+	// if (
+	// Lval(Mem(PlusPI(CastE(TPtr(TInt(int, ), ), StartOf(Var(arr, NoOffset))), Const(Int64(2,int,None))), NoOffset)) 
+	// != Const(Int64(3,int,None))) {
+	// Lval(Var(printf, NoOffset))(Const(CStr("*((int*)arr + 2) != 3\n")));
+	// } else {
+	// Lval(Var(printf, NoOffset))(Const(CStr("OK\n")));
+	// }
+	
 	if (*((*(arr + 0)) + 0) != 1){
 		printf("*((*(arr + 0)) + 0) != 1\n");
 	} else OK
@@ -57,7 +65,29 @@ int main(void){
 	if ((int*)&arr[1] != (int*)&arr[1][0]){
 		printf("&arr[1] != &arr[1][0]\n");
 	} else OK
-		
+	
+	struct point pointArr[4];
+	pointArr[0].x = 1;
+	pointArr[0].y = 2;
+	pointArr[1].x = 3;
+	pointArr[1].y = 4;
+	pointArr[2].x = 5;
+	pointArr[2].y = 6;
+	pointArr[3].x = 7;
+	pointArr[3].y = 8;
+	
+	if ((*(pointArr + 3)).x != 7) {
+		printf("(*(pointArr + 3)).x != 7\n");
+	} else OK
+	if ((*(pointArr + 3)).y != 8) {
+		printf("(*(pointArr + 3)).x != 8\n");
+	} else OK
+	if (*((int*)(&(*(pointArr + 3)))) != 7) {
+		printf("*((int*)(&(*(pointArr + 3)))) != 7\n");
+	} else OK
+	if (*((int*)(&(*(pointArr + 3))) + 1) != 8) {
+		printf("*((int*)(&(*(pointArr + 3))) + 1) != 8\n");
+	} else OK
 	
 	// int x1 = 5;
 	// unsigned int x2 = 5;
