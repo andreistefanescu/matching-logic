@@ -467,8 +467,8 @@ endm
 mod COMMON-EXPRESSIONS is
 	including COMMON-INCLUDE .
 
-	mb rule [I1:Int + I2:Int => I1:Int +Int I2:Int] : KSentence .
-	mb rule [_-_(I1:Int,I2:Int) => _-Int_(I1:Int,I2:Int)] : KSentence .
+	---mb rule [I1:Int + I2:Int => I1:Int +Int I2:Int] : KSentence .
+	---mb rule [_-_(I1:Int,I2:Int) => _-Int_(I1:Int,I2:Int)] : KSentence .
 	mb rule [I1:Int * I2:Int => I1:Int *Int I2:Int] : KSentence .
 	mb rule [I1:Int / I2:Int => I1:Int /Int I2:Int] if I2:Int =/=Bool 0 : KSentence .
 	mb rule [I1:Int % I2:Int => I1:Int %Int I2:Int] if I2:Int =/=Bool 0 : KSentence .
@@ -534,16 +534,26 @@ mod COMMON-C-SEMANTICS is
 	mb [value-statement]: rule < k > [V:Value ; => .K] ...</ k > : KSentence .
 	
 	--- 6.3.2.2 Except when it is the operand of the sizeof operator, the unary & operator, the ++ operator, the -- operator, or the left operand of the . operator or an assignment operator, an lvalue that does not have an array type is converted to the value stored in the designated object (and is no longer an lvalue).
+		
+	
+	--- 6.5.3.3 (p79) footnote 90) Thus, &*E == E; &(E1[E2]) == (E1 + E2)
+	
+	--- mb rule [&(Deref(E:Expression)) => E:Expression] : KSentence [metadata "structural"] .
+	--- mb rule [&(E1:Expression[E2:Expression]) => E1:Expression + E2:Expression] : KSentence [metadata "structural"] .
+	--- mb [for-assignment]: rule < k > [E1:Expression := E2:Expression => assign(Deref(&(E1:Expression)),  E2:Expression)] ...</ k > : KSentence .
+	
+	mb rule < k > [E1:Expression[E2:Expression] => Deref(E1:Expression + E2:Expression)] ...</ k > : KSentence .
+	
 	
 	--- turn variables into references when appropriate
-	mb [make-assign-ref]: rule < k > [I:Id := E:Expression => Deref(&(I:Id)) := E:Expression] ...</ k > : KSentence .
-	mb [make-assign-arrow-ref]: rule < k > [(E1:Expression -> X:Id) := E2:Expression => Deref(&(E1:Expression -> X:Id)) := E2:Expression] ...</ k > : KSentence .
-	mb [make-assign-arrow-ref]: rule < k > [(E1:Expression . X:Id) := E2:Expression => Deref(&((& E1:Expression) -> X:Id)) := E2:Expression] ...</ k > : KSentence .
-	mb [make-call-ref]: rule < k > [Apply(I:Id, L:List{Expression}) => Apply(Deref(&(I:Id)), L:List{Expression})] ...</ k > : KSentence .
-	mb [make-postinc-ref]: rule < k > [I:Id ++ => Deref(&(I:Id)) ++] ...</ k > : KSentence .
-	mb [make-postdec-ref]: rule < k > [I:Id -- => Deref(&(I:Id)) --] ...</ k > : KSentence .
-	mb [array-revision]: rule < k > [ E1:Expression[E2:Expression] => Deref(E1:Expression + E2:Expression) ] ...</ k > : KSentence .
-	mb [make-assign-array-ref]: rule < k > [ E1:Expression[E2:Expression] := E:Expression => Deref(E1:Expression + E2:Expression) := E:Expression] ...</ k > : KSentence .
+	--- mb [make-assign-ref]: rule < k > [I:Id := E:Expression => Deref(&(I:Id)) := E:Expression] ...</ k > : KSentence .
+	--- mb [make-assign-arrow-ref]: rule < k > [(E1:Expression -> X:Id) := E2:Expression => Deref(&(E1:Expression -> X:Id)) := E2:Expression] ...</ k > : KSentence .
+	--- mb [make-assign-arrow-ref]: rule < k > [(E1:Expression . X:Id) := E2:Expression => Deref(&((& E1:Expression) -> X:Id)) := E2:Expression] ...</ k > : KSentence .
+	--- mb [make-call-ref]: rule < k > [Apply(I:Id, L:List{Expression}) => Apply(Deref(&(I:Id)), L:List{Expression})] ...</ k > : KSentence .
+	--- mb [make-postinc-ref]: rule < k > [I:Id ++ => Deref(&(I:Id)) ++] ...</ k > : KSentence .
+	--- mb [make-postdec-ref]: rule < k > [I:Id -- => Deref(&(I:Id)) --] ...</ k > : KSentence .
+	--- mb [array-revision]: rule < k > [ E1:Expression[E2:Expression] => Deref(E1:Expression + E2:Expression) ] ...</ k > : KSentence .
+	--- mb [make-assign-array-ref]: rule < k > [ E1:Expression[E2:Expression] := E:Expression => Deref(E1:Expression + E2:Expression) := E:Expression] ...</ k > : KSentence .
 	
 	--- remove empty global
 	mb [remove-global-marker-empty]: rule [Global() => .K] : KSentence .
