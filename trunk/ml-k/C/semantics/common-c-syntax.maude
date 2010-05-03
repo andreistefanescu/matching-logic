@@ -146,7 +146,7 @@ mod COMMON-C-SYNTAX is
 	---op -_ : Expression -> Expression [prec 22] .
 	op ~_ : Expression -> Expression [prec 22 metadata "strict"] .
 	op !_ : Expression -> Expression [prec 22 metadata "strict"] .
-	op sizeof_ : Expression -> Expression .
+	op sizeof : Expression -> Expression .
 	---op sizeof_ : Type-Name -> Unary-Expression .
 	
 	--- --- 6.5.4
@@ -262,7 +262,7 @@ mod COMMON-C-SYNTAX is
 	--- ---op union`{_`} : Struct-Declaration-List -> Struct-Or-Union-Specifier .
 	op struct : Id SeqList -> Struct-Or-Union-Specifier .
 	--- op union_`{_`} : Identifier Struct-Declaration-List -> Struct-Or-Union-Specifier .
-	op struct_ : Id -> Struct-Or-Union-Specifier .
+	op struct : Id -> Struct-Or-Union-Specifier .
 	--- op union_ : Identifier -> Struct-Or-Union-Specifier .
 	
 	--- sort Struct-Declaration-List .

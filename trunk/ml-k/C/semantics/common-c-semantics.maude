@@ -154,13 +154,7 @@ mod COMMON-INCLUDE is
 	eq N:Nat to N:Nat = .List{K} .
 	ceq N:Nat to N':Nat = (N:Nat,,((N:Nat +Nat 1) to N':Nat))
 		if N:Nat <Nat N':Nat .
-	--- mb [calcStructSize-int]: rule
-		--- < k > ['calcStructSize(Field(TD:Type-Specifier, D:Declarator) ~> DS:SeqList) 
-			--- => '_+_(sizeof(TD:Type-Specifier),, calcStructSize(DS:SeqList))] ...</ k >
-		--- : KSentence .
-	--- mb [calcStructSize-done]: rule
-		--- ['calcStructSize(.K) => 0]
-		--- : KSentence .	
+
 endm
 
 mod SIZEOF is
@@ -177,10 +171,19 @@ mod SIZEOF is
 		< k > [sizeof(T:Type) => sizeof(T':Type)] ...</ k >
 		< typedefs >... T:Type |-> T':Type ...</ typedefs >
 	: KSentence .
-	--- mb [sizeof-struct]: rule
-		--- < k > [sizeof(struct(X:Id)) => calcStructSize(Fields:SeqList)] ...</ k >
-		--- < typedefs >... struct(X:Id) |-> struct(X:Id, Fields:SeqList) ...</ typedefs >
-	--- : KSentence .
+	mb [sizeof-struct]: rule
+		< k > [sizeof(struct(X:Id, Fields:SeqList)) => calcStructSize(Fields:SeqList)] ...</ k >
+	: KSentence .
+	
+	
+	mb [calcStructSize-int]: rule
+		< k > ['calcStructSize(Field(TD:Type-Specifier, X:Id) ~> DS:SeqList) 
+			=> '_+_(sizeof(TD:Type-Specifier),, calcStructSize(DS:SeqList))] ...</ k >
+		: KSentence .
+	mb [calcStructSize-done]: rule
+		['calcStructSize(.K) => 0]
+		: KSentence .	
+	
 	--- mb [sizeof-id]: rule
 		--- < k > [sizeof(X:Id) => sizeof(T:Type)] ...</ k >
 		--- < types >... X:Id |-> T:Type ...</ types >
@@ -247,6 +250,9 @@ mod TYPES is
 		< k > [.K => arithConversion(V:Value, V':Value)] ~> L:KLabel(V:Value,, V':Value) ...</ k > 
 		if false
 		orBool L:KLabel ==Bool '_*_
+		orBool L:KLabel ==Bool '_+_
+		orBool L:KLabel ==Bool '_-_
+		orBool L:KLabel ==Bool '_%_
 		: KSentence .
 		
 	---C99 6.3.1.8
@@ -781,8 +787,12 @@ mod COMMON-EXPRESSIONS is
 
 	mb rule [E:Expression +o I:Int => E:Expression + (sizeof(E:Expression) * I:Int)] : KSentence .
 
+	--- fixme result needs type
 	mb rule < k > [converted(tv(I1:Int, T:Type), tv(I2:Int, T:Type)) ~> ? * ? 
 	=> (I1:Int *Int I2:Int) %i (sizeof(T:Type) *i 256)] ...</ k > : KSentence .
+	
+	mb rule < k > [converted(tv(I1:Int, T:Type), tv(I2:Int, T:Type)) ~> ? + ? 
+	=> (I1:Int +Int I2:Int) %i (sizeof(T:Type) *i 256)] ...</ k > : KSentence .
 	
 	--- mb rule [I1:Int + I2:Int => I1:Int +Int I2:Int] : KSentence .
 	--- mb rule [_-_(I1:Int,I2:Int) => _-Int_(I1:Int,I2:Int)] : KSentence .
