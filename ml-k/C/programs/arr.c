@@ -6,8 +6,13 @@ struct point {
 
 #define OK { printf("OK\n"); }
 
+typedef int* intp;
 int main(void){
 	int arr[2][2] = {{1, 2}, {3, 4}};
+	int typetest = sizeof(arr) * 2;
+	intp myintp = & arr;
+	myintp = & typetest;
+	
 	
 	if ((int*)(&arr) != (int*)(arr)) {
 		printf("&arr != arr\n");

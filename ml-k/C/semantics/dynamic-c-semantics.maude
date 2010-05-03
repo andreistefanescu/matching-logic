@@ -29,36 +29,9 @@ mod DYNAMIC-C-SEMANTICS is
 		Block-Item-List
 	}
 	***)
-	mb [function-definition]: rule 
-		< k > [
-			Declaration(DS:TogetherList, Direct-Function-Declarator(I:Id, PTL:Parameter-Type-List)){
-				B:TogetherList
-			}
-			=> .K]
-		...</ k >
-		< env >... [.Map => I:Id |-> Loc:Nat] ...</ env >
-		< genv >... [.Map => I:Id |-> Loc:Nat] ...</ genv >
-		< mem >... [.Map => Loc:Nat |-> Closure(Declaration(DS:TogetherList, Direct-Function-Declarator(I:Id, PTL:Parameter-Type-List)){ B:TogetherList })] </ mem >
-		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
-		: KSentence .
+	
 		
-	mb [function-application]: rule
-		< k > [Apply(Closure(Declaration(DS:TogetherList, Direct-Function-Declarator(I:Id, PTL:Parameter-Type-List)){ B:TogetherList }), L:List{Expression}) ~> K:K => bind(L:List{Expression},, PTL:Parameter-Type-List) ~> B:TogetherList] </ k >
-		< env > [E:Map => G:Map] </ env >
-		< genv > G:Map </ genv >
-		< locals > [L:Bag => .Bag] </ locals >
-		< types > [T:Map => .Map ] </ types >
-		< loopStack > [LS:List => .List] </ loopStack >
-		< callStack > [.List => List(
-			< stackFrame > 
-				< continuation > K:K </ continuation >
-				< locals > L:Bag </ locals >
-				< env > E:Map </ env >
-				< types > T:Map </ types >
-				< loopStack > LS:List </ loopStack >
-			</ stackFrame >
-			)] ...</ callStack >
-		: KSentence .
+
 	
 	
 	mb [terminate]: rule 
