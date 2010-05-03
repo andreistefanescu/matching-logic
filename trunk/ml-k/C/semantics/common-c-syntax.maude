@@ -155,7 +155,9 @@ mod COMMON-C-SYNTAX is
 	---subsort Unary-Expression < Conditional-Expression .
 	op Cast : Type-Name Expression -> Expression [metadata "strict(2)"] .
 	ops _*_ _/_ _%_ : Expression Expression -> Expression [prec 31 gather(E e) metadata "strict"] .	
+	ops _*i_ _/i_ _%i_ : Expression Expression -> Expression [prec 31 gather(E e) metadata "strict"] .	
 	ops _+_ _-_ : Expression Expression -> Expression [prec 33 gather(E e) metadata "strict"] .
+	ops _+i_ _-i_ : Expression Expression -> Expression [prec 33 gather(E e) metadata "strict"] .
 	ops _+o_ _-o_ : Expression Expression -> Expression [prec 33 gather(E e) metadata "strict(2)"] .
 	ops _<<_ _>>_ : Expression Expression -> Expression [prec 35 gather(E e) metadata "strict"] .
 	ops _<_ _>_ _<=_ _>=_ : Expression Expression -> Expression [prec 37 gather(E e) metadata "strict"] .
@@ -194,7 +196,7 @@ mod COMMON-C-SYNTAX is
 	sort Declaration .
 	op Declaration : TogetherList -> Declaration .
 	op Declaration : TogetherList Init-Declarator-List -> Declaration .
-	op Typedef : TogetherList Typedef-Name -> Declaration .
+	op Typedef : TogetherList Declarator -> Declaration .
 	
 	sort Init-Declarator-List .
 	subsort Init-Declarator < Init-Declarator-List .
@@ -234,13 +236,22 @@ mod COMMON-C-SYNTAX is
 	sort Type-Specifier .
 	--- subsort Struct-Or-Union-Specifier Enum-Specifier < Type-Specifier .
 	subsort Typedef-Name Struct-Or-Union-Specifier < Type-Specifier .
-	ops void float double signed unsigned 
-		char signed-char unsigned-char 
-		int unsigned-int 
-		short unsigned-short
-		long unsigned-long long-long unsigned-long-long
+	ops void 
+		float 
+		double
+		long-double
+		---signed unsigned 
+		short-int unsigned-short-int signed-short-int
+		char unsigned-char signed-char 
+		int unsigned-int signed-int
+		short unsigned-short signed-short
+		long-int unsigned-long-int signed-long-int
+		long unsigned-long signed-long
+		long-long unsigned-long-long signed-long-long
+		long-long-int unsigned-long-long-int signed-long-long-int
 		: -> Type-Specifier [ctor] .
 	op Pointer : Type-Specifier -> Type-Specifier [metadata "hybrid"] . 
+	
 	--- ----ops `_Bool `_Complex : -> Type-Specifier [ctor] .
 	--- --- TODO
 	
