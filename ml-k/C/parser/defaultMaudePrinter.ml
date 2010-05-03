@@ -72,6 +72,7 @@ let noscores s =
 let mostNeg32BitInt : int64 = (Int64.of_string "-0x80000000")
 let mostNeg64BitInt : int64 = (Int64.of_string "-0x8000000000000000")
 
+
 let d_ikind () = function
     IChar -> text "char"
   | ISChar -> text "signed-char"
@@ -336,10 +337,10 @@ class virtual defaultMaudePrinterClass = object (self)
     | TComp (comp, a) -> (* A reference to a struct *)
         let su = if comp.cstruct then "struct" else "union" in
           text (su ^ " ")
-		  ++ text (comp.cname ^ " " )
+		  ++ paren (text (comp.cname ^ " " )
           ++ self#pAttrs () a 
 		  ++ if (name = nil) then (nil) else (text ", ")
-          ++ name
+          ++ name)
           
     | TEnum (enum, a) -> 
         text ("enum " ^ enum.ename ^ " ")
