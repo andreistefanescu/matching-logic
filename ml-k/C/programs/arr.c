@@ -12,6 +12,10 @@ int main(void){
 	int typetest = sizeof(arr) * 2;
 	intp myintp = & arr;
 	myintp = & typetest;
+	//unsigned char bob[] = "hello bob";
+	char* bob = "hello";
+	// printf("sizeof(bob)=%d\n", sizeof(bob));
+	// printf("sizeof(\"hello\")=%d\n", sizeof("hello"));
 	
 	for(int i = 0; i < 2; i++){
 		for(int j = 0; j < 2; j++){
