@@ -2,6 +2,7 @@ load c-compiled
 mod C-TEST is
 	including C .
 endm
+set print attribute on .
 
 ---rew eval("program"(.List{K})) .
 %s
