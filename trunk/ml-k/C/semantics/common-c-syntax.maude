@@ -257,7 +257,7 @@ mod COMMON-C-SYNTAX is
 		long-long unsigned-long-long signed-long-long
 		long-long-int unsigned-long-long-int signed-long-long-int
 		: -> Base-Type [ctor] .
-	op Pointer : Type-Specifier -> Type-Specifier [metadata "hybrid"] . 
+	op Pointer : Type-Specifier -> Type-Specifier . 
 	
 	--- ----ops `_Bool `_Complex : -> Type-Specifier [ctor] .
 	--- --- TODO
@@ -343,8 +343,8 @@ mod COMMON-C-SYNTAX is
 	subsort Type-Specifier < Direct-Declarator .
 
 	subsort Id < Direct-Declarator .
-	op Pointer : Direct-Declarator -> Direct-Declarator [metadata "hybrid"] .
-	op Pointer : Direct-Declarator Direct-Declarator -> Direct-Declarator [metadata "hybrid"] .
+	op Pointer : Direct-Declarator -> Direct-Declarator .
+	op Pointer : Direct-Declarator Direct-Declarator -> Direct-Declarator .
 	op Pointer`(`) : -> Direct-Declarator .
 	--- --- op `(_`) : Declarator -> Declarator . --- problem with (_)
 	--- op _`[`] : Declarator -> Declarator .
@@ -394,7 +394,7 @@ mod COMMON-C-SYNTAX is
 	--- --- TODO op hackpd_hackpd : List{Parameter-Declaration} -> List{Parameter-Declaration} .
 	
 	sort Parameter-Declaration .
-	op Pointer : TogetherList -> TogetherList [metadata "hybrid"] .
+	op Pointer : TogetherList -> TogetherList .
 	op ... : -> Parameter-Declaration .
 	
 	---subsort Declaration-Specifiers < Parameter-Declaration .

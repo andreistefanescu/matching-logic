@@ -230,7 +230,7 @@ mod TYPES is
 	
 	--- move "Pointer" to where it belongs
 	mb rule 
-		[L:KLabel(T:K,, 'Pointer(D:K)) => L:KLabel(pointerType(T:K),, D:K)]
+		[L:KLabel(T:K,, pointerType(D:K)) => L:KLabel(pointerType(T:K),, D:K)]
 		if false
 		orBool L:KLabel ==Bool 'Declaration
 		orBool L:KLabel ==Bool 'Parameter-Declaration
@@ -253,11 +253,17 @@ mod TYPES is
 		orBool L:KLabel ==Bool 'Typedef
 		: KSentence [metadata "structural"] .
 	
+	--- for casts, at least
+	mb rule
+		[Pointer(T:Type) => pointerType(T:Type)]
+		: KSentence [metadata "structural"] .
+
+	
 	op arithConversion : K K -> K [metadata "strict"] .
 	op arithConversion-int : K K -> K [metadata "strict"] .
 	op integerPromotion : K -> K .
 
-	
+	--- fixme should only happen if arguments are arithmetic
 	mb rule
 		< k > [.K => arithConversion(V:Value, V':Value)] ~> L:KLabel(V:Value,, V':Value) ...</ k > 
 		if false
@@ -265,6 +271,12 @@ mod TYPES is
 		orBool L:KLabel ==Bool '_+_
 		orBool L:KLabel ==Bool '_-_
 		orBool L:KLabel ==Bool '_%_
+		orBool L:KLabel ==Bool '_<_
+		orBool L:KLabel ==Bool '_>_
+		orBool L:KLabel ==Bool '_<=_
+		orBool L:KLabel ==Bool '_>=_
+		orBool L:KLabel ==Bool '_==_
+		orBool L:KLabel ==Bool '_!=_
 		: KSentence .
 		
 	---C99 6.3.1.8
@@ -537,7 +549,7 @@ mod COMMON-C-STANDARD-LIBRARY is
 	op printf-aux : Nat Nat List{Expression} -> K .
 	op printf-% : Nat Nat List{Expression} -> K .
 	mb [printf-start]: rule
-		< k > [Apply(builtin(printf), (Loc:Nat .,. L:List{Expression})) => printf-aux(0, Loc:Nat, L:List{Expression})] ...</ k >
+		< k > [Apply(builtin(printf), (tv(Loc:Nat, ?) .,. L:List{Expression})) => printf-aux(0, Loc:Nat, L:List{Expression})] ...</ k >
 	: KSentence .
 	
 	mb [printf-normal]: rule
@@ -562,13 +574,13 @@ mod COMMON-C-STANDARD-LIBRARY is
 		if (N:Nat ==Bool asciiString("%"))
 	: KSentence .
 	mb [printf-%d]: rule
-		< k > [printf-%(Len:Nat, Loc:Nat, (D:Int .,. L:List{Expression})) => printf-aux(Len:Nat +Nat lengthString(rat2stringConversion(D:Int, 10)), sNat(Loc:Nat), L:List{Expression})] ...</ k >
+		< k > [printf-%(Len:Nat, Loc:Nat, (tv(D:Int, ?) .,. L:List{Expression})) => printf-aux(Len:Nat +Nat lengthString(rat2stringConversion(D:Int, 10)), sNat(Loc:Nat), L:List{Expression})] ...</ k >
 		< mem >... Loc:Nat |-> N:Nat ...</ mem >
 		< output > [S:String => S:String +String rat2stringConversion(D:Int, 10)] </ output >
 		if N:Nat ==Bool asciiString("d") 
 	: KSentence .
 	mb [printf-%s]: rule
-		< k > [printf-%(Len:Nat, Loc:Nat, (S:Nat .,. L:List{Expression})) => 
+		< k > [printf-%(Len:Nat, Loc:Nat, (tv(S:Nat, ?) .,. L:List{Expression})) => 
 			printf-aux(0, S:Nat, .List{Expression})
 			~> printf-aux(Len:Nat, sNat(Loc:Nat), L:List{Expression})] ...</ k >
 		< mem >... Loc:Nat |-> N:Nat ...</ mem >
@@ -879,6 +891,15 @@ mod COMMON-EXPRESSIONS is
 	mb rule [tv(I1:Int, ?) *i tv(I2:Int, ?) => I1:Int *Int I2:Int] : KSentence .
 	mb rule [tv(I1:Int, ?) %i tv(I2:Int, ?) => I1:Int %Int I2:Int] if I2:Int =/=Bool 0 : KSentence .
 	--- --- mb rule [- I => -Int I] : KSentence .
+	
+	--- fixme, restricted for pointers
+	mb rule < k > [converted(tv(I1:Int, T:Type), tv(I2:Int, T:Type)) ~> ? < ? => if (I1:Int <Int I2:Int) then tv(1, int) else tv(0, int) fi] ...</ k > : KSentence .
+	mb rule < k > [converted(tv(I1:Int, T:Type), tv(I2:Int, T:Type)) ~> ? <= ? => if (I1:Int <=Int I2:Int) then tv(1, int) else tv(0, int) fi] ...</ k > : KSentence .
+	mb rule < k > [converted(tv(I1:Int, T:Type), tv(I2:Int, T:Type)) ~> ? > ? => if (I1:Int >Int I2:Int) then tv(1, int) else tv(0, int) fi] ...</ k > : KSentence .
+	mb rule < k > [converted(tv(I1:Int, T:Type), tv(I2:Int, T:Type)) ~> ? >= ? => if (I1:Int >=Int I2:Int) then tv(1, int) else tv(0, int) fi] ...</ k > : KSentence .
+	
+	mb rule < k > [converted(tv(I1:Int, T:Type), tv(I2:Int, T:Type)) ~> ? == ? => if (I1:Int ==Bool I2:Int) then tv(1, int) else tv(0, int) fi] ...</ k > : KSentence .
+	mb rule < k > [converted(tv(I1:Int, T:Type), tv(I2:Int, T:Type)) ~> ? != ? => if (I1:Int =/=Bool I2:Int) then tv(1, int) else tv(0, int) fi] ...</ k > : KSentence .
 	--- mb rule [I1:Int < I2:Int => if (I1:Int <Int I2:Int) then 1 else 0 fi] : KSentence .
 	--- mb rule [I1:Int <= I2:Int => if (I1:Int <=Int I2:Int) then 1 else 0 fi] : KSentence .
 	--- mb rule [I1:Int > I2:Int => if (I1:Int >Int I2:Int) then 1 else 0 fi] : KSentence .
@@ -909,8 +930,8 @@ mod COMMON-C-SEMANTICS is
 	including TYPES .
 	
 	--- mb context Deref([HOLE]) := ? : KSentence .
-	--- mb context Deref([HOLE]) ++ : KSentence .
-	--- mb context Deref([HOLE]) -- : KSentence .
+	mb context Deref([HOLE]) ++ : KSentence .
+	mb context Deref([HOLE]) -- : KSentence .
 	op assign : K K -> K .
 	mb context assign(Deref([HOLE]), ?) : KSentence .
 
@@ -979,8 +1000,8 @@ mod COMMON-C-SEMANTICS is
 	--- mb [make-assign-arrow-ref]: rule < k > [(E1:Expression -> X:Id) := E2:Expression => Deref(&(E1:Expression -> X:Id)) := E2:Expression] ...</ k > : KSentence .
 	--- mb [make-assign-arrow-ref]: rule < k > [(E1:Expression . X:Id) := E2:Expression => Deref(&((& E1:Expression) -> X:Id)) := E2:Expression] ...</ k > : KSentence .
 	--- mb [make-call-ref]: rule < k > [Apply(I:Id, L:List{Expression}) => Apply(Deref(&(I:Id)), L:List{Expression})] ...</ k > : KSentence .
-	--- mb [make-postinc-ref]: rule < k > [I:Id ++ => Deref(&(I:Id)) ++] ...</ k > : KSentence .
-	--- mb [make-postdec-ref]: rule < k > [I:Id -- => Deref(&(I:Id)) --] ...</ k > : KSentence .
+	mb [make-postinc-ref]: rule < k > [I:Id ++ => Deref(&(I:Id)) ++] ...</ k > : KSentence .
+	mb [make-postdec-ref]: rule < k > [I:Id -- => Deref(&(I:Id)) --] ...</ k > : KSentence .
 	--- mb [array-revision]: rule < k > [ E1:Expression[E2:Expression] => Deref(E1:Expression + E2:Expression) ] ...</ k > : KSentence .
 	--- mb [make-assign-array-ref]: rule < k > [ E1:Expression[E2:Expression] := E:Expression => Deref(E1:Expression + E2:Expression) := E:Expression] ...</ k > : KSentence .
 	
@@ -1004,15 +1025,27 @@ mod COMMON-C-SEMANTICS is
 
 	----- end simple transformations -----
 
+	op readFromMem : Nat Type K BaseValue -> K [metadata "strict(3)"] .
 	--- generic lookup
-	--- mb [lookup]: rule
-		--- < k > [I:Id => Loc:Nat] ...</ k >
-		--- < env >... I:Id |-> Loc:Nat ...</ env >
-		--- < types >... I:Id |-> T:Type[?] ...</ types >
-		--- : KSentence .
+	mb [lookup]: rule
+		< k > [I:Id => readFromMem(Loc:Nat, T:Base-Type, sizeof(T:Base-Type), 0)] ...</ k >
+		< env >... I:Id |-> Loc:Nat ...</ env >
+		< types >... I:Id |-> T:Base-Type ...</ types >
+		: KSentence .
+	mb rule
+		< k > [readFromMem(Loc:Nat, T:Base-Type, tv(0, ?), N:Nat) 
+		=> tv(N:Nat, T:Base-Type)] ...</ k >
+		: KSentence .	
+	mb rule
+		< k > [readFromMem(Loc:Nat, T:Base-Type, tv(sNat(Len:Nat), T':Type), N:Nat) 
+		=> readFromMem(sNat(Loc:Nat), T:Base-Type, tv(Len:Nat, T':Type), (N:Nat <<Nat 8) |Nat N':Nat)] ...</ k >
+		< mem >... Loc:Nat |-> N':Nat ...</ mem >
+		: KSentence .	
+		
+
 		
 	---C99 6.3.2.1:3 Except when it is the operand of the sizeof operator or the unary & operator, or is a string literal used to initialize an array, an expression that has type ‘‘array of type’’ is converted to an expression with type ‘‘pointer to type’’ that points to the initial element of the array object and is not an lvalue. If the array object has register storage class, the behavior is undefined.
-	mb [lookup-closure]: rule
+	mb rule
 		< k > [X:Id => tv(Loc:Nat, pointerType(T:Type))] ...</ k >
 		< env >... X:Id |-> Loc:Nat ...</ env >
 		< types >... X:Id |-> arrayType(T:Type, N:Nat) ...</ types >
@@ -1036,27 +1069,27 @@ mod COMMON-C-SEMANTICS is
 
 	
 	--- requires that nothing else happen to allocate memory
-	--- mb [const-string-notfound]: rule
-		--- < k > [S:String => allocString(S:String) ~> Loc:Nat] ...</ k >
-		--- < nextLoc > Loc:Nat </ nextLoc >
-		--- < statics > [M:Map => M:Map[Loc:Nat / S:String]] </ statics >
-		--- if notBool($hasMapping(M:Map, S:String))
-		--- : KSentence .
-	--- mb [const-string-found]: rule
-		--- < k > [S:String => Loc:Nat] ...</ k >
-		--- < statics >... S:String |-> Loc:Nat ...</ statics >
-		--- : KSentence .
-	--- mb [alloc-string]: rule
-		--- < k > [allocString(S:String) => allocString(butFirstChar(S:String))] ...</ k >
-		--- < mem >... [.Map => Loc:Nat |-> charToAscii(firstChar(S:String))] ...</ mem >
-		--- < nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
-		--- if lengthString(S:String) >Int 0
-		--- : KSentence .
-	--- mb [alloc-empty-string]: rule
-		--- < k > [allocString("") => .K] ...</ k >
-		--- < mem >... [.Map => Loc:Nat |-> 0] ...</ mem >
-		--- < nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
-		--- : KSentence .
+	mb [const-string-notfound]: rule
+		< k > [.K => allocString(S:String)] ~> S:String ...</ k >
+		< nextLoc > Loc:Nat </ nextLoc >
+		< statics > M:Map [.Map => S:String |-> tv(Loc:Nat, arrayType(char, lengthString(S:String) +Nat 1))] </ statics >
+		if notBool($hasMapping(M:Map, S:String))
+		: KSentence .
+	mb [const-string-found]: rule
+		< k > [S:String => V:Value] ...</ k >
+		< statics >... S:String |-> V:Value ...</ statics >
+		: KSentence .
+	mb [alloc-string]: rule
+		< k > [allocString(S:String) => allocString(butFirstChar(S:String))] ...</ k >
+		< mem >... [.Map => Loc:Nat |-> charToAscii(firstChar(S:String))] ...</ mem >
+		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
+		if lengthString(S:String) >Int 0
+		: KSentence .
+	mb [alloc-empty-string]: rule
+		< k > [allocString("") => .K] ...</ k >
+		< mem >... [.Map => Loc:Nat |-> 0] ...</ mem >
+		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
+		: KSentence .
 		
 	--- mb [assign]: rule
 		--- < k > [assign(Deref(tv(Loc:Nat, pointerType(T:Type))), tv(V:BaseValue, T:Type)) => V:BaseValue] ...</ k >
@@ -1101,6 +1134,12 @@ mod COMMON-C-SEMANTICS is
 		
 		
 	---op evalDesignator : Expression -> K .
+	
+	mb [ref]: rule
+		< k > [&(X:Id) => tv(Loc:Nat, pointerType(T:Type))] ...</ k >
+		< env >... X:Id |-> Loc:Nat ...</ env >
+		< types >... X:Id |-> T:Type ...</ types >
+		: KSentence .
 	
 	--- mb [ref]: rule
 		--- < k > [&(I:Id) => Loc:Nat] ...</ k >
@@ -1218,21 +1257,37 @@ mod COMMON-C-SEMANTICS is
 		--- < mem >... Loc:Nat |-> V:Value ...</ mem >
 		--- : KSentence .
 		
-	--- mb [if-then-else-true]: rule
-		--- < k > [if (I:Int) S:Statement else S':Statement => S:Statement] ...</ k >
-		--- if notBool(I:Int ==Bool 0)
-		--- : KSentence .
-	--- mb [if-then-else-false]: rule
-		--- < k > [if (0) S:Statement else S':Statement => S':Statement] ...</ k >
-		--- : KSentence .
+	mb [if-then-else-true]: rule
+		< k > [if (tv(I:Int, int)) S:Statement else S':Statement => S:Statement] ...</ k >
+		if I:Int =/=Bool 0
+		: KSentence .
+	mb [if-then-else-false]: rule
+		< k > [if (tv(0, int)) S:Statement else S':Statement => S':Statement] ...</ k >
+		: KSentence .
 	
-	--- mb [if-then-true]: rule
-		--- < k > [if (I:Int) S:Statement => S:Statement] ...</ k >
-		--- if notBool(I:Int ==Bool 0)
-		--- : KSentence .
-	--- mb [if-then-false]: rule
-		--- < k > [if (0) S:Statement => .K] ...</ k >
-		--- : KSentence .
+	mb [if-then-true]: rule
+		< k > [if (tv(I:Int, int)) S:Statement => S:Statement] ...</ k >
+		if I:Int =/=Bool 0
+		: KSentence .
+	mb [if-then-false]: rule
+		< k > [if (tv(0, int)) S:Statement => .K] ...</ k >
+		: KSentence .
+		
+		
+	mb [cast-typedef]: rule
+		< k > [Cast(T:Type, V:Value) => Cast(T':Type, V:Value)] ...</ k > 
+		< typedefs >... T:Type |-> T':Type ...</ typedefs > 
+		: KSentence [metadata "structural"] .
+	mb [cast-same]: rule
+		[Cast(T:Type, tv(V:BaseValue, T:Type)) => tv(V:BaseValue, T:Type)]
+		---< env >... X:Id |-> Loc:Nat ...</ env >
+		---< mem >... Loc:Nat |-> I:Int ...</ mem >
+		: KSentence .
+		
+	--- fixme TOTALLY WRONG
+	mb rule
+		< k > [Cast(T':Type, tv(V:BaseValue, ?)) => tv(V:BaseValue, T':Type)] ...</ k > 
+		: KSentence .
 		
 	--- throwing away casts now
 	--- mb [cast-int]: rule
@@ -1340,14 +1395,14 @@ mod COMMON-C-SEMANTICS is
 		--- : KSentence .
 		
 	
-	--- mb [post-increment]: rule
-		--- < k > [Deref(Loc:Nat) ++ => V:Int] ...</ k >
-		--- < mem >... Loc:Nat |-> [V:Int => V:Int +Int 1] ...</ mem >
-		--- : KSentence .	
-	--- mb [post-decrement]: rule
-		--- < k > [Deref(Loc:Nat) -- => V:Int] ...</ k >
-		--- < mem >... Loc:Nat |-> [V:Int => _-Int_(V:Int, 1)] ...</ mem >
-		--- : KSentence .
+	mb [post-increment]: rule
+		< k > [Deref(tv(Loc:Nat, pointerType(T:Type))) ++ => tv(V:Int, T:Type)] ...</ k >
+		< mem >... Loc:Nat |-> [V:Int => V:Int +Int 1] ...</ mem >
+		: KSentence .	
+	mb [post-decrement]: rule
+		< k > [Deref(tv(Loc:Nat, pointerType(T:Type))) -- => tv(V:Int, T:Type)] ...</ k >
+		< mem >... Loc:Nat |-> [V:Int => _-Int_(V:Int, 1)] ...</ mem >
+		: KSentence .
 		
 	
 
