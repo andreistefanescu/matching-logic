@@ -13,6 +13,12 @@ int main(void){
 	intp myintp = & arr;
 	myintp = & typetest;
 	
+	for(int i = 0; i < 2; i++){
+		for(int j = 0; j < 2; j++){
+			printf("%d\n", &arr[i][j]);
+		}
+	}
+	
 	
 	if ((int*)(&arr) != (int*)(arr)) {
 		printf("&arr != arr\n");

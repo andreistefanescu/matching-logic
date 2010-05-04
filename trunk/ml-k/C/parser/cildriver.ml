@@ -60,7 +60,9 @@ module H = Hashtbl
 let printerForMaincil = new maudePrinter
 (* new maudePrinter *)
 (* new plainCilPrinterClass *)
+(* new defaultCilPrinterClass *)
 (* ((new descriptiveCilPrinterClass true) :> descriptiveCilPrinter) *)
+
 
 let strcontains s1 s2 =
 try 

@@ -337,7 +337,7 @@ class virtual defaultMaudePrinterClass = object (self)
     | TComp (comp, a) -> (* A reference to a struct *)
         let su = if comp.cstruct then "struct" else "union" in
           text (su ^ " ")
-		  ++ paren (text (comp.cname ^ " " )
+		  ++  (text ("(" ^ comp.cname ^ ") " )
           ++ self#pAttrs () a 
 		  ++ if (name = nil) then (nil) else (text ", ")
           ++ name)
@@ -377,8 +377,23 @@ class virtual defaultMaudePrinterClass = object (self)
 			() 
 			bt'
 		)
-
-
+		
+    | TArray (elemt, lo, a) -> 
+        (* ignore the const attribute for arrays *)
+        let a' = dropAttributes [ "const" ] a in 
+        let name' = 
+          if a' == [] then name else
+          if nameOpt == None then printAttributes a' else 
+          text "(" ++ printAttributes a' ++ name ++ text ")" 
+        in
+        self#pType 
+          (Some (name'
+                   ++ text "[" 
+                   ++ (match lo with None -> nil | Some e -> self#pExp () e)
+                   ++ text "]"))
+          ()
+          elemt
+(*
     | TArray (elemt, lo, a) -> 
         (* ignore the const attribute for arrays *)
         let a' = dropAttributes [ "const" ] a in 
@@ -395,7 +410,7 @@ class virtual defaultMaudePrinterClass = object (self)
                    ++ text "[" 
                    ++ (match lo with None -> nil | Some e -> self#pExp () e)
                    ++ text "]"))
-          
+ *)         
     | TFun (restyp, args, isvararg, a) -> 
         let name' = 
           if a == [] then (name ++ if name = nil then nil else text ", ") else 

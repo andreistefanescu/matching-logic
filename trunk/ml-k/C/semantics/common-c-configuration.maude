@@ -28,6 +28,7 @@ mod COMMON-C-CONFIGURATION is
 	
 	subsort Program < K .
 	subsort List{Parameter} < K .
+	subsort Base-Type < Builtins .
 	subsort Block-Item < K .
 	subsort Compound-Statement < K .
 	subsort Constant < K .

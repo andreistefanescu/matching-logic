@@ -138,6 +138,12 @@ mod COMMON-C-SYNTAX is
 	---sort Unary-Expression .
 	---subsort Unary-Expression < K .
 	---subsort Postfix-Expression < Unary-Expression .
+	
+	--- !!!!
+	--- sizeof, &, ++, ., --, and all assignment operators are NOT STRICT
+	---C99 6.3.2.1
+	--- !!!!
+	
 	ops ++_ --_ : Expression -> Expression [prec 22] .
 	op &_ : Expression -> Expression [prec 22] .
 	---op *_ : Expression -> Expression [prec 22] .
@@ -158,7 +164,7 @@ mod COMMON-C-SYNTAX is
 	ops _*i_ _/i_ _%i_ : Expression Expression -> Expression [prec 31 gather(E e) metadata "strict"] .	
 	ops _+_ _-_ : Expression Expression -> Expression [prec 33 gather(E e) metadata "strict"] .
 	ops _+i_ _-i_ : Expression Expression -> Expression [prec 33 gather(E e) metadata "strict"] .
-	ops _+o_ _-o_ : Expression Expression -> Expression [prec 33 gather(E e) metadata "strict(2)"] .
+	ops _+o_ _-o_ : Expression Expression -> Expression [prec 33 gather(E e) metadata "strict"] .
 	ops _<<_ _>>_ : Expression Expression -> Expression [prec 35 gather(E e) metadata "strict"] .
 	ops _<_ _>_ _<=_ _>=_ : Expression Expression -> Expression [prec 37 gather(E e) metadata "strict"] .
 	ops _==_ _!=_ : Expression Expression -> Expression [prec 39 gather(E e) metadata "strict"] .
@@ -234,8 +240,9 @@ mod COMMON-C-SYNTAX is
 	
 	--- --- 6.7.2
 	sort Type-Specifier .
+	sort Base-Type .
 	--- subsort Struct-Or-Union-Specifier Enum-Specifier < Type-Specifier .
-	subsort Typedef-Name Struct-Or-Union-Specifier < Type-Specifier .
+	subsort Typedef-Name Struct-Or-Union-Specifier Base-Type < Type-Specifier .
 	ops void 
 		float 
 		double
@@ -249,7 +256,7 @@ mod COMMON-C-SYNTAX is
 		long unsigned-long signed-long
 		long-long unsigned-long-long signed-long-long
 		long-long-int unsigned-long-long-int signed-long-long-int
-		: -> Type-Specifier [ctor] .
+		: -> Base-Type [ctor] .
 	op Pointer : Type-Specifier -> Type-Specifier [metadata "hybrid"] . 
 	
 	--- ----ops `_Bool `_Complex : -> Type-Specifier [ctor] .

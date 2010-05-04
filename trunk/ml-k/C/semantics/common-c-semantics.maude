@@ -1,5 +1,6 @@
 --- not evaluating inside initializers
 --- $(value $var) gives what we want for pipestatus
+set print attribute on .
 mod INCOMING-MODULES is
 	including K .
 	including C-SYNTAX .
@@ -61,13 +62,15 @@ mod C-SETTINGS is
 	---C99 6.4.4.1:5 The type of an integer constant is the first of the corresponding list in which its value can be represented
 	
 	op cfg:sizeut : -> Type .
-	eq cfg:sizeut = unsigned-int . 
+	eq cfg:sizeut = unsigned-long . 
 	
 	op cfg:sizeofInt : -> Nat .
 	eq cfg:sizeofInt = 4 .
+	op cfg:sizeofUL : -> Nat .
+	eq cfg:sizeofUL = 4 .
 	
 	op cfg:sizeofPtr : -> Nat .
-	eq cfg:sizeofPtr = cfg:sizeofInt .
+	eq cfg:sizeofPtr = cfg:sizeofUL .
 	
 	--- op drv:bitsPerInt : -> Nat .
 	--- eq drv:bitsPerInt = 8 *Nat cfg:sizeofInt .
@@ -85,6 +88,7 @@ mod C-SETTINGS is
 	
 	mb rule < k > [sizeof(int) => tv(cfg:sizeofInt, cfg:sizeut)] ...</ k > : KSentence .
 	mb rule < k > [sizeof(unsigned-int) => tv(cfg:sizeofInt, cfg:sizeut)] ...</ k > : KSentence .
+	mb rule < k > [sizeof(unsigned-long) => tv(cfg:sizeofUL, cfg:sizeut)] ...</ k > : KSentence .
 	mb rule < k > [sizeof(signed-int) => tv(cfg:sizeofInt, cfg:sizeut)] ...</ k > : KSentence .
 	mb rule < k > [sizeof(pointerType(?)) => tv(cfg:sizeofPtr, cfg:sizeut)] ...</ k > : KSentence .
 
@@ -171,6 +175,14 @@ mod SIZEOF is
 		< k > [sizeof(T:Type) => sizeof(T':Type)] ...</ k >
 		< typedefs >... T:Type |-> T':Type ...</ typedefs >
 	: KSentence .
+	mb rule
+		< k > [sizeof(E:Expression) => sizeof(T:Type)] ...</ k >
+		< types >... E:Expression |-> T:Type ...</ types >
+	: KSentence .
+	mb rule
+		< k > [sizeof(E:Expression[I:Int]) => sizeof(E:Expression[0])] ...</ k >
+		if I:Int =/=Bool 0
+	: KSentence .
 	mb [sizeof-struct]: rule
 		< k > [sizeof(struct(X:Id, Fields:SeqList)) => calcStructSize(Fields:SeqList)] ...</ k >
 	: KSentence .
@@ -241,8 +253,8 @@ mod TYPES is
 		orBool L:KLabel ==Bool 'Typedef
 		: KSentence [metadata "structural"] .
 	
-	op arithConversion : K K -> K [comm metadata "strict"] .
-	op arithConversion-int : K K -> K [comm metadata "strict"] .
+	op arithConversion : K K -> K [metadata "strict"] .
+	op arithConversion-int : K K -> K [metadata "strict"] .
 	op integerPromotion : K -> K .
 
 	
@@ -296,6 +308,15 @@ mod TYPES is
 	mb rule
 		< k > [integerPromotion(tv(V:BaseValue, unsigned-int)) => tv(V:BaseValue, unsigned-int)] ...</ k >
 		: KSentence .
+	mb rule
+		< k > [integerPromotion(tv(V:BaseValue, unsigned-long)) => tv(V:BaseValue, unsigned-long)] ...</ k >
+		: KSentence .
+	mb rule
+		< k > [integerPromotion(tv(V:BaseValue, pointerType(T:Type))) => tv(V:BaseValue, pointerType(T:Type))] ...</ k >
+		: KSentence .
+	mb rule
+		< k > [integerPromotion(tv(V:BaseValue, arrayType(T:Type, N:Nat))) => tv(V:BaseValue, arrayType(T:Type, N:Nat))] ...</ k >
+		: KSentence .
 	
 	--- Then the following rules are applied to the promoted operands:
 	
@@ -308,6 +329,15 @@ mod TYPES is
 		] ...</ k >
 		: KSentence .	
 	
+	--- fixme not sure about this
+	mb rule
+		< k > [
+			arithConversion-int(tv(V1:BaseValue, pointerType(T:Type)), tv(V2:BaseValue, T':Base-Type)) 
+			=> 
+			converted(tv(V1:BaseValue, pointerType(T:Type)), tv(V2:BaseValue, T':Base-Type))
+		] ...</ k >
+		: KSentence .	
+	
 	--- Otherwise, if both operands have signed integer types or both have unsigned integer types, the operand with the type of lesser integer conversion rank is converted to the type of the operand with greater rank.
 	
 	--- fixme, hardcoded
@@ -316,6 +346,20 @@ mod TYPES is
 			arithConversion-int(tv(V1:BaseValue, unsigned-int), tv(V2:BaseValue, int)) 
 			=> 
 			converted(tv(V1:BaseValue, unsigned-int), tv(V2:BaseValue, unsigned-int))
+		] ...</ k >
+		: KSentence .
+	mb rule
+		< k > [
+			arithConversion-int(tv(V1:BaseValue, unsigned-long), tv(V2:BaseValue, int)) 
+			=> 
+			converted(tv(V1:BaseValue, unsigned-long), tv(V2:BaseValue, unsigned-long))
+		] ...</ k >
+		: KSentence .
+	mb rule
+		< k > [
+			arithConversion-int(tv(V1:BaseValue, int), tv(V2:BaseValue, unsigned-long)) 
+			=> 
+			converted(tv(V1:BaseValue, unsigned-long), tv(V2:BaseValue, unsigned-long))
 		] ...</ k >
 		: KSentence .
 	
@@ -688,17 +732,51 @@ mod COMMON-LOCAL-DECLARATION is
 		--- : KSentence .
 				
 
+	op addTypes : K Type -> K .
+	mb rule
+		< k > [addTypes(E:Expression, arrayType(T:Type, N:Nat)) => addTypes(E:Expression[0], T:Type)] ...</ k >
+		< types >... [.Map => E:Expression |-> arrayType(T:Type, N:Nat)] ...</ types >
+		: KSentence .
+	mb rule
+		< k > [addTypes(E:Expression, pointerType(T:Type)) => addTypes(Deref(E:Expression), T:Type)] ...</ k >
+		< types >... [.Map => E:Expression |-> pointerType(T:Type)] ...</ types >
+		: KSentence .
+	mb rule
+		< k > [addTypes(E:Expression, struct(X:Id)) => .K] ...</ k >
+		< types >... [.Map => E:Expression |-> struct(X:Id)] ...</ types >
+		: KSentence .
+	mb rule
+		< k > [addTypes(E:Expression, T:Typedef-Name) => addTypes(E:Expression, T':Type)] ...</ k >
+		< types >... T:Typedef-Name |-> T':Type ...</ types >
+		: KSentence .	
+	mb rule
+		< k > [addTypes(E:Expression, T:Base-Type) => .K] ...</ k >
+		< types >... [.Map => E:Expression |-> T:Base-Type] ...</ types >
+		: KSentence .
 		
-
+		
+		
+	--- op struct-aux : Id Id Nat -> K .
+	--- --- need to initialize inside struct
+	--- --- fixme
+	--- mb [local-struct-declaration]: rule
+		--- < k > [Len:Nat ~> declare(struct(X:Id), X':Id) => locs(Loc:Nat)] ...</ k >
+		--- < env >... [.Map => X':Id |-> Loc:Nat] ...</ env >
+		--- < mem >... [.Map => Loc:Nat to (Loc:Nat +Nat Len:Nat) |-> unknown] ...</ mem >
+		--- < locals >... [.Bag => Bag(Loc:Nat to (Loc:Nat +Nat Len:Nat))] ...</ locals >
+		--- < nextLoc > [Loc:Nat => (Loc:Nat +Nat Len:Nat)] </ nextLoc >
+		--- < types >... [.Map => X':Id |-> struct(X:Id)] ...</ types >
+		--- < typedefs >... struct(X:Id) |-> struct(X:Id, DS:TogetherList) ...</ typedefs >
+		--- : KSentence .
 		
 	op allocate : K -> K [metadata "strict"] .
 	mb rule
 		< k > [declare(T:Type, X:Id)
-			=> allocate(sizeof(T:Type))] ...</ k >
+			=> addTypes(X:Id, T:Type) ~> allocate(sizeof(T:Type))] ...</ k >
 		< env >... [.Map => X:Id |-> Loc:Nat] ...</ env >
 		< nextLoc > Loc:Nat </ nextLoc >
-		< types >... [.Map => X:Id |-> T:Type] ...</ types >
-		: KSentence .
+		---< types >... [.Map => X:Id |-> T:Type] ...</ types >
+		: KSentence [print "Declaring " X:Id] .
 	mb rule
 		< k > [allocate(tv(Len:Nat, ?)) => .K] ...</ k >
 		< mem >... [.Map => Loc:Nat to (Loc:Nat +Nat Len:Nat) |-> unknown] ...</ mem >
@@ -726,18 +804,7 @@ mod COMMON-LOCAL-DECLARATION is
 		--- < k > [declare-aux(T:Type-Specifier, '_`[_`](locs(.List{K}),, N:Nat), Pre:List{K}) => locs(Pre:List{K})] ...</ k >
 		--- : KSentence .
 	
-	--- op struct-aux : Id Id Nat -> K .
-	--- --- need to initialize inside struct
-	--- --- fixme
-	--- mb [local-struct-declaration]: rule
-		--- < k > [Len:Nat ~> declare(struct(X:Id), X':Id) => locs(Loc:Nat)] ...</ k >
-		--- < env >... [.Map => X':Id |-> Loc:Nat] ...</ env >
-		--- < mem >... [.Map => Loc:Nat to (Loc:Nat +Nat Len:Nat) |-> unknown] ...</ mem >
-		--- < locals >... [.Bag => Bag(Loc:Nat to (Loc:Nat +Nat Len:Nat))] ...</ locals >
-		--- < nextLoc > [Loc:Nat => (Loc:Nat +Nat Len:Nat)] </ nextLoc >
-		--- < types >... [.Map => X':Id |-> struct(X:Id)] ...</ types >
-		--- < typedefs >... struct(X:Id) |-> struct(X:Id, DS:TogetherList) ...</ typedefs >
-		--- : KSentence .
+
 	
 	--- --- these should become a single rule once declarations are finished being unified
 	--- mb [declaration-id-array]: rule
@@ -785,7 +852,11 @@ endm
 mod COMMON-EXPRESSIONS is
 	including COMMON-INCLUDE .
 
-	mb rule [E:Expression +o I:Int => E:Expression + (sizeof(E:Expression) * I:Int)] : KSentence .
+	mb [pointerAddition]: rule [tv(V1:BaseValue, pointerType(T:Type)) +o V2:Value => tv(V1:BaseValue, pointerType(T:Type)) + (sizeof(T:Type) * V2:Value)] : KSentence  .
+	
+	---x ("_+o_").KProperLabel(("_`[_`]").KProperLabel("Id" arr(.List{K}),,"Rat" 0(.List{K})),,("tv").KResultLabel("Rat" 0(.List{K}),,"Base-Type" int(.List{K}))) 
+	 
+	---- [print E:Expression]
 
 	--- fixme result needs type
 	mb rule < k > [converted(tv(I1:Int, T:Type), tv(I2:Int, T:Type)) ~> ? * ? 
@@ -793,6 +864,12 @@ mod COMMON-EXPRESSIONS is
 	
 	mb rule < k > [converted(tv(I1:Int, T:Type), tv(I2:Int, T:Type)) ~> ? + ? 
 	=> (I1:Int +Int I2:Int) %i (sizeof(T:Type) *i 256)] ...</ k > : KSentence .
+	
+	op makeType : K -> K .
+	mb rule < k > [converted(tv(I1:Int, pointerType(T:Type)), tv(I2:Int, T':Type)) ~> ? + ? 
+	=> (I1:Int +Int I2:Int) %i (sizeof(pointerType(T:Type)) *i 256) ~> makeType(pointerType(T:Type))] ...</ k > : KSentence .
+	
+	mb rule < k > [tv(I:Int, ?) ~> makeType(T:Type) => tv(I:Int, T:Type)] ...</ k > : KSentence .
 	
 	--- mb rule [I1:Int + I2:Int => I1:Int +Int I2:Int] : KSentence .
 	--- mb rule [_-_(I1:Int,I2:Int) => _-Int_(I1:Int,I2:Int)] : KSentence .
@@ -848,7 +925,7 @@ mod COMMON-C-SEMANTICS is
 		
 	--- we're ignoring types for now
 	--- mb rule [U(I:Int) => I:Int] : KSentence [metadata "structural"] .
-	--- mb rule [UL(I:Int) => I:Int] : KSentence [metadata "structural"] .
+	mb rule [UL(I:Int) => tv(I:Int, unsigned-long)] : KSentence [metadata "structural"] .
 	--- mb rule [unsigned-int => int] : KSentence [metadata "structural"] .
 	--- mb rule [unsigned-short => int] : KSentence [metadata "structural"] .
 	--- mb rule [unsigned-char => int] : KSentence [metadata "structural"] .
@@ -868,15 +945,32 @@ mod COMMON-C-SEMANTICS is
 	--- 6.3.2.2 Except when it is the operand of the sizeof operator, the unary & operator, the ++ operator, the -- operator, or the left operand of the . operator or an assignment operator, an lvalue that does not have an array type is converted to the value stored in the designated object (and is no longer an lvalue).
 		
 	
-	--- 6.5.3.3 (p79) footnote 90) Thus, &*E == E; &(E1[E2]) == (E1 + E2)
+	---C99 6.5.3.2 (p79) footnote 90) Thus, &*E == E; &(E1[E2]) == (E1 + E2)
+	
+	---C99 6.5.3.2 90) ... It is always true that if E is a function designator or an lvalue that is a valid operand of the u of the unary & operator, *&E is a function designator or an lvalue equal to E.
 	
 	--- mb rule [&(Deref(E:Expression)) => E:Expression] : KSentence [metadata "structural"] .
 	--- mb rule [&(E1:Expression[E2:Expression]) => E1:Expression + E2:Expression] : KSentence [metadata "structural"] .
-	--- mb [for-assignment]: rule < k > [E1:Expression := E2:Expression => assign(Deref(&(E1:Expression)),  E2:Expression)] ...</ k > : KSentence .
+	mb [for-assignment]: rule < k > [E1:Expression := E2:Expression => assign(Deref(&(E1:Expression)),  E2:Expression)] ...</ k > : KSentence .
 	
 	mb rule < k > [&(Deref(E:Expression)) => E:Expression] ...</ k > : KSentence [metadata "structural"] .
 	mb rule < k > [&(E1:Expression[E2:Expression]) => E1:Expression +o E2:Expression] ...</ k > : KSentence [metadata "structural"] .
 	mb rule < k > [E1:Expression[E2:Expression] => Deref(E1:Expression +o E2:Expression)] ...</ k > : KSentence [metadata "structural"] .
+	
+	---C99 6.5.3.2:4 The unary * operator denotes indirection. If the operand points to a function, the result is a function designator; if it points to an object, the result is an lvalue designating the object. If the operand has type ‘‘pointer to type’’, the result has type ‘‘type’’. If an invalid value has been assigned to the pointer, the behavior of the unary * operator is undefined.
+	--- also see 6.3.2.1:3 for why i made the result a pointerType
+	mb rule < k > [Deref(tv(Loc:Nat, pointerType(arrayType(T:Type, N:Nat)))) => tv(Loc:Nat, pointerType(T:Type))] ...</ k > : KSentence [metadata "structural"] .
+	
+	***(
+	
+	arr[0][0] := 1;
+	assign(Deref(&(arr[0][0])), 1)
+	&(arr[0][0]) ~> assign(Deref(HOLE), 1)
+	arr[0] +o 0 ~> assign(Deref(HOLE), 1)
+	arr[0] + (sizeof(arr[0]) * 0) ~> assign(Deref(HOLE), 1)
+	arr[0] ~> assign(Deref(HOLE), 1)
+	tv(4, pointerType(int, 2))
+	***)
 	--- mb rule [sizeof(&(E1:Expression[E2:Expression])) => sizeof(E1:Expression +o E2:Expression)] : KSentence [metadata "structural"] .
 	
 	
@@ -917,12 +1011,20 @@ mod COMMON-C-SEMANTICS is
 		--- < types >... I:Id |-> T:Type[?] ...</ types >
 		--- : KSentence .
 		
+	---C99 6.3.2.1:3 Except when it is the operand of the sizeof operator or the unary & operator, or is a string literal used to initialize an array, an expression that has type ‘‘array of type’’ is converted to an expression with type ‘‘pointer to type’’ that points to the initial element of the array object and is not an lvalue. If the array object has register storage class, the behavior is undefined.
+	mb [lookup-closure]: rule
+		< k > [X:Id => tv(Loc:Nat, pointerType(T:Type))] ...</ k >
+		< env >... X:Id |-> Loc:Nat ...</ env >
+		< types >... X:Id |-> arrayType(T:Type, N:Nat) ...</ types >
+		: KSentence .
+		
 	---C99 6.3.2.1:4 A function designator is an expression that has function type.  Except when it is the operand of the sizeof operator or the unary & operator, a function designator with type "function returning T" is converted to an expression that has type "pointer to a function returning T"
 	mb [lookup-closure]: rule
 		< k > [X:Id => tv(Loc:Nat, pointerType(functionType(K:K, L:List{K})))] ...</ k >
 		< env >... X:Id |-> Loc:Nat ...</ env >
 		< types >... X:Id |-> functionType(K:K, L:List{K}) ...</ types >
 		: KSentence .
+
 		
 	--- mb [lookup]: rule
 		--- < k > [I:Id => V:Value] ...</ k >
@@ -955,7 +1057,33 @@ mod COMMON-C-SEMANTICS is
 		--- < mem >... [.Map => Loc:Nat |-> 0] ...</ mem >
 		--- < nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
 		--- : KSentence .
-
+		
+	--- mb [assign]: rule
+		--- < k > [assign(Deref(tv(Loc:Nat, pointerType(T:Type))), tv(V:BaseValue, T:Type)) => V:BaseValue] ...</ k >
+		--- < mem >... Loc:Nat |-> [? => V:BaseValue] ...</ mem >
+		--- : KSentence .
+	mb [assign]: rule
+		< k > [assign(Deref(tv(Loc:Nat, pointerType(T:Type))), tv(V:BaseValue, T:Type)) => putInMem(Loc:Nat, V:BaseValue, T:Type, sizeof(T:Type)) ~> tv(V:BaseValue, T:Type)] ...</ k >
+		: KSentence .
+	op putInMem : Nat BaseValue Type K -> K [metadata "strict(4)"] .
+	op putByteInMem : Nat BaseValue -> K .
+	mb rule
+		< k > [putInMem(Loc:Nat, V:BaseValue, T:Type, tv(0, ?)) => .K] ...</ k >
+		: KSentence .
+	mb rule
+		< k > [putInMem(Loc:Nat, N:Nat, T:Type, tv(sNat(Len:Nat), J:Type)) 
+		=> putByteInMem(Loc:Nat, N:Nat %Nat 256) ~> putInMem(sNat(Loc:Nat), N:Nat >>Nat 8, T:Type, tv(Len:Nat, J:Type))] ...</ k >
+		: KSentence .
+	mb rule
+		< k > [putByteInMem(Loc:Nat, N:Nat) => .K] ...</ k >
+		< mem >... Loc:Nat |-> [? => N:Nat] ...</ mem >
+		: KSentence .
+	
+	--- mb rule
+		--- < k > [assign(Deref(tv(Loc:Nat, pointerType(T:Type))), tv(V:BaseValue, T:Type)) => V:BaseValue] ...</ k >
+		--- < mem >... Loc:Nat |-> [? => V:BaseValue] ...</ mem >
+		--- : KSentence .
+		
 	--- mb [assign]: rule
 		--- < k > [Deref(Loc:Nat) := V:Value => V:Value] ...</ k >
 		--- < mem >... Loc:Nat |-> [? => V:Value] ...</ mem >
