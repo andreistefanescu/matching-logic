@@ -49,6 +49,7 @@ mod COMMON-SEMANTIC-SYNTAX is
 	op converted : K K -> K .
 	op evalToType : -> K .
 	op interpret : K -> K .
+	op allocate : K -> K [metadata "strict"] .
 	--- op tid : Id K -> K .
 	op tv : BaseValue Type -> Value .
 	---op tv : List{K} Type -> Value .
@@ -56,6 +57,7 @@ mod COMMON-SEMANTIC-SYNTAX is
 	op addGlobalTypes : K K -> K .
 	op addGlobalTypes : K -> K .
 	op Closure : K K K -> Value .
+	op putInMem : Nat BaseValue Type K -> K [metadata "strict(4)"] .
 	
 	op firstChar : String -> Char .
 	op butFirstChar : String -> String .
@@ -311,6 +313,9 @@ mod TYPES is
 	
 	mb rule
 		[extern ~> T:Type => qualifiedType(T:Type, extern)]
+		: KSentence [metadata "structural"] .
+	mb rule
+		[static ~> T:Type => qualifiedType(T:Type, static)]
 		: KSentence [metadata "structural"] .
 	--- for casts, at least
 	--- mb rule
@@ -666,20 +671,16 @@ mod COMMON-PARAMETER-BINDING is
 		: KSentence .
 	--- bind one
 	--- consider same variable name
-	--- mb [bind-one]: rule 
-		--- < k > [bind((V:Value .,. L:List{Expression}),, 
-				--- Parameter-Type-List(Parameter-Declaration(T:Type-Specifier, I:Id) ,., P:List{Parameter})) =>
-			--- bind((.List{Expression} .,. L:List{Expression}),, 
-				--- Parameter-Type-List(.List{Parameter} ,., P:List{Parameter}))]
-				--- ...</ k > 
-		--- < env >... [.Map => I:Id |-> Loc:Nat] ...</ env >
-		--- < mem >... [.Map => Loc:Nat |-> V:Value] ...</ mem >
-		--- < locals >... [.Bag => Bag(Loc:Nat)] ...</ locals >
-		--- < types >... [.Map => I:Id |-> T:Type-Specifier] ...</ types >
-		--- < nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
-		--- < typedefs > TypeDefs:Map </ typedefs >
-		--- if notBool($hasMapping(TypeDefs:Map, T:Type-Specifier))
-		--- : KSentence .
+	--- fixme doesn't add all derived types from T:Type
+	--- fixme not cleaning memory on return
+	
+	mb [bind-one]: rule
+		< k > [bind((tv(V:BaseValue, T:Type),, L:List{K}), ('Parameter-Declaration(T:Type,, X:Id),, P:List{K}))
+			=> addTypes(X:Id, T:Type) ~> '_;(allocate(sizeof(T:Type))) ~> putInMem(Loc:Nat, V:BaseValue, T:Type, sizeof(T:Type)) ~> bind(L:List{K}, P:List{K})] ...</ k > 
+		< env >... [.Map => X:Id |-> Loc:Nat] ...</ env >
+		< nextLoc > Loc:Nat </ nextLoc >
+		: KSentence .
+		
 	--- mb [bind-one-func-pointer]: rule 
 		--- < k > [bind((V:Value .,. L:List{Expression}),, 
 				--- Parameter-Type-List(Parameter-Declaration(T:Type-Specifier, Direct-Function-Declarator(Pointer(I:Id), Parameter-Type-List(PTL:List{Parameter}))) ,., P:List{Parameter})) =>
@@ -767,23 +768,23 @@ mod COMMON-GLOBAL-DECLARATION is
 		< k > [T:Type ~> addGlobalTypes(K:K) => addGlobalTypes(K:K, T:Type)] ...</ k >
 		: KSentence .
 		
-	--- op initArray : List{K} List{K} -> K .
-	--- mb [global-array-declaration-init]: rule
-		--- < k > [Declaration(T:Type-Specifier, X:Id[N:Nat]) = { L:List{Expression} } => initArray(getList{K}(L:List{Expression}), sNat(Loc:Nat) to (sNat(Loc:Nat) +Nat N:Nat))] ...</ k >
-		--- < env >... [.Map => X:Id |-> Loc:Nat] ...</ env >
-		--- < genv >... [.Map => X:Id |-> Loc:Nat] ...</ genv >
-		--- < mem >... [.Map => Loc:Nat |-> sNat(Loc:Nat)  sNat(Loc:Nat) to (sNat(Loc:Nat) +Nat N:Nat) |-> unknown] ...</ mem >
-		--- < nextLoc > [Loc:Nat => sNat(Loc:Nat) +Nat N:Nat] </ nextLoc >
-		--- < types >... [.Map => X:Id |-> T:Type-Specifier[N:Nat]] ...</ types >
-		--- : KSentence .
+	op initArray : List{K} Nat Type -> K .
+	mb [global-array-declaration-init]: rule
+		< k > ['_=`{_`}('Declaration(arrayType(T:Type, N:Nat),, X:Id),, L:List{Expression}) => initArray(getList{K}(L:List{Expression}), Loc:Nat, T:Type)] ...</ k >
+		< env >... [.Map => X:Id |-> Loc:Nat] ...</ env >
+		< genv >... [.Map => X:Id |-> Loc:Nat] ...</ genv >
+		< nextLoc > Loc:Nat </ nextLoc >
+		< types >... [.Map => X:Id |-> arrayType(T:Type, N:Nat)] ...</ types >
+		: KSentence .
 		
-	--- op initItem : K K -> K [metadata "strict(1)"] .
-	--- mb [initArray-empty]: rule
-		--- < k > [initArray((Item:K,, Items:List{K}), (Loc:K,, Locs:List{K})) => initItem(Item:K, Loc:K) ~> initArray(Items:List{K}, Locs:List{K})] ...</ k >
-		--- : KSentence .
-	--- mb [initArray-empty]: rule
-		--- < k > [initArray(.List{K}, .List{K}) => .K] ...</ k >
-		--- : KSentence .
+	op initItem : K Nat Type -> K [metadata "strict(1)"] .
+	mb [initArray]: rule
+		< k > [initArray((Item:K,, Items:List{K}), Loc:Nat, T:Type) 
+		=> initItem(Item:K, Loc:Nat, T:Type) ~> initArray(Items:List{K}, Loc:Nat, T:Type)] ...</ k >
+		: KSentence .
+	mb [initArray-empty]: rule
+		< k > [initArray(.List{K}, ?, ?) => .K] ...</ k >
+		: KSentence .
 		
 	--- mb rule
 		--- < k > [initItem(V:Value, Loc:K) => .K] ...</ k >
@@ -796,8 +797,11 @@ mod COMMON-GLOBAL-DECLARATION is
 		--- : KSentence .
 	
 	op struct-aux : Id K List{KResult} -> K .
+	op partialType : Id -> Type .
 	mb rule 
 		< k > [Global(struct(X:Id, DS:TogetherList) ;) => struct-aux(X:Id, DS:TogetherList, .List{K}) ~> addGlobalTypes(X:Id)] ...</ k >
+		< types >... [.Map => struct(X:Id) |-> partialType(X:Id)] ...</ types >
+		< typedefs >... [.Map => struct(X:Id) |-> partialType(X:Id)] ...</ typedefs >
 		: KSentence .
 	mb rule 
 		< k > [struct-aux(X:Id, (Field(T:TogetherList, D:Declarator) ~> K:K), L:List{KResult}) => Field(T:TogetherList, D:Declarator) ~> struct-aux(X:Id, K:K, L:List{KResult})] ...</ k >
@@ -822,8 +826,8 @@ mod COMMON-GLOBAL-DECLARATION is
 		--- : KSentence .
 	mb rule
 		< k > [addGlobalTypes(X:Id, structType(X:Id, L:List{KResult})) => .K] ...</ k >
-		< types >... [.Map => struct(X:Id) |-> structType(X:Id, L:List{KResult})] ...</ types >
-		< typedefs >... [.Map => struct(X:Id) |-> structType(X:Id, L:List{KResult})] ...</ typedefs >
+		< types >... struct(X:Id) |-> [partialType(X:Id) => structType(X:Id, L:List{KResult})] ...</ types >
+		< typedefs >... struct(X:Id) |-> [partialType(X:Id) => structType(X:Id, L:List{KResult})] ...</ typedefs >
 		: KSentence .
 		
 	--- mb rule
@@ -899,10 +903,10 @@ mod COMMON-LOCAL-DECLARATION is
 		--- < typedefs >... struct(X:Id) |-> struct(X:Id, DS:TogetherList) ...</ typedefs >
 		--- : KSentence .
 		
-	op allocate : K -> K [metadata "strict"] .
+
 	mb rule
 		< k > [declare(T:Type, X:Id)
-			=> addTypes(X:Id, T:Type) ~> allocate(sizeof(T:Type))] ...</ k >
+			=> addTypes(X:Id, T:Type) ~> '_;(allocate(sizeof(T:Type)))] ...</ k >
 		< env >... [.Map => X:Id |-> Loc:Nat] ...</ env >
 		< nextLoc > Loc:Nat </ nextLoc >
 		---< types >... [.Map => X:Id |-> T:Type] ...</ types >
@@ -910,7 +914,7 @@ mod COMMON-LOCAL-DECLARATION is
 		--- [print "Declaring " X:Id] 
 		.
 	mb rule
-		< k > [allocate(tv(Len:Nat, ?)) => .K] ...</ k >
+		< k > [allocate(tv(Len:Nat, ?)) => Len:Nat] ...</ k >
 		< mem >... [.Map => Loc:Nat to (Loc:Nat +Nat Len:Nat) |-> unknown] ...</ mem >
 		< nextLoc > [Loc:Nat => Loc:Nat +Nat Len:Nat] </ nextLoc >
 		: KSentence .
@@ -997,6 +1001,9 @@ mod COMMON-EXPRESSIONS is
 	mb rule < k > [converted(tv(I1:Int, T:Type), tv(I2:Int, T:Type)) ~> ? + ? 
 	=> (I1:Int +Int I2:Int) %i (sizeof(T:Type) *i 256) ~> makeType(T:Type)] ...</ k > : KSentence .
 	
+	mb rule < k > [converted(tv(I1:Int, T:Type), tv(I2:Int, T:Type)) ~> ? - ? 
+	=> (_-Int_(I1:Int, I2:Int)) %i (sizeof(T:Type) *i 256) ~> makeType(T:Type)] ...</ k > : KSentence .
+	
 	op makeType : K -> K .
 	mb rule < k > [converted(tv(I1:Int, pointerType(T:Type)), tv(I2:Int, T':Type)) ~> ? + ? 
 	=> (I1:Int +Int I2:Int) %i (sizeof(pointerType(T:Type)) *i 256) ~> makeType(pointerType(T:Type))] ...</ k > : KSentence .
@@ -1068,7 +1075,7 @@ mod COMMON-C-SEMANTICS is
 	mb rule [S1:Statement S2:Statement => S1:Statement ~> S2:Statement] : KSentence [metadata "structural"] .
 		
 	--- we're ignoring types for now
-	--- mb rule [U(I:Int) => I:Int] : KSentence [metadata "structural"] .
+	mb rule [U(I:Int) => tv(I:Int, unsigned-int)] : KSentence [metadata "structural"] .
 	mb rule [UL(I:Int) => tv(I:Int, unsigned-long)] : KSentence [metadata "structural"] .
 	--- mb rule [unsigned-int => int] : KSentence [metadata "structural"] .
 	--- mb rule [unsigned-short => int] : KSentence [metadata "structural"] .
@@ -1189,6 +1196,12 @@ mod COMMON-C-SEMANTICS is
 		if N:Nat <=Nat drv:maxPtr
 		: KSentence [metadata "structural"] .
 	mb rule [
+		interpret(tv(N:Nat, unsigned-int)) 
+		=> 
+		tv(N:Nat, unsigned-int)
+		]
+		: KSentence [metadata "structural"] .
+	mb rule [
 		interpret(tv(N:Nat, structType(X:Id, T:Type))) 
 		=> 
 		tv(N:Nat, structType(X:Id, T:Type))
@@ -1297,7 +1310,7 @@ mod COMMON-C-SEMANTICS is
 	mb [assign]: rule
 		< k > [assign(Deref(tv(Loc:Nat, pointerType(T:Type))), tv(V:BaseValue, T:Type)) => putInMem(Loc:Nat, V:BaseValue, T:Type, sizeof(T:Type)) ~> tv(V:BaseValue, T:Type)] ...</ k >
 		: KSentence .
-	op putInMem : Nat BaseValue Type K -> K [metadata "strict(4)"] .
+	
 	op putByteInMem : Nat BaseValue -> K .
 	mb rule
 		< k > [putInMem(Loc:Nat, V:BaseValue, T:Type, tv(0, ?)) => .K] ...</ k >
