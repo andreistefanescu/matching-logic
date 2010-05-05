@@ -202,7 +202,7 @@ mod COMMON-C-SYNTAX is
 	sort Declaration .
 	op Declaration : TogetherList -> Declaration [metadata "strict(1)"] .
 	op Declaration : TogetherList Init-Declarator-List -> Declaration [metadata "strict(1)"] .
-	op Typedef : TogetherList Declarator -> Declaration .
+	op Typedef : TogetherList Declarator -> Declaration [metadata "strict(1)"] .
 	
 	sort Init-Declarator-List .
 	subsort Init-Declarator < Init-Declarator-List .
@@ -280,7 +280,7 @@ mod COMMON-C-SYNTAX is
 	---- op Struct-Declaration : -> 
 	--- --- TODO op __; : Specifier-Qualifier-List Struct-Declarator-List -> Struct-Declarator .
 	--- --- TODO
-	op Field : TogetherList Declarator -> Struct-Declaration .
+	op Field : TogetherList Declarator -> Struct-Declaration [metadata "strict(1)"].
 	subsort Struct-Declaration < SeqList .
 	
 	---sort Specifier-Qualifier-List .
