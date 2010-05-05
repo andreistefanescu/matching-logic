@@ -90,12 +90,15 @@ int main(void){
 	pointArr[2].y = 6;
 	pointArr[3].x = 7;
 	pointArr[3].y = 8;
-	
+	int pointArrPlus3 = (*(pointArr + 3)) ;
+	//debug(0);
 	if ((*(pointArr + 3)).x != 7) {
 		printf("(*(pointArr + 3)).x != 7\n");
+		//printf("(*(pointArr + 3)).x == %d\n", (*(pointArr + 3)).x);
 	} else OK
 	if ((*(pointArr + 3)).y != 8) {
-		printf("(*(pointArr + 3)).x != 8\n");
+		printf("(*(pointArr + 3)).y != 8\n");
+		//printf("(*(pointArr + 3)).y == %d\n", (*(pointArr + 3)).y);
 	} else OK
 	if (*((int*)(&(*(pointArr + 3)))) != 7) {
 		printf("*((int*)(&(*(pointArr + 3)))) != 7\n");
@@ -103,6 +106,20 @@ int main(void){
 	if (*((int*)(&(*(pointArr + 3))) + 1) != 8) {
 		printf("*((int*)(&(*(pointArr + 3))) + 1) != 8\n");
 	} else OK
+	
+	// The important issue is how the expression i > us is evaluated. Under the unsigned preserving rules (and under the value preserving rules on a machine where short integers and plain integers are the same size), us is promoted to unsigned int. The usual integral conversions say that when types unsigned int and int meet across a binary operator, both operands are converted to unsigned, so i is converted to unsigned int, as well. The old value of i, -5, is converted to some large unsigned value (65,531 on a 16-bit machine). This converted value is greater than 10, so the code prints ``whoops!'' 
+	// unsigned short us = 10;
+	// int i = -5;
+	// if(i > us)
+		// printf("whoops!\n");
+		
+	// unsigned char uc = 0x80;
+	// unsigned long ul = 0;
+	// ul |= uc << 8;
+	// printf("0x%lx\n", ul);
+
+// Before being left-shifted, uc is promoted. Under the unsigned preserving rules, it is promoted to an unsigned int, and the code goes on to print 0x8000, as expected. Under the value preserving rules, however, uc is promoted to a signed int (as long as int's are larger than char's, which is usually the case). The intermediate result uc << 8 goes on to meet ul, which is unsigned long. The signed, intermediate result must therefore be promoted as well, and if int is smaller than long, the intermediate result is sign-extended, becoming 0xffff8000 on a machine with 32-bit longs. On such a machine, the code prints 0xffff8000, which is probably not what was expected. (On machines where int and long are the same size, the code prints 0x8000 under either set of rules.) 
+
 	
 	// int x1 = 5;
 	// unsigned int x2 = 5;
