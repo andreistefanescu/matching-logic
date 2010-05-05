@@ -48,8 +48,10 @@ mod COMMON-SEMANTIC-SYNTAX is
 	op declare-aux : K K List{K} -> K .
 	op converted : K K -> K .
 	op evalToType : -> K .
+	op interpret : K -> K .
 	--- op tid : Id K -> K .
 	op tv : BaseValue Type -> Value .
+	---op tv : List{K} Type -> Value .
 	op addTypes : K K -> K .
 	op addGlobalTypes : K K -> K .
 	op addGlobalTypes : K -> K .
@@ -90,7 +92,12 @@ mod C-SETTINGS is
 	op drv:minInt : -> Int .
 	--- fixme (should actually be derived
 	eq drv:maxInt = 2147483647 .
-	eq drv:minInt = -2147483647 .
+	eq drv:minInt = -2147483648 .
+	op drv:maxPtr : -> Nat .
+	op drv:minPtr : -> Nat .
+	--- fixme (should actually be derived
+	eq drv:maxPtr = 4294967295 .
+	eq drv:minPtr = 0 .
 	
 	
 	mb rule < k > [I:Int => tv(I:Int, int)] ...</ k > 
@@ -899,7 +906,9 @@ mod COMMON-LOCAL-DECLARATION is
 		< env >... [.Map => X:Id |-> Loc:Nat] ...</ env >
 		< nextLoc > Loc:Nat </ nextLoc >
 		---< types >... [.Map => X:Id |-> T:Type] ...</ types >
-		: KSentence [print "Declaring " X:Id] .
+		: KSentence 
+		--- [print "Declaring " X:Id] 
+		.
 	mb rule
 		< k > [allocate(tv(Len:Nat, ?)) => .K] ...</ k >
 		< mem >... [.Map => Loc:Nat to (Loc:Nat +Nat Len:Nat) |-> unknown] ...</ mem >
@@ -1163,8 +1172,34 @@ mod COMMON-C-SEMANTICS is
 		: KSentence .
 	mb rule
 		< k > [readFromMem(Loc:Nat, T:Type, tv(0, ?), ?,  N:Nat) 
-		=> tv(N:Nat, T:Type)] ...</ k >
-		: KSentence .	
+		=> interpret(tv(N:Nat, T:Type))] ...</ k >
+		: KSentence .
+
+	mb rule [
+		interpret(tv(N:Nat, int)) 
+		=> 
+		tv(if N:Nat <=Nat drv:maxInt then N:Nat else -Int N:Nat fi, int)
+		]
+		: KSentence [metadata "structural"] .
+	mb rule [
+		interpret(tv(N:Nat, pointerType(T:Type))) 
+		=> 
+		tv(N:Nat, pointerType(T:Type))
+		]
+		if N:Nat <=Nat drv:maxPtr
+		: KSentence [metadata "structural"] .
+	mb rule [
+		interpret(tv(N:Nat, structType(X:Id, T:Type))) 
+		=> 
+		tv(N:Nat, structType(X:Id, T:Type))
+		]
+		: KSentence [metadata "structural"] .
+		
+	--- deh = - 34
+	--- adh = - 83
+	--- deh = 222
+	--- adh = 173
+	--- deadh = 57005
 	mb rule
 		< k > [readFromMem(Loc:Nat, T:Type, tv(sNat(Left:Nat), T':Type), Len:Nat, N:Nat)
 		=> readFromMem(sNat(Loc:Nat), T:Type, tv(Left:Nat, T':Type), sNat(Len:Nat), N:Nat |Nat (N':Nat <<Nat (8 *Nat Len:Nat)))] ...</ k >
@@ -1193,11 +1228,33 @@ mod COMMON-C-SEMANTICS is
 		< types >... X:Id |-> functionType(T:Type, L:List{K}) ...</ types >
 		: KSentence .
 		
-	--- fixme, can't find documentation
+		
+	mb rule
+		< k > [X:Id => readFromMem(Loc:Nat, structType(X':Id, F:List{KResult}), sizeof(structType(X':Id, F:List{KResult})), 0, 0)] ...</ k >
+		< env >... X:Id |-> Loc:Nat ...</ env >
+		< types >... X:Id |-> structType(X':Id, F:List{KResult}) ...</ types >
+		: KSentence .
+	--- op lookupStruct : Nat K Type List{K} -> K [metadata "strict(2)"] .
 	--- mb rule
-		--- < k > [X:Id => tv(Loc:Nat, pointerType(structType(X':Id, F:List{KResult})))] ...</ k >
+		--- < k > [X:Id => lookupStruct(Loc:Nat, sizeof(X:Id), structType(X':Id, F:List{KResult}), .List{K})] ...</ k >
 		--- < env >... X:Id |-> Loc:Nat ...</ env >
 		--- < types >... X:Id |-> structType(X':Id, F:List{KResult}) ...</ types >
+		--- : KSentence .
+		
+	--- mb [lookupStruct]: rule
+		--- < k > [
+			--- lookupStruct(Loc:Nat, tv(sNat(Len:Nat), T:Type), T':Type, L:List{K})
+			--- =>
+			--- lookupStruct(sNat(Loc:Nat), tv(Len:Nat, T:Type), T':Type, (L:List{K},, V:BaseValue))
+		--- ] ...</ k >
+		--- < mem >... Loc:Nat |-> V:BaseValue ...</ mem >
+		--- : KSentence .
+	--- mb [lookupStruct-finish]: rule
+		--- < k > [
+			--- lookupStruct(Loc:Nat, tv(0, ?), T:Type, L:List{K})
+			--- =>
+			--- tv(L:List{K}, T:Type)
+		--- ] ...</ k >
 		--- : KSentence .
 
 		
@@ -1249,11 +1306,11 @@ mod COMMON-C-SEMANTICS is
 	--- 36859
 	mb rule
 		< k > [putInMem(Loc:Nat, N:Int, T:Type, tv(sNat(Len:Nat), J:Type)) 
-		=> putByteInMem(Loc:Nat, N:Int %Int 256) ~> putInMem(sNat(Loc:Nat), N:Int >>Int 8, T:Type, tv(Len:Nat, J:Type))] ...</ k >
+		=> putByteInMem(Loc:Nat, (N:Int +Int 256) %Int 256) ~> putInMem(sNat(Loc:Nat), N:Int >>Int 8, T:Type, tv(Len:Nat, J:Type))] ...</ k >
 		: KSentence .
 	mb rule
-		< k > [putByteInMem(Loc:Nat, N:Int) => .K] ...</ k >
-		< mem >... Loc:Nat |-> [? => N:Int] ...</ mem >
+		< k > [putByteInMem(Loc:Nat, N:Nat) => .K] ...</ k >
+		< mem >... Loc:Nat |-> [? => N:Nat] ...</ mem >
 		: KSentence .
 	
 	--- mb rule
