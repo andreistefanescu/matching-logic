@@ -159,7 +159,7 @@ mod COMMON-C-SYNTAX is
 	---sort Conditional-Expression .
 	---subsort Conditional-Expression < K .
 	---subsort Unary-Expression < Conditional-Expression .
-	op Cast : Type-Name Expression -> Expression [metadata "strict(2)"] .
+	op Cast : Type-Name Expression -> Expression [metadata "strict"] .
 	ops _*_ _/_ _%_ : Expression Expression -> Expression [prec 31 gather(E e) metadata "strict"] .	
 	ops _*i_ _/i_ _%i_ : Expression Expression -> Expression [prec 31 gather(E e) metadata "strict"] .	
 	ops _+_ _-_ : Expression Expression -> Expression [prec 33 gather(E e) metadata "strict"] .
@@ -200,8 +200,8 @@ mod COMMON-C-SYNTAX is
 	--- ---- A.2.2 Declarations
 	--- --- 6.7
 	sort Declaration .
-	op Declaration : TogetherList -> Declaration .
-	op Declaration : TogetherList Init-Declarator-List -> Declaration .
+	op Declaration : TogetherList -> Declaration [metadata "strict(1)"] .
+	op Declaration : TogetherList Init-Declarator-List -> Declaration [metadata "strict(1)"] .
 	op Typedef : TogetherList Declarator -> Declaration .
 	
 	sort Init-Declarator-List .
