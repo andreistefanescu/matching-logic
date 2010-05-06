@@ -1,6 +1,7 @@
 --- not evaluating inside initializers
 --- $(value $var) gives what we want for pipestatus
 --- why isn't K ~> K proper?
+--- what is the type of self-referencing structs?
 set print attribute on .
 mod INCOMING-MODULES is
 	including K .
@@ -490,46 +491,46 @@ mod COMMON-C-STANDARD-LIBRARY is
 	: KSentence .
 	
 	mb [malloc]: rule
-		< k > [Apply(builtin(malloc), N:Nat) => Loc:Nat] ...</ k >
+		< k > [Apply(builtin(malloc), tv(N:Nat, ?)) => tv(Loc:Nat, pointerType(void))] ...</ k >
 		< mem >... [.Map => Loc:Nat to (Loc:Nat +Nat N:Nat) |-> unknown] ...</ mem >
 		< malloced >... [.Map => Loc:Nat |-> N:Nat] ...</ malloced >
 		< nextLoc > [Loc:Nat => Loc:Nat +Nat N:Nat] </ nextLoc >
 	: KSentence .
 	--------------------------------------------
-	mb [rand-is-value]: rule
-		< k > [rand => builtin(rand)] ...</ k >
-	: KSentence .
-	mb [rand]: rule
-		< k > [Apply(builtin(rand), .List{Expression}) => randomRandom(Loc:Nat)] ...</ k >
-		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
-	: KSentence .
+	--- mb [rand-is-value]: rule
+		--- < k > [rand => builtin(rand)] ...</ k >
+	--- : KSentence .
+	--- mb [rand]: rule
+		--- < k > [Apply(builtin(rand), .List{Expression}) => randomRandom(Loc:Nat)] ...</ k >
+		--- < nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
+	--- : KSentence .
 	--------------------------------------------
-	mb [free-is-value]: rule
-		< k > [free => builtin(free)] ...</ k >
-	: KSentence .
+	--- mb [free-is-value]: rule
+		--- < k > [free => builtin(free)] ...</ k >
+	--- : KSentence .
 	
-	mb [free]: rule
-		< k > [Apply(builtin(free), Loc:Nat) => Apply(builtin(free), sNat(Loc:Nat))] ...</ k >
-		< mem >...  [Loc:Nat |-> ? => .Map] ...</ mem >
-		< malloced >... [Loc:Nat |-> sNat(N:Nat) => sNat(Loc:Nat) |-> N:Nat] ...</ malloced >
-	: KSentence .
-	mb [free-done]: rule
-		< k > [Apply(builtin(free), Loc:Nat) => skipval] ...</ k >
-		< malloced >... [Loc:Nat |-> 0 => .Map] ...</ malloced >
-	: KSentence .
+	--- mb [free]: rule
+		--- < k > [Apply(builtin(free), Loc:Nat) => Apply(builtin(free), sNat(Loc:Nat))] ...</ k >
+		--- < mem >...  [Loc:Nat |-> ? => .Map] ...</ mem >
+		--- < malloced >... [Loc:Nat |-> sNat(N:Nat) => sNat(Loc:Nat) |-> N:Nat] ...</ malloced >
+	--- : KSentence .
+	--- mb [free-done]: rule
+		--- < k > [Apply(builtin(free), Loc:Nat) => skipval] ...</ k >
+		--- < malloced >... [Loc:Nat |-> 0 => .Map] ...</ malloced >
+	--- : KSentence .
 	--------------------------------------------
-	mb [calloc-is-value]: rule
-		< k > [calloc => builtin(calloc)] ...</ k >
-	: KSentence .
+	--- mb [calloc-is-value]: rule
+		--- < k > [calloc => builtin(calloc)] ...</ k >
+	--- : KSentence .
 	
-	--- ignoring size for now
-	--- fixme
-	mb [calloc]: rule
-		< k > [Apply(builtin(calloc), (N:Nat .,. Size:Nat)) => Loc:Nat] ...</ k >
-		< mem >... [.Map => Loc:Nat to (Loc:Nat +Nat N:Nat) |-> 0] ...</ mem >
-		< malloced >... [.Map => Loc:Nat |-> N:Nat] ...</ malloced >
-		< nextLoc > [Loc:Nat => Loc:Nat +Nat N:Nat] </ nextLoc >
-	: KSentence .
+	--- --- ignoring size for now
+	--- --- fixme
+	--- mb [calloc]: rule
+		--- < k > [Apply(builtin(calloc), (N:Nat .,. Size:Nat)) => Loc:Nat] ...</ k >
+		--- < mem >... [.Map => Loc:Nat to (Loc:Nat +Nat N:Nat) |-> 0] ...</ mem >
+		--- < malloced >... [.Map => Loc:Nat |-> N:Nat] ...</ malloced >
+		--- < nextLoc > [Loc:Nat => Loc:Nat +Nat N:Nat] </ nextLoc >
+	--- : KSentence .
 	--------------------------------------------
 	mb [memset-is-value]: rule
 		< k > [memset => builtin(memset)] ...</ k >
@@ -1036,6 +1037,8 @@ mod COMMON-EXPRESSIONS is
 	.
 	mb rule < k > [converted(tv(I1:Int, T:Type), tv(I2:Int, T:Type)) ~> ? / ? 
 	=> tv(I1:Int /Int I2:Int, T:Type)] ...</ k > : KSentence .
+	mb rule < k > [converted(tv(I1:Int, T:Type), tv(I2:Int, T:Type)) ~> ? % ? 
+	=> tv(I1:Int %Int I2:Int, T:Type)] ...</ k > : KSentence .
 	
 	--- fixme assumes that because the types are the same, isn't pointer arithmetic
 	mb rule < k > [converted(tv(I1:Int, T:Type), tv(I2:Int, T:Type)) ~> ? + ? 
@@ -1369,6 +1372,17 @@ mod COMMON-C-SEMANTICS is
 		--- < k > [assign(Deref(tv(Loc:Nat, pointerType(T:Type))), tv(V:BaseValue, T:Type)) => V:BaseValue] ...</ k >
 		--- < mem >... Loc:Nat |-> [? => V:BaseValue] ...</ mem >
 		--- : KSentence .
+		
+		
+	--- fixme bad types, like this due to partial types
+	mb [assign]: rule
+		< k > [assign(Deref(tv(Loc:Nat, pointerType(T:Type))), tv(V:Int, T':Type)) 
+		=> putInMem(Loc:Nat, V:Int, T:Type, sizeof(T:Type)) ~> tv(V:Int, T':Type)] ...</ k >
+		if T:Type =/=Bool T':Type
+		: KSentence
+		[print "Warning: assigning possibly wrong type"]
+		---[print "assigning " V:Int " to " Loc:Nat]
+		.
 	mb [assign]: rule
 		< k > [assign(Deref(tv(Loc:Nat, pointerType(T:Type))), tv(V:Int, T:Type)) 
 		=> putInMem(Loc:Nat, V:Int, T:Type, sizeof(T:Type)) ~> tv(V:Int, T:Type)] ...</ k >
@@ -1489,6 +1503,10 @@ mod COMMON-C-SEMANTICS is
 		< k > [.K => evalToType] ~> &(E1:Expression . X:Id) ...</ k >
 		[.Bag => < type > E1:Expression </ type >]
 		: KSentence .
+	mb rule
+		< k > [.K => evalToType] ~> &(E1:Expression -> X:Id) ...</ k >
+		[.Bag => < type > Deref(E1:Expression) </ type >]
+		: KSentence .
 		
 	mb rule
 		< k > [E1:Expression . X:Id  => Deref(&(E1:Expression . X:Id))] ...</ k >
@@ -1500,8 +1518,13 @@ mod COMMON-C-SEMANTICS is
 		
 	---x ((((((((pointArr))) +o (((3))))) -> x)))
 		
+	--- fixme compute types way too many times
 	mb [dot-cool]: rule
 		< k > [evalToType ~> &(E1:Expression . X:Id) => (& (E1:Expression)) +i getOffset(E1:Expression, X:Id) ~> makeType(pointerType(T:Type))] ...</ k >
+		[< type > structType(X':Id, (L1:List{KResult},, typedField(T:Type, X:Id),,  L2:List{KResult})) </ type > => .Bag] 
+		: KSentence .
+	mb [arrow-cool]: rule
+		< k > [evalToType ~> &(E1:Expression -> X:Id) => E1:Expression +i getOffset(Deref(E1:Expression), X:Id) ~> makeType(pointerType(T:Type))] ...</ k >
 		[< type > structType(X':Id, (L1:List{KResult},, typedField(T:Type, X:Id),,  L2:List{KResult})) </ type > => .Bag] 
 		: KSentence .
 	--- fixme possibly do maketype in wrong place
@@ -1649,19 +1672,19 @@ mod COMMON-C-SEMANTICS is
 		.
 		
 	mb [if-then-else-true]: rule
-		< k > [if (tv(I:Int, int)) S:Statement else S':Statement => S:Statement] ...</ k >
+		< k > [if (tv(I:Int, ?)) S:Statement else S':Statement => S:Statement] ...</ k >
 		if I:Int =/=Bool 0
 		: KSentence .
 	mb [if-then-else-false]: rule
-		< k > [if (tv(0, int)) S:Statement else S':Statement => S':Statement] ...</ k >
+		< k > [if (tv(0, ?)) S:Statement else S':Statement => S':Statement] ...</ k >
 		: KSentence .
 	
 	mb [if-then-true]: rule
-		< k > [if (tv(I:Int, int)) S:Statement => S:Statement] ...</ k >
+		< k > [if (tv(I:Int, ?)) S:Statement => S:Statement] ...</ k >
 		if I:Int =/=Bool 0
 		: KSentence .
 	mb [if-then-false]: rule
-		< k > [if (tv(0, int)) S:Statement => .K] ...</ k >
+		< k > [if (tv(0, ?)) S:Statement => .K] ...</ k >
 		: KSentence .
 		
 		
