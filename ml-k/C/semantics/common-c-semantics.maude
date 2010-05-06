@@ -446,6 +446,13 @@ mod TYPES is
 			converted(tv(V1:BaseValue, unsigned-long), tv(V2:BaseValue, unsigned-long))
 		] ...</ k >
 		: KSentence .
+	mb rule
+		< k > [
+			arithConversion-int(tv(V1:BaseValue, unsigned-long), tv(V2:BaseValue, unsigned-int)) 
+			=> 
+			converted(tv(V1:BaseValue, unsigned-long), tv(V2:BaseValue, unsigned-long))
+		] ...</ k >
+		: KSentence .
 	
 	--- Otherwise...
 	--- fixme left out cases
@@ -609,8 +616,9 @@ mod COMMON-C-STANDARD-LIBRARY is
 	mb [putchar-is-value]: rule
 		< k > [putchar => builtin(putchar)] ...</ k >
 	: KSentence .
+	--- fixme doesn't cast to int
 	mb [putchar]: rule
-		< k > [Apply(builtin(putchar), (N:Nat)) => N:Nat] ...</ k >
+		< k > [Apply(builtin(putchar), tv(N:Nat, ?)) => tv(N:Nat, int)] ...</ k >
 		< output > [S:String => S:String +String charString(N:Nat %Nat 256)] </ output >
 	: KSentence .
 	--------------------------------------------
@@ -668,7 +676,14 @@ endm
 mod COMMON-PARAMETER-BINDING is
 	including COMMON-INCLUDE .
 	op bind : List{K} List{K} -> K .
+	--- op bind : List{K} -> K .
+	--- op evalList : List{K} -> K .
+	---mb context bind(?:List{K}, (?:List{K},, [HOLE],, ?:List{K})) : KSentence .
 
+	--- mb rule 
+		--- < k > [evalList(L:List{KResult}) ~> bind(L':List{K}) => bind(L':List{K}, L:List{KResult})] ...</ k > 
+		--- : KSentence .
+	
 	mb [void-to-id]: rule
 		[Parameter-Type-List(Parameter-Declaration(void)) 
 		=> Parameter-Type-List(.List{Parameter})] : KSentence [metadata "structural"] .
@@ -683,10 +698,15 @@ mod COMMON-PARAMETER-BINDING is
 	--- fixme not cleaning memory on return
 	--- fixme would be nice to check types match, but argument names etc might not be identical
 	mb [bind-one]: rule
-		< k > [bind((tv(V:BaseValue, T:Type),, L:List{K}), ('Parameter-Declaration(T':Type,, X:Id),, P:List{K}))
-			=> addTypes(X:Id, T:Type) ~> '_;(allocate(sizeof(T:Type))) ~> putInMem(Loc:Nat, V:BaseValue, T:Type, sizeof(T:Type)) ~> bind(L:List{K}, P:List{K})] ...</ k > 
+		< k > [bind((tv(V:BaseValue, T:Type),, L:List{KResult}), ('Parameter-Declaration(T':Type,, X:Id),, P:List{K}))
+			=> addTypes(X:Id, T:Type) ~> '_;(allocate(sizeof(T:Type))) ~> putInMem(Loc:Nat, V:BaseValue, T:Type, sizeof(T:Type)) ~> bind(L:List{KResult}, P:List{K})] ...</ k > 
 		< env >... [.Map => X:Id |-> Loc:Nat] ...</ env >
 		< nextLoc > Loc:Nat </ nextLoc >
+		: KSentence .
+	mb rule
+		< k > [bind(L:List{KResult}, ('Parameter-Declaration(T:Typedef-Name,, X:Id),, P:List{K}))
+			=> bind(L:List{KResult}, ('Parameter-Declaration(T':Type,, X:Id),, P:List{K}))] ...</ k > 
+		< typedefs >... T:Typedef-Name |-> T':Type ...</ typedefs >
 		: KSentence .
 		
 	--- mb [bind-one-func-pointer]: rule 
@@ -1805,6 +1825,7 @@ mod COMMON-C-SEMANTICS is
 		: KSentence .
 		
 	op postInc : K K Type -> K [metadata "strict(2)"] .
+	op postDec : K K Type -> K [metadata "strict(2)"] .
 	mb [post-increment-start]: rule
 		< k > [Deref(tv(Loc:Nat, pointerType(T:Type))) ++
 		=> postInc(Loc:Nat, readFromMem(Loc:Nat, T:Type, sizeof(T:Type), 0, 0), T:Type)
@@ -1814,6 +1835,18 @@ mod COMMON-C-SEMANTICS is
 	mb [post-increment]: rule
 		< k > [postInc(Loc:Nat, tv(I:Int, T:Type), T:Type)
 		=> assign(Deref(tv(Loc:Nat, pointerType(T:Type))), tv(I:Int, T:Type) + tv(1, int)) ~> discard ~> tv(I:Int, T:Type)
+		] ...</ k >
+		: KSentence .
+		
+	mb [post-decrement-start]: rule
+		< k > [Deref(tv(Loc:Nat, pointerType(T:Type))) --
+		=> postDec(Loc:Nat, readFromMem(Loc:Nat, T:Type, sizeof(T:Type), 0, 0), T:Type)
+		] ...</ k >
+		: KSentence .
+		
+	mb [post-decrement]: rule
+		< k > [postDec(Loc:Nat, tv(I:Int, T:Type), T:Type)
+		=> assign(Deref(tv(Loc:Nat, pointerType(T:Type))), tv(I:Int, T:Type) - tv(1, int)) ~> discard ~> tv(I:Int, T:Type)
 		] ...</ k >
 		: KSentence .
 	
