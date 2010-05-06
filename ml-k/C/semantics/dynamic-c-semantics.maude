@@ -15,7 +15,7 @@ mod DYNAMIC-C-SEMANTICS is
 			< mem > .Map </ mem >  
 			< output > "" </ output >
 			< callStack > .List </ callStack >
-			< nextLoc > 0 </ nextLoc >
+			< nextLoc > 3 </ nextLoc >
 			< malloced > .Map </ malloced >
 			< statics > .Map </ statics >
 			< typedefs > .Map </ typedefs >

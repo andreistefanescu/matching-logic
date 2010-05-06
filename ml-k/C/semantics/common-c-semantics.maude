@@ -16,6 +16,7 @@ mod COMMON-SEMANTIC-SYNTAX is
 	op unknown : -> K .
 	op skipval : -> KResult .
 	op debugK : -> K .
+	op discard : -> K .
 	sort State .
 	subsort String < State .
 	
@@ -986,10 +987,21 @@ mod COMMON-LOCAL-DECLARATION is
 
 endm
 
+***(
+"i=0,p=16,*p=0,
+i=1,p=17,*p=1,
+i=2,(a+1)=20,
+i=3,(a+1)=20,
+i=4,(a+1)=20,
+***)
+
+
 mod COMMON-EXPRESSIONS is
 	including COMMON-INCLUDE .
 
-	mb [pointerAddition]: rule [tv(V1:BaseValue, pointerType(T:Type)) +o V2:Value => tv(V1:BaseValue, pointerType(T:Type)) + (sizeof(T:Type) * V2:Value)] : KSentence  .
+	mb [pointerAddition]: rule ['_+o_(K1:K,, K2:K) => '_+_(K1:K,, K2:K)] : KSentence  .
+	mb [pointerSubtraction]: rule ['_-o_(K1:K,, K2:K) => '_-_(K1:K,, K2:K)] : KSentence  .
+	--- mb [pointerAddition]: rule [tv(V1:BaseValue, pointerType(T:Type)) +o V2:Value => tv(V1:BaseValue, pointerType(T:Type)) + (sizeof(T:Type) * V2:Value)] : KSentence  .
 	
 	---x ("_+o_").KProperLabel(("_`[_`]").KProperLabel("Id" arr(.List{K}),,"Rat" 0(.List{K})),,("tv").KResultLabel("Rat" 0(.List{K}),,"Base-Type" int(.List{K}))) 
 	 
@@ -1004,6 +1016,7 @@ mod COMMON-EXPRESSIONS is
 	mb rule < k > [converted(tv(I1:Int, T:Type), tv(I2:Int, T:Type)) ~> ? / ? 
 	=> tv(I1:Int /Int I2:Int, T:Type)] ...</ k > : KSentence .
 	
+	--- fixme assumes that because the types are the same, isn't pointer arithmetic
 	mb rule < k > [converted(tv(I1:Int, T:Type), tv(I2:Int, T:Type)) ~> ? + ? 
 	=> tv(I1:Int +Int I2:Int, T:Type)] ...</ k > : KSentence .
 	
@@ -1013,7 +1026,11 @@ mod COMMON-EXPRESSIONS is
 	op makeType : K -> K .
 	--- fixme integer type
 	mb rule < k > [converted(tv(I1:Int, pointerType(T:Type)), tv(I2:Int, T':Type)) ~> ? + ? 
-	=> tv(I1:Int +Int I2:Int, pointerType(T:Type))] ...</ k > : KSentence .
+	=> tv(I1:Int, pointerType(T:Type)) +i (sizeof(T:Type) * tv(I2:Int, T':Type))] ...</ k > : KSentence 
+	---[print "adding " I1:Int " +o " I2:Int]
+	.
+	mb rule < k > [converted(tv(I1:Int, pointerType(T:Type)), tv(I2:Int, T':Type)) ~> ? - ? 
+	=> tv(I1:Int, pointerType(T:Type)) -i (sizeof(T:Type) * tv(I2:Int, T':Type))] ...</ k > : KSentence .
 	
 	mb rule < k > [tv(I:Int, ?) ~> makeType(T:Type) => tv(I:Int, T:Type)] ...</ k > : KSentence 
 	---[print "type of to " I:Int " to " ]
@@ -1024,8 +1041,12 @@ mod COMMON-EXPRESSIONS is
 	--- mb rule [I1:Int * I2:Int => I1:Int *Int I2:Int] : KSentence .
 	--- mb rule [I1:Int / I2:Int => I1:Int /Int I2:Int] if I2:Int =/=Bool 0 : KSentence .
 	--- mb rule [I1:Int % I2:Int => I1:Int %Int I2:Int] if I2:Int =/=Bool 0 : KSentence .
-	mb rule [tv(I1:Int, ?) *i tv(I2:Int, ?) => I1:Int *Int I2:Int] : KSentence .
-	mb rule [tv(I1:Int, ?) %i tv(I2:Int, ?) => I1:Int %Int I2:Int] if I2:Int =/=Bool 0 : KSentence .
+	mb rule [tv(I1:Int, T:Type) +i tv(I2:Int, ?) => tv(I1:Int +Int I2:Int, T:Type)] : KSentence 
+	---[print "adding " I1:Int " + " I2:Int]
+	.
+	mb rule [tv(I1:Int, T:Type) -i tv(I2:Int, ?) => tv(_-Int_(I1:Int, I2:Int), T:Type)] : KSentence .
+	--- mb rule [tv(I1:Int, ?) *i tv(I2:Int, ?) => I1:Int *Int I2:Int] : KSentence .
+	--- mb rule [tv(I1:Int, ?) %i tv(I2:Int, ?) => I1:Int %Int I2:Int] if I2:Int =/=Bool 0 : KSentence .
 	--- --- mb rule [- I => -Int I] : KSentence .
 	
 	--- fixme, restricted for pointers
@@ -1218,9 +1239,9 @@ mod COMMON-C-SEMANTICS is
 		]
 		: KSentence [metadata "structural"] .
 	mb rule [
-		interpret(tv(N:Nat, structType(X:Id, T:Type))) 
+		interpret(tv(N:Nat, structType(X:Id, L:List{KResult}))) 
 		=> 
-		tv(N:Nat, structType(X:Id, T:Type))
+		tv(N:Nat, structType(X:Id, L:List{KResult}))
 		]
 		: KSentence [metadata "structural"] .
 		
@@ -1233,13 +1254,17 @@ mod COMMON-C-SEMANTICS is
 		< k > [readFromMem(Loc:Nat, T:Type, tv(sNat(Left:Nat), T':Type), Len:Nat, N:Nat)
 		=> readFromMem(sNat(Loc:Nat), T:Type, tv(Left:Nat, T':Type), sNat(Len:Nat), N:Nat |Nat (N':Nat <<Nat (8 *Nat Len:Nat)))] ...</ k >
 		< mem >... Loc:Nat |-> N':Nat ...</ mem >
-		: KSentence .	
+		: KSentence 
+		---[print "r@ " Loc:Nat ": " N':Nat] 
+		.	
 		
 	mb [lookup-pointer]: rule
 		< k > [I:Id => readFromMem(Loc:Nat, pointerType(T:Type), sizeof(pointerType(T:Type)), 0, 0)] ...</ k >
 		< env >... I:Id |-> Loc:Nat ...</ env >
 		< types >... I:Id |-> pointerType(T:Type) ...</ types >
-		: KSentence .
+		: KSentence 
+		---[print "reading " I:Id] 
+		.
 		
 
 		
@@ -1324,8 +1349,11 @@ mod COMMON-C-SEMANTICS is
 		--- < mem >... Loc:Nat |-> [? => V:BaseValue] ...</ mem >
 		--- : KSentence .
 	mb [assign]: rule
-		< k > [assign(Deref(tv(Loc:Nat, pointerType(T:Type))), tv(V:BaseValue, T:Type)) => putInMem(Loc:Nat, V:BaseValue, T:Type, sizeof(T:Type)) ~> tv(V:BaseValue, T:Type)] ...</ k >
-		: KSentence .
+		< k > [assign(Deref(tv(Loc:Nat, pointerType(T:Type))), tv(V:Int, T:Type)) 
+		=> putInMem(Loc:Nat, V:Int, T:Type, sizeof(T:Type)) ~> tv(V:Int, T:Type)] ...</ k >
+		: KSentence
+		---[print "assigning " V:Int " to " Loc:Nat]
+		.
 	
 	op putByteInMem : Nat BaseValue -> K .
 	mb rule
@@ -1335,12 +1363,15 @@ mod COMMON-C-SEMANTICS is
 	--- 36859
 	mb rule
 		< k > [putInMem(Loc:Nat, N:Int, T:Type, tv(sNat(Len:Nat), J:Type)) 
-		=> putByteInMem(Loc:Nat, (N:Int +Int 256) %Int 256) ~> putInMem(sNat(Loc:Nat), N:Int >>Int 8, T:Type, tv(Len:Nat, J:Type))] ...</ k >
-		: KSentence .
+		=> putByteInMem(Loc:Nat, ((N:Int %Int 256) +Int 256) %Int 256) ~> putInMem(sNat(Loc:Nat), N:Int >>Int 8, T:Type, tv(Len:Nat, J:Type))] ...</ k >
+		: KSentence 
+		.
 	mb rule
 		< k > [putByteInMem(Loc:Nat, N:Nat) => .K] ...</ k >
 		< mem >... Loc:Nat |-> [? => N:Nat] ...</ mem >
-		: KSentence .
+		: KSentence 
+		---[print "w@ " Loc:Nat ": " N:Nat] 
+		.
 	
 	--- mb rule
 		--- < k > [assign(Deref(tv(Loc:Nat, pointerType(T:Type))), tv(V:BaseValue, T:Type)) => V:BaseValue] ...</ k >
@@ -1449,7 +1480,7 @@ mod COMMON-C-SEMANTICS is
 	---x ((((((((pointArr))) +o (((3))))) -> x)))
 		
 	mb [dot-cool]: rule
-		< k > [evalToType ~> &(E1:Expression . X:Id) => (& (E1:Expression)) + getOffset(E1:Expression, X:Id) ~> makeType(pointerType(T:Type))] ...</ k >
+		< k > [evalToType ~> &(E1:Expression . X:Id) => (& (E1:Expression)) +i getOffset(E1:Expression, X:Id) ~> makeType(pointerType(T:Type))] ...</ k >
 		[< type > structType(X':Id, (L1:List{KResult},, typedField(T:Type, X:Id),,  L2:List{KResult})) </ type > => .Bag] 
 		: KSentence .
 	--- fixme possibly do maketype in wrong place
@@ -1526,6 +1557,11 @@ mod COMMON-C-SEMANTICS is
 	--- mb rule < type > [Deref(& E:Expression) => E:Expression] ...</ type > : KSentence [metadata "structural"] .
 	--- mb rule < type > [Deref(Pointer(T:TogetherList)) => T:TogetherList] ...</ type > : KSentence [metadata "structural"] .
 	
+	--- fixme wrong, clearly need to have one typing system
+	mb rule
+		< type > [E1:Expression + E2:Expression => E1:Expression] ...</ type >
+		: KSentence .
+	
 	mb [evalToType-array-lookup]: rule
 		< type > [E:Expression[E1:Expression] => E:Expression[0]] ...</ type >
 		if E1:Expression =/=Bool 0
@@ -1550,9 +1586,6 @@ mod COMMON-C-SEMANTICS is
 		--- < type > [struct(X:Id, Fields:SeqList) => structType(X:Id, Fields:SeqList)] ...</ type >
 		--- : KSentence .
 	
-	mb rule
-		< type > [E:Expression +o ? => E:Expression] ...</ type >
-		: KSentence .
 	mb [deref-heat]: rule
 		< type > ['Deref(Kp:KProper) => Kp:KProper ~> 'Deref(HOLE)] ...</ type >
 		: KSentence .
@@ -1585,9 +1618,14 @@ mod COMMON-C-SEMANTICS is
 		: KSentence .
 	
 	mb [deref]: rule
-		< k > [Deref(tv(Loc:Nat, pointerType(T:Type))) => tv(I:Int, T:Type)] ...</ k >
-		< mem >... Loc:Nat |-> I:Int ...</ mem >
-		: KSentence .
+		< k > [Deref(tv(Loc:Nat, pointerType(T:Type))) 
+		=> readFromMem(Loc:Nat, T:Type, sizeof(T:Type), 0, 0) ~> makeType(T:Type)
+		---tv(I:Int, T:Type)
+		] ...</ k >
+		--- < mem >... Loc:Nat |-> I:Int ...</ mem >
+		: KSentence 
+		---[print "deref " Loc:Nat]
+		.
 		
 	mb [if-then-else-true]: rule
 		< k > [if (tv(I:Int, int)) S:Statement else S':Statement => S:Statement] ...</ k >
@@ -1722,21 +1760,35 @@ mod COMMON-C-SEMANTICS is
 		...</ callStack >
 		: KSentence .
 		
-	
-	mb [post-increment]: rule
-		< k > [Deref(tv(Loc:Nat, pointerType(T:Type))) ++ => tv(V:Int, T:Type)] ...</ k >
-		< mem >... Loc:Nat |-> [V:Int => V:Int +Int 1] ...</ mem >
-		: KSentence .	
-	mb [post-decrement]: rule
-		< k > [Deref(tv(Loc:Nat, pointerType(T:Type))) -- => tv(V:Int, T:Type)] ...</ k >
-		< mem >... Loc:Nat |-> [V:Int => _-Int_(V:Int, 1)] ...</ mem >
+	op postInc : K K Type -> K [metadata "strict(2)"] .
+	mb [post-increment-start]: rule
+		< k > [Deref(tv(Loc:Nat, pointerType(T:Type))) ++
+		=> postInc(Loc:Nat, readFromMem(Loc:Nat, T:Type, sizeof(T:Type), 0, 0), T:Type)
+		] ...</ k >
 		: KSentence .
+		
+	mb [post-increment]: rule
+		< k > [postInc(Loc:Nat, tv(I:Int, T:Type), T:Type)
+		=> assign(Deref(tv(Loc:Nat, pointerType(T:Type))), tv(I:Int, T:Type) + tv(1, int)) ~> discard ~> tv(I:Int, T:Type)
+		] ...</ k >
+		: KSentence .
+	
+	--- mb [post-increment]: rule
+		--- < k > [Deref(tv(Loc:Nat, pointerType(T:Type))) ++ => assign(Deref(tv(Loc:Nat, pointerType(T:Type))), tv(V:BaseValue, T:Type) + tv(1, int)) ~> discard ~> tv(V:BaseValue, T:Type)] ...</ k >
+		--- < mem >... Loc:Nat |-> V:BaseValue ...</ mem >
+		--- : KSentence .
+	--- mb [post-decrement]: rule
+		--- < k > [Deref(tv(Loc:Nat, pointerType(T:Type))) -- => assign(Deref(tv(Loc:Nat, pointerType(T:Type))), tv(V:BaseValue, T:Type) - tv(1, int)) ~> discard ~> tv(V:BaseValue, T:Type)] ...</ k >
+		--- < mem >... Loc:Nat |-> V:BaseValue ...</ mem >
+		--- : KSentence .
 		
 	
 
+	
 
-
-
+	mb [discard]: rule
+		< k > [V:Value ~> discard => .K] ...</ k >
+		: KSentence .	
 
 	
 endm

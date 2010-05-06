@@ -6,7 +6,8 @@ unsigned int fastfib_v2(unsigned int n);
 // 0 1 2 3 4 5 6  7  8  9 10
 // 0 1 1 2 3 5 8 13 21 34 55
 int main(void){
-	int x = fib(10);
+	int x = 0;
+	x += fib(10);
 	x += fastfib(10);
 	x += fastfib_v2(10);
 	return x;
