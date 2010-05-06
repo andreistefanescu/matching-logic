@@ -252,7 +252,12 @@ mod TYPES is
 	including COMMON-INCLUDE .
 	op normalizeType : K K -> K .
 	op typedef : K K -> K .
-
+	
+	mb rule 
+		< k > ['Pointer(T:Type,, 'Direct-Function-Declarator('Parameter-Type-List(LL:List{Parameter}))) 
+		=> pointerType(functionType(T:Type, getList{K}(LL:List{Parameter})))] ...</ k >
+		: KSentence [metadata "structural"] .
+	
 	mb rule 
 		< k > ['Pointer(T:Type) => pointerType(T:Type)] ...</ k >
 		: KSentence [metadata "structural"] .
@@ -708,6 +713,17 @@ endm
 
 mod COMMON-GLOBAL-DECLARATION is
 	including COMMON-INCLUDE .
+	
+	mb rule
+		< k > ['Global('Declaration(T:Type,, X:Id))
+			=> addGlobalTypes(X:Id, T:Type) ~> '_;(allocate(sizeof(T:Type)))] ...</ k >
+		< env >... [.Map => X:Id |-> Loc:Nat] ...</ env >
+		< genv >... [.Map => X:Id |-> Loc:Nat] ...</ genv >
+		< nextLoc > Loc:Nat </ nextLoc >
+		if getKLabel(T:Type)=/=Bool 'functionType
+		: KSentence 
+		.
+	
 	--- mb [global-variable-declaration]: rule
 		--- < k > [Global(Declaration(int, I:Id)) => .K] ...</ k >
 		--- < env >... [.Map => I:Id |-> Loc:Nat] ...</ env >
@@ -733,9 +749,9 @@ mod COMMON-GLOBAL-DECLARATION is
 		--- < types >... [.Map => I:Id |-> Direct-Function-Declarator(Pointer(I:Id), PTL:Parameter-Type-List)] ...</ types >
 		--- : KSentence .	
 		
-	--- mb [global-variable-declaration-init]: rule
-		--- < k > [Declaration(int, I:Id) = E:Expression => Global(Declaration(int, I:Id)) ~> Deref(&(I:Id)) := E:Expression ;] ...</ k >
-		--- : KSentence .
+	mb [global-variable-declaration-init]: rule
+		< k > ['_=_('Declaration(T:Type,, X:Id),, E:Expression) => 'Global('Declaration(T:Type,, X:Id)) ~> Deref(&(X:Id)) := E:Expression ;] ...</ k >
+		: KSentence .
 	--- mb [global-pointer-declaration-init]: rule
 		--- < k > [Declaration(Pointer(T:Type-Specifier), I:Id) = E:Expression => Global(Declaration(Pointer(T:Type-Specifier), I:Id)) ~> Deref(&(I:Id)) := E:Expression ; ] ...</ k >
 		--- : KSentence .
@@ -830,6 +846,11 @@ mod COMMON-GLOBAL-DECLARATION is
 		< k > [addGlobalTypes(X:Id, structType(X:Id, L:List{KResult})) => .K] ...</ k >
 		< types >... struct(X:Id) |-> [partialType(X:Id) => structType(X:Id, L:List{KResult})] ...</ types >
 		< typedefs >... struct(X:Id) |-> [partialType(X:Id) => structType(X:Id, L:List{KResult})] ...</ typedefs >
+		: KSentence .
+	mb rule
+		< k > [addGlobalTypes(X:Id, pointerType(T:Type)) => .K] ...</ k >
+		< types >... [.Map => X:Id |-> pointerType(T:Type)] ...</ types >
+		< typedefs >... [.Map => X:Id |-> pointerType(T:Type)] ...</ typedefs >
 		: KSentence .
 		
 	--- mb rule
