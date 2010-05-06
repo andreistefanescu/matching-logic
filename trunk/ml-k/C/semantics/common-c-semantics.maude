@@ -350,6 +350,7 @@ mod TYPES is
 		orBool L:KLabel ==Bool '_==_
 		orBool L:KLabel ==Bool '_!=_
 		: KSentence .
+	
 		
 	---C99 6.3.1.8
 	--- First, if the corresponding real type of either operand is long double, the other operand is converted, without change of type domain, to a type whose corresponding real type is long double.
@@ -504,13 +505,13 @@ mod COMMON-C-STANDARD-LIBRARY is
 		< nextLoc > [Loc:Nat => Loc:Nat +Nat N:Nat] </ nextLoc >
 	: KSentence .
 	--------------------------------------------
-	--- mb [rand-is-value]: rule
-		--- < k > [rand => builtin(rand)] ...</ k >
-	--- : KSentence .
-	--- mb [rand]: rule
-		--- < k > [Apply(builtin(rand), .List{Expression}) => randomRandom(Loc:Nat)] ...</ k >
-		--- < nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
-	--- : KSentence .
+	mb [rand-is-value]: rule
+		< k > [rand => builtin(rand)] ...</ k >
+	: KSentence .
+	mb [rand]: rule
+		< k > [Apply(builtin(rand), .List{Expression}) => tv(randomRandom(Loc:Nat), int)] ...</ k >
+		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
+	: KSentence .
 	--------------------------------------------
 	--- mb [free-is-value]: rule
 		--- < k > [free => builtin(free)] ...</ k >
@@ -873,6 +874,11 @@ mod COMMON-GLOBAL-DECLARATION is
 		< types >... [.Map => X:Id |-> pointerType(T:Type)] ...</ types >
 		< typedefs >... [.Map => X:Id |-> pointerType(T:Type)] ...</ typedefs >
 		: KSentence .
+	mb rule
+		< k > [addGlobalTypes(X:Id, T:Base-Type) => .K] ...</ k >
+		< types >... [.Map => X:Id |-> T:Base-Type] ...</ types >
+		< typedefs >... [.Map => X:Id |-> T:Base-Type] ...</ typedefs >
+		: KSentence .
 		
 	--- mb rule
 		--- < k > [addGlobalTypes(E:Expression, arrayType(T:Type, N:Nat)) => addGlobalTypes(E:Expression[0], T:Type)] ...</ k >
@@ -1089,6 +1095,7 @@ mod COMMON-EXPRESSIONS is
 	---[print "adding " I1:Int " + " I2:Int]
 	.
 	mb rule [tv(I1:Int, T:Type) -i tv(I2:Int, ?) => tv(_-Int_(I1:Int, I2:Int), T:Type)] : KSentence .
+	mb rule [! tv(I:Int, T:Type) => tv(if (I:Int ==Bool 0) then 1 else 0 fi, int)] : KSentence .
 	--- mb rule [tv(I1:Int, ?) *i tv(I2:Int, ?) => I1:Int *Int I2:Int] : KSentence .
 	--- mb rule [tv(I1:Int, ?) %i tv(I2:Int, ?) => I1:Int %Int I2:Int] if I2:Int =/=Bool 0 : KSentence .
 	--- --- mb rule [- I => -Int I] : KSentence .
@@ -1101,6 +1108,8 @@ mod COMMON-EXPRESSIONS is
 	
 	mb rule < k > [converted(tv(I1:Int, T:Type), tv(I2:Int, T:Type)) ~> ? == ? => if (I1:Int ==Bool I2:Int) then tv(1, int) else tv(0, int) fi] ...</ k > : KSentence .
 	mb rule < k > [converted(tv(I1:Int, T:Type), tv(I2:Int, T:Type)) ~> ? != ? => if (I1:Int =/=Bool I2:Int) then tv(1, int) else tv(0, int) fi] ...</ k > : KSentence .
+	
+	
 	--- mb rule [I1:Int < I2:Int => if (I1:Int <Int I2:Int) then 1 else 0 fi] : KSentence .
 	--- mb rule [I1:Int <= I2:Int => if (I1:Int <=Int I2:Int) then 1 else 0 fi] : KSentence .
 	--- mb rule [I1:Int > I2:Int => if (I1:Int >Int I2:Int) then 1 else 0 fi] : KSentence .
