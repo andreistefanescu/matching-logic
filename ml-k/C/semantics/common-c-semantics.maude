@@ -607,44 +607,44 @@ mod COMMON-C-STANDARD-LIBRARY is
 		< output > [S:String => S:String +String charString(N:Nat %Nat 256)] </ output >
 	: KSentence .
 	--------------------------------------------
-	mb [printf-is-value]: rule
+	mb [lib-printf-is-value]: rule
 		< k > [printf => builtin(printf)] ...</ k >
 	: KSentence .
 	
 	op printf-aux : Nat Nat List{Expression} -> K .
 	op printf-% : Nat Nat List{Expression} -> K .
-	mb [printf-start]: rule
+	mb [lib-printf-start]: rule
 		< k > [Apply(builtin(printf), (tv(Loc:Nat, ?) .,. L:List{Expression})) => printf-aux(0, Loc:Nat, L:List{Expression})] ...</ k >
 	: KSentence .
 	
-	mb [printf-normal]: rule
+	mb [lib-printf-normal]: rule
 		< k > [printf-aux(Len:Nat, Loc:Nat, L:List{Expression}) => printf-aux(sNat(Len:Nat), sNat(Loc:Nat), L:List{Expression})] ...</ k >
 		< mem >... Loc:Nat |-> N:Nat ...</ mem >
 		< output > [S:String => S:String +String charString(N:Nat %Nat 256)] </ output >
 		if notBool(N:Nat ==Bool asciiString("%")) 
 		andBool notBool(N:Nat ==Bool 0)
 	: KSentence .
-	mb [printf-done]: rule
+	mb [lib-printf-done]: rule
 		< k > [printf-aux(Len:Nat, Loc:Nat, L:List{Expression}) => Len:Nat] ...</ k >
 		< mem >... Loc:Nat |-> 0 ...</ mem >
 	: KSentence .
-	mb [printf-null]: rule
+	mb [lib-printf-null]: rule
 		< k > [printf-aux(0, 0, .List{Expression}) => 6] ...</ k >
 		< output > [S:String => S:String +String "(null)"] </ output >
 	: KSentence .
 	
-	mb [printf-%]: rule
+	mb [lib-printf-%]: rule
 		< k > [printf-aux(Len:Nat, Loc:Nat, L:List{Expression}) => printf-%(Len:Nat, sNat(Loc:Nat), L:List{Expression})] ...</ k >
 		< mem >... Loc:Nat |-> N:Nat ...</ mem >
 		if (N:Nat ==Bool asciiString("%"))
 	: KSentence .
-	mb [printf-%d]: rule
+	mb [lib-printf-%d]: rule
 		< k > [printf-%(Len:Nat, Loc:Nat, (tv(D:Int, ?) .,. L:List{Expression})) => printf-aux(Len:Nat +Nat lengthString(rat2stringConversion(D:Int, 10)), sNat(Loc:Nat), L:List{Expression})] ...</ k >
 		< mem >... Loc:Nat |-> N:Nat ...</ mem >
 		< output > [S:String => S:String +String rat2stringConversion(D:Int, 10)] </ output >
 		if N:Nat ==Bool asciiString("d") 
 	: KSentence .
-	mb [printf-%s]: rule
+	mb [lib-printf-%s]: rule
 		< k > [printf-%(Len:Nat, Loc:Nat, (tv(S:Nat, ?) .,. L:List{Expression})) => 
 			printf-aux(0, S:Nat, .List{Expression})
 			~> printf-aux(Len:Nat, sNat(Loc:Nat), L:List{Expression})] ...</ k >
@@ -652,7 +652,7 @@ mod COMMON-C-STANDARD-LIBRARY is
 		if N:Nat ==Bool asciiString("s") 
 	: KSentence .
 
-	mb [printf-%s-done]: rule
+	mb [lib-printf-%s-done]: rule
 		< k > [Len':Nat ~> printf-aux(Len:Nat, Loc:Nat, L:List{Expression}) => 
 			printf-aux(Len:Nat +Nat Len':Nat, Loc:Nat, L:List{Expression})] ...</ k >
 	: KSentence .
@@ -995,23 +995,29 @@ mod COMMON-EXPRESSIONS is
 	 
 	---- [print E:Expression]
 
+	--- fixme not modding
 	--- fixme result needs type
 	mb rule < k > [converted(tv(I1:Int, T:Type), tv(I2:Int, T:Type)) ~> ? * ? 
-	=> (I1:Int *Int I2:Int) %i (sizeof(T:Type) *i 256) ~> makeType(T:Type)] ...</ k > : KSentence .
+	=> tv(I1:Int *Int I2:Int, T:Type)] ...</ k > : KSentence 
+	---[print "mult " I1:Int " * " I2:Int]
+	.
 	mb rule < k > [converted(tv(I1:Int, T:Type), tv(I2:Int, T:Type)) ~> ? / ? 
-	=> (I1:Int /Int I2:Int) %i (sizeof(T:Type) *i 256) ~> makeType(T:Type)] ...</ k > : KSentence .
+	=> tv(I1:Int /Int I2:Int, T:Type)] ...</ k > : KSentence .
 	
 	mb rule < k > [converted(tv(I1:Int, T:Type), tv(I2:Int, T:Type)) ~> ? + ? 
-	=> (I1:Int +Int I2:Int) %i (sizeof(T:Type) *i 256) ~> makeType(T:Type)] ...</ k > : KSentence .
+	=> tv(I1:Int +Int I2:Int, T:Type)] ...</ k > : KSentence .
 	
 	mb rule < k > [converted(tv(I1:Int, T:Type), tv(I2:Int, T:Type)) ~> ? - ? 
-	=> (_-Int_(I1:Int, I2:Int)) %i (sizeof(T:Type) *i 256) ~> makeType(T:Type)] ...</ k > : KSentence .
+	=> tv(_-Int_(I1:Int, I2:Int), T:Type)] ...</ k > : KSentence .
 	
 	op makeType : K -> K .
+	--- fixme integer type
 	mb rule < k > [converted(tv(I1:Int, pointerType(T:Type)), tv(I2:Int, T':Type)) ~> ? + ? 
-	=> (I1:Int +Int I2:Int) %i (sizeof(pointerType(T:Type)) *i 256) ~> makeType(pointerType(T:Type))] ...</ k > : KSentence .
+	=> tv(I1:Int +Int I2:Int, pointerType(T:Type))] ...</ k > : KSentence .
 	
-	mb rule < k > [tv(I:Int, ?) ~> makeType(T:Type) => tv(I:Int, T:Type)] ...</ k > : KSentence .
+	mb rule < k > [tv(I:Int, ?) ~> makeType(T:Type) => tv(I:Int, T:Type)] ...</ k > : KSentence 
+	---[print "type of to " I:Int " to " ]
+	.
 	
 	--- mb rule [I1:Int + I2:Int => I1:Int +Int I2:Int] : KSentence .
 	--- mb rule [_-_(I1:Int,I2:Int) => _-Int_(I1:Int,I2:Int)] : KSentence .
@@ -1188,7 +1194,9 @@ mod COMMON-C-SEMANTICS is
 	mb rule
 		< k > [readFromMem(Loc:Nat, T:Type, tv(0, ?), ?,  N:Nat) 
 		=> interpret(tv(N:Nat, T:Type))] ...</ k >
-		: KSentence .
+		: KSentence 
+		---[print "read " N:Nat " ending at " Loc:Nat] 
+		.
 
 	mb rule [
 		interpret(tv(N:Nat, int)) 
