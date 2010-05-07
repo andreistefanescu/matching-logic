@@ -78,42 +78,82 @@ mod C-SETTINGS is
 	mb rule [char => unsigned-char] : KSentence .
 	
 	---C99 6.4.4.1:5 The type of an integer constant is the first of the corresponding list in which its value can be represented
+
+	op numBytes : Type -> Nat .
+	eq numBytes(char) = 1 .
+	eq numBytes(short-int) = 2 .
+	eq numBytes(int) = 4 .
+	eq numBytes(long-int) = 4 .
+	eq numBytes(long-long-int) = 8 .
+	
 	
 	op cfg:sizeut : -> Type .
-	eq cfg:sizeut = unsigned-long .
+	eq cfg:sizeut = unsigned-long-int .
+
 	
-	op cfg:sizeofInt : -> Nat .
-	eq cfg:sizeofInt = 4 .
-	op cfg:sizeofUL : -> Nat .
-	eq cfg:sizeofUL = 4 .
+	---- derived
+	eq numBytes(signed-char) = numBytes(char) .
+	eq numBytes(unsigned-char) = numBytes(char) .
+	eq numBytes(unsigned-short-int) = numBytes(short-int) .
+	eq numBytes(unsigned-int) = numBytes(int) .
+	eq numBytes(unsigned-long-int) = numBytes(long-int) .
+	eq numBytes(unsigned-long-long-int) = numBytes(long-long-int) .
 	
-	op cfg:sizeofPtr : -> Nat .
-	eq cfg:sizeofPtr = cfg:sizeofUL .
+	op numBits : Type -> Nat .
+	eq numBits(T:Type) = numBytes(T:Type) *Nat 8 .
+			
+	op min : Type -> Int .
+	op max : Type -> Int .
+	eq min(int) = -Int (2 ^Nat absInt(_-Int_(numBits(int), 1))) .
+	eq max(int) = _-Int_(2 ^Nat absInt(_-Int_(numBits(int), 1)), 1) .
+	eq min(long-int) = -Int (2 ^Nat absInt(_-Int_(numBits(long-int), 1))) .
+	eq max(long-int) = _-Int_(2 ^Nat absInt(_-Int_(numBits(long-int), 1)), 1) .
+	eq min(long-long-int) = -Int (2 ^Nat absInt(_-Int_(numBits(long-long-int), 1))) .
+	eq max(long-long-int) = _-Int_(2 ^Nat absInt(_-Int_(numBits(long-long-int), 1)), 1) .
+	
+	--- eq min(short-int) = -2147483648 .
+	--- eq max(short-int) = 2147483647 .
+
 	
 	--- op drv:bitsPerInt : -> Nat .
 	--- eq drv:bitsPerInt = 8 *Nat cfg:sizeofInt .
-	op drv:maxInt : -> Nat .
-	op drv:minInt : -> Int .
+	--- op drv:maxInt : -> Nat .
+	--- op drv:minInt : -> Int .
 	--- fixme (should actually be derived
-	eq drv:maxInt = 2147483647 .
-	eq drv:minInt = -2147483648 .
-	op drv:maxPtr : -> Nat .
-	op drv:minPtr : -> Nat .
+	--- eq drv:maxInt = 2147483647 .
+	--- eq drv:minInt = -2147483648 .
+	
+	--- op drv:maxLongInt : -> Nat .
+	--- op drv:minLongInt : -> Int .
 	--- fixme (should actually be derived
-	eq drv:maxPtr = 4294967295 .
-	eq drv:minPtr = 0 .
+	--- eq drv:maxLongInt = 2147483647 .
+	--- eq drv:minLongInt = -2147483648 .
+
+	--- op drv:maxLongLongInt : -> Nat .
+	--- op drv:minLongLongInt : -> Int .
+	--- fixme (should actually be derived
+	--- eq drv:maxLongLongInt = 9223372036854775807 .
+	--- eq drv:minLongLongInt = -9223372036854775808 .
 	
+	---eq drv:maxInt = 32767 .
+	---eq drv:minInt = -32767 .
+	--- op drv:maxPtr : -> Nat .
+	--- op drv:minPtr : -> Nat .
+	--- fixme (should actually be derived
+	--- eq drv:maxPtr = 4294967295 .
+	--- eq drv:minPtr = 0 .
 	
-	mb rule < k > [I:Int => tv(I:Int, int)] ...</ k > 
-		if (I:Int <=Int drv:maxInt)
-		andBool (I:Int >=Int drv:minInt)
-		: KSentence .
+	mb rule < k > [sizeof(T:Base-Type) => tv(numBytes(T:Base-Type), cfg:sizeut)] ...</ k > : KSentence .
 	
-	mb rule < k > [sizeof(int) => tv(cfg:sizeofInt, cfg:sizeut)] ...</ k > : KSentence .
-	mb rule < k > [sizeof(unsigned-int) => tv(cfg:sizeofInt, cfg:sizeut)] ...</ k > : KSentence .
-	mb rule < k > [sizeof(unsigned-long) => tv(cfg:sizeofUL, cfg:sizeut)] ...</ k > : KSentence .
-	mb rule < k > [sizeof(signed-int) => tv(cfg:sizeofInt, cfg:sizeut)] ...</ k > : KSentence .
-	mb rule < k > [sizeof(pointerType(?)) => tv(cfg:sizeofPtr, cfg:sizeut)] ...</ k > : KSentence .
+	--- mb rule < k > [sizeof(short) => tv(cfg:sizeofShort, cfg:sizeut)] ...</ k > : KSentence .
+	--- mb rule < k > [sizeof(unsigned-short) => tv(cfg:sizeofUShort, cfg:sizeut)] ...</ k > : KSentence .
+	--- mb rule < k > [sizeof(int) => tv(cfg:sizeofInt, cfg:sizeut)] ...</ k > : KSentence .
+	--- mb rule < k > [sizeof(unsigned-int) => tv(cfg:sizeofInt, cfg:sizeut)] ...</ k > : KSentence .
+	--- mb rule < k > [sizeof(long) => tv(cfg:sizeofLong, cfg:sizeut)] ...</ k > : KSentence .
+	--- mb rule < k > [sizeof(unsigned-long) => tv(cfg:sizeofUL, cfg:sizeut)] ...</ k > : KSentence .
+	--- mb rule < k > [sizeof(long-long) => tv(cfg:sizeofLL, cfg:sizeut)] ...</ k > : KSentence .
+	--- mb rule < k > [sizeof(signed-int) => tv(cfg:sizeofInt, cfg:sizeut)] ...</ k > : KSentence .
+	--- mb rule < k > [sizeof(pointerType(?)) => tv(cfg:sizeofPtr, cfg:sizeut)] ...</ k > : KSentence .
 
 	mb rule 
 		< k > [T:Typedef-Name => T:Type] ...</ k >
@@ -254,6 +294,12 @@ mod TYPES is
 	op normalizeType : K K -> K .
 	op typedef : K K -> K .
 	
+	mb rule [unsigned-short => unsigned-short-int] : KSentence .
+	mb rule [unsigned-long => unsigned-long-int] : KSentence .
+	mb rule [short => short-int] : KSentence .
+	mb rule [long => short-int] : KSentence .
+	mb rule [long-long => long-long-int] : KSentence .
+	
 	mb rule 
 		< k > ['Pointer(T:Type,, 'Direct-Function-Declarator('Parameter-Type-List(LL:List{Parameter}))) 
 		=> pointerType(functionType(T:Type, getList{K}(LL:List{Parameter})))] ...</ k >
@@ -335,125 +381,125 @@ mod TYPES is
 	op integerPromotion : K -> K .
 
 	--- fixme should only happen if arguments are arithmetic
-	mb rule
-		< k > [.K => arithConversion(V:Value, V':Value)] ~> L:KLabel(V:Value,, V':Value) ...</ k > 
-		if false
-		orBool L:KLabel ==Bool '_*_
-		orBool L:KLabel ==Bool '_/_
-		orBool L:KLabel ==Bool '_+_
-		orBool L:KLabel ==Bool '_-_
-		orBool L:KLabel ==Bool '_%_
-		orBool L:KLabel ==Bool '_<_
-		orBool L:KLabel ==Bool '_>_
-		orBool L:KLabel ==Bool '_<=_
-		orBool L:KLabel ==Bool '_>=_
-		orBool L:KLabel ==Bool '_==_
-		orBool L:KLabel ==Bool '_!=_
-		: KSentence .
+	--- mb rule
+		--- < k > [.K => arithConversion(V:Value, V':Value)] ~> L:KLabel(V:Value,, V':Value) ...</ k > 
+		--- if false
+		--- orBool L:KLabel ==Bool '_*_
+		--- orBool L:KLabel ==Bool '_/_
+		--- orBool L:KLabel ==Bool '_+_
+		--- orBool L:KLabel ==Bool '_-_
+		--- orBool L:KLabel ==Bool '_%_
+		--- orBool L:KLabel ==Bool '_<_
+		--- orBool L:KLabel ==Bool '_>_
+		--- orBool L:KLabel ==Bool '_<=_
+		--- orBool L:KLabel ==Bool '_>=_
+		--- orBool L:KLabel ==Bool '_==_
+		--- orBool L:KLabel ==Bool '_!=_
+		--- : KSentence .
 	
 		
 	---C99 6.3.1.8
 	--- First, if the corresponding real type of either operand is long double, the other operand is converted, without change of type domain, to a type whose corresponding real type is long double.
-	mb rule
-		< k > [arithConversion(tv(V1:BaseValue, long-double), tv(V2:BaseValue, T2:Type)) => 
-		converted(tv(V1:BaseValue, long-double), tv(V2:BaseValue, long-double))] ...</ k >
-		: KSentence .
+	--- mb rule
+		--- < k > [arithConversion(tv(V1:BaseValue, long-double), tv(V2:BaseValue, T2:Type)) => 
+		--- converted(tv(V1:BaseValue, long-double), tv(V2:BaseValue, long-double))] ...</ k >
+		--- : KSentence .
 		
 	--- Otherwise, if the corresponding real type of either operand is double, the other operand is converted, without change of type domain, to a type whose corresponding real type is double.
-	mb rule
-		< k > [arithConversion(tv(V1:BaseValue, double), tv(V2:BaseValue, T2:Type)) => 
-		converted(tv(V1:BaseValue, double), tv(V2:BaseValue, double))] ...</ k >
-		if T2:Type =/=Bool long-double
-		: KSentence .
+	--- mb rule
+		--- < k > [arithConversion(tv(V1:BaseValue, double), tv(V2:BaseValue, T2:Type)) => 
+		--- converted(tv(V1:BaseValue, double), tv(V2:BaseValue, double))] ...</ k >
+		--- if T2:Type =/=Bool long-double
+		--- : KSentence .
 		
 	--- Otherwise, if the corresponding real type of either operand is float, the other operand is converted, without change of type domain, to a type whose corresponding real type is float. 53) For example, addition of a double _Complex and a float entails just the conversion of the float operand to double (and yields a double _Complex result).
-	mb rule
-		< k > [arithConversion(tv(V1:BaseValue, float), tv(V2:BaseValue, T2:Type)) => 
-		converted(tv(V1:BaseValue, float), tv(V2:BaseValue, float))] ...</ k >
-		if T2:Type =/=Bool long-double
-		andBool T2:Type =/=Bool double
-		: KSentence .
+	--- mb rule
+		--- < k > [arithConversion(tv(V1:BaseValue, float), tv(V2:BaseValue, T2:Type)) => 
+		--- converted(tv(V1:BaseValue, float), tv(V2:BaseValue, float))] ...</ k >
+		--- if T2:Type =/=Bool long-double
+		--- andBool T2:Type =/=Bool double
+		--- : KSentence .
 		
 	--- Otherwise, the integer promotions are performed on both operands ...
-	mb rule
-		< k > [
-			arithConversion(tv(V1:BaseValue, T1:Type), tv(V2:BaseValue, T2:Type)) 
-			=> 
-			arithConversion-int(integerPromotion(tv(V1:BaseValue, T1:Type)), integerPromotion(tv(V2:BaseValue, T2:Type)))
-		] ...</ k >
-		if T1:Type =/=Bool long-double andBool T2:Type =/=Bool long-double
-		andBool T1:Type =/=Bool double andBool T2:Type =/=Bool double
-		andBool T1:Type =/=Bool float andBool T2:Type =/=Bool float
-		: KSentence .
+	--- mb rule
+		--- < k > [
+			--- arithConversion(tv(V1:BaseValue, T1:Type), tv(V2:BaseValue, T2:Type)) 
+			--- => 
+			--- arithConversion-int(integerPromotion(tv(V1:BaseValue, T1:Type)), integerPromotion(tv(V2:BaseValue, T2:Type)))
+		--- ] ...</ k >
+		--- if T1:Type =/=Bool long-double andBool T2:Type =/=Bool long-double
+		--- andBool T1:Type =/=Bool double andBool T2:Type =/=Bool double
+		--- andBool T1:Type =/=Bool float andBool T2:Type =/=Bool float
+		--- : KSentence .
 	
 	---C99 6.3.1.4:2 For objects or expressions with an integer type  whose integer conversion rank is less than or equal to the rank of int and unsigned int, and a bit field of type _Bool, int, signed int, or unsigned int, If an int can represent all values of the original type, the value is converted to an int; otherwise, it is converted to an unsigned int.  These are called the integer promotions.  All other types are unchanged by the integer promotions.
-	mb rule
-		< k > [integerPromotion(tv(V:BaseValue, int)) => tv(V:BaseValue, int)] ...</ k >
-		: KSentence .
-	mb rule
-		< k > [integerPromotion(tv(V:BaseValue, unsigned-int)) => tv(V:BaseValue, unsigned-int)] ...</ k >
-		: KSentence .
-	mb rule
-		< k > [integerPromotion(tv(V:BaseValue, unsigned-long)) => tv(V:BaseValue, unsigned-long)] ...</ k >
-		: KSentence .
-	mb rule
-		< k > [integerPromotion(tv(V:BaseValue, pointerType(T:Type))) => tv(V:BaseValue, pointerType(T:Type))] ...</ k >
-		: KSentence .
-	mb rule
-		< k > [integerPromotion(tv(V:BaseValue, arrayType(T:Type, N:Nat))) => tv(V:BaseValue, arrayType(T:Type, N:Nat))] ...</ k >
-		: KSentence .
+	--- mb rule
+		--- < k > [integerPromotion(tv(V:BaseValue, int)) => tv(V:BaseValue, int)] ...</ k >
+		--- : KSentence .
+	--- mb rule
+		--- < k > [integerPromotion(tv(V:BaseValue, unsigned-int)) => tv(V:BaseValue, unsigned-int)] ...</ k >
+		--- : KSentence .
+	--- mb rule
+		--- < k > [integerPromotion(tv(V:BaseValue, unsigned-long-int)) => tv(V:BaseValue, unsigned-long-int)] ...</ k >
+		--- : KSentence .
+	--- mb rule
+		--- < k > [integerPromotion(tv(V:BaseValue, pointerType(T:Type))) => tv(V:BaseValue, pointerType(T:Type))] ...</ k >
+		--- : KSentence .
+	--- mb rule
+		--- < k > [integerPromotion(tv(V:BaseValue, arrayType(T:Type, N:Nat))) => tv(V:BaseValue, arrayType(T:Type, N:Nat))] ...</ k >
+		--- : KSentence .
 	
 	--- Then the following rules are applied to the promoted operands:
 	
 	--- If both operands have the same type, then no further conversion is needed.
-	mb rule
-		< k > [
-			arithConversion-int(tv(V1:BaseValue, T:Type), tv(V2:BaseValue, T:Type)) 
-			=> 
-			converted(tv(V1:BaseValue, T:Type), tv(V2:BaseValue, T:Type))
-		] ...</ k >
-		: KSentence .	
+	--- mb rule
+		--- < k > [
+			--- arithConversion-int(tv(V1:BaseValue, T:Type), tv(V2:BaseValue, T:Type)) 
+			--- => 
+			--- converted(tv(V1:BaseValue, T:Type), tv(V2:BaseValue, T:Type))
+		--- ] ...</ k >
+		--- : KSentence .	
 	
 	--- fixme not sure about this
-	mb rule
-		< k > [
-			arithConversion-int(tv(V1:BaseValue, pointerType(T:Type)), tv(V2:BaseValue, T':Base-Type)) 
-			=> 
-			converted(tv(V1:BaseValue, pointerType(T:Type)), tv(V2:BaseValue, T':Base-Type))
-		] ...</ k >
-		: KSentence .	
+	--- mb rule
+		--- < k > [
+			--- arithConversion-int(tv(V1:BaseValue, pointerType(T:Type)), tv(V2:BaseValue, T':Base-Type)) 
+			--- => 
+			--- converted(tv(V1:BaseValue, pointerType(T:Type)), tv(V2:BaseValue, T':Base-Type))
+		--- ] ...</ k >
+		--- : KSentence .	
 	
 	--- Otherwise, if both operands have signed integer types or both have unsigned integer types, the operand with the type of lesser integer conversion rank is converted to the type of the operand with greater rank.
 	
 	--- fixme, hardcoded
-	mb rule
-		< k > [
-			arithConversion-int(tv(V1:BaseValue, unsigned-int), tv(V2:BaseValue, int)) 
-			=> 
-			converted(tv(V1:BaseValue, unsigned-int), tv(V2:BaseValue, unsigned-int))
-		] ...</ k >
-		: KSentence .
-	mb rule
-		< k > [
-			arithConversion-int(tv(V1:BaseValue, unsigned-long), tv(V2:BaseValue, int)) 
-			=> 
-			converted(tv(V1:BaseValue, unsigned-long), tv(V2:BaseValue, unsigned-long))
-		] ...</ k >
-		: KSentence .
-	mb rule
-		< k > [
-			arithConversion-int(tv(V1:BaseValue, int), tv(V2:BaseValue, unsigned-long)) 
-			=> 
-			converted(tv(V1:BaseValue, unsigned-long), tv(V2:BaseValue, unsigned-long))
-		] ...</ k >
-		: KSentence .
-	mb rule
-		< k > [
-			arithConversion-int(tv(V1:BaseValue, unsigned-long), tv(V2:BaseValue, unsigned-int)) 
-			=> 
-			converted(tv(V1:BaseValue, unsigned-long), tv(V2:BaseValue, unsigned-long))
-		] ...</ k >
-		: KSentence .
+	--- mb rule
+		--- < k > [
+			--- arithConversion-int(tv(V1:BaseValue, unsigned-int), tv(V2:BaseValue, int)) 
+			--- => 
+			--- converted(tv(V1:BaseValue, unsigned-int), tv(V2:BaseValue, unsigned-int))
+		--- ] ...</ k >
+		--- : KSentence .
+	--- mb rule
+		--- < k > [
+			--- arithConversion-int(tv(V1:BaseValue, unsigned-long-int), tv(V2:BaseValue, int)) 
+			--- => 
+			--- converted(tv(V1:BaseValue, unsigned-long-int), tv(V2:BaseValue, unsigned-long-int))
+		--- ] ...</ k >
+		--- : KSentence .
+	--- mb rule
+		--- < k > [
+			--- arithConversion-int(tv(V1:BaseValue, int), tv(V2:BaseValue, unsigned-long-int)) 
+			--- => 
+			--- converted(tv(V1:BaseValue, unsigned-long-int), tv(V2:BaseValue, unsigned-long-int))
+		--- ] ...</ k >
+		--- : KSentence .
+	--- mb rule
+		--- < k > [
+			--- arithConversion-int(tv(V1:BaseValue, unsigned-long-int), tv(V2:BaseValue, unsigned-int)) 
+			--- => 
+			--- converted(tv(V1:BaseValue, unsigned-long-int), tv(V2:BaseValue, unsigned-long-int))
+		--- ] ...</ k >
+		--- : KSentence .
 	
 	--- Otherwise...
 	--- fixme left out cases
@@ -1157,9 +1203,67 @@ mod COMMON-C-SEMANTICS is
 	--- replace sequencing with ~>
 	mb rule [S1:Statement S2:Statement => S1:Statement ~> S2:Statement] : KSentence [metadata "structural"] .
 		
+		
+	---c99 6.4.4.1:5 The type of an integer constant is the first of the corresponding list in which its value can be represented.
+***(
+											Octal or Hexadecimal 
+Suffix			Decimal Constant			Constant
+------------------------------------------------------------------
+none			int							int
+				long int					unsigned int
+				long long int				long int
+											unsigned long int
+											long long int
+											unsigned long long int
+------------------------------------------------------------------
+u or U			unsigned int 				unsigned int
+				unsigned long int 			unsigned long int
+				unsigned long long int 		unsigned long long int
+------------------------------------------------------------------
+l or L			long int 					long int
+				long long int 				unsigned long int
+											long long int
+											unsigned long long int
+------------------------------------------------------------------
+Both u or U		unsigned long int 			unsigned long int
+and l or L 		unsigned long long int 		unsigned long long int
+------------------------------------------------------------------
+ll or LL 		long long int				long long int
+											unsigned long long int
+------------------------------------------------------------------
+Both u or U		unsigned long long int 		unsigned long long int
+and ll or LL
+------------------------------------------------------------------
+***)
+	---c99 6.4.4.1:6 If an integer constant cannot be represented by any type in its list, it may have an extended integer type, if the extended integer type can represent its value. If all of the types in the list for the constant are signed, the extended integer type shall be signed. If all of the types in the list for the constant are unsigned, the extended integer type shall be unsigned. If the list contains both signed and unsigned types, the extended integer type may be signed or unsigned. If an integer constant cannot be represented by any type in its list and has no extended integer type, then the integer constant has no type.
+	---c99 6.2.5:4 ... There may also be implementation-defined extended signed integer types. ...
+	
+	mb rule < k > [I:Int => 
+		if ((I:Int <=Int max(int)) andBool (I:Int >=Int min(int))) then tv(I:Int, int) else
+			if ((I:Int <=Int max(long-int)) andBool (I:Int >=Int min(long-int))) then tv(I:Int, long-int) else
+				if ((I:Int <=Int max(long-long-int)) andBool (I:Int >=Int min(long-long-int))) then tv(I:Int, long-long-int) else 
+					tv(I:Int, no-type)
+				fi
+			fi
+		fi
+		] ...</ k > 
+		: KSentence .
+		
+	mb rule < k > [U(I:Int) => 
+		if ((I:Int <=Int max(unsigned-int)) andBool (I:Int >=Int min(unsigned-int))) then tv(I:Int, unsigned-int) else
+			if ((I:Int <=Int max(unsigned-long-int)) andBool (I:Int >=Int min(unsigned-long-int))) then tv(I:Int, unsigned-long-int) else
+				if ((I:Int <=Int max(unsigned-long-long-int)) andBool (I:Int >=Int min(unsigned-long-long-int))) then tv(I:Int, unsigned-long-long-int) else 
+					tv(I:Int, no-type)
+				fi
+			fi
+		fi
+		] ...</ k > 
+		: KSentence .
+	
 	--- we're ignoring types for now
-	mb rule [U(I:Int) => tv(I:Int, unsigned-int)] : KSentence [metadata "structural"] .
-	mb rule [UL(I:Int) => tv(I:Int, unsigned-long)] : KSentence [metadata "structural"] .
+	--- mb rule [U(I:Int) => tv(I:Int, unsigned-int)] : KSentence [metadata "structural"] .
+	--- mb rule [UL(I:Int) => tv(I:Int, unsigned-long)] : KSentence [metadata "structural"] .
+	--- mb rule [L(I:Int) => tv(I:Int, long)] : KSentence [metadata "structural"] .
 	--- mb rule [unsigned-int => int] : KSentence [metadata "structural"] .
 	--- mb rule [unsigned-short => int] : KSentence [metadata "structural"] .
 	--- mb rule [unsigned-char => int] : KSentence [metadata "structural"] .
@@ -1272,32 +1376,34 @@ mod COMMON-C-SEMANTICS is
 		---[print "read " N:Nat " ending at " Loc:Nat] 
 		.
 
-	mb rule [
-		interpret(tv(N:Nat, int)) 
-		=> 
-		tv(if N:Nat <=Nat drv:maxInt then N:Nat else -Int N:Nat fi, int)
-		]
-		: KSentence [metadata "structural"] .
-	mb rule [
-		interpret(tv(N:Nat, pointerType(T:Type))) 
-		=> 
-		tv(N:Nat, pointerType(T:Type))
-		]
-		if N:Nat <=Nat drv:maxPtr
-		: KSentence [metadata "structural"] .
-	mb rule [
-		interpret(tv(N:Nat, unsigned-int)) 
-		=> 
-		tv(N:Nat, unsigned-int)
-		]
-		: KSentence [metadata "structural"] .
-	mb rule [
-		interpret(tv(N:Nat, structType(X:Id, L:List{KResult}))) 
-		=> 
-		tv(N:Nat, structType(X:Id, L:List{KResult}))
-		]
-		: KSentence [metadata "structural"] .
-		
+	--- mb rule [
+		--- interpret(tv(N:Nat, int)) 
+		--- => 
+		--- tv(if N:Nat <=Nat drv:maxInt then N:Nat else -Int N:Nat fi, int)
+		--- ]
+		--- : KSentence [metadata "structural"] .
+	--- mb rule [
+		--- interpret(tv(N:Nat, pointerType(T:Type))) 
+		--- => 
+		--- tv(N:Nat, pointerType(T:Type))
+		--- ]
+		--- if N:Nat <=Nat drv:maxPtr
+		--- : KSentence [metadata "structural"] .
+	--- mb rule [
+		--- interpret(tv(N:Nat, unsigned-int)) 
+		--- => 
+		--- tv(N:Nat, unsigned-int)
+		--- ]
+		--- : KSentence [metadata "structural"] .
+	--- mb rule [
+		--- interpret(tv(N:Nat, structType(X:Id, L:List{KResult}))) 
+		--- => 
+		--- tv(N:Nat, structType(X:Id, L:List{KResult}))
+		--- ]
+		--- : KSentence [metadata "structural"] .
+	
+	
+	
 	--- deh = - 34
 	--- adh = - 83
 	--- deh = 222
@@ -1717,16 +1823,16 @@ mod COMMON-C-SEMANTICS is
 		: KSentence .
 		
 		
-	mb [cast-same]: rule
-		['Cast(T:Type,, tv(V:BaseValue, T:Type)) => tv(V:BaseValue, T:Type)]
-		---< env >... X:Id |-> Loc:Nat ...</ env >
-		---< mem >... Loc:Nat |-> I:Int ...</ mem >
-		: KSentence .
+	--- mb [cast-same]: rule
+		--- ['Cast(T:Type,, tv(V:BaseValue, T:Type)) => tv(V:BaseValue, T:Type)]
+		--- ---< env >... X:Id |-> Loc:Nat ...</ env >
+		--- ---< mem >... Loc:Nat |-> I:Int ...</ mem >
+		--- : KSentence .
 		
 	--- fixme TOTALLY WRONG
-	mb rule
-		< k > ['Cast(T':Type,, tv(V:BaseValue, ?)) => tv(V:BaseValue, T':Type)] ...</ k > 
-		: KSentence .
+	--- mb rule
+		--- < k > ['Cast(T':Type,, tv(V:BaseValue, ?)) => tv(V:BaseValue, T':Type)] ...</ k > 
+		--- : KSentence .
 		
 	--- throwing away casts now
 	--- mb [cast-int]: rule
