@@ -75,12 +75,12 @@ mod C-SETTINGS is
 
 	--- S 6.2.5 p.35 i.15.  "The implementation shall define char to have the same range, representation, and behavior as either signed char or unsigned char.  37)... Irrespective of the choice made, char is a separate type from the other two and is not compatible with either
 	--- cme: I'm not sure what consequence being a separate type entails, so for now it will just be rewritten to the chosen type
-	mb rule [char => unsigned-char] : KSentence .
+	mb rule [char => signed-char] : KSentence .
 	
 	---C99 6.4.4.1:5 The type of an integer constant is the first of the corresponding list in which its value can be represented
 
 	op numBytes : Type -> Nat .
-	eq numBytes(char) = 1 .
+	eq numBytes(signed-char) = 1 .
 	eq numBytes(short-int) = 2 .
 	eq numBytes(int) = 4 .
 	eq numBytes(long-int) = 4 .
@@ -92,8 +92,7 @@ mod C-SETTINGS is
 
 	
 	---- derived
-	eq numBytes(signed-char) = numBytes(char) .
-	eq numBytes(unsigned-char) = numBytes(char) .
+	eq numBytes(unsigned-char) = numBytes(signed-char) .
 	eq numBytes(unsigned-short-int) = numBytes(short-int) .
 	eq numBytes(unsigned-int) = numBytes(int) .
 	eq numBytes(unsigned-long-int) = numBytes(long-int) .
@@ -104,12 +103,27 @@ mod C-SETTINGS is
 			
 	op min : Type -> Int .
 	op max : Type -> Int .
+	eq min(signed-char) = -Int (2 ^Nat absInt(_-Int_(numBits(signed-char), 1))) .
+	eq max(signed-char) = _-Int_(2 ^Nat absInt(_-Int_(numBits(signed-char), 1)), 1) .
+	eq min(short-int) = -Int (2 ^Nat absInt(_-Int_(numBits(short-int), 1))) .
+	eq max(short-int) = _-Int_(2 ^Nat absInt(_-Int_(numBits(short-int), 1)), 1) .
 	eq min(int) = -Int (2 ^Nat absInt(_-Int_(numBits(int), 1))) .
 	eq max(int) = _-Int_(2 ^Nat absInt(_-Int_(numBits(int), 1)), 1) .
 	eq min(long-int) = -Int (2 ^Nat absInt(_-Int_(numBits(long-int), 1))) .
 	eq max(long-int) = _-Int_(2 ^Nat absInt(_-Int_(numBits(long-int), 1)), 1) .
 	eq min(long-long-int) = -Int (2 ^Nat absInt(_-Int_(numBits(long-long-int), 1))) .
 	eq max(long-long-int) = _-Int_(2 ^Nat absInt(_-Int_(numBits(long-long-int), 1)), 1) .
+	
+	eq min(unsigned-char) = 0 .
+	eq max(unsigned-char) = _-Int_(2 ^Nat absInt(numBits(unsigned-char)), 1) .
+	eq min(unsigned-short-int) = 0 .
+	eq max(unsigned-short-int) = _-Int_(2 ^Nat absInt(numBits(unsigned-short-int)), 1) .
+	eq min(unsigned-int) = 0 .
+	eq max(unsigned-int) = _-Int_(2 ^Nat absInt(numBits(unsigned-int)), 1) .
+	eq min(unsigned-long-int) = 0 .
+	eq max(unsigned-long-int) = _-Int_(2 ^Nat absInt(numBits(unsigned-long-int)), 1) .
+	eq min(unsigned-long-long-int) = 0 .
+	eq max(unsigned-long-long-int) = _-Int_(2 ^Nat absInt(numBits(unsigned-long-long-int)), 1) .
 	
 	--- eq min(short-int) = -2147483648 .
 	--- eq max(short-int) = 2147483647 .
@@ -225,15 +239,18 @@ mod COMMON-INCLUDE is
 	eq N:Nat to N:Nat = .List{K} .
 	ceq N:Nat to N':Nat = (N:Nat,,((N:Nat +Nat 1) to N':Nat))
 		if N:Nat <Nat N':Nat .
+		
+		
+	op _contains_ : Set K -> Bool .
+	eq S:Set SetItem(K:K) contains K:K = true .
+	ceq S:Set SetItem(K1:K) contains K2:K = S:Set contains K2:K 
+		if K1:K =/=Bool K2:K .
+	eq .Set contains K:K = false .
 
 endm
 
 mod SIZEOF is
 	including COMMON-INCLUDE .
-	
-	mb rule < k > [sizeof(char) => tv(1, cfg:sizeut)] ...</ k > : KSentence .
-	mb rule < k > [sizeof(unsigned-char) => tv(1, cfg:sizeut)] ...</ k > : KSentence .
-	mb rule < k > [sizeof(signed-char) => tv(1, cfg:sizeut)] ...</ k > : KSentence .
 	
 	mb rule
 		< k > [sizeof(arrayType(T:Type, N:Nat)) => sizeof(T:Type) * N:Nat] ...</ k >
@@ -297,7 +314,7 @@ mod TYPES is
 	mb rule [unsigned-short => unsigned-short-int] : KSentence .
 	mb rule [unsigned-long => unsigned-long-int] : KSentence .
 	mb rule [short => short-int] : KSentence .
-	mb rule [long => short-int] : KSentence .
+	mb rule [long => long-int] : KSentence .
 	mb rule [long-long => long-long-int] : KSentence .
 	
 	mb rule 
@@ -335,6 +352,12 @@ mod TYPES is
 		orBool L:KLabel ==Bool 'Parameter-Declaration
 		orBool L:KLabel ==Bool 'Typedef
 		: KSentence [metadata "structural"] .
+		
+	op makeType : K -> K .	
+	mb rule < k > [tv(I:Int, ?) ~> makeType(T:Type) => tv(I:Int, T:Type)] ...</ k > : KSentence 
+	---[print "type of to " I:Int " to " ]
+	.	
+		
 	--- mb rule 
 		--- [L:KLabel(T:Type,, 'Direct-Function-Declarator('Pointer(D:Declarator[N:Nat]),, 'Parameter-Type-List(LL:List{Parameter}))) 
 		--- => L:KLabel(arrayType(T:Type, N:Nat),, 'Direct-Function-Declarator('Pointer(D:Declarator),, 'Parameter-Type-List(LL:List{Parameter})))]
@@ -1093,84 +1116,81 @@ i=4,(a+1)=20,
 mod COMMON-EXPRESSIONS is
 	including COMMON-INCLUDE .
 
-	mb [pointerAddition]: rule ['_+o_(K1:K,, K2:K) => '_+_(K1:K,, K2:K)] : KSentence  .
-	mb [pointerSubtraction]: rule ['_-o_(K1:K,, K2:K) => '_-_(K1:K,, K2:K)] : KSentence  .
+	--- mb [pointerAddition]: rule ['_+o_(K1:K,, K2:K) => '_+_(K1:K,, K2:K)] : KSentence  .
+	--- mb [pointerSubtraction]: rule ['_-o_(K1:K,, K2:K) => '_-_(K1:K,, K2:K)] : KSentence  .
 	--- mb [pointerAddition]: rule [tv(V1:BaseValue, pointerType(T:Type)) +o V2:Value => tv(V1:BaseValue, pointerType(T:Type)) + (sizeof(T:Type) * V2:Value)] : KSentence  .
 	
 	---x ("_+o_").KProperLabel(("_`[_`]").KProperLabel("Id" arr(.List{K}),,"Rat" 0(.List{K})),,("tv").KResultLabel("Rat" 0(.List{K}),,"Base-Type" int(.List{K}))) 
 	 
 	---- [print E:Expression]
 
-	--- fixme not modding
-	--- fixme result needs type
-	mb rule < k > [converted(tv(I1:Int, T:Type), tv(I2:Int, T:Type)) ~> ? * ? 
-	=> tv(I1:Int *Int I2:Int, T:Type)] ...</ k > : KSentence 
-	---[print "mult " I1:Int " * " I2:Int]
-	.
-	mb rule < k > [converted(tv(I1:Int, T:Type), tv(I2:Int, T:Type)) ~> ? / ? 
-	=> tv(I1:Int /Int I2:Int, T:Type)] ...</ k > : KSentence .
-	mb rule < k > [converted(tv(I1:Int, T:Type), tv(I2:Int, T:Type)) ~> ? % ? 
-	=> tv(I1:Int %Int I2:Int, T:Type)] ...</ k > : KSentence .
+	--- --- fixme not modding
+	--- --- fixme result needs type
+	--- mb rule < k > [converted(tv(I1:Int, T:Type), tv(I2:Int, T:Type)) ~> ? * ? 
+	--- => tv(I1:Int *Int I2:Int, T:Type)] ...</ k > : KSentence 
+	--- ---[print "mult " I1:Int " * " I2:Int]
+	--- .
+	--- mb rule < k > [converted(tv(I1:Int, T:Type), tv(I2:Int, T:Type)) ~> ? / ? 
+	--- => tv(I1:Int /Int I2:Int, T:Type)] ...</ k > : KSentence .
+	--- mb rule < k > [converted(tv(I1:Int, T:Type), tv(I2:Int, T:Type)) ~> ? % ? 
+	--- => tv(I1:Int %Int I2:Int, T:Type)] ...</ k > : KSentence .
 	
-	--- fixme assumes that because the types are the same, isn't pointer arithmetic
-	mb rule < k > [converted(tv(I1:Int, T:Type), tv(I2:Int, T:Type)) ~> ? + ? 
-	=> tv(I1:Int +Int I2:Int, T:Type)] ...</ k > : KSentence .
+	--- --- fixme assumes that because the types are the same, isn't pointer arithmetic
+	--- mb rule < k > [converted(tv(I1:Int, T:Type), tv(I2:Int, T:Type)) ~> ? + ? 
+	--- => tv(I1:Int +Int I2:Int, T:Type)] ...</ k > : KSentence .
 	
-	mb rule < k > [converted(tv(I1:Int, T:Type), tv(I2:Int, T:Type)) ~> ? - ? 
-	=> tv(_-Int_(I1:Int, I2:Int), T:Type)] ...</ k > : KSentence .
+	--- mb rule < k > [converted(tv(I1:Int, T:Type), tv(I2:Int, T:Type)) ~> ? - ? 
+	--- => tv(_-Int_(I1:Int, I2:Int), T:Type)] ...</ k > : KSentence .
 	
-	op makeType : K -> K .
-	--- fixme integer type
-	mb rule < k > [converted(tv(I1:Int, pointerType(T:Type)), tv(I2:Int, T':Type)) ~> ? + ? 
-	=> tv(I1:Int, pointerType(T:Type)) +i (sizeof(T:Type) * tv(I2:Int, T':Type))] ...</ k > : KSentence 
-	---[print "adding " I1:Int " +o " I2:Int]
-	.
-	mb rule < k > [converted(tv(I1:Int, pointerType(T:Type)), tv(I2:Int, T':Type)) ~> ? - ? 
-	=> tv(I1:Int, pointerType(T:Type)) -i (sizeof(T:Type) * tv(I2:Int, T':Type))] ...</ k > : KSentence .
+
+	--- --- fixme integer type
+	--- mb rule < k > [converted(tv(I1:Int, pointerType(T:Type)), tv(I2:Int, T':Type)) ~> ? + ? 
+	--- => tv(I1:Int, pointerType(T:Type)) +i (sizeof(T:Type) * tv(I2:Int, T':Type))] ...</ k > : KSentence 
+	--- ---[print "adding " I1:Int " +o " I2:Int]
+	--- .
+	--- mb rule < k > [converted(tv(I1:Int, pointerType(T:Type)), tv(I2:Int, T':Type)) ~> ? - ? 
+	--- => tv(I1:Int, pointerType(T:Type)) -i (sizeof(T:Type) * tv(I2:Int, T':Type))] ...</ k > : KSentence .
+
 	
-	mb rule < k > [tv(I:Int, ?) ~> makeType(T:Type) => tv(I:Int, T:Type)] ...</ k > : KSentence 
-	---[print "type of to " I:Int " to " ]
-	.
+	--- --- mb rule [I1:Int + I2:Int => I1:Int +Int I2:Int] : KSentence .
+	--- --- mb rule [_-_(I1:Int,I2:Int) => _-Int_(I1:Int,I2:Int)] : KSentence .
+	--- --- mb rule [I1:Int * I2:Int => I1:Int *Int I2:Int] : KSentence .
+	--- --- mb rule [I1:Int / I2:Int => I1:Int /Int I2:Int] if I2:Int =/=Bool 0 : KSentence .
+	--- --- mb rule [I1:Int % I2:Int => I1:Int %Int I2:Int] if I2:Int =/=Bool 0 : KSentence .
+	--- mb rule [tv(I1:Int, T:Type) +i tv(I2:Int, ?) => tv(I1:Int +Int I2:Int, T:Type)] : KSentence 
+	--- ---[print "adding " I1:Int " + " I2:Int]
+	--- .
+	--- mb rule [tv(I1:Int, T:Type) -i tv(I2:Int, ?) => tv(_-Int_(I1:Int, I2:Int), T:Type)] : KSentence .
+	--- mb rule [! tv(I:Int, T:Type) => tv(if (I:Int ==Bool 0) then 1 else 0 fi, int)] : KSentence .
+	--- --- mb rule [tv(I1:Int, ?) *i tv(I2:Int, ?) => I1:Int *Int I2:Int] : KSentence .
+	--- --- mb rule [tv(I1:Int, ?) %i tv(I2:Int, ?) => I1:Int %Int I2:Int] if I2:Int =/=Bool 0 : KSentence .
+	--- --- --- mb rule [- I => -Int I] : KSentence .
 	
-	--- mb rule [I1:Int + I2:Int => I1:Int +Int I2:Int] : KSentence .
-	--- mb rule [_-_(I1:Int,I2:Int) => _-Int_(I1:Int,I2:Int)] : KSentence .
-	--- mb rule [I1:Int * I2:Int => I1:Int *Int I2:Int] : KSentence .
-	--- mb rule [I1:Int / I2:Int => I1:Int /Int I2:Int] if I2:Int =/=Bool 0 : KSentence .
-	--- mb rule [I1:Int % I2:Int => I1:Int %Int I2:Int] if I2:Int =/=Bool 0 : KSentence .
-	mb rule [tv(I1:Int, T:Type) +i tv(I2:Int, ?) => tv(I1:Int +Int I2:Int, T:Type)] : KSentence 
-	---[print "adding " I1:Int " + " I2:Int]
-	.
-	mb rule [tv(I1:Int, T:Type) -i tv(I2:Int, ?) => tv(_-Int_(I1:Int, I2:Int), T:Type)] : KSentence .
-	mb rule [! tv(I:Int, T:Type) => tv(if (I:Int ==Bool 0) then 1 else 0 fi, int)] : KSentence .
-	--- mb rule [tv(I1:Int, ?) *i tv(I2:Int, ?) => I1:Int *Int I2:Int] : KSentence .
-	--- mb rule [tv(I1:Int, ?) %i tv(I2:Int, ?) => I1:Int %Int I2:Int] if I2:Int =/=Bool 0 : KSentence .
-	--- --- mb rule [- I => -Int I] : KSentence .
+	--- --- fixme, restricted for pointers
+	--- mb rule < k > [converted(tv(I1:Int, T:Type), tv(I2:Int, T:Type)) ~> ? < ? => if (I1:Int <Int I2:Int) then tv(1, int) else tv(0, int) fi] ...</ k > : KSentence .
+	--- mb rule < k > [converted(tv(I1:Int, T:Type), tv(I2:Int, T:Type)) ~> ? <= ? => if (I1:Int <=Int I2:Int) then tv(1, int) else tv(0, int) fi] ...</ k > : KSentence .
+	--- mb rule < k > [converted(tv(I1:Int, T:Type), tv(I2:Int, T:Type)) ~> ? > ? => if (I1:Int >Int I2:Int) then tv(1, int) else tv(0, int) fi] ...</ k > : KSentence .
+	--- mb rule < k > [converted(tv(I1:Int, T:Type), tv(I2:Int, T:Type)) ~> ? >= ? => if (I1:Int >=Int I2:Int) then tv(1, int) else tv(0, int) fi] ...</ k > : KSentence .
 	
-	--- fixme, restricted for pointers
-	mb rule < k > [converted(tv(I1:Int, T:Type), tv(I2:Int, T:Type)) ~> ? < ? => if (I1:Int <Int I2:Int) then tv(1, int) else tv(0, int) fi] ...</ k > : KSentence .
-	mb rule < k > [converted(tv(I1:Int, T:Type), tv(I2:Int, T:Type)) ~> ? <= ? => if (I1:Int <=Int I2:Int) then tv(1, int) else tv(0, int) fi] ...</ k > : KSentence .
-	mb rule < k > [converted(tv(I1:Int, T:Type), tv(I2:Int, T:Type)) ~> ? > ? => if (I1:Int >Int I2:Int) then tv(1, int) else tv(0, int) fi] ...</ k > : KSentence .
-	mb rule < k > [converted(tv(I1:Int, T:Type), tv(I2:Int, T:Type)) ~> ? >= ? => if (I1:Int >=Int I2:Int) then tv(1, int) else tv(0, int) fi] ...</ k > : KSentence .
-	
-	mb rule < k > [converted(tv(I1:Int, T:Type), tv(I2:Int, T:Type)) ~> ? == ? => if (I1:Int ==Bool I2:Int) then tv(1, int) else tv(0, int) fi] ...</ k > : KSentence .
-	mb rule < k > [converted(tv(I1:Int, T:Type), tv(I2:Int, T:Type)) ~> ? != ? => if (I1:Int =/=Bool I2:Int) then tv(1, int) else tv(0, int) fi] ...</ k > : KSentence .
+	--- mb rule < k > [converted(tv(I1:Int, T:Type), tv(I2:Int, T:Type)) ~> ? == ? => if (I1:Int ==Bool I2:Int) then tv(1, int) else tv(0, int) fi] ...</ k > : KSentence .
+	--- mb rule < k > [converted(tv(I1:Int, T:Type), tv(I2:Int, T:Type)) ~> ? != ? => if (I1:Int =/=Bool I2:Int) then tv(1, int) else tv(0, int) fi] ...</ k > : KSentence .
 	
 	
-	--- mb rule [I1:Int < I2:Int => if (I1:Int <Int I2:Int) then 1 else 0 fi] : KSentence .
-	--- mb rule [I1:Int <= I2:Int => if (I1:Int <=Int I2:Int) then 1 else 0 fi] : KSentence .
-	--- mb rule [I1:Int > I2:Int => if (I1:Int >Int I2:Int) then 1 else 0 fi] : KSentence .
-	--- mb rule [I1:Int >= I2:Int => if (I1:Int >=Int I2:Int) then 1 else 0 fi] : KSentence .
-	--- mb rule [I1:Int == I2:Int => if (I1:Int ==Bool I2:Int) then 1 else 0 fi] : KSentence .
-	--- mb rule [I1:Int != I2:Int => if (I1:Int =/=Bool I2:Int) then 1 else 0 fi] : KSentence .
-	--- --- mb rule [T1 and T2 => T1 andBool T2] : KSentence .
-	--- --- mb rule [T1 or T2 => T1 orBool T2] : KSentence .
-	--- mb rule [!(I:Int) => if (I:Int ==Bool 0) then 1 else 0 fi] : KSentence .
+	--- --- mb rule [I1:Int < I2:Int => if (I1:Int <Int I2:Int) then 1 else 0 fi] : KSentence .
+	--- --- mb rule [I1:Int <= I2:Int => if (I1:Int <=Int I2:Int) then 1 else 0 fi] : KSentence .
+	--- --- mb rule [I1:Int > I2:Int => if (I1:Int >Int I2:Int) then 1 else 0 fi] : KSentence .
+	--- --- mb rule [I1:Int >= I2:Int => if (I1:Int >=Int I2:Int) then 1 else 0 fi] : KSentence .
+	--- --- mb rule [I1:Int == I2:Int => if (I1:Int ==Bool I2:Int) then 1 else 0 fi] : KSentence .
+	--- --- mb rule [I1:Int != I2:Int => if (I1:Int =/=Bool I2:Int) then 1 else 0 fi] : KSentence .
+	--- --- --- mb rule [T1 and T2 => T1 andBool T2] : KSentence .
+	--- --- --- mb rule [T1 or T2 => T1 orBool T2] : KSentence .
+	--- --- mb rule [!(I:Int) => if (I:Int ==Bool 0) then 1 else 0 fi] : KSentence .
 	
-	--- mb rule [I:Int >> N:Nat => I:Int >>Int N:Nat] : KSentence .
-	--- mb rule [I:Int << N:Nat => I:Int <<Int N:Nat] : KSentence .
-	--- mb rule [I1:Int | I2:Int => I1:Int |Int I2:Int] : KSentence .
-	--- mb rule [_&_(I1:Int, I2:Int) => I1:Int &Int I2:Int] : KSentence .
-	--- mb rule [~ I:Int => ~Int I:Int] : KSentence .
+	--- --- mb rule [I:Int >> N:Nat => I:Int >>Int N:Nat] : KSentence .
+	--- --- mb rule [I:Int << N:Nat => I:Int <<Int N:Nat] : KSentence .
+	--- --- mb rule [I1:Int | I2:Int => I1:Int |Int I2:Int] : KSentence .
+	--- --- mb rule [_&_(I1:Int, I2:Int) => I1:Int &Int I2:Int] : KSentence .
+	--- --- mb rule [~ I:Int => ~Int I:Int] : KSentence .
 
 	
 endm
@@ -1256,6 +1276,34 @@ and ll or LL
 					tv(I:Int, no-type)
 				fi
 			fi
+		fi
+		] ...</ k > 
+		: KSentence .
+	mb rule < k > [L(I:Int) => 
+		if ((I:Int <=Int max(long-int)) andBool (I:Int >=Int min(long-int))) then tv(I:Int, long-int) else
+			if ((I:Int <=Int max(long-long-int)) andBool (I:Int >=Int min(long-long-int))) then tv(I:Int, long-long-int) else
+				tv(I:Int, no-type)
+			fi
+		fi
+		] ...</ k > 
+		: KSentence .
+	mb rule < k > [UL(I:Int) => 
+		if ((I:Int <=Int max(unsigned-long-int)) andBool (I:Int >=Int min(unsigned-long-int))) then tv(I:Int, unsigned-long-int) else
+			if ((I:Int <=Int max(unsigned-long-long-int)) andBool (I:Int >=Int min(unsigned-long-long-int))) then tv(I:Int, unsigned-long-long-int) else
+				tv(I:Int, no-type)
+			fi
+		fi
+		] ...</ k > 
+		: KSentence .
+	mb rule < k > [LL(I:Int) => 
+		if ((I:Int <=Int max(long-long-int)) andBool (I:Int >=Int min(long-long-int))) then tv(I:Int, long-long-int) else
+			tv(I:Int, no-type)
+		fi
+		] ...</ k > 
+		: KSentence .
+	mb rule < k > [ULL(I:Int) => 
+		if ((I:Int <=Int max(unsigned-long-long-int)) andBool (I:Int >=Int min(unsigned-long-long-int))) then tv(I:Int, unsigned-long-long-int) else
+			tv(I:Int, no-type)
 		fi
 		] ...</ k > 
 		: KSentence .
@@ -1510,14 +1558,14 @@ and ll or LL
 		
 		
 	--- fixme bad types, like this due to partial types
-	mb [assign]: rule
-		< k > [assign(Deref(tv(Loc:Nat, pointerType(T:Type))), tv(V:Int, T':Type)) 
-		=> putInMem(Loc:Nat, V:Int, T:Type, sizeof(T:Type)) ~> tv(V:Int, T':Type)] ...</ k >
-		if T:Type =/=Bool T':Type
-		: KSentence
-		[print "Warning: assigning possibly wrong type"]
-		---[print "assigning " V:Int " to " Loc:Nat]
-		.
+	--- mb [assign]: rule
+		--- < k > [assign(Deref(tv(Loc:Nat, pointerType(T:Type))), tv(V:Int, T':Type)) 
+		--- => putInMem(Loc:Nat, V:Int, T:Type, sizeof(T:Type)) ~> tv(V:Int, T':Type)] ...</ k >
+		--- if T:Type =/=Bool T':Type
+		--- : KSentence
+		--- [print "Warning: assigning possibly wrong type"]
+		--- ---[print "assigning " V:Int " to " Loc:Nat]
+		--- .
 	mb [assign]: rule
 		< k > [assign(Deref(tv(Loc:Nat, pointerType(T:Type))), tv(V:Int, T:Type)) 
 		=> putInMem(Loc:Nat, V:Int, T:Type, sizeof(T:Type)) ~> tv(V:Int, T:Type)] ...</ k >
@@ -1822,7 +1870,31 @@ and ll or LL
 		< k > [if (tv(0, ?)) S:Statement => .K] ...</ k >
 		: KSentence .
 		
+	op integerTypes : -> Set .
+	op unsignedIntegerTypes : -> Set .
+
+	eq integerTypes = Set(char,, signed-char,, unsigned-char,, short-int,, int,, long-int,, long-long-int,, unsigned-short-int,, unsigned-int,, unsigned-long-int,, unsigned-long-long-int) .
+	eq unsignedIntegerTypes = Set(unsigned-char,, unsigned-short-int,, unsigned-int,, unsigned-long-int,, unsigned-long-long-int) .
+	
+
+	
+	---c99 6.3.1.3:1 When a value with integer type is converted to another integer type other than _Bool, if the value can be represented by the new type, it is unchanged. 
+	mb rule
+		< k > ['Cast(T:Type,, tv(I:Int, T':Type)) => tv(I:Int, T:Type)] ...</ k > 
+		if min(T:Type) <=Int I:Int andBool max(T:Type) >=Int I:Int andBool (integerTypes contains T':Type)
+		: KSentence .
 		
+	---c99 6.3.1.3:2 Otherwise, if the new type is unsigned, the value is converted by repeatedly adding or subtracting one more than the maximum value that can be represented in the new type until the value is in the range of the new type.
+	mb rule
+		< k > ['Cast(T:Type,, tv(I:Int, T':Type)) => 'Cast(T:Type,, tv(I:Int +Int max(T:Type) +Int 1, T':Type))] ...</ k > 
+		if notBool(min(T:Type) <=Int I:Int andBool max(T:Type) >=Int I:Int andBool (integerTypes contains T':Type))
+		andBool (unsignedIntegerTypes contains T:Type andBool I:Int <=Int min(T:Type))
+		: KSentence .
+	
+	---c99 6.3.1.3:3 Otherwise, the new type is signed and the value cannot be represented in it; either the result is implementation-defined or an implementation-defined signal is raised.
+	
+	
+
 	--- mb [cast-same]: rule
 		--- ['Cast(T:Type,, tv(V:BaseValue, T:Type)) => tv(V:BaseValue, T:Type)]
 		--- ---< env >... X:Id |-> Loc:Nat ...</ env >
@@ -1941,29 +2013,29 @@ and ll or LL
 		
 	op postInc : K K Type -> K [metadata "strict(2)"] .
 	op postDec : K K Type -> K [metadata "strict(2)"] .
-	mb [post-increment-start]: rule
-		< k > [Deref(tv(Loc:Nat, pointerType(T:Type))) ++
-		=> postInc(Loc:Nat, readFromMem(Loc:Nat, T:Type, sizeof(T:Type), 0, 0), T:Type)
-		] ...</ k >
-		: KSentence .
+	--- mb [post-increment-start]: rule
+		--- < k > [Deref(tv(Loc:Nat, pointerType(T:Type))) ++
+		--- => postInc(Loc:Nat, readFromMem(Loc:Nat, T:Type, sizeof(T:Type), 0, 0), T:Type)
+		--- ] ...</ k >
+		--- : KSentence .
 		
-	mb [post-increment]: rule
-		< k > [postInc(Loc:Nat, tv(I:Int, T:Type), T:Type)
-		=> assign(Deref(tv(Loc:Nat, pointerType(T:Type))), tv(I:Int, T:Type) + tv(1, int)) ~> discard ~> tv(I:Int, T:Type)
-		] ...</ k >
-		: KSentence .
+	--- mb [post-increment]: rule
+		--- < k > [postInc(Loc:Nat, tv(I:Int, T:Type), T:Type)
+		--- => assign(Deref(tv(Loc:Nat, pointerType(T:Type))), tv(I:Int, T:Type) + tv(1, int)) ~> discard ~> tv(I:Int, T:Type)
+		--- ] ...</ k >
+		--- : KSentence .
 		
-	mb [post-decrement-start]: rule
-		< k > [Deref(tv(Loc:Nat, pointerType(T:Type))) --
-		=> postDec(Loc:Nat, readFromMem(Loc:Nat, T:Type, sizeof(T:Type), 0, 0), T:Type)
-		] ...</ k >
-		: KSentence .
+	--- mb [post-decrement-start]: rule
+		--- < k > [Deref(tv(Loc:Nat, pointerType(T:Type))) --
+		--- => postDec(Loc:Nat, readFromMem(Loc:Nat, T:Type, sizeof(T:Type), 0, 0), T:Type)
+		--- ] ...</ k >
+		--- : KSentence .
 		
-	mb [post-decrement]: rule
-		< k > [postDec(Loc:Nat, tv(I:Int, T:Type), T:Type)
-		=> assign(Deref(tv(Loc:Nat, pointerType(T:Type))), tv(I:Int, T:Type) - tv(1, int)) ~> discard ~> tv(I:Int, T:Type)
-		] ...</ k >
-		: KSentence .
+	--- mb [post-decrement]: rule
+		--- < k > [postDec(Loc:Nat, tv(I:Int, T:Type), T:Type)
+		--- => assign(Deref(tv(Loc:Nat, pointerType(T:Type))), tv(I:Int, T:Type) - tv(1, int)) ~> discard ~> tv(I:Int, T:Type)
+		--- ] ...</ k >
+		--- : KSentence .
 	
 	--- mb [post-increment]: rule
 		--- < k > [Deref(tv(Loc:Nat, pointerType(T:Type))) ++ => assign(Deref(tv(Loc:Nat, pointerType(T:Type))), tv(V:BaseValue, T:Type) + tv(1, int)) ~> discard ~> tv(V:BaseValue, T:Type)] ...</ k >
