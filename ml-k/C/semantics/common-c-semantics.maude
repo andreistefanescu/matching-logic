@@ -701,7 +701,7 @@ mod COMMON-C-STANDARD-LIBRARY is
 	: KSentence .
 
 	mb [lib-printf-%s-done]: rule
-		< k > [Len':Nat ~> printf-aux(Len:Nat, Loc:Nat, L:List{Expression}) => 
+		< k > [tv(Len':Nat, int) ~> printf-aux(Len:Nat, Loc:Nat, L:List{Expression}) => 
 			printf-aux(Len:Nat +Nat Len':Nat, Loc:Nat, L:List{Expression})] ...</ k >
 	: KSentence .
 endm
@@ -1135,6 +1135,9 @@ mod COMMON-EXPRESSIONS is
 		if integerTypes contains T:Type
 		: KSentence .
 	mb rule [tv(I1:Int, T:Type) / tv(I2:Int, T:Type) => 'Cast(T:Type,, I1:Int /Int I2:Int)] 
+		if integerTypes contains T:Type
+		: KSentence .
+	mb rule [tv(I1:Int, T:Type) % tv(I2:Int, T:Type) => 'Cast(T:Type,, I1:Int %Int I2:Int)] 
 		if integerTypes contains T:Type
 		: KSentence .
 	 
@@ -1909,6 +1912,11 @@ and ll or LL
 	mb rule
 		< k > ['Cast(T:Type,, tv(I:Int, pointerType(T':Type))) => 'Cast(T:Type,, tv(I:Int, unsigned-int))] ...</ k > 
 		if integerTypes contains T:Type
+		: KSentence .
+		
+	---fixme not sure where it says this
+	mb rule
+		< k > ['Cast(pointerType(T:Type),, tv(I:Int, arrayType(T:Type, ?))) => tv(I:Int, pointerType(T:Type))] ...</ k > 
 		: KSentence .
 	
 
