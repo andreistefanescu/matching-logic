@@ -92,10 +92,10 @@ let d_ikind () = function
 	
 let d_binop () b =
 	match b with
-	| PlusA -> text "+"
-	| PlusPI | IndexPI -> text "+o"
-	| MinusA -> text "-"
-	| MinusPP | MinusPI -> text "-o"
+	| PlusA | PlusPI | IndexPI -> text "+"
+	(*| PlusPI | IndexPI -> text "+o"*)
+	| MinusA | MinusPP | MinusPI -> text "-"
+	(*| MinusPP | MinusPI -> text "-o"*)
 	| Mult -> text "*"
 	| Div -> text "/"
 	| Mod -> text "%"

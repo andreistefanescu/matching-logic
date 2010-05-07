@@ -66,6 +66,10 @@ mod COMMON-SEMANTIC-SYNTAX is
 	op charToAscii : String -> Nat .
 	op _to_ : Nat Nat -> List{K} . 
 	op calcStructSize : List{KResult} -> K .
+	
+			
+	op integerTypes : -> Set .
+	op unsignedIntegerTypes : -> Set .
 
 endm
 
@@ -124,51 +128,10 @@ mod C-SETTINGS is
 	eq max(unsigned-long-int) = _-Int_(2 ^Nat absInt(numBits(unsigned-long-int)), 1) .
 	eq min(unsigned-long-long-int) = 0 .
 	eq max(unsigned-long-long-int) = _-Int_(2 ^Nat absInt(numBits(unsigned-long-long-int)), 1) .
-	
-	--- eq min(short-int) = -2147483648 .
-	--- eq max(short-int) = 2147483647 .
-
-	
-	--- op drv:bitsPerInt : -> Nat .
-	--- eq drv:bitsPerInt = 8 *Nat cfg:sizeofInt .
-	--- op drv:maxInt : -> Nat .
-	--- op drv:minInt : -> Int .
-	--- fixme (should actually be derived
-	--- eq drv:maxInt = 2147483647 .
-	--- eq drv:minInt = -2147483648 .
-	
-	--- op drv:maxLongInt : -> Nat .
-	--- op drv:minLongInt : -> Int .
-	--- fixme (should actually be derived
-	--- eq drv:maxLongInt = 2147483647 .
-	--- eq drv:minLongInt = -2147483648 .
-
-	--- op drv:maxLongLongInt : -> Nat .
-	--- op drv:minLongLongInt : -> Int .
-	--- fixme (should actually be derived
-	--- eq drv:maxLongLongInt = 9223372036854775807 .
-	--- eq drv:minLongLongInt = -9223372036854775808 .
-	
-	---eq drv:maxInt = 32767 .
-	---eq drv:minInt = -32767 .
-	--- op drv:maxPtr : -> Nat .
-	--- op drv:minPtr : -> Nat .
-	--- fixme (should actually be derived
-	--- eq drv:maxPtr = 4294967295 .
-	--- eq drv:minPtr = 0 .
-	
+		
 	mb rule < k > [sizeof(T:Base-Type) => tv(numBytes(T:Base-Type), cfg:sizeut)] ...</ k > : KSentence .
+	mb rule < k > [sizeof(pointerType(?)) => tv(numBytes(unsigned-int), cfg:sizeut)] ...</ k > : KSentence .
 	
-	--- mb rule < k > [sizeof(short) => tv(cfg:sizeofShort, cfg:sizeut)] ...</ k > : KSentence .
-	--- mb rule < k > [sizeof(unsigned-short) => tv(cfg:sizeofUShort, cfg:sizeut)] ...</ k > : KSentence .
-	--- mb rule < k > [sizeof(int) => tv(cfg:sizeofInt, cfg:sizeut)] ...</ k > : KSentence .
-	--- mb rule < k > [sizeof(unsigned-int) => tv(cfg:sizeofInt, cfg:sizeut)] ...</ k > : KSentence .
-	--- mb rule < k > [sizeof(long) => tv(cfg:sizeofLong, cfg:sizeut)] ...</ k > : KSentence .
-	--- mb rule < k > [sizeof(unsigned-long) => tv(cfg:sizeofUL, cfg:sizeut)] ...</ k > : KSentence .
-	--- mb rule < k > [sizeof(long-long) => tv(cfg:sizeofLL, cfg:sizeut)] ...</ k > : KSentence .
-	--- mb rule < k > [sizeof(signed-int) => tv(cfg:sizeofInt, cfg:sizeut)] ...</ k > : KSentence .
-	--- mb rule < k > [sizeof(pointerType(?)) => tv(cfg:sizeofPtr, cfg:sizeut)] ...</ k > : KSentence .
-
 	mb rule 
 		< k > [T:Typedef-Name => T:Type] ...</ k >
 		< types >... T:Typedef-Name |-> T:Type ...</ types > 
@@ -253,7 +216,7 @@ mod SIZEOF is
 	including COMMON-INCLUDE .
 	
 	mb rule
-		< k > [sizeof(arrayType(T:Type, N:Nat)) => sizeof(T:Type) * N:Nat] ...</ k >
+		< k > [sizeof(arrayType(T:Type, N:Nat)) => sizeof(T:Type) * tv(N:Nat, cfg:sizeut)] ...</ k >
 		: KSentence .
 	mb [sizeof-typedef]: rule
 		< k > [sizeof(T:Type) => sizeof(T':Type)] ...</ k >
@@ -1151,7 +1114,38 @@ mod COMMON-EXPRESSIONS is
 	--- mb rule < k > [converted(tv(I1:Int, pointerType(T:Type)), tv(I2:Int, T':Type)) ~> ? - ? 
 	--- => tv(I1:Int, pointerType(T:Type)) -i (sizeof(T:Type) * tv(I2:Int, T':Type))] ...</ k > : KSentence .
 
+	--- fixme totally wrong
+	mb rule [tv(I1:Int, pointerType(T':Type)) + tv(I2:Int, T:Type) 
+	=> 'Cast(pointerType(T':Type),, '_+_(tv(I1:Int, cfg:sizeut),, '_*_(sizeof(T':Type),, tv(I2:Int, cfg:sizeut))))]
+		if integerTypes contains T:Type
+		: KSentence .
+	--- fixme totally wrong
+	mb rule [tv(I1:Int, pointerType(T':Type)) - tv(I2:Int, T:Type) 
+	=> 'Cast(pointerType(T':Type),, '_-_(tv(I1:Int, cfg:sizeut),, '_*_(sizeof(T':Type),, tv(I2:Int, cfg:sizeut))))]
+		if integerTypes contains T:Type
+		: KSentence .
 	
+	mb rule [tv(I1:Int, T:Type) + tv(I2:Int, T:Type) => 'Cast(T:Type,, I1:Int +Int I2:Int)] 
+		if integerTypes contains T:Type
+		: KSentence .
+	mb rule [_-_(tv(I1:Int, T:Type), tv(I2:Int, T:Type)) => 'Cast(T:Type,, _-Int_(I1:Int,I2:Int))] 
+		if integerTypes contains T:Type
+		: KSentence .
+	mb rule [tv(I1:Int, T:Type) * tv(I2:Int, T:Type) => 'Cast(T:Type,, I1:Int *Int I2:Int)] 
+		if integerTypes contains T:Type
+		: KSentence .
+	mb rule [tv(I1:Int, T:Type) / tv(I2:Int, T:Type) => 'Cast(T:Type,, I1:Int /Int I2:Int)] 
+		if integerTypes contains T:Type
+		: KSentence .
+	 
+	
+	--- mb rule [tv(I1:Int, T:Type) + tv(I2:Int, T:Type) => tv(I1:Int +Int I2:Int, T:Type)] 
+		--- if integerTypes contains T:Type
+		--- : KSentence .
+	--- mb rule [_-_(tv(I1:Int, T:Type), tv(I2:Int, T:Type)) => tv(_-Int_(I1:Int,I2:Int), T:Type)] 
+		--- if integerTypes contains T:Type
+		--- : KSentence .
+		
 	--- --- mb rule [I1:Int + I2:Int => I1:Int +Int I2:Int] : KSentence .
 	--- --- mb rule [_-_(I1:Int,I2:Int) => _-Int_(I1:Int,I2:Int)] : KSentence .
 	--- --- mb rule [I1:Int * I2:Int => I1:Int *Int I2:Int] : KSentence .
@@ -1341,8 +1335,8 @@ and ll or LL
 	mb [for-assignment]: rule < k > [E1:Expression := E2:Expression => assign(Deref(&(E1:Expression)),  E2:Expression)] ...</ k > : KSentence .
 	
 	mb rule < k > [&(Deref(E:Expression)) => E:Expression] ...</ k > : KSentence [metadata "structural"] .
-	mb rule < k > [&(E1:Expression[E2:Expression]) => E1:Expression +o E2:Expression] ...</ k > : KSentence [metadata "structural"] .
-	mb rule < k > [E1:Expression[E2:Expression] => Deref(E1:Expression +o E2:Expression)] ...</ k > : KSentence [metadata "structural"] .
+	mb rule < k > [&(E1:Expression[E2:Expression]) => E1:Expression + E2:Expression] ...</ k > : KSentence [metadata "structural"] .
+	mb rule < k > [E1:Expression[E2:Expression] => Deref(E1:Expression + E2:Expression)] ...</ k > : KSentence [metadata "structural"] .
 	
 ***(
 	todo	
@@ -1435,6 +1429,12 @@ and ll or LL
 		if notBool(min(T:Type) <=Int N:Nat andBool max(T:Type) >=Int N:Nat)
 		andBool (N:Nat >=Int max(T:Type))
 		: KSentence .
+	
+	--- fixme not necessarily the case that pointers are unsigned-ints
+	mb rule [interpret(N:Nat, pointerType(T:Type)) => tv(N:Nat, pointerType(T:Type))]
+		if min(unsigned-int) <=Int N:Nat andBool max(unsigned-int) >=Int N:Nat
+		: KSentence [metadata "structural"] .	
+	
 	--- mb rule [
 		--- interpret(tv(N:Nat, int)) 
 		--- => 
@@ -1711,14 +1711,14 @@ and ll or LL
 	---x ((((((((pointArr))) +o (((3))))) -> x)))
 		
 	--- fixme compute types way too many times
-	mb [dot-cool]: rule
-		< k > [evalToType ~> &(E1:Expression . X:Id) => (& (E1:Expression)) +i getOffset(E1:Expression, X:Id) ~> makeType(pointerType(T:Type))] ...</ k >
-		[< type > structType(X':Id, (L1:List{KResult},, typedField(T:Type, X:Id),,  L2:List{KResult})) </ type > => .Bag] 
-		: KSentence .
-	mb [arrow-cool]: rule
-		< k > [evalToType ~> &(E1:Expression -> X:Id) => E1:Expression +i getOffset(Deref(E1:Expression), X:Id) ~> makeType(pointerType(T:Type))] ...</ k >
-		[< type > structType(X':Id, (L1:List{KResult},, typedField(T:Type, X:Id),,  L2:List{KResult})) </ type > => .Bag] 
-		: KSentence .
+	--- mb [dot-cool]: rule
+		--- < k > [evalToType ~> &(E1:Expression . X:Id) => (& (E1:Expression)) +i getOffset(E1:Expression, X:Id) ~> makeType(pointerType(T:Type))] ...</ k >
+		--- [< type > structType(X':Id, (L1:List{KResult},, typedField(T:Type, X:Id),,  L2:List{KResult})) </ type > => .Bag] 
+		--- : KSentence .
+	--- mb [arrow-cool]: rule
+		--- < k > [evalToType ~> &(E1:Expression -> X:Id) => E1:Expression +i getOffset(Deref(E1:Expression), X:Id) ~> makeType(pointerType(T:Type))] ...</ k >
+		--- [< type > structType(X':Id, (L1:List{KResult},, typedField(T:Type, X:Id),,  L2:List{KResult})) </ type > => .Bag] 
+		--- : KSentence .
 	--- fixme possibly do maketype in wrong place
 	--- mb [dot-cool]: rule
 		--- < k > [evalToType ~> E1:Expression . X:Id => Deref((& (E1:Expression)) + getOffset(E1:Expression, X:Id)) ~> makeType(T:Type)] ...</ k >
@@ -1878,9 +1878,7 @@ and ll or LL
 	mb [if-then-false]: rule
 		< k > [if (tv(0, ?)) S:Statement => .K] ...</ k >
 		: KSentence .
-		
-	op integerTypes : -> Set .
-	op unsignedIntegerTypes : -> Set .
+
 
 	eq integerTypes = Set(char,, signed-char,, unsigned-char,, short-int,, int,, long-int,, long-long-int,, unsigned-short-int,, unsigned-int,, unsigned-long-int,, unsigned-long-long-int) .
 	eq unsignedIntegerTypes = Set(unsigned-char,, unsigned-short-int,, unsigned-int,, unsigned-long-int,, unsigned-long-long-int) .
@@ -1902,6 +1900,16 @@ and ll or LL
 	
 	---c99 6.3.1.3:3 Otherwise, the new type is signed and the value cannot be represented in it; either the result is implementation-defined or an implementation-defined signal is raised.
 	
+	
+	---fixme 6.3.2.3 not handling this correctly
+	mb rule
+		< k > ['Cast(pointerType(T:Type),, tv(I:Int, T':Type)) => tv(I:Int, pointerType(T:Type))] ...</ k > 
+		if min(unsigned-int) <=Int I:Int andBool max(unsigned-int) >=Int I:Int andBool (integerTypes contains T':Type)
+		: KSentence .
+	mb rule
+		< k > ['Cast(T:Type,, tv(I:Int, pointerType(T':Type))) => 'Cast(T:Type,, tv(I:Int, unsigned-int))] ...</ k > 
+		if integerTypes contains T:Type
+		: KSentence .
 	
 
 	--- mb [cast-same]: rule
@@ -2022,30 +2030,44 @@ and ll or LL
 		
 	op postInc : K K Type -> K [metadata "strict(2)"] .
 	op postDec : K K Type -> K [metadata "strict(2)"] .
-	--- mb [post-increment-start]: rule
-		--- < k > [Deref(tv(Loc:Nat, pointerType(T:Type))) ++
-		--- => postInc(Loc:Nat, readFromMem(Loc:Nat, T:Type, sizeof(T:Type), 0, 0), T:Type)
-		--- ] ...</ k >
-		--- : KSentence .
+	mb [post-increment-start]: rule
+		< k > [Deref(tv(Loc:Nat, pointerType(T:Type))) ++
+		=> postInc(Loc:Nat, readFromMem(Loc:Nat, T:Type, sizeof(T:Type), 0, 0), T:Type)
+		] ...</ k >
+		: KSentence .
 		
-	--- mb [post-increment]: rule
-		--- < k > [postInc(Loc:Nat, tv(I:Int, T:Type), T:Type)
-		--- => assign(Deref(tv(Loc:Nat, pointerType(T:Type))), tv(I:Int, T:Type) + tv(1, int)) ~> discard ~> tv(I:Int, T:Type)
-		--- ] ...</ k >
-		--- : KSentence .
+	mb [post-increment]: rule
+		< k > [postInc(Loc:Nat, tv(I:Int, T:Type), T:Type)
+		=> assign(Deref(tv(Loc:Nat, pointerType(T:Type))), tv(I:Int, T:Type) + tv(1, T:Type)) ~> discard ~> tv(I:Int, T:Type)
+		] ...</ k >
+		if integerTypes contains T:Type
+		: KSentence .
+	--- fixme would be simpler if i did integer promotions etc.
+	mb [post-increment]: rule
+		< k > [postInc(Loc:Nat, tv(I:Int, pointerType(T:Type)), pointerType(T:Type))
+		=> assign(Deref(tv(Loc:Nat, pointerType(pointerType(T:Type)))), tv(I:Int, pointerType(T:Type)) + tv(1, int)) ~> discard ~> tv(I:Int, pointerType(T:Type))
+		] ...</ k >
+		: KSentence .
 		
-	--- mb [post-decrement-start]: rule
-		--- < k > [Deref(tv(Loc:Nat, pointerType(T:Type))) --
-		--- => postDec(Loc:Nat, readFromMem(Loc:Nat, T:Type, sizeof(T:Type), 0, 0), T:Type)
-		--- ] ...</ k >
-		--- : KSentence .
+	mb [post-decrement-start]: rule
+		< k > [Deref(tv(Loc:Nat, pointerType(T:Type))) --
+		=> postDec(Loc:Nat, readFromMem(Loc:Nat, T:Type, sizeof(T:Type), 0, 0), T:Type)
+		] ...</ k >
+		: KSentence .
 		
-	--- mb [post-decrement]: rule
-		--- < k > [postDec(Loc:Nat, tv(I:Int, T:Type), T:Type)
-		--- => assign(Deref(tv(Loc:Nat, pointerType(T:Type))), tv(I:Int, T:Type) - tv(1, int)) ~> discard ~> tv(I:Int, T:Type)
-		--- ] ...</ k >
-		--- : KSentence .
-	
+	mb [post-decrement]: rule
+		< k > [postDec(Loc:Nat, tv(I:Int, T:Type), T:Type)
+		=> assign(Deref(tv(Loc:Nat, pointerType(T:Type))), tv(I:Int, T:Type) - tv(1, T:Type)) ~> discard ~> tv(I:Int, T:Type)
+		] ...</ k >
+		if integerTypes contains T:Type
+		: KSentence .
+	--- fixme would be simpler if i did integer promotions etc.
+	mb [post-decrement]: rule
+		< k > [postDec(Loc:Nat, tv(I:Int, pointerType(T:Type)), pointerType(T:Type))
+		=> assign(Deref(tv(Loc:Nat, pointerType(pointerType(T:Type)))), tv(I:Int, pointerType(T:Type)) - tv(1, int)) ~> discard ~> tv(I:Int, pointerType(T:Type))
+		] ...</ k >
+		: KSentence .
+		
 	--- mb [post-increment]: rule
 		--- < k > [Deref(tv(Loc:Nat, pointerType(T:Type))) ++ => assign(Deref(tv(Loc:Nat, pointerType(T:Type))), tv(V:BaseValue, T:Type) + tv(1, int)) ~> discard ~> tv(V:BaseValue, T:Type)] ...</ k >
 		--- < mem >... Loc:Nat |-> V:BaseValue ...</ mem >
