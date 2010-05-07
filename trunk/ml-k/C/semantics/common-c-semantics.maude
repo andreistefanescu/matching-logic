@@ -50,7 +50,7 @@ mod COMMON-SEMANTIC-SYNTAX is
 	op declare-aux : K K List{K} -> K .
 	op converted : K K -> K .
 	op evalToType : -> K .
-	op interpret : K -> K .
+	op interpret : K Type -> K .
 	op allocate : K -> K [metadata "strict"] .
 	--- op tid : Id K -> K .
 	op tv : BaseValue Type -> Value .
@@ -1175,13 +1175,14 @@ mod COMMON-EXPRESSIONS is
 	--- mb rule < k > [converted(tv(I1:Int, T:Type), tv(I2:Int, T:Type)) ~> ? == ? => if (I1:Int ==Bool I2:Int) then tv(1, int) else tv(0, int) fi] ...</ k > : KSentence .
 	--- mb rule < k > [converted(tv(I1:Int, T:Type), tv(I2:Int, T:Type)) ~> ? != ? => if (I1:Int =/=Bool I2:Int) then tv(1, int) else tv(0, int) fi] ...</ k > : KSentence .
 	
-	
-	--- --- mb rule [I1:Int < I2:Int => if (I1:Int <Int I2:Int) then 1 else 0 fi] : KSentence .
-	--- --- mb rule [I1:Int <= I2:Int => if (I1:Int <=Int I2:Int) then 1 else 0 fi] : KSentence .
-	--- --- mb rule [I1:Int > I2:Int => if (I1:Int >Int I2:Int) then 1 else 0 fi] : KSentence .
-	--- --- mb rule [I1:Int >= I2:Int => if (I1:Int >=Int I2:Int) then 1 else 0 fi] : KSentence .
-	--- --- mb rule [I1:Int == I2:Int => if (I1:Int ==Bool I2:Int) then 1 else 0 fi] : KSentence .
-	--- --- mb rule [I1:Int != I2:Int => if (I1:Int =/=Bool I2:Int) then 1 else 0 fi] : KSentence .
+	mb rule [tv(I1:Int, T:Type) < tv(I2:Int, T:Type) => if (I1:Int <Int I2:Int) then tv(1, int) else tv(0, int) fi] : KSentence .
+	mb rule [tv(I1:Int, T:Type) <= tv(I2:Int, T:Type) => if (I1:Int <=Int I2:Int) then tv(1, int) else tv(0, int) fi] : KSentence .
+	mb rule [tv(I1:Int, T:Type) > tv(I2:Int, T:Type) => if (I1:Int >Int I2:Int) then tv(1, int) else tv(0, int) fi] : KSentence .
+	mb rule [tv(I1:Int, T:Type) >= tv(I2:Int, T:Type) => if (I1:Int >=Int I2:Int) then tv(1, int) else tv(0, int) fi] : KSentence .
+	mb rule [tv(I1:Int, T:Type) == tv(I2:Int, T:Type) => if (I1:Int ==Bool I2:Int) then tv(1, int) else tv(0, int) fi] : KSentence .
+	mb rule [tv(I1:Int, T:Type) != tv(I2:Int, T:Type) => if (I1:Int =/=Bool I2:Int) then tv(1, int) else tv(0, int) fi] : KSentence .
+	mb rule [!(tv(I:Int, T:Type)) => if (I:Int ==Bool 0) then tv(1, int) else tv(0, int) fi] : KSentence .
+
 	--- --- --- mb rule [T1 and T2 => T1 andBool T2] : KSentence .
 	--- --- --- mb rule [T1 or T2 => T1 orBool T2] : KSentence .
 	--- --- mb rule [!(I:Int) => if (I:Int ==Bool 0) then 1 else 0 fi] : KSentence .
@@ -1419,11 +1420,21 @@ and ll or LL
 		: KSentence .
 	mb rule
 		< k > [readFromMem(Loc:Nat, T:Type, tv(0, ?), ?,  N:Nat) 
-		=> interpret(tv(N:Nat, T:Type))] ...</ k >
+		=> interpret(N:Nat, T:Type)] ...</ k >
 		: KSentence 
 		---[print "read " N:Nat " ending at " Loc:Nat] 
 		.
 
+	mb rule [interpret(N:Nat, T:Type) => tv(N:Nat, T:Type)]
+		if min(T:Type) <=Int N:Nat andBool max(T:Type) >=Int N:Nat
+		: KSentence [metadata "structural"] .	
+		
+	--- fixme not sure about this
+	mb rule
+		[interpret(N:Nat, T:Type) => tv(_-Int_(N:Nat, (2 ^Nat absInt(numBits(T:Type)))), T:Type)]
+		if notBool(min(T:Type) <=Int N:Nat andBool max(T:Type) >=Int N:Nat)
+		andBool (N:Nat >=Int max(T:Type))
+		: KSentence .
 	--- mb rule [
 		--- interpret(tv(N:Nat, int)) 
 		--- => 
@@ -1577,8 +1588,6 @@ and ll or LL
 	mb rule
 		< k > [putInMem(Loc:Nat, V:BaseValue, T:Type, tv(0, ?)) => .K] ...</ k >
 		: KSentence .
-	--- 57005
-	--- 36859
 	mb rule
 		< k > [putInMem(Loc:Nat, N:Int, T:Type, tv(sNat(Len:Nat), J:Type)) 
 		=> putByteInMem(Loc:Nat, ((N:Int %Int 256) +Int 256) %Int 256) ~> putInMem(sNat(Loc:Nat), N:Int >>Int 8, T:Type, tv(Len:Nat, J:Type))] ...</ k >
