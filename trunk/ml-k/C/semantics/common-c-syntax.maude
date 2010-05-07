@@ -34,8 +34,11 @@ mod COMMON-C-SYNTAX is
 	--- --- 6.4.4.1
 	sort Integer-Constant .
 	subsort Int < Integer-Constant .
-	op UL : Int -> Integer-Constant .
 	op U : Int -> Integer-Constant .
+	op L : Int -> Integer-Constant .
+	op UL : Int -> Integer-Constant .
+	op LL : Int -> Integer-Constant .
+	op ULL : Int -> Integer-Constant .
 	--- subsort Decimal-Constant < Integer-Constant .
 	--- Octal-Constant Hexadecimal-Constant 
 	--- --- TODO
@@ -244,18 +247,19 @@ mod COMMON-C-SYNTAX is
 	--- subsort Struct-Or-Union-Specifier Enum-Specifier < Type-Specifier .
 	subsort Typedef-Name Struct-Or-Union-Specifier Base-Type < Type-Specifier .
 	ops void 
+		no-type
 		float 
 		double
 		long-double
 		---signed unsigned 
-		short-int unsigned-short-int signed-short-int
+		short-int unsigned-short-int
 		char unsigned-char signed-char 
-		int unsigned-int signed-int
-		short unsigned-short signed-short
-		long-int unsigned-long-int signed-long-int
-		long unsigned-long signed-long
-		long-long unsigned-long-long signed-long-long
-		long-long-int unsigned-long-long-int signed-long-long-int
+		int unsigned-int
+		short unsigned-short
+		long-int unsigned-long-int
+		long unsigned-long
+		long-long unsigned-long-long
+		long-long-int unsigned-long-long-int
 		: -> Base-Type [ctor] .
 	op Pointer : Type-Specifier -> Type-Specifier [metadata "strict"] . 
 	
