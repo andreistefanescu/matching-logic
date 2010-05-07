@@ -164,10 +164,10 @@ mod COMMON-C-SYNTAX is
 	---subsort Unary-Expression < Conditional-Expression .
 	op Cast : Type-Name Expression -> Expression [metadata "strict"] .
 	ops _*_ _/_ _%_ : Expression Expression -> Expression [prec 31 gather(E e) metadata "strict"] .	
-	ops _*i_ _/i_ _%i_ : Expression Expression -> Expression [prec 31 gather(E e) metadata "strict"] .	
+	---ops _*i_ _/i_ _%i_ : Expression Expression -> Expression [prec 31 gather(E e) metadata "strict"] .	
 	ops _+_ _-_ : Expression Expression -> Expression [prec 33 gather(E e) metadata "strict"] .
-	ops _+i_ _-i_ : Expression Expression -> Expression [prec 33 gather(E e) metadata "strict"] .
-	ops _+o_ _-o_ : Expression Expression -> Expression [prec 33 gather(E e) metadata "strict"] .
+	---ops _+i_ _-i_ : Expression Expression -> Expression [prec 33 gather(E e) metadata "strict"] .
+	---ops _+o_ _-o_ : Expression Expression -> Expression [prec 33 gather(E e) metadata "strict"] .
 	ops _<<_ _>>_ : Expression Expression -> Expression [prec 35 gather(E e) metadata "strict"] .
 	ops _<_ _>_ _<=_ _>=_ : Expression Expression -> Expression [prec 37 gather(E e) metadata "strict"] .
 	ops _==_ _!=_ : Expression Expression -> Expression [prec 39 gather(E e) metadata "strict"] .
