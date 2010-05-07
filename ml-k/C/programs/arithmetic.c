@@ -22,6 +22,13 @@ int main(void){
 	long long int llil = -9223372036854775807LL;
 	long long int llih = 9223372036854775807LL;
 	
+	if (!(scl < 0)) { printf("Error 1\n"); }
+	if (!(sil < 0)) { printf("Error 2\n"); }
+	if (!(il < 0)) { printf("Error 3\n"); }
+	if (!(lil < 0)) { printf("Error 4\n"); }
+	if (!(llil < 0)) { printf("Error 5\n"); }
+	
+	
 	// if (il != (int)(il)) { printf("Error 1\n"); }
 	// if (il != (long int)(il)) { printf("Error 2\n"); }
 	// if (il != (long long int)(il)) { printf("Error 3\n"); }
