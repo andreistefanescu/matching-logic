@@ -316,10 +316,10 @@ mod TYPES is
 		orBool L:KLabel ==Bool 'Typedef
 		: KSentence [metadata "structural"] .
 		
-	op makeType : K -> K .	
-	mb rule < k > [tv(I:Int, ?) ~> makeType(T:Type) => tv(I:Int, T:Type)] ...</ k > : KSentence 
-	---[print "type of to " I:Int " to " ]
-	.	
+	--- op makeType : K -> K .	
+	--- mb rule < k > [tv(I:Int, ?) ~> makeType(T:Type) => tv(I:Int, T:Type)] ...</ k > : KSentence 
+	--- ---[print "type of to " I:Int " to " ]
+	--- .	
 		
 	--- mb rule 
 		--- [L:KLabel(T:Type,, 'Direct-Function-Declarator('Pointer(D:Declarator[N:Nat]),, 'Parameter-Type-List(LL:List{Parameter}))) 
@@ -1446,7 +1446,11 @@ and ll or LL
 	--- fixme not necessarily the case that pointers are unsigned-ints
 	mb rule [interpret(N:Nat, pointerType(T:Type)) => tv(N:Nat, pointerType(T:Type))]
 		if min(unsigned-int) <=Int N:Nat andBool max(unsigned-int) >=Int N:Nat
-		: KSentence [metadata "structural"] .	
+		: KSentence [metadata "structural"] .
+		
+	--- fixme maybe this shouldn't be how i handle struct values
+	mb rule [interpret(N:Nat, structType(X:Id)) => tv(N:Nat, structType(X:Id))]
+		: KSentence [metadata "structural"] .
 	
 	--- mb rule [
 		--- interpret(tv(N:Nat, int)) 
@@ -1656,6 +1660,33 @@ and ll or LL
 		
 	mb [arrow]: rule
 		< k > [tv(Base:Int, pointerType(structType(S:Id))) -> X:Id => Deref(tv(Base:Int, pointerType(structType(S:Id)))) . X:Id] ...</ k >
+		: KSentence .
+		
+--- 10
+--- 0
+--- 0
+--- 0
+--- 85
+--- 0
+--- 0
+--- 0
+
+--- 22817013770
+--- 550000000A
+--- 550000000A
+
+	op extractField : Nat Type K K -> K [metadata "strict(3 4)"] .
+	mb [dot]: rule
+		< k > [tv(N:Nat, structType(S:Id)) . X:Id => extractField(N:Nat, T:Type, sizeof(T:Type), calcStructSize(L1:List{KResult}))] ...</ k >
+		< structs >... struct(S:Id) |-> (L1:List{KResult},, typedField(T:Type, X:Id),, ?:List{KResult}) ...</ structs >
+		: KSentence .
+		
+	mb [extractField-shift]: rule
+		< k > [extractField(N:Nat, T:Type, V:Value, tv(sNat(Offset:Nat), T':Type)) => extractField(N:Nat >>Nat 8, T:Type, V:Value, tv(Offset:Nat, T':Type))] ...</ k >
+		: KSentence .
+	mb [extractField-grab]: rule
+		< k > [extractField(N:Nat, T:Type, tv(Len:Nat, T':Type), tv(0, T':Type)) 
+		=> tv((N:Nat &Nat absInt(_-Int_(2 ^Nat absInt(8 *Nat Len:Nat), 1))), T:Type)] ...</ k >
 		: KSentence .
 	
 	--- mb [arrow]: rule
@@ -1879,7 +1910,7 @@ and ll or LL
 	
 	mb [deref]: rule
 		< k > [Deref(tv(Loc:Nat, pointerType(T:Type))) 
-		=> readFromMem(Loc:Nat, T:Type, sizeof(T:Type), 0, 0) ~> makeType(T:Type)
+		=> readFromMem(Loc:Nat, T:Type, sizeof(T:Type), 0, 0)
 		---tv(I:Int, T:Type)
 		] ...</ k >
 		--- < mem >... Loc:Nat |-> I:Int ...</ mem >
