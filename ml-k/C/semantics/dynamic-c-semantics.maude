@@ -19,6 +19,7 @@ mod DYNAMIC-C-SEMANTICS is
 			< malloced > .Map </ malloced >
 			< statics > .Map </ statics >
 			< typedefs > .Map </ typedefs >
+			< structs > .Map </ structs >
 		</ T > .
 	
 	--- throw away annotations
