@@ -12,7 +12,10 @@ endm
 mod COMMON-SEMANTIC-SYNTAX is
 	including INCOMING-MODULES .
 	op List : BagItem -> ListItem .
-	op unknown : -> K .
+	---op unknown : -> K .
+	op unknown : -> Nat .
+	--- fixme!!! due to structs
+	eq unknown = 0 .
 	op skipval : -> KResult .
 	op debugK : -> K .
 	op discard : -> K .
@@ -37,7 +40,7 @@ mod COMMON-SEMANTIC-SYNTAX is
 	op sizeof : Type -> Expression .
 	---subsort Typedef-Name < Type .
 	---subsort Type-Specifier < Type .
-	
+	op HOLE : -> Expression .
 	op arrayType : Type Nat -> Type .
 	op functionType : Type List{K} -> Type .
 	op pointerType : Type -> Type .
@@ -501,7 +504,7 @@ mod TYPES is
 		--- < k > [Global(Declaration(DS:TogetherList, Direct-Function-Declarator(I:Id, PTL:Parameter-Type-List))) => .K] ...</ k >
 		--- : KSentence .
 
-	op HOLE : -> K .
+
 	op locs : List{K} -> KResult .
 	---Direct-Function-Declarator(Pointer(I:Id), PTL:Parameter-Type-List)
 	mb [start-declare]: rule
@@ -1347,8 +1350,11 @@ and ll or LL
 	--- mb rule [&(E1:Expression[E2:Expression]) => E1:Expression + E2:Expression] : KSentence [metadata "structural"] .
 	mb [for-assignment]: rule < k > [E1:Expression := E2:Expression => assign(Deref(&(E1:Expression)),  E2:Expression)] ...</ k > : KSentence .
 	
-	mb rule < k > [&(Deref(E:Expression)) => E:Expression] ...</ k > : KSentence [metadata "structural"] .
-	mb rule < k > [&(E1:Expression[E2:Expression]) => E1:Expression + E2:Expression] ...</ k > : KSentence [metadata "structural"] .
+	
+	mb rule [&(Deref(E:Expression)) => E:Expression] : KSentence [metadata "structural"] .
+	mb rule [&(E1:Expression[E2:Expression]) => E1:Expression + E2:Expression] : KSentence [metadata "structural"] .
+	
+	--- can't be done anywhere because same syntax as in declarations
 	mb rule < k > [E1:Expression[E2:Expression] => Deref(E1:Expression + E2:Expression)] ...</ k > : KSentence [metadata "structural"] .
 	
 ***(
@@ -1424,6 +1430,11 @@ and ll or LL
 		< k > [I:Id => readFromMem(Loc:Nat, T:Base-Type, sizeof(T:Base-Type), 0, 0)] ...</ k >
 		< env >... I:Id |-> Loc:Nat ...</ env >
 		< types >... I:Id |-> T:Base-Type ...</ types >
+		: KSentence .
+	mb [lookup-struct]: rule
+		< k > [I:Id => readFromMem(Loc:Nat, structType(S:Id), sizeof(structType(S:Id)), 0, 0)] ...</ k >
+		< env >... I:Id |-> Loc:Nat ...</ env >
+		< types >... I:Id |-> structType(S:Id) ...</ types >
 		: KSentence .
 	mb rule
 		< k > [readFromMem(Loc:Nat, T:Type, tv(0, ?), ?,  N:Nat) 
@@ -1651,34 +1662,53 @@ and ll or LL
 		--- < env >... I:Id |-> Loc:Nat ...</ env >
 		--- : KSentence .
 	
-
+	--- fixme this is crazy
+	--- if label not arrayType?
+	op fixPointerType : Type -> Type .
+	eq fixPointerType(T:Base-Type) = pointerType(T:Base-Type) .
+	eq fixPointerType(arrayType(T:Type, ?)) = pointerType(T:Type) .
+	eq fixPointerType(structType(X:Id)) = pointerType(structType(X:Id)) .
+	eq fixPointerType(pointerType(T:Type)) = pointerType(pointerType(T:Type)) .
 	
+	--- fixme if T:Type is an array type, this is wrong
 	mb [address-of-arrow]: rule
-		< k > [&(tv(Base:Int, pointerType(structType(S:Id))) -> X:Id) => cast(pointerType(T:Type), '_+_( tv(Base:Int, pointerType(void)),, calcStructSize(L1:List{KResult})))] ...</ k >
+		< k > [&(tv(Base:Int, pointerType(structType(S:Id))) -> X:Id) => cast(fixPointerType(T:Type), '_+_( tv(Base:Int, pointerType(void)),, calcStructSize(L1:List{KResult})))] ...</ k >
 		< structs >... struct(S:Id) |-> (L1:List{KResult},, typedField(T:Type, X:Id),, ?:List{KResult}) ...</ structs >
 		: KSentence .
-		
+	
+	mb [address-of-dot]: rule
+		< k > [&(E:Expression . X:Id) => &((&(E:Expression)) -> X:Id)] ...</ k >
+		: KSentence .
+	
 	mb [arrow]: rule
 		< k > [tv(Base:Int, pointerType(structType(S:Id))) -> X:Id => Deref(tv(Base:Int, pointerType(structType(S:Id)))) . X:Id] ...</ k >
 		: KSentence .
-		
---- 10
---- 0
---- 0
---- 0
---- 85
---- 0
---- 0
---- 0
-
---- 22817013770
---- 550000000A
---- 550000000A
 
 	op extractField : Nat Type K K -> K [metadata "strict(3 4)"] .
 	mb [dot]: rule
 		< k > [tv(N:Nat, structType(S:Id)) . X:Id => extractField(N:Nat, T:Type, sizeof(T:Type), calcStructSize(L1:List{KResult}))] ...</ k >
 		< structs >... struct(S:Id) |-> (L1:List{KResult},, typedField(T:Type, X:Id),, ?:List{KResult}) ...</ structs >
+		: KSentence .
+		
+	--- fixme this one is a doosy
+	mb [dot-static]: rule
+		< k > [X:Id . F:Id => &(X:Id . F:Id)] ...</ k >
+		< types >... X:Id |-> structType(S:Id) ...</ types >
+		< structs >... struct(S:Id) |-> (?:List{KResult},, typedField(arrayType(T:Type, ?), F:Id),, ?:List{KResult}) ...</ structs >
+		: KSentence .
+	mb [dot-heat]: rule
+		< k > [E:Expression . F:Id => E:Expression ~> (HOLE . F:Id)] ...</ k >
+		< types > T:Map </ types >
+		if notBool($hasMapping(T:Map, E:Expression))
+		: KSentence .
+	mb [dot-heat]: rule
+		< k > [X:Id . F:Id => X:Id ~> (HOLE . F:Id)] ...</ k >
+		< types >... X:Id |-> structType(S:Id) ...</ types >
+		< structs >... struct(S:Id) |-> (?:List{KResult},, 'typedField(TL:KLabel(?),, F:Id),, ?:List{KResult}) ...</ structs >
+		if TL:KLabel =/=Bool 'arrayType
+		: KSentence .
+	mb [dot-cool]: rule
+		< k > [V:Value ~> (HOLE . F:Id) => V:Value . F:Id] ...</ k >
 		: KSentence .
 		
 	mb [extractField-shift]: rule
@@ -1707,7 +1737,7 @@ and ll or LL
 		
 	---C99 6.5.2.3:4 86) If &E is a valid pointer expression (where & is the ‘‘address-of ’’ operator, which generates a pointer to its operand), the expression (&E)->MOS is the same as E.MOS.
 		
-	op getOffset : K K -> Expression .
+	--- op getOffset : K K -> Expression .
 	--- mb [ref-arrow]: rule
 		--- < k > [&(E1:Expression -> X:Id) => E1:Expression + getOffset(Deref(E1:Expression), X:Id)] ...</ k >
 		--- : KSentence .
@@ -1784,12 +1814,12 @@ and ll or LL
 	
 		
 
-	op HOLE : -> Expression .
+	--- op HOLE : -> Expression .
 	
-	mb [getOffset-heat]: rule
-		< k > [getOffset(E:Expression, X:Id) => evalToType ~> getOffset(HOLE, X:Id)] ...</ k >
-		[.Bag => < type > E:Expression </ type >]
-		: KSentence .
+	--- mb [getOffset-heat]: rule
+		--- < k > [getOffset(E:Expression, X:Id) => evalToType ~> getOffset(HOLE, X:Id)] ...</ k >
+		--- [.Bag => < type > E:Expression </ type >]
+		--- : KSentence .
 
 		
 ***(
@@ -1849,74 +1879,80 @@ and ll or LL
 	--- mb rule < type > [Deref(Pointer(T:TogetherList)) => T:TogetherList] ...</ type > : KSentence [metadata "structural"] .
 	
 	--- fixme wrong, clearly need to have one typing system
-	mb rule
-		< type > [E1:Expression + E2:Expression => E1:Expression] ...</ type >
-		: KSentence .
+	--- mb rule
+		--- < type > [E1:Expression + E2:Expression => E1:Expression] ...</ type >
+		--- : KSentence .
 	
-	mb [evalToType-array-lookup]: rule
-		< type > [E:Expression[E1:Expression] => E:Expression[0]] ...</ type >
-		if E1:Expression =/=Bool 0
-		: KSentence .
-	mb [evalToType-exp-to-type]: rule
-		< type > [E:Expression => T:Type] ...</ type >
-		< types >... E:Expression |-> T:Type ...</ types >
-		: KSentence .
+	--- mb [evalToType-array-lookup]: rule
+		--- < type > [E:Expression[E1:Expression] => E:Expression[0]] ...</ type >
+		--- if E1:Expression =/=Bool 0
+		--- : KSentence .
+	--- mb [evalToType-exp-to-type]: rule
+		--- < type > [E:Expression => T:Type] ...</ type >
+		--- < types >... E:Expression |-> T:Type ...</ types >
+		--- : KSentence .
 	
-	mb [array-heat]: rule
-		< type > ['_`[_`](Kp:KProper,, 0) => Kp:KProper ~> HOLE[0]] ...</ type >
-		: KSentence .
-	mb [array-cool]: rule
-		< type > [pointerType(T:Type) ~> HOLE[?] => T:Type] ...</ type >
-		: KSentence .	
-	
-	mb rule
-		< type > [arrayType(T:Type, N:Nat) => pointerType(T:Type)] ...</ type >
-		: KSentence .
+	--- mb [array-heat]: rule
+		--- < type > ['_`[_`](Kp:KProper,, 0) => Kp:KProper ~> HOLE[0]] ...</ type >
+		--- : KSentence .
+	--- mb [array-cool]: rule
+		--- < type > [pointerType(T:Type) ~> HOLE[?] => T:Type] ...</ type >
+		--- : KSentence .	
 	
 	--- mb rule
-		--- < type > [struct(X:Id, Fields:SeqList) => structType(X:Id, Fields:SeqList)] ...</ type >
+		--- < type > [arrayType(T:Type, N:Nat) => pointerType(T:Type)] ...</ type >
 		--- : KSentence .
 	
-	mb [deref-heat]: rule
-		< type > ['Deref(Kp:KProper) => Kp:KProper ~> 'Deref(HOLE)] ...</ type >
-		: KSentence .
-	mb [deref-cool]: rule
-		< type > [pointerType(T:Type) ~> 'Deref(HOLE) => T:Type] ...</ type >
-		: KSentence .
-	--- mb [pointer-heat]: rule
-		--- < type > [pointerType(Kp:KProper) => Kp:KProper ~> pointerType(HOLE)] ...</ type >
+	--- --- mb rule
+		--- --- < type > [struct(X:Id, Fields:SeqList) => structType(X:Id, Fields:SeqList)] ...</ type >
+		--- --- : KSentence .
+	
+	--- mb [deref-heat]: rule
+		--- < type > ['Deref(Kp:KProper) => Kp:KProper ~> 'Deref(HOLE)] ...</ type >
 		--- : KSentence .
-	--- mb [pointer-cool]: rule
-		--- < type > [Kr:KResult ~> pointerType(HOLE) => pointerType(Kr:KResult)] ...</ type >
+	--- mb [deref-cool]: rule
+		--- < type > [pointerType(T:Type) ~> 'Deref(HOLE) => T:Type] ...</ type >
 		--- : KSentence .
-	mb [dot-heat]: rule
-		< type > ['_._(Kp:KProper,, X:Id) => Kp:KProper ~> '_._(HOLE,, X:Id)] ...</ type >
-		: KSentence .
-	mb [dot-cool]: rule
-		< type > [Kr:KResult ~> '_._(HOLE,, X:Id) => '_._(Kr:KResult,, X:Id)] ...</ type >
-		: KSentence .
-	--- mb [dot-lookup]: rule
-		--- < type > ['_._(structType(SName:Id, (L1:List{KResult},, typedField(T:Type, FName:Id),,  L2:List{KResult})),, FName:Id) => T:Type] ...</ type >
+	--- --- mb [pointer-heat]: rule
+		--- --- < type > [pointerType(Kp:KProper) => Kp:KProper ~> pointerType(HOLE)] ...</ type >
+		--- --- : KSentence .
+	--- --- mb [pointer-cool]: rule
+		--- --- < type > [Kr:KResult ~> pointerType(HOLE) => pointerType(Kr:KResult)] ...</ type >
+		--- --- : KSentence .
+	--- mb [dot-heat]: rule
+		--- < type > ['_._(Kp:KProper,, X:Id) => Kp:KProper ~> '_._(HOLE,, X:Id)] ...</ type >
 		--- : KSentence .
+	--- mb [dot-cool]: rule
+		--- < type > [Kr:KResult ~> '_._(HOLE,, X:Id) => '_._(Kr:KResult,, X:Id)] ...</ type >
+		--- : KSentence .
+	--- --- mb [dot-lookup]: rule
+		--- --- < type > ['_._(structType(SName:Id, (L1:List{KResult},, typedField(T:Type, FName:Id),,  L2:List{KResult})),, FName:Id) => T:Type] ...</ type >
+		--- --- : KSentence .
 		
-***(
-	structType(s1, typedField(arrayType(, 2), a)) . a
-***)
+--- ***(
+	--- structType(s1, typedField(arrayType(, 2), a)) . a
+--- ***)
 		
-	mb [typedef-lookup]: rule
-		< type > [Kp:KProper => T:Type] ...</ type >
-		< typedefs >... Kp:KProper |-> T:Type ...</ typedefs >
-		: KSentence .
+	--- mb [typedef-lookup]: rule
+		--- < type > [Kp:KProper => T:Type] ...</ type >
+		--- < typedefs >... Kp:KProper |-> T:Type ...</ typedefs >
+		--- : KSentence .
 	
 	mb [deref]: rule
-		< k > [Deref(tv(Loc:Nat, pointerType(T:Type))) 
-		=> readFromMem(Loc:Nat, T:Type, sizeof(T:Type), 0, 0)
-		---tv(I:Int, T:Type)
+		< k > [Deref(tv(Loc:Nat, pointerType(T:Base-Type))) 
+		=> readFromMem(Loc:Nat, T:Base-Type, sizeof(T:Base-Type), 0, 0)
 		] ...</ k >
-		--- < mem >... Loc:Nat |-> I:Int ...</ mem >
-		: KSentence 
-		---[print "deref " Loc:Nat]
-		.
+		: KSentence .
+	mb [deref-pointer]: rule
+		< k > [Deref(tv(Loc:Nat, pointerType(pointerType(T:Base-Type)))) 
+		=> readFromMem(Loc:Nat, pointerType(T:Base-Type), sizeof(pointerType(T:Base-Type)), 0, 0)
+		] ...</ k >
+		: KSentence .
+	mb [deref-struct]: rule
+		< k > [Deref(tv(Loc:Nat, pointerType(structType(X:Id)))) 
+		=> readFromMem(Loc:Nat, structType(X:Id), sizeof(structType(X:Id)), 0, 0)
+		] ...</ k >
+		: KSentence .
 		
 	mb [if-then-else-true]: rule
 		< k > [if (tv(I:Int, ?)) S:Statement else S':Statement => S:Statement] ...</ k >
@@ -1976,6 +2012,10 @@ and ll or LL
 	mb rule
 		< k > [cast(pointerType(void), tv(I:Int, pointerType(T:Type))) => tv(I:Int, pointerType(void))] ...</ k > 
 		: KSentence .
+	--- mb rule
+		--- < k > [cast(structType(X:Id), tv(I:Int, pointerType(void))) => tv(I:Int, structType(X:Id))] ...</ k > 
+		--- : KSentence .	
+	
 	
 
 	--- mb [cast-same]: rule
