@@ -25,6 +25,7 @@ mod COMMON-C-CONFIGURATION is
 	op global : -> CellLabel .
 	op types : -> CellLabel .
 	op type : -> CellLabel .
+	op structs : -> CellLabel .
 	
 	subsort Program < K .
 	subsort List{Parameter} < K .
