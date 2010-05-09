@@ -132,7 +132,7 @@ mod C-SETTINGS is
 	eq max(unsigned-long-long-int) = _-Int_(2 ^Nat absInt(numBits(unsigned-long-long-int)), 1) .
 		
 	mb rule < k > [sizeof(T:Base-Type) => tv(numBytes(T:Base-Type), cfg:sizeut)] ...</ k > : KSentence .
-	mb rule < k > [sizeof(pointerType(?)) => tv(numBytes(unsigned-int), cfg:sizeut)] ...</ k > : KSentence .
+	mb rule < k > [sizeof(pointerType(?)) => tv(numBytes(unsigned-long-int), cfg:sizeut)] ...</ k > : KSentence .
 	
 	mb rule 
 		< k > [T:Typedef-Name => T:Type] ...</ k >
@@ -228,9 +228,40 @@ mod SIZEOF is
 		< k > [sizeof(E:Expression) => sizeof(T:Type)] ...</ k >
 		< types >... E:Expression |-> T:Type ...</ types >
 	: KSentence .
+	--- mb rule
+		--- < k > [sizeof(E:Expression[I:Int]) => sizeof(E:Expression[0])] ...</ k >
+		--- if I:Int =/=Bool 0
+	--- : KSentence .
+	
+	--- fixme only if E is not a type
+	op arrlength : K -> Expression .
 	mb rule
-		< k > [sizeof(E:Expression[I:Int]) => sizeof(E:Expression[0])] ...</ k >
-		if I:Int =/=Bool 0
+		< k > [sizeof(E:Expression[I:Int]) => sizeof(E:Expression) / arrlength(E:Expression)] ...</ k >
+	: KSentence .
+	mb rule
+		< k > [arrlength(E:Expression) => arrlength(T:Type)] ...</ k >
+		< types >... E:Expression |-> T:Type ...</ types >
+	: KSentence .
+	mb rule
+		< k > [arrlength(arrayType(T:Type, N:Nat)) => tv(N:Nat, cfg:sizeut)] ...</ k >
+	: KSentence .
+	mb rule
+		< k > [arrlength(E:Expression[I:Int]) => sizeof(E:Expression) / sizeof(E:Expression[I:Int])] ...</ k >
+	: KSentence .
+	mb rule
+		< k > [arrlength(T:Base-Type) => tv(1, cfg:sizeut)] ...</ k >
+	: KSentence .
+	
+	--- sizeof(w[0]) / length w
+	--- arrLength(w[2])
+	--- mb rule
+		--- < k > [arrlength(TL:KLabel(?)) => tv(N:Nat, cfg:sizeut)] ...</ k >
+		--- if TL:KLabel(?) =/=Bool 'arrayType
+	--- : KSentence .
+	
+	
+	mb [sizeof-pointer]: rule
+		< k > [sizeof(Pointer(?)) => tv(numBytes(unsigned-long-int), cfg:sizeut)] ...</ k >
 	: KSentence .
 	mb [sizeof-struct]: rule
 		< k > [sizeof(structType(X:Id)) => calcStructSize(L:List{KResult})] ...</ k >
@@ -281,7 +312,6 @@ mod TYPES is
 	mb rule [unsigned-long => unsigned-long-int] : KSentence .
 	mb rule [unsigned-long-long => unsigned-long-long-int] : KSentence .
 	mb rule [short => short-int] : KSentence .
-	mb rule [unsigned-short => unsigned-short-int] : KSentence .
 	mb rule [long => long-int] : KSentence .
 	mb rule [long-long => long-long-int] : KSentence .
 	
@@ -946,7 +976,7 @@ mod COMMON-LOCAL-DECLARATION is
 
 
 	mb rule
-		< k > [addTypes(E:Expression, arrayType(T:Type, N:Nat)) => addTypes(E:Expression[0], T:Type)] ...</ k >
+		< k > [addTypes(E:Expression, arrayType(T:Type, N:Nat)) => .K] ...</ k >
 		< types >... [.Map => E:Expression |-> arrayType(T:Type, N:Nat)] ...</ types >
 		: KSentence .
 	mb rule

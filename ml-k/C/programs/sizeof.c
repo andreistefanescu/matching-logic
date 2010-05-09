@@ -72,7 +72,8 @@ int main(void){
 	int w[5][4][3];
 	if (sizeof(w) != sizeof(w[1]) * 5){ printf("Error: 19\n"); }
 	if (sizeof(w) != sizeof(w[2][1]) * 5 * 4){ printf("Error: 20\n"); }
-	if (sizeof(w) != sizeof(w[3][2][1]) * 5 * 4 * 3){ printf("Error: 21\n"); }
+	if (sizeof(w) != sizeof(w[3][2][1]) * 5 * 4 * 3){ printf("Error: 21a\n"); }
+	if (sizeof(w) != sizeof(int[5][4][3])){ printf("Error: 21b\n"); }
 	if (sizeof(w[1]) != sizeof(int[4][3])){ printf("Error: 22\n"); }
 	if (sizeof(w[2][3]) != sizeof(int[3])){ printf("Error: 23\n"); }
 	if (sizeof(w[2][3][0]) != sizeof(int)){ printf("Error: 24\n"); }
