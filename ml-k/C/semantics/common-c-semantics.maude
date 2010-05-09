@@ -279,7 +279,9 @@ mod TYPES is
 	
 	mb rule [unsigned-short => unsigned-short-int] : KSentence .
 	mb rule [unsigned-long => unsigned-long-int] : KSentence .
+	mb rule [unsigned-long-long => unsigned-long-long-int] : KSentence .
 	mb rule [short => short-int] : KSentence .
+	mb rule [unsigned-short => unsigned-short-int] : KSentence .
 	mb rule [long => long-int] : KSentence .
 	mb rule [long-long => long-long-int] : KSentence .
 	
