@@ -292,8 +292,9 @@ class virtual defaultMaudePrinterClass = object (self)
 
   method pType (nameOpt: doc option) (* Whether we are declaring a name or 
                                       * we are just printing a type *)
-               () (t:typ) =       (* use of some type *)
+               () (t:typ) =       (* use of some type *)	
     let name = match nameOpt with None -> nil | Some d -> d in
+	let strname = (sprint 1000 name) in 
     let printAttributes (a: attributes) = 
       let pa = self#pAttrs () a in
       match nameOpt with 
@@ -305,17 +306,18 @@ class virtual defaultMaudePrinterClass = object (self)
           text "/*" ++ pa ++ text "*/"
       | _ -> pa
     in
+	let needsNoComma = (name = nil) || (String.length strname < 1) || (String.rcontains_from strname 0 '[') in
     match t with 
       TVoid a -> text ""
 		++ paren (text "void")
-		++ if (name = nil) then (nil) else (text ", ")
+		++ if needsNoComma then (nil) else (text ", ")
 		++ (self#pAttrs () a)
 		++ text " " 
 		++ name
 
     | TInt (ikind,a) -> text ""
 		++ paren (d_ikind () ikind)
-		++ if (name = nil) then (nil) else (text ", ")
+		++ (if needsNoComma then (nil) else (text ", "))
 		(* ++ if (name = nil) then (nil) else (text " xx " ++ name ++ text " xx, ") *)
 		(*if (name = nil) then (nil) else (
 			match name with 
@@ -329,7 +331,7 @@ class virtual defaultMaudePrinterClass = object (self)
 
     | TFloat(fkind, a) -> 
         d_fkind () fkind 
-		++ if (name = nil) then (nil) else (text ", ")
+		++ (if needsNoComma then (nil) else (text ", "))
           ++ self#pAttrs () a 
           ++ text " " 
           ++ name
@@ -339,7 +341,7 @@ class virtual defaultMaudePrinterClass = object (self)
           text (su ^ " ")
 		  ++  (text ("(" ^ comp.cname ^ ") " )
           ++ self#pAttrs () a 
-		  ++ if (name = nil) then (nil) else (text ", ")
+		  ++ (if needsNoComma then (nil) else (text ", "))
           ++ name)
           
     | TEnum (enum, a) -> 
@@ -386,13 +388,19 @@ class virtual defaultMaudePrinterClass = object (self)
           if nameOpt == None then printAttributes a' else 
           text "(" ++ printAttributes a' ++ name ++ text ")" 
         in
-        self#pType 
+		self#pType
           (Some (name'
-                   ++ text "[" 
+                   ++ text "["
                    ++ (match lo with None -> nil | Some e -> self#pExp () e)
                    ++ text "]"))
           ()
           elemt
+		  
+		(*let subt = (self#pType None () elemt) in
+			subt ++ (((if (name' = nil) then (nil) else (text ", ") ++ name')
+			   ++ text "[" 
+			   ++ (match lo with None -> nil | Some e -> self#pExp () e)
+			   ++ text "]"))*)
 (*
     | TArray (elemt, lo, a) -> 
         (* ignore the const attribute for arrays *)
