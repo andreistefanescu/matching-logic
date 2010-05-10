@@ -108,7 +108,7 @@ mod COMMON-C-SYNTAX is
 	op Apply : Expression List{Expression} -> Expression [metadata "strict"] .
 	op Apply : Expression -> Expression [metadata "strict"] .
 	--- op _`(`) : Postfix-Expression -> Postfix-Expression [strict renameTo applyNil] .
-	op _._ : Expression Id -> Expression [prec 21] . --- not strict in 1 because of arrays, structs?
+	op _._ : Expression Id -> Expression [prec 21] . --- not strict in 1 because of _._ and arrays
 	op _->_ : Expression Id -> Expression [prec 21 metadata "strict(1)"] .
 	op _++ : Expression -> Expression [prec 21] .
 	op _-- : Expression -> Expression [prec 21] .
