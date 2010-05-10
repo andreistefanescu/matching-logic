@@ -12,10 +12,7 @@ endm
 mod COMMON-SEMANTIC-SYNTAX is
 	including INCOMING-MODULES .
 	op List : BagItem -> ListItem .
-	---op unknown : -> K .
 	op unknown : -> K .
-	--- fixme!!! due to structs
-	---eq unknown = 0 .
 	op skipval : -> KResult .
 	op debugK : -> K .
 	op discard : -> K .
@@ -24,27 +21,22 @@ mod COMMON-SEMANTIC-SYNTAX is
 	
 	sort Value .
 	sort Type .
-	---subsort Struct-Or-Union-Specifier < Value .
 	sort BaseValue .
 	sort Field .
 	subsort Field < KResult .
 
-	subsort Int Rat < BaseValue .
+	subsort Int Rat Float < BaseValue .
 	subsort BaseValue < Expression .
 	subsort Value < Expression .
 	subsort Value < KResult .
-	---subsort Type < TogetherList .
 	subsort Type < KResult .
 	subsort Base-Type < Type .
 	subsort TogetherList < Expression .
 	op sizeof : Type -> Expression .
-	---subsort Typedef-Name < Type .
-	---subsort Type-Specifier < Type .
 	op HOLE : -> Expression .
 	op arrayType : Type Nat -> Type .
 	op functionType : Type List{K} -> Type .
 	op pointerType : Type -> Type .
-	---op structType : Id List{KResult} -> Type .
 	op structType : Id -> Type .
 	op qualifiedType : Type K -> Type .
 	op typedField : Type Id -> Field .
@@ -54,9 +46,7 @@ mod COMMON-SEMANTIC-SYNTAX is
 	op evalToType : -> K .
 	op interpret : K Type -> K .
 	op allocate : K -> K [metadata "strict"] .
-	--- op tid : Id K -> K .
 	op tv : BaseValue Type -> Value .
-	---op tv : List{K} Type -> Value .
 	op addTypes : K K -> K .
 	op addGlobalTypes : K K -> K .
 	op addGlobalTypes : K -> K .
@@ -92,6 +82,8 @@ mod C-SETTINGS is
 	eq numBytes(int) = 4 .
 	eq numBytes(long-int) = 4 .
 	eq numBytes(long-long-int) = 8 .
+	
+	eq numBytes(double) = 8 .
 	
 	
 	op cfg:sizeut : -> Type .
@@ -610,7 +602,7 @@ mod COMMON-C-STANDARD-LIBRARY is
 		< k > [sqrt => builtin(sqrt)] ...</ k >
 	: KSentence .
 	mb [sqrt]: rule
-		< k > [Apply(builtin(sqrt), I:Int) => truncRat(float2ratConversion(sqrtFloat(rat2floatConversion(I:Int))))] ...</ k >
+		< k > [Apply(builtin(sqrt), tv(F:Float, double)) => tv(sqrtFloat(F:Float), double)] ...</ k >
 	: KSentence .
 	
 	--------------------------------------------
@@ -633,32 +625,32 @@ mod COMMON-C-STANDARD-LIBRARY is
 		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
 	: KSentence .
 	--------------------------------------------
-	--- mb [free-is-value]: rule
-		--- < k > [free => builtin(free)] ...</ k >
-	--- : KSentence .
+	mb [free-is-value]: rule
+		< k > [free => builtin(free)] ...</ k >
+	: KSentence .
 	
-	--- mb [free]: rule
-		--- < k > [Apply(builtin(free), Loc:Nat) => Apply(builtin(free), sNat(Loc:Nat))] ...</ k >
-		--- < mem >...  [Loc:Nat |-> ? => .Map] ...</ mem >
-		--- < malloced >... [Loc:Nat |-> sNat(N:Nat) => sNat(Loc:Nat) |-> N:Nat] ...</ malloced >
-	--- : KSentence .
-	--- mb [free-done]: rule
-		--- < k > [Apply(builtin(free), Loc:Nat) => skipval] ...</ k >
-		--- < malloced >... [Loc:Nat |-> 0 => .Map] ...</ malloced >
-	--- : KSentence .
+	mb [free]: rule
+		< k > [Apply(builtin(free), tv(Loc:Nat, pointerType(T:Type))) => Apply(builtin(free), tv(sNat(Loc:Nat), pointerType(T:Type)))] ...</ k >
+		< mem >...  [Loc:Nat |-> ? => .Map] ...</ mem >
+		< malloced >... [Loc:Nat |-> sNat(N:Nat) => sNat(Loc:Nat) |-> N:Nat] ...</ malloced >
+	: KSentence .
+	mb [free-done]: rule
+		< k > [Apply(builtin(free), tv(Loc:Nat, pointerType(T:Type))) => skipval] ...</ k >
+		< malloced >... [Loc:Nat |-> 0 => .Map] ...</ malloced >
+	: KSentence .
 	--------------------------------------------
-	--- mb [calloc-is-value]: rule
-		--- < k > [calloc => builtin(calloc)] ...</ k >
-	--- : KSentence .
+	mb [calloc-is-value]: rule
+		< k > [calloc => builtin(calloc)] ...</ k >
+	: KSentence .
 	
-	--- --- ignoring size for now
-	--- --- fixme
-	--- mb [calloc]: rule
-		--- < k > [Apply(builtin(calloc), (N:Nat .,. Size:Nat)) => Loc:Nat] ...</ k >
-		--- < mem >... [.Map => Loc:Nat to (Loc:Nat +Nat N:Nat) |-> 0] ...</ mem >
-		--- < malloced >... [.Map => Loc:Nat |-> N:Nat] ...</ malloced >
-		--- < nextLoc > [Loc:Nat => Loc:Nat +Nat N:Nat] </ nextLoc >
-	--- : KSentence .
+	--- ignoring size for now
+	--- fixme
+	mb [calloc]: rule
+		< k > ['Apply(builtin(calloc),, (tv(N:Nat, ?) .,. tv(Size:Nat, ?))) => tv(Loc:Nat, pointerType(void))] ...</ k >
+		< mem >... [.Map => Loc:Nat to (Loc:Nat +Nat N:Nat) |-> 0] ...</ mem >
+		< malloced >... [.Map => Loc:Nat |-> N:Nat] ...</ malloced >
+		< nextLoc > [Loc:Nat => Loc:Nat +Nat N:Nat] </ nextLoc >
+	: KSentence .
 	--------------------------------------------
 	mb [memset-is-value]: rule
 		< k > [memset => builtin(memset)] ...</ k >
@@ -863,6 +855,12 @@ mod COMMON-GLOBAL-DECLARATION is
 		< genv >... [.Map => X:Id |-> Loc:Nat] ...</ genv >
 		< nextLoc > Loc:Nat </ nextLoc >
 		if getKLabel(T:Type)=/=Bool 'functionType
+		: KSentence .
+		
+	mb rule
+		< k > ['Global('Declaration(TD:Typedef-Name,, D:Declarator))
+			=> 'Global('Declaration(T:Type,, D:Declarator))] ...</ k >
+		< typedefs >... TD:Typedef-Name |-> T:Type ...</ typedefs >
 		: KSentence 
 		.
 	
@@ -910,6 +908,10 @@ mod COMMON-GLOBAL-DECLARATION is
 		< types >... [.Map => X:Id |-> T:Type] ...</ types >
 		< typedefs >... [.Map => X:Id |-> T:Type] ...</ typedefs >
 		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
+		: KSentence .
+	mb rule 
+		< k > ['_`{_`}('Declaration(TD:Typedef-Name,, D:Declarator),, B:TogetherList) => '_`{_`}('Declaration(T:Type,, D:Declarator),, B:TogetherList)] ...</ k >
+		< typedefs >... TD:Typedef-Name |-> T:Type ...</ typedefs >
 		: KSentence .
 		
 	mb [function-prototype]: rule 
@@ -1466,16 +1468,6 @@ and ll or LL
 		< mem >... Loc:Nat |-> V:Value ...</ mem >
 	: KSentence [metadata "structural"] .
 	
-	***(
-	
-	arr[0][0] := 1;
-	assign(Deref(&(arr[0][0])), 1)
-	&(arr[0][0]) ~> assign(Deref(HOLE), 1)
-	arr[0] +o 0 ~> assign(Deref(HOLE), 1)
-	arr[0] + (sizeof(arr[0]) * 0) ~> assign(Deref(HOLE), 1)
-	arr[0] ~> assign(Deref(HOLE), 1)
-	tv(4, pointerType(int, 2))
-	***)
 	--- mb rule [sizeof(&(E1:Expression[E2:Expression])) => sizeof(E1:Expression +o E2:Expression)] : KSentence [metadata "structural"] .
 	
 	
@@ -1527,6 +1519,13 @@ and ll or LL
 	mb rule
 		< k > [readFromMem(Loc:Nat, T:Type, tv(0, ?), ?,  N:Nat) 
 		=> interpret(N:Nat, T:Type)] ...</ k >
+		: KSentence 
+		---[print "read " N:Nat " ending at " Loc:Nat] 
+		.
+	--- fixme floats
+	mb rule
+		< k > [readFromMem(Loc:Nat, double, ?, ?, ?) => tv(V:Float, double)] ...</ k >
+		< mem >... Loc:Nat |-> V:Float ...</ mem >
 		: KSentence 
 		---[print "read " N:Nat " ending at " Loc:Nat] 
 		.
@@ -1681,9 +1680,14 @@ and ll or LL
 	mb [assign]: rule
 		< k > [assign(Deref(tv(Loc:Nat, pointerType(T:Type))), tv(V:Int, T:Type)) 
 		=> putInMem(Loc:Nat, V:Int, T:Type, sizeof(T:Type)) ~> tv(V:Int, T:Type)] ...</ k >
-		: KSentence
-		---[print "assigning " V:Int " to " Loc:Nat]
-		.
+		: KSentence .
+		
+	--- fixme floats might have requirements
+	mb [assign-float]: rule
+		< k > [assign(Deref(tv(Loc:Nat, pointerType(double))), tv(V:Float, double)) 
+		=> tv(V:Float, double)] ...</ k >
+		< mem > [M:Map => M:Map[V:Float / Loc:Nat]] </ mem > 
+		: KSentence .
 		
 	op assertEqual : K K -> K [metadata "strict"] .
 	mb [assign-struct]: rule
@@ -2117,6 +2121,21 @@ and ll or LL
 		: KSentence .
 	
 	---c99 6.3.1.3:3 Otherwise, the new type is signed and the value cannot be represented in it; either the result is implementation-defined or an implementation-defined signal is raised.
+	
+	---C99 6.3.1.4:1 When a finite value of real floating type is converted to an integer type other than _Bool, the fractional part is discarded (i.e., the value is truncated toward zero). If the value of the integral part cannot be represented by the integer type, the behavior is undefined.52) The remaindering operation performed when a value of integer type is converted to unsigned type need not be performed when a value of real floating type is converted to unsigned type. Thus, the range of portable real floating values is (-1, Utype_MAX+1).
+	--- fixme
+	mb rule
+		< k > [cast(T:Type, tv(V:Float, double)) => cast(T:Type, tv(truncRat(float2ratConversion(V:Float)), long-long-int))] ...</ k > 
+		if integerTypes contains T:Type
+		: KSentence .
+	
+	---C99 6.3.1.4:2 When a value of integer type is converted to a real floating type, if the value being converted can be represented exactly in the new type, it is unchanged. If the value being converted is in the range of values that can be represented but cannot be represented exactly, the result is either the nearest higher or nearest lower representable value, chosen in an implementation-defined manner. If the value being converted is outside the range of values that can be represented, the behavior is undefined.
+	--- fixme not handling floats correctly
+	mb rule
+		< k > [cast(double, tv(I:Int, T:Type)) => tv(rat2floatConversion(I:Int), double)] ...</ k > 
+		if integerTypes contains T:Type
+		: KSentence .
+	
 	
 	
 	--- fixme 6.3.2.3 not handling this correctly
