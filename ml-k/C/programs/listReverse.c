@@ -7,7 +7,7 @@ int* listAppend(int* p, int n);
 int listSum(int* p);
 
 int main(void){
-	int* head = malloc(2);
+	int* head = malloc(2*sizeof(int));
 	*head = 20; 
 	*(head + 1) = NULL;
 	
@@ -51,7 +51,7 @@ int* listAppend(int* p, int n){
         while (*(x + 1) != NULL) {
             x = *(x + 1);
         }		
-		int* next = malloc(2);
+		int* next = malloc(2 * sizeof(int));
         *(x + 1) = next;
 		*next = n;
 		*(next + 1) = NULL;
