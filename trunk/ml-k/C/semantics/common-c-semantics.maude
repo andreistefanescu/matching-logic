@@ -1793,6 +1793,10 @@ and ll or LL
 	mb rule
 		< k > [dot-aux(E:Expression, F:Id, T:Base-Type) => E:Expression ~> dot-aux(HOLE, F:Id, T:Base-Type)] ...</ k >
 		: KSentence .
+	mb rule
+		< k > [dot-aux(E:Expression, F:Id, pointerType(T:Type)) => E:Expression ~> dot-aux(HOLE, F:Id, pointerType(T:Type))] ...</ k >
+		: KSentence .
+		
 	--- fixme doesn't handle case where what we are looking up is a struct
 	mb rule
 		< k > [structVal(L:List{K}, structType(S:Id)) ~> dot-aux(HOLE, F:Id, T:Type) => extractField(L:List{K}, T:Type, sizeof(T:Type), calcStructSize(L1:List{KResult}), 0, 0)] ...</ k >
