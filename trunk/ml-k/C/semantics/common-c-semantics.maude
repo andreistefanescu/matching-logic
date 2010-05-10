@@ -62,6 +62,7 @@ mod COMMON-SEMANTIC-SYNTAX is
 	op addGlobalTypes : K -> K .
 	op Closure : K K K -> Value .
 	op putInMem : Nat BaseValue Type K -> K [metadata "strict(4)"] .
+	op putBytesInMem : Nat List{K} Type K -> K [metadata "strict(4)"] .
 	op sizeofType : Type -> K .
 	op firstChar : String -> Char .
 	op butFirstChar : String -> String .
@@ -72,7 +73,7 @@ mod COMMON-SEMANTIC-SYNTAX is
 			
 	op integerTypes : -> Set .
 	op unsignedIntegerTypes : -> Set .
-
+	op typeof : Expression -> K .
 endm
 
 mod C-SETTINGS is
@@ -265,6 +266,9 @@ mod SIZEOF is
 	mb rule
 		< type > ['Deref(arrayType(T:Type, ?)) => T:Type] ...</ type >
 		: KSentence .
+	mb rule
+		< type > ['Deref(tv(?, pointerType(T:Type))) => T:Type] ...</ type >
+		: KSentence .
 	
 	--- fixme only if E is not a type
 	--- op arrlength : K -> Expression .
@@ -347,6 +351,15 @@ mod TYPES is
 	mb rule [short => short-int] : KSentence .
 	mb rule [long => long-int] : KSentence .
 	mb rule [long-long => long-long-int] : KSentence .
+	
+	mb rule
+		< k > [typeof(E:Expression) => evalToType ~> typeof(HOLE)] ...</ k >
+		[.Bag => < type > E:Expression </ type >]
+		: KSentence .
+	mb rule
+		< k > [evalToType ~> typeof(HOLE) => T:Type] ...</ k >
+		[< type > T:Type </ type > => .Bag]
+		: KSentence .
 	
 	mb rule 
 		['_`[_`](T:Type,, N:Nat) => arrayType(T:Type, N:Nat)]
@@ -1497,6 +1510,9 @@ and ll or LL
 	----- end simple transformations -----
 
 	op readFromMem : Nat Type K Nat Nat -> K [metadata "strict(3)"] .
+	op readStructFromMem : Nat Type K List{K} -> K [metadata "strict(3)"] .
+	op structVal : List{K} Type -> Value .
+	
 	--- generic lookup
 	mb [lookup]: rule
 		< k > [I:Id => readFromMem(Loc:Nat, T:Base-Type, sizeof(T:Base-Type), 0, 0)] ...</ k >
@@ -1504,7 +1520,7 @@ and ll or LL
 		< types >... I:Id |-> T:Base-Type ...</ types >
 		: KSentence .
 	mb [lookup-struct]: rule
-		< k > [I:Id => readFromMem(Loc:Nat, structType(S:Id), sizeof(structType(S:Id)), 0, 0)] ...</ k >
+		< k > [I:Id => readStructFromMem(Loc:Nat, structType(S:Id), sizeof(structType(S:Id)), .List{K})] ...</ k >
 		< env >... I:Id |-> Loc:Nat ...</ env >
 		< types >... I:Id |-> structType(S:Id) ...</ types >
 		: KSentence .
@@ -1513,6 +1529,11 @@ and ll or LL
 		=> interpret(N:Nat, T:Type)] ...</ k >
 		: KSentence 
 		---[print "read " N:Nat " ending at " Loc:Nat] 
+		.
+	mb rule
+		< k > [readStructFromMem(Loc:Nat, T:Type, tv(0, ?), L:List{K}) 
+		=> structVal(L:List{K}, T:Type)] ...</ k >
+		: KSentence 
 		.
 
 	mb rule [interpret(N:Nat, T:Type) => tv(N:Nat, T:Type)]
@@ -1532,35 +1553,8 @@ and ll or LL
 		: KSentence [metadata "structural"] .
 		
 	--- fixme maybe this shouldn't be how i handle struct values
-	mb rule [interpret(N:Nat, structType(X:Id)) => tv(N:Nat, structType(X:Id))]
-		: KSentence [metadata "structural"] .
-	
-	--- mb rule [
-		--- interpret(tv(N:Nat, int)) 
-		--- => 
-		--- tv(if N:Nat <=Nat drv:maxInt then N:Nat else -Int N:Nat fi, int)
-		--- ]
+	--- mb rule [interpret(N:Nat, structType(X:Id)) => tv(N:Nat, structType(X:Id))]
 		--- : KSentence [metadata "structural"] .
-	--- mb rule [
-		--- interpret(tv(N:Nat, pointerType(T:Type))) 
-		--- => 
-		--- tv(N:Nat, pointerType(T:Type))
-		--- ]
-		--- if N:Nat <=Nat drv:maxPtr
-		--- : KSentence [metadata "structural"] .
-	--- mb rule [
-		--- interpret(tv(N:Nat, unsigned-int)) 
-		--- => 
-		--- tv(N:Nat, unsigned-int)
-		--- ]
-		--- : KSentence [metadata "structural"] .
-	--- mb rule [
-		--- interpret(tv(N:Nat, structType(X:Id, L:List{KResult}))) 
-		--- => 
-		--- tv(N:Nat, structType(X:Id, L:List{KResult}))
-		--- ]
-		--- : KSentence [metadata "structural"] .
-	
 	
 	
 	--- deh = - 34
@@ -1572,6 +1566,13 @@ and ll or LL
 		< k > [readFromMem(Loc:Nat, T:Type, tv(sNat(Left:Nat), T':Type), Len:Nat, N:Nat)
 		=> readFromMem(sNat(Loc:Nat), T:Type, tv(Left:Nat, T':Type), sNat(Len:Nat), N:Nat |Nat (N':Nat <<Nat (8 *Nat Len:Nat)))] ...</ k >
 		< mem >... Loc:Nat |-> N':Nat ...</ mem >
+		: KSentence 
+		---[print "r@ " Loc:Nat ": " N':Nat] 
+		.
+	mb rule
+		< k > [readStructFromMem(Loc:Nat, T:Type, tv(sNat(Left:Nat), T':Type), L:List{K})
+		=> readStructFromMem(sNat(Loc:Nat), T:Type, tv(Left:Nat, T':Type), (L:List{K},, K:K))] ...</ k >
+		< mem >... Loc:Nat |-> K:K ...</ mem >
 		: KSentence 
 		---[print "r@ " Loc:Nat ": " N':Nat] 
 		.	
@@ -1683,6 +1684,24 @@ and ll or LL
 		: KSentence
 		---[print "assigning " V:Int " to " Loc:Nat]
 		.
+		
+	op assertEqual : K K -> K [metadata "strict"] .
+	mb [assign-struct]: rule
+		< k > [assign(Deref(tv(Loc:Nat, pointerType(T:Type))), structVal(L:List{K},T:Type))
+		=> 
+		---assertEqual(sizeof(T:Type), length(L:List{K})) ~> 
+		putBytesInMem(Loc:Nat, L:List{K}, T:Type, sizeof(T:Type)) ~> structVal(L:List{K},T:Type)] ...</ k >
+		: KSentence
+		---[print "assigning " V:Int " to " Loc:Nat]
+		.
+	
+	mb rule
+		< k > [putBytesInMem(Loc:Nat, (K:K,, L:List{K}), T:Type, tv(sNat(Len:Nat), J:Type)) => putBytesInMem(sNat(Loc:Nat), (L:List{K}), T:Type, tv(Len:Nat, J:Type))] ...</ k >
+		< mem >... Loc:Nat |-> [? => K:K] ...</ mem >
+		: KSentence .
+	mb rule
+		< k > [putBytesInMem(Loc:Nat, .List{K}, T:Type, tv(0, ?)) => .K] ...</ k >
+		: KSentence .
 	
 	op putByteInMem : Nat BaseValue -> K .
 	mb rule
@@ -1756,39 +1775,67 @@ and ll or LL
 		< k > [tv(Base:Int, pointerType(structType(S:Id))) -> X:Id => Deref(tv(Base:Int, pointerType(structType(S:Id)))) . X:Id] ...</ k >
 		: KSentence .
 
-	op extractField : Nat Type K K -> K [metadata "strict(3 4)"] .
-	mb [dot]: rule
-		< k > [tv(N:Nat, structType(S:Id)) . X:Id => extractField(N:Nat, T:Type, sizeof(T:Type), calcStructSize(L1:List{KResult}))] ...</ k >
-		< structs >... struct(S:Id) |-> (L1:List{KResult},, typedField(T:Type, X:Id),, ?:List{KResult}) ...</ structs >
-		: KSentence .
+	op extractField : List{K} Type K K Nat Nat -> K [metadata "strict(3 4)"] .
+	--- mb [dot]: rule
+		--- < k > [tv(N:Nat, structType(S:Id)) . X:Id => extractField(N:Nat, T:Type, sizeof(T:Type), calcStructSize(L1:List{KResult}))] ...</ k >
+		--- < structs >... struct(S:Id) |-> (L1:List{KResult},, typedField(T:Type, X:Id),, ?:List{KResult}) ...</ structs >
+		--- : KSentence .
 		
 	--- fixme this one is a doosy
-	mb [dot-static]: rule
-		< k > [X:Id . F:Id => &(X:Id . F:Id)] ...</ k >
-		< types >... X:Id |-> structType(S:Id) ...</ types >
-		< structs >... struct(S:Id) |-> (?:List{KResult},, typedField(arrayType(T:Type, ?), F:Id),, ?:List{KResult}) ...</ structs >
+	
+	op dot-aux : K Id K -> K [metadata "strict(3)"] .
+	mb rule
+		< k > [(E:Expression . F:Id) => dot-aux(E:Expression, F:Id, typeof(E:Expression . F:Id))] ...</ k >
 		: KSentence .
-	mb [dot-heat]: rule
-		< k > [E:Expression . F:Id => E:Expression ~> (HOLE . F:Id)] ...</ k >
-		< types > T:Map </ types >
-		if notBool($hasMapping(T:Map, E:Expression))
+	mb rule
+		< k > [dot-aux(E:Expression, F:Id, arrayType(?, ?)) => &(E:Expression . F:Id)] ...</ k >
 		: KSentence .
-	mb [dot-heat]: rule
-		< k > [X:Id . F:Id => X:Id ~> (HOLE . F:Id)] ...</ k >
-		< types >... X:Id |-> structType(S:Id) ...</ types >
-		< structs >... struct(S:Id) |-> (?:List{KResult},, 'typedField(TL:KLabel(?),, F:Id),, ?:List{KResult}) ...</ structs >
-		if TL:KLabel =/=Bool 'arrayType
+	mb rule
+		< k > [dot-aux(E:Expression, F:Id, T:Base-Type) => E:Expression ~> dot-aux(HOLE, F:Id, T:Base-Type)] ...</ k >
 		: KSentence .
-	mb [dot-cool]: rule
-		< k > [V:Value ~> (HOLE . F:Id) => V:Value . F:Id] ...</ k >
+	--- fixme doesn't handle case where what we are looking up is a struct
+	mb rule
+		< k > [structVal(L:List{K}, structType(S:Id)) ~> dot-aux(HOLE, F:Id, T:Type) => extractField(L:List{K}, T:Type, sizeof(T:Type), calcStructSize(L1:List{KResult}), 0, 0)] ...</ k >
+		< structs >... struct(S:Id) |-> (L1:List{KResult},, typedField(T:Type, F:Id),, ?:List{KResult}) ...</ structs >
 		: KSentence .
 		
+	--- mb [dot-static]: rule
+		--- < k > [X:Id . F:Id => &(X:Id . F:Id)] ...</ k >
+		--- < types >... X:Id |-> structType(S:Id) ...</ types >
+		--- < structs >... struct(S:Id) |-> (?:List{KResult},, typedField(arrayType(T:Type, ?), F:Id),, ?:List{KResult}) ...</ structs >
+		--- : KSentence .
+	--- mb [dot-heat]: rule
+		--- < k > [E:Expression . F:Id => E:Expression ~> (HOLE . F:Id)] ...</ k >
+		--- < types > T:Map </ types >
+		--- if notBool($hasMapping(T:Map, E:Expression))
+		--- : KSentence .
+	--- mb [dot-heat]: rule
+		--- < k > [E:Expression . F:Id => E:Expression ~> (HOLE . F:Id)] ...</ k >
+		--- < types > T:Map </ types >
+		--- if notBool($hasMapping(T:Map, E:Expression))
+		--- : KSentence .
+	--- mb [dot-heat]: rule
+		--- < k > [X:Id . F:Id => X:Id ~> (HOLE . F:Id)] ...</ k >
+		--- < types >... X:Id |-> structType(S:Id) ...</ types >
+		--- < structs >... struct(S:Id) |-> (?:List{KResult},, 'typedField(TL:KLabel(?),, F:Id),, ?:List{KResult}) ...</ structs >
+		--- if TL:KLabel =/=Bool 'arrayType
+		--- : KSentence .
+	--- mb [dot-cool]: rule
+		--- < k > [V:Value ~> (HOLE . F:Id) => V:Value . F:Id] ...</ k >
+		--- : KSentence .
+		
 	mb [extractField-shift]: rule
-		< k > [extractField(N:Nat, T:Type, V:Value, tv(sNat(Offset:Nat), T':Type)) => extractField(N:Nat >>Nat 8, T:Type, V:Value, tv(Offset:Nat, T':Type))] ...</ k >
+		< k > [extractField((K:K,, L:List{K}), T:Type, V:Value, tv(sNat(Offset:Nat), T':Type), 0, 0) => extractField(L:List{K}, T:Type, V:Value, tv(Offset:Nat, T':Type), 0, 0)] ...</ k >
 		: KSentence .
 	mb [extractField-grab]: rule
-		< k > [extractField(N:Nat, T:Type, tv(Len:Nat, T':Type), tv(0, T':Type)) 
-		=> tv((N:Nat &Nat absInt(_-Int_(2 ^Nat absInt(8 *Nat Len:Nat), 1))), T:Type)] ...</ k >
+		< k > [extractField((N':Nat,, L:List{K}), T:Type, tv(sNat(Left:Nat), T':Type), tv(0, T':Type), N:Nat, Len:Nat) 
+		=> extractField(L:List{K}, T:Type, tv(Left:Nat, T':Type), tv(0, T':Type), N:Nat |Nat (N':Nat <<Nat (8 *Nat Len:Nat)), sNat(Len:Nat))]
+		...</ k > : KSentence .
+	
+		
+	mb [extractField-done]: rule
+		< k > [extractField(?, T:Type, tv(0, T':Type), tv(0, T':Type), N:Nat, ?) => interpret(N:Nat, T:Type)]
+		...</ k >
 		: KSentence .
 	
 	--- mb [arrow]: rule
@@ -2016,13 +2063,13 @@ and ll or LL
 		] ...</ k >
 		: KSentence .
 	mb [deref-pointer]: rule
-		< k > [Deref(tv(Loc:Nat, pointerType(pointerType(T:Base-Type)))) 
-		=> readFromMem(Loc:Nat, pointerType(T:Base-Type), sizeof(pointerType(T:Base-Type)), 0, 0)
+		< k > [Deref(tv(Loc:Nat, pointerType(pointerType(T:Type)))) 
+		=> readFromMem(Loc:Nat, pointerType(T:Type), sizeof(pointerType(T:Type)), 0, 0)
 		] ...</ k >
 		: KSentence .
 	mb [deref-struct]: rule
 		< k > [Deref(tv(Loc:Nat, pointerType(structType(X:Id)))) 
-		=> readFromMem(Loc:Nat, structType(X:Id), sizeof(structType(X:Id)), 0, 0)
+		=> readStructFromMem(Loc:Nat, structType(X:Id), sizeof(structType(X:Id)), .List{K})
 		] ...</ k >
 		: KSentence .
 		
@@ -2048,6 +2095,10 @@ and ll or LL
 	
 	mb rule [Cast(T:TogetherList, E:Expression) => cast(T:TogetherList, E:Expression)] : KSentence [metadata "structural rule"] .
 	
+	mb rule
+		< k > [cast(T:Type, tv(I:Int, T:Type)) => tv(I:Int, T:Type)] ...</ k > 
+		: KSentence .
+	
 	---c99 6.3.1.3:1 When a value with integer type is converted to another integer type other than _Bool, if the value can be represented by the new type, it is unchanged. 
 	mb rule
 		< k > [cast(T:Type, tv(I:Int, T':Type)) => tv(I:Int, T:Type)] ...</ k > 
@@ -2066,7 +2117,7 @@ and ll or LL
 	
 	--- fixme 6.3.2.3 not handling this correctly
 	mb rule
-		< k > [cast(pointerType(T:Type), tv(I:Int, T':Type)) => tv(I:Int, pointerType(T:Type))] ...</ k > 
+		< k > [cast(pointerType(T:Type), tv(I:Int, T':Type)) => tv(I:Int, pointerType(T:Type))] ...</ k >
 		if min(unsigned-int) <=Int I:Int andBool max(unsigned-int) >=Int I:Int andBool (integerTypes contains T':Type)
 		: KSentence .
 	mb rule
@@ -2083,6 +2134,21 @@ and ll or LL
 		: KSentence .
 	mb rule
 		< k > [cast(pointerType(void), tv(I:Int, pointerType(T:Type))) => tv(I:Int, pointerType(void))] ...</ k > 
+		: KSentence .
+	--- possibly not true with other endiannesses
+	--- mb rule
+		--- < k > [cast(pointerType(T:Type), tv(I:Int, pointerType(?))) => tv(I:Int, pointerType(T:Type))] ...</ k > 
+		--- : KSentence .
+	--- fixme not sure about this either...
+	mb rule
+		< k > [cast(T:Type, tv(I:Int, pointerType(arrayType(T':Type, ?)))) 
+		=> cast(T:Type, tv(I:Int, pointerType(T':Type)))] ...</ k > 
+		: KSentence .
+	--- fixme ridiculous.
+	mb rule
+		< k > [cast(T:Type, tv(I:Int, pointerType(structType(S:Id)))) 
+		=> cast(T:Type, tv(I:Int, pointerType(T':Type)))] ...</ k > 
+		< structs >... struct(S:Id) |-> (typedField(T':Type, ?),, ?:List{KResult}) ...</ structs >
 		: KSentence .
 	--- mb rule
 		--- < k > [cast(structType(X:Id), tv(I:Int, pointerType(void))) => tv(I:Int, structType(X:Id))] ...</ k > 

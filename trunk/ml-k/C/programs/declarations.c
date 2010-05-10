@@ -14,14 +14,24 @@ struct point {
 	int x;
 	int y;
 } ;
+struct s4{
+	int q;
+	int p;
+};
+struct s3 {
+	struct s4 arr[3];
+};
 struct s1 {
 	struct point a[2];
+	struct s3 arr[2];
 } ;
 
 struct s2 {
 	struct s1 a;
 	struct s1 b;
 } ;
+
+
 
 
 int main(void){
@@ -63,6 +73,22 @@ int main(void){
 	mys1.a[1].y = 30;
 	
 	retval += mys2.a.a[0].x + mys2.a.a[1].y;
+	
+	// mys1.arr[0].arr[0].q = 0;
+	// mys1.arr[0].arr[0].p = 1;
+	// mys1.arr[0].arr[1].q = 2;
+	// mys1.arr[0].arr[1].p = 3;
+	// mys1.arr[0].arr[2].q = 4;
+	// mys1.arr[0].arr[2].p = 5;
+	// mys1.arr[1].arr[0].q = 6;
+	// mys1.arr[1].arr[0].p = 7;
+	// mys1.arr[1].arr[1].q = 8;
+	// mys1.arr[1].arr[1].p = 9;
+	// mys1.arr[1].arr[2].q = 10;
+	// mys1.arr[1].arr[2].p = 11;
+
+	// printf("%d\n", mys1.arr[1].arr[2].q);
+	
 	
 	thatdef t;
 	t.this.funcArr[0] = funcArr[0];

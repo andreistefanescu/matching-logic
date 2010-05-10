@@ -10,7 +10,7 @@ typedef int* intp;
 int main(void){
 	int arr[2][2] = {{1, 2}, {3, 4}};
 	int typetest = sizeof(arr) * 2;
-	intp myintp = & arr;
+	intp myintp = (intp)& arr;
 	myintp = & typetest;
 	//unsigned char bob[] = "hello bob";
 	char* bob = "hello";
@@ -90,7 +90,7 @@ int main(void){
 	pointArr[2].y = 6;
 	pointArr[3].x = 7;
 	pointArr[3].y = 8;
-	int pointArrPlus3 = (*(pointArr + 3)) ;
+	//int pointArrPlus3 = (int)(*(pointArr + 3)) ;
 	//debug(0);
 	if ((*(pointArr + 3)).x != 7) {
 		printf("(*(pointArr + 3)).x != 7\n");
@@ -106,6 +106,8 @@ int main(void){
 	if (*((int*)(&(*(pointArr + 3))) + 1) != 8) {
 		printf("*((int*)(&(*(pointArr + 3))) + 1) != 8\n");
 	} else OK
+	
+	//int anint = (int)(pointArr[0]);
 	
 	// The important issue is how the expression i > us is evaluated. Under the unsigned preserving rules (and under the value preserving rules on a machine where short integers and plain integers are the same size), us is promoted to unsigned int. The usual integral conversions say that when types unsigned int and int meet across a binary operator, both operands are converted to unsigned, so i is converted to unsigned int, as well. The old value of i, -5, is converted to some large unsigned value (65,531 on a 16-bit machine). This converted value is greater than 10, so the code prints ``whoops!'' 
 	// unsigned short us = 10;
