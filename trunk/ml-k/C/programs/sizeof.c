@@ -76,7 +76,8 @@ int main(void){
 	if (sizeof(w) != sizeof(int[5][4][3])){ printf("Error: 21b\n"); }
 	if (sizeof(w[1]) != sizeof(int[4][3])){ printf("Error: 22\n"); }
 	if (sizeof(w[2][3]) != sizeof(int[3])){ printf("Error: 23\n"); }
-	if (sizeof(w[2][3][0]) != sizeof(int)){ printf("Error: 24\n"); }
+	if (sizeof(w[2][3][0]) != sizeof(int)){ printf("Error: 24a\n"); }
+	if (sizeof(w[5][4][3]) == sizeof(int[5][4][3])){ printf("Error: 24b\n"); }
 	
 	if (sizeof(struct s0) < sizeof(char*) + sizeof(char) + sizeof(short int) + sizeof(int) + sizeof(long int) + sizeof(long long int)) { printf("Error: 25\n"); }
 	if (sizeof(struct s1) < sizeof(char[5]) + sizeof(struct s0) + sizeof(struct s0) * 5 + sizeof(struct s0*)) { printf("Error: 26\n"); }

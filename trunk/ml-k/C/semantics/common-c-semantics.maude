@@ -13,9 +13,9 @@ mod COMMON-SEMANTIC-SYNTAX is
 	including INCOMING-MODULES .
 	op List : BagItem -> ListItem .
 	---op unknown : -> K .
-	op unknown : -> Nat .
+	op unknown : -> K .
 	--- fixme!!! due to structs
-	eq unknown = 0 .
+	---eq unknown = 0 .
 	op skipval : -> KResult .
 	op debugK : -> K .
 	op discard : -> K .
@@ -62,7 +62,7 @@ mod COMMON-SEMANTIC-SYNTAX is
 	op addGlobalTypes : K -> K .
 	op Closure : K K K -> Value .
 	op putInMem : Nat BaseValue Type K -> K [metadata "strict(4)"] .
-	
+	op sizeofType : Type -> K .
 	op firstChar : String -> Char .
 	op butFirstChar : String -> String .
 	op charToAscii : String -> Nat .
@@ -131,9 +131,9 @@ mod C-SETTINGS is
 	eq min(unsigned-long-long-int) = 0 .
 	eq max(unsigned-long-long-int) = _-Int_(2 ^Nat absInt(numBits(unsigned-long-long-int)), 1) .
 		
-	mb rule < k > [sizeof(T:Base-Type) => tv(numBytes(T:Base-Type), cfg:sizeut)] ...</ k > : KSentence .
-	mb rule < k > [sizeof(pointerType(?)) => tv(numBytes(unsigned-long-int), cfg:sizeut)] ...</ k > : KSentence .
-	
+	mb rule < k > [sizeofType(T:Base-Type) => tv(numBytes(T:Base-Type), cfg:sizeut)] ...</ k > : KSentence .
+	mb rule < k > [sizeofType(pointerType(?)) => tv(numBytes(unsigned-long-int), cfg:sizeut)] ...</ k > : KSentence .
+
 	mb rule 
 		< k > [T:Typedef-Name => T:Type] ...</ k >
 		< types >... T:Typedef-Name |-> T:Type ...</ types > 
@@ -216,41 +216,74 @@ endm
 
 mod SIZEOF is
 	including COMMON-INCLUDE .
-	
+
 	mb rule
-		< k > [sizeof(arrayType(T:Type, N:Nat)) => sizeof(T:Type) * tv(N:Nat, cfg:sizeut)] ...</ k >
+		< k > [sizeofType(arrayType(T:Type, N:Nat)) => sizeof(T:Type) * tv(N:Nat, cfg:sizeut)] ...</ k >
 		: KSentence .
-	mb [sizeof-typedef]: rule
-		< k > [sizeof(T:Type) => sizeof(T':Type)] ...</ k >
-		< typedefs >... T:Type |-> T':Type ...</ typedefs >
-	: KSentence .
-	mb rule
-		< k > [sizeof(E:Expression) => sizeof(T:Type)] ...</ k >
-		< types >... E:Expression |-> T:Type ...</ types >
-	: KSentence .
-	--- mb rule
-		--- < k > [sizeof(E:Expression[I:Int]) => sizeof(E:Expression[0])] ...</ k >
-		--- if I:Int =/=Bool 0
+	--- mb [sizeof-typedef]: rule
+		--- < k > [sizeof(T:Type) => sizeof(T':Type)] ...</ k >
+		--- < typedefs >... T:Type |-> T':Type ...</ typedefs >
 	--- : KSentence .
 	
-	--- fixme only if E is not a type
-	op arrlength : K -> Expression .
 	mb rule
-		< k > [sizeof(E:Expression[I:Int]) => sizeof(E:Expression) / arrlength(E:Expression)] ...</ k >
-	: KSentence .
+		< k > [sizeof(E:Expression) => evalToType ~> sizeof(HOLE)] ...</ k >
+		[.Bag => < type > E:Expression </ type >]
+		: KSentence .
 	mb rule
-		< k > [arrlength(E:Expression) => arrlength(T:Type)] ...</ k >
+		< k > [evalToType ~> sizeof(HOLE) => sizeofType(T:Type)] ...</ k >
+		[< type > T:Type </ type > => .Bag]
+		---< typedefs > TD:Map </ typedefs >
+		---if notBool($hasMapping(TD:Map, T:Type))
+		: KSentence .
+	
+	mb rule
+		< type > [E:Expression => T:Type] ...</ type >
 		< types >... E:Expression |-> T:Type ...</ types >
+		: KSentence .
+	mb rule
+		< type > ['_._(Kp:KProper,, X:Id) => Kp:KProper ~> '_._(HOLE,, X:Id)] ...</ type >
+		: KSentence .
+	mb rule
+		< type > [T:Type ~> '_._(HOLE,, X:Id) => '_._(T:Type,, X:Id)] ...</ type >
+		: KSentence .
+	mb rule
+		< type > ['_._(structType(S:Id),, X:Id) => T:Type] ...</ type >
+		< structs >... struct(S:Id) |-> (?:List{KResult},, typedField(T:Type, X:Id),, ?:List{KResult}) ...</ structs >
 	: KSentence .
 	mb rule
-		< k > [arrlength(arrayType(T:Type, N:Nat)) => tv(N:Nat, cfg:sizeut)] ...</ k >
-	: KSentence .
+		< type > ['Pointer(Kp:KProper) => Kp:KProper ~> 'Pointer(HOLE)] ...</ type >
+		: KSentence .
 	mb rule
-		< k > [arrlength(E:Expression[I:Int]) => sizeof(E:Expression) / sizeof(E:Expression[I:Int])] ...</ k >
-	: KSentence .
+		< type > [T:Type ~> 'Pointer(HOLE) => 'Pointer(T:Type)] ...</ type >
+		: KSentence .
 	mb rule
-		< k > [arrlength(T:Base-Type) => tv(1, cfg:sizeut)] ...</ k >
-	: KSentence .
+		< type > ['_`[_`](Kp:KProper,, E:Expression) => Kp:KProper ~> Deref(HOLE)] ...</ type >
+		: KSentence .
+	mb rule
+		< type > [T:Type ~> Deref(HOLE) => 'Deref(T:Type)] ...</ type >
+		: KSentence .
+	mb rule
+		< type > ['Deref(arrayType(T:Type, ?)) => T:Type] ...</ type >
+		: KSentence .
+	
+	--- fixme only if E is not a type
+	--- op arrlength : K -> Expression .
+	--- mb rule
+		--- < k > [sizeof(E:Expression[I:Int]) => sizeof(E:Expression) / arrlength(E:Expression)] ...</ k >
+	--- : KSentence .
+	--- mb rule
+		--- < k > [arrlength(E:Expression) => arrlength(T:Type)] ...</ k >
+		--- < types >... E:Expression |-> T:Type ...</ types >
+	--- : KSentence .
+	--- mb rule
+		--- < k > [arrlength(arrayType(T:Type, N:Nat)) => tv(N:Nat, cfg:sizeut)] ...</ k >
+	--- : KSentence .
+	--- mb rule
+		--- < k > [arrlength(E:Expression[I:Int]) => sizeof(E:Expression) / sizeof(E:Expression[I:Int])] ...</ k >
+	--- : KSentence .
+	--- mb rule
+		--- < k > [arrlength(T:Base-Type) => tv(1, cfg:sizeut)] ...</ k >
+	--- : KSentence .
 	
 	--- sizeof(w[0]) / length w
 	--- arrLength(w[2])
@@ -260,11 +293,11 @@ mod SIZEOF is
 	--- : KSentence .
 	
 	
-	mb [sizeof-pointer]: rule
-		< k > [sizeof(Pointer(?)) => tv(numBytes(unsigned-long-int), cfg:sizeut)] ...</ k >
-	: KSentence .
+	--- mb [sizeof-pointer]: rule
+		--- < k > [sizeof(Pointer(?)) => tv(numBytes(unsigned-long-int), cfg:sizeut)] ...</ k >
+	--- : KSentence .
 	mb [sizeof-struct]: rule
-		< k > [sizeof(structType(X:Id)) => calcStructSize(L:List{KResult})] ...</ k >
+		< k > [sizeofType(structType(X:Id)) => calcStructSize(L:List{KResult})] ...</ k >
 		< structs >... struct(X:Id) |-> L:List{KResult} ...</ structs >
 	: KSentence .
 	
@@ -315,6 +348,13 @@ mod TYPES is
 	mb rule [long => long-int] : KSentence .
 	mb rule [long-long => long-long-int] : KSentence .
 	
+	mb rule 
+		['_`[_`](T:Type,, N:Nat) => arrayType(T:Type, N:Nat)]
+		: KSentence [metadata "structural"] .
+	mb rule 
+		['Pointer(T:Type) => pointerType(T:Type)]
+		: KSentence [metadata "structural"] .
+		
 	mb rule 
 		< k > ['Pointer(T:Type,, 'Direct-Function-Declarator('Parameter-Type-List(LL:List{Parameter}))) 
 		=> pointerType(functionType(T:Type, getList{K}(LL:List{Parameter})))] ...</ k >
