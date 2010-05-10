@@ -1537,7 +1537,7 @@ and ll or LL
 
 	mb rule [interpret(N:Nat, T:Type) => tv(N:Nat, T:Type)]
 		if min(T:Type) <=Int N:Nat andBool max(T:Type) >=Int N:Nat
-		: KSentence [metadata "structural"] .	
+		: KSentence [metadata "structural"] .
 		
 	--- fixme not sure about this
 	mb rule
@@ -2118,6 +2118,7 @@ and ll or LL
 		< k > [cast(T:Type, tv(I:Int, T':Type)) => cast(T:Type, tv(I:Int +Int max(T:Type) +Int 1, T':Type))] ...</ k > 
 		if notBool(min(T:Type) <=Int I:Int andBool max(T:Type) >=Int I:Int andBool (integerTypes contains T':Type))
 		andBool (unsignedIntegerTypes contains T:Type andBool I:Int <=Int min(T:Type))
+		andBool (unsignedIntegerTypes contains T':Type)
 		: KSentence .
 	
 	---c99 6.3.1.3:3 Otherwise, the new type is signed and the value cannot be represented in it; either the result is implementation-defined or an implementation-defined signal is raised.
@@ -2136,7 +2137,7 @@ and ll or LL
 		if integerTypes contains T:Type
 		: KSentence .
 	
-	
+	---- Cast(unsigned-long, Cast(Pointer(int), 0))
 	
 	--- fixme 6.3.2.3 not handling this correctly
 	mb rule
