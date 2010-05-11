@@ -27,7 +27,7 @@ int main() {
 }
 
 int* listCons(int* p, int n){
-	int* next = malloc(2);
+	int* next = malloc(2*sizeof(int));
 	*next = n;
 	*(next + 1) = p;
 	return next;

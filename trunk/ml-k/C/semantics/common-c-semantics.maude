@@ -51,7 +51,7 @@ mod COMMON-SEMANTIC-SYNTAX is
 	op addGlobalTypes : K K -> K .
 	op addGlobalTypes : K -> K .
 	op Closure : K K K -> Value .
-	op putInMem : Nat BaseValue Type K -> K [metadata "strict(4)"] .
+	op putInMem : Nat K Type K -> K [metadata "strict(2 4)"] .
 	op putBytesInMem : Nat List{K} Type K -> K [metadata "strict(4)"] .
 	op sizeofType : Type -> K .
 	op firstChar : String -> Char .
@@ -213,6 +213,11 @@ mod SIZEOF is
 	mb rule
 		< k > [sizeofType(arrayType(T:Type, N:Nat)) => sizeof(T:Type) * tv(N:Nat, cfg:sizeut)] ...</ k >
 		: KSentence .
+	
+	---C99 6.2.6.1:26 ... Each unqualified type has several qualified versions of its type,40) corresponding to the combinations of one, two, or all three of the const, volatile, and restrict qualifiers. The qualified or unqualified versions of a type are distinct types that belong to the same type category and have the same representation and alignment requirements. ...
+	mb rule
+		< k > [sizeofType(qualifiedType(T:Type, ?)) => sizeof(T:Type)] ...</ k >
+		: KSentence .
 	--- mb [sizeof-typedef]: rule
 		--- < k > [sizeof(T:Type) => sizeof(T':Type)] ...</ k >
 		--- < typedefs >... T:Type |-> T':Type ...</ typedefs >
@@ -336,6 +341,9 @@ mod TYPES is
 	including COMMON-INCLUDE .
 	op normalizeType : K K -> K .
 	op typedef : K K -> K .
+	
+	--- fixme ignoring qualifiers
+	mb rule [qualifiedType(T:Type, ?) => T:Type] : KSentence [metadata "structural"] .
 	
 	mb rule [unsigned-short => unsigned-short-int] : KSentence .
 	mb rule [unsigned-long => unsigned-long-int] : KSentence .
@@ -742,13 +750,13 @@ mod COMMON-C-STANDARD-LIBRARY is
 	op printf-aux : Nat Nat List{Expression} -> K .
 	op printf-% : Nat Nat List{Expression} -> K .
 	mb [lib-printf-start]: rule
-		< k > [Apply(builtin(printf), (tv(Loc:Nat, ?) .,. L:List{Expression})) => printf-aux(0, Loc:Nat, L:List{Expression})] ...</ k >
+		< k > [Apply(builtin(printf), (tv(Loc:Nat, pointerType(?)) .,. L:List{Expression})) => printf-aux(0, Loc:Nat, L:List{Expression})] ...</ k >
 	: KSentence .
 	
 	mb [lib-printf-normal]: rule
 		< k > [printf-aux(Len:Nat, Loc:Nat, L:List{Expression}) => printf-aux(sNat(Len:Nat), sNat(Loc:Nat), L:List{Expression})] ...</ k >
 		< mem >... Loc:Nat |-> N:Nat ...</ mem >
-		< output > [S:String => S:String +String charString(N:Nat %Nat 256)] </ output >
+		< output > [S:String => S:String +String charString(N:Nat)] </ output >
 		if notBool(N:Nat ==Bool asciiString("%")) 
 		andBool notBool(N:Nat ==Bool 0)
 	: KSentence .
@@ -773,7 +781,7 @@ mod COMMON-C-STANDARD-LIBRARY is
 		if N:Nat ==Bool asciiString("d") 
 	: KSentence .
 	mb [lib-printf-%s]: rule
-		< k > [printf-%(Len:Nat, Loc:Nat, (tv(S:Nat, ?) .,. L:List{Expression})) => 
+		< k > [printf-%(Len:Nat, Loc:Nat, (tv(S:Nat, pointerType(?)) .,. L:List{Expression})) => 
 			printf-aux(0, S:Nat, .List{Expression})
 			~> printf-aux(Len:Nat, sNat(Loc:Nat), L:List{Expression})] ...</ k >
 		< mem >... Loc:Nat |-> N:Nat ...</ mem >
@@ -810,9 +818,13 @@ mod COMMON-PARAMETER-BINDING is
 	--- fixme doesn't add all derived types from T:Type
 	--- fixme not cleaning memory on return
 	--- fixme would be nice to check types match, but argument names etc might not be identical
+	mb rule
+		< k > [bind((tv(V:BaseValue, arrayType(T:Type, ?)),, L:List{KResult}), PD:List{K})
+			=> bind((tv(V:BaseValue, pointerType(T:Type)),, L:List{KResult}), PD:List{K})] ...</ k > : KSentence [metadata "structural"] .
+			
 	mb [bind-one]: rule
 		< k > [bind((tv(V:BaseValue, T:Type),, L:List{KResult}), ('Parameter-Declaration(T':Type,, X:Id),, P:List{K}))
-			=> addTypes(X:Id, T:Type) ~> '_;(allocate(sizeof(T:Type))) ~> putInMem(Loc:Nat, V:BaseValue, T:Type, sizeof(T:Type)) ~> bind(L:List{KResult}, P:List{K})] ...</ k > 
+			=> addTypes(X:Id, T':Type) ~> '_;(allocate(sizeof(T':Type))) ~> putInMem(Loc:Nat, tv(V:BaseValue, T:Type), T':Type, sizeof(T':Type)) ~> bind(L:List{KResult}, P:List{K})] ...</ k > 
 		< env >... [.Map => X:Id |-> Loc:Nat] ...</ env >
 		< nextLoc > Loc:Nat </ nextLoc >
 		: KSentence .
@@ -932,11 +944,12 @@ mod COMMON-GLOBAL-DECLARATION is
 		
 	op initArray : List{K} Nat Type -> K .
 	mb [global-array-declaration-init]: rule
-		< k > ['_=`{_`}('Declaration(arrayType(T:Type, N:Nat),, X:Id),, L:List{Expression}) => initArray(getList{K}(L:List{Expression}), Loc:Nat, T:Type)] ...</ k >
+		< k > ['_=`{_`}('Declaration(arrayType(T:Type, N:Nat),, X:Id),, L:List{Expression}) => '_;(allocate(sizeof(arrayType(T:Type, N:Nat)))) ~> initArray(getList{K}(L:List{Expression}), Loc:Nat, T:Type)] ...</ k >
 		< env >... [.Map => X:Id |-> Loc:Nat] ...</ env >
 		< genv >... [.Map => X:Id |-> Loc:Nat] ...</ genv >
 		< nextLoc > Loc:Nat </ nextLoc >
 		< types >... [.Map => X:Id |-> arrayType(T:Type, N:Nat)] ...</ types >
+		< typedefs >... [.Map => X:Id |-> arrayType(T:Type, N:Nat)] ...</ typedefs >
 		: KSentence .
 		
 	op initItem : K Nat Type -> K [metadata "strict(1)"] .
@@ -947,11 +960,18 @@ mod COMMON-GLOBAL-DECLARATION is
 	mb [initArray-empty]: rule
 		< k > [initArray(.List{K}, ?, ?) => .K] ...</ k >
 		: KSentence .
+	mb rule
+		< k > [tv(N:Nat, ?) ~> initArray(Items:List{K}, Loc:Nat, T:Type) 
+		=> initArray(Items:List{K}, Loc:Nat +Nat N:Nat, T:Type) ] ...</ k >
+		: KSentence 
+		---[print N:Nat " bytes put in memory @ " Loc:Nat ]
+		.
 		
-	--- mb rule
-		--- < k > [initItem(V:Value, Loc:K) => .K] ...</ k >
-		--- < mem >... Loc:K |-> [? => V:Value] ...</ mem >
-		--- : KSentence .
+	--- putInMem(Loc:Nat, N:Int, T:Type, tv(sNat(Len:Nat), J:Type))
+	---- NEXTLOCS AREN'T BEING SET PROPERLY
+	mb rule
+		< k > [initItem(tv(N:Nat, T:Type), Loc:Nat, T':Type) => putInMem(Loc:Nat, cast(T':Type, tv(N:Nat, T:Type)), T':Type, sizeof(T':Type)) ~> sizeof(T':Type)] ...</ k >
+		: KSentence .
 		
 	--- mb [struct-declaration]: rule 
 		--- < k > [Global(struct(X:Id, DS:TogetherList) ;) => addGlobalTypes(X:Id, structType(X:Id, DS:TogetherList))] ...</ k >
@@ -1223,6 +1243,10 @@ mod COMMON-EXPRESSIONS is
 	=> cast(pointerType(void), '_-_(tv(I1:Int, cfg:sizeut),, tv(I2:Int, cfg:sizeut)))]
 		if integerTypes contains T:Type
 		: KSentence .
+		
+	--- fixme ignoring qualified types
+	mb rule [cast(qualifiedType(T:Type, ?), V:Value) => cast(T:Type, V:Value)] 
+		: KSentence .	
 	
 	mb rule [tv(I1:Int, T:Type) + tv(I2:Int, T:Type) => cast(T:Type, I1:Int +Int I2:Int)] 
 		if integerTypes contains T:Type
@@ -1647,8 +1671,8 @@ and ll or LL
 		if notBool($hasMapping(M:Map, S:String))
 		: KSentence .
 	mb [const-string-found]: rule
-		< k > [S:String => V:Value] ...</ k >
-		< statics >... S:String |-> V:Value ...</ statics >
+		< k > [S:String => tv(N:Nat, pointerType(T:Type))] ...</ k >
+		< statics >... S:String |-> tv(N:Nat, arrayType(T:Type, ?)) ...</ statics >
 		: KSentence .
 	mb [alloc-string]: rule
 		< k > [allocString(S:String) => allocString(butFirstChar(S:String))] ...</ k >
@@ -1679,7 +1703,7 @@ and ll or LL
 		--- .
 	mb [assign]: rule
 		< k > [assign(Deref(tv(Loc:Nat, pointerType(T:Type))), tv(V:Int, T:Type)) 
-		=> putInMem(Loc:Nat, V:Int, T:Type, sizeof(T:Type)) ~> tv(V:Int, T:Type)] ...</ k >
+		=> putInMem(Loc:Nat, tv(V:Int, T:Type), T:Type, sizeof(T:Type)) ~> tv(V:Int, T:Type)] ...</ k >
 		: KSentence .
 		
 	--- fixme floats might have requirements
@@ -1709,11 +1733,16 @@ and ll or LL
 	
 	op putByteInMem : Nat BaseValue -> K .
 	mb rule
-		< k > [putInMem(Loc:Nat, V:BaseValue, T:Type, tv(0, ?)) => .K] ...</ k >
+		< k > [putInMem(?, ?, ?, tv(0, ?)) => .K] ...</ k >
 		: KSentence .
 	mb rule
-		< k > [putInMem(Loc:Nat, N:Int, T:Type, tv(sNat(Len:Nat), J:Type)) 
-		=> putByteInMem(Loc:Nat, ((N:Int %Int 256) +Int 256) %Int 256) ~> putInMem(sNat(Loc:Nat), N:Int >>Int 8, T:Type, tv(Len:Nat, J:Type))] ...</ k >
+		< k > [putInMem(Loc:Nat, tv(N:Int, pointerType(functionType(T:Type, L:List{K}))), pointerType(functionType(T:Type, L':List{K})), tv(Len:Nat, J:Type)) 
+		=> putInMem(Loc:Nat, tv(N:Int, pointerType(functionType(T:Type, L':List{K}))), pointerType(functionType(T:Type, L':List{K})), tv(Len:Nat, J:Type))] ...</ k >
+		: KSentence 
+		.
+	mb rule
+		< k > [putInMem(Loc:Nat, tv(N:Int, T:Type), T:Type, tv(sNat(Len:Nat), J:Type)) 
+		=> putByteInMem(Loc:Nat, ((N:Int %Int 256) +Int 256) %Int 256) ~> putInMem(sNat(Loc:Nat), tv(N:Int >>Int 8, T:Type), T:Type, tv(Len:Nat, J:Type))] ...</ k >
 		: KSentence 
 		.
 	mb rule
@@ -2118,7 +2147,7 @@ and ll or LL
 		< k > [cast(T:Type, tv(I:Int, T':Type)) => cast(T:Type, tv(I:Int +Int max(T:Type) +Int 1, T':Type))] ...</ k > 
 		if notBool(min(T:Type) <=Int I:Int andBool max(T:Type) >=Int I:Int andBool (integerTypes contains T':Type))
 		andBool (unsignedIntegerTypes contains T:Type andBool I:Int <=Int min(T:Type))
-		andBool (unsignedIntegerTypes contains T':Type)
+		andBool (integerTypes contains T':Type)
 		: KSentence .
 	
 	---c99 6.3.1.3:3 Otherwise, the new type is signed and the value cannot be represented in it; either the result is implementation-defined or an implementation-defined signal is raised.

@@ -22,9 +22,10 @@ int printf(const char *format, ...);
 int putchar ( int character );
 int sprintf ( char * str, const char * format, ... );
 int puts (const char * str);
-// int puts(const char * str){
-	// return printf("%s\n", str);
-// }
+int puts(const char * str){
+	//debug(0);
+	return printf("%s\n", str);
+}
 
 
 // string.h
