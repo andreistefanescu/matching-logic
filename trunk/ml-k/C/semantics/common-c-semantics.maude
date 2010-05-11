@@ -239,6 +239,16 @@ mod SIZEOF is
 		< types >... E:Expression |-> T:Type ...</ types >
 		: KSentence .
 	mb rule
+		< type > ['_->_(Kp:KProper,, X:Id) => Kp:KProper ~> '_->_(HOLE,, X:Id)] ...</ type >
+		: KSentence .
+	mb rule
+		< type > [T:Type ~> '_->_(HOLE,, X:Id) => '_->_(T:Type,, X:Id)] ...</ type >
+		: KSentence .
+	mb rule
+		< type > ['_->_(pointerType(structType(S:Id)),, X:Id) => T:Type] ...</ type >
+		< structs >... struct(S:Id) |-> (?:List{KResult},, typedField(T:Type, X:Id),, ?:List{KResult}) ...</ structs >
+	: KSentence .
+	mb rule
 		< type > ['_._(Kp:KProper,, X:Id) => Kp:KProper ~> '_._(HOLE,, X:Id)] ...</ type >
 		: KSentence .
 	mb rule
@@ -438,12 +448,20 @@ mod TYPES is
 		orBool L:KLabel ==Bool 'Typedef
 		: KSentence [metadata "structural"] .
 	
+	--- fixme ignoring extern
 	mb rule
-		[extern ~> T:Type => qualifiedType(T:Type, extern)]
+		[extern => .K]
 		: KSentence [metadata "structural"] .
+	--- fixme ignoring static
 	mb rule
-		[static ~> T:Type => qualifiedType(T:Type, static)]
+		[static => .K]
 		: KSentence [metadata "structural"] .
+	--- mb rule
+		--- [extern ~> T:Type => qualifiedType(T:Type, extern)]
+		--- : KSentence [metadata "structural"] .
+	--- mb rule
+		--- [static ~> T:Type => qualifiedType(T:Type, static)]
+		--- : KSentence [metadata "structural"] .
 	--- for casts, at least
 	--- mb rule
 		--- [Pointer(T:Type) => pointerType(T:Type)]
@@ -651,21 +669,22 @@ mod COMMON-C-STANDARD-LIBRARY is
 		< k > [calloc => builtin(calloc)] ...</ k >
 	: KSentence .
 	
-	--- ignoring size for now
-	--- fixme
+	--- fixme ignoring size for now
 	mb [calloc]: rule
 		< k > ['Apply(builtin(calloc),, (tv(N:Nat, ?) .,. tv(Size:Nat, ?))) => tv(Loc:Nat, pointerType(void))] ...</ k >
-		< mem >... [.Map => Loc:Nat to (Loc:Nat +Nat N:Nat) |-> 0] ...</ mem >
+		< mem >... [.Map => Loc:Nat to (Loc:Nat +Nat (N:Nat *Nat Size:Nat)) |-> 0] ...</ mem >
 		< malloced >... [.Map => Loc:Nat |-> N:Nat] ...</ malloced >
-		< nextLoc > [Loc:Nat => Loc:Nat +Nat N:Nat] </ nextLoc >
+		< nextLoc > [Loc:Nat => Loc:Nat +Nat (N:Nat *Nat Size:Nat)] </ nextLoc >
 	: KSentence .
 	--------------------------------------------
 	mb [memset-is-value]: rule
 		< k > [memset => builtin(memset)] ...</ k >
 	: KSentence .
 	
+	--- fixme should be checking and casting types
+	--- fixme should be making sure N:Nat is a char
 	mb [memset]: rule
-		< k > [Apply(builtin(memset), (Loc:Nat .,. N:Nat .,. Len:Nat)) => Loc:Nat] ...</ k >
+		< k > [Apply(builtin(memset), (tv(Loc:Nat, pointerType(T:Type)) .,. tv(N:Nat, int) .,. tv(Len:Nat, ?))) => tv(Loc:Nat, pointerType(void))] ...</ k >
 		< mem > [M:Map => M:Map[N:Nat / Loc:Nat to (Loc:Nat +Nat Len:Nat)]] </ mem >
 	: KSentence .
 	--------------------------------------------
@@ -675,7 +694,7 @@ mod COMMON-C-STANDARD-LIBRARY is
 	
 	op strlen-aux : Nat Nat -> K .
 	mb [strlen-start]: rule
-		< k > [Apply(builtin(strlen), Loc:Nat) => strlen-aux(0, Loc:Nat)] ...</ k >
+		< k > [Apply(builtin(strlen), tv(Loc:Nat, pointerType(?))) => strlen-aux(0, Loc:Nat)] ...</ k >
 	: KSentence .
 	
 	mb [strlen-nz]: rule
@@ -684,7 +703,7 @@ mod COMMON-C-STANDARD-LIBRARY is
 		if notBool(N:Nat ==Bool 0)
 	: KSentence .
 	mb [strlen-z]: rule
-		< k > [strlen-aux(Len:Nat, Loc:Nat) => Len:Nat] ...</ k >
+		< k > [strlen-aux(Len:Nat, Loc:Nat) => tv(Len:Nat, cfg:sizeut)] ...</ k >
 		< mem >... Loc:Nat |-> 0 ...</ mem >
 	: KSentence .
 	--------------------------------------------
@@ -692,9 +711,10 @@ mod COMMON-C-STANDARD-LIBRARY is
 		< k > [strcpy => builtin(strcpy)] ...</ k >
 	: KSentence .
 	
+	--- fixme ensure char
 	op strcpy-aux : Nat Nat Nat -> K .
 	mb [strcpy-start]: rule
-		< k > [Apply(builtin(strcpy), (Dest:Nat .,. Src:Nat)) => strcpy-aux(Src:Nat, Dest:Nat, Dest:Nat)] ...</ k >
+		< k > [Apply(builtin(strcpy), (tv(Dest:Nat, pointerType(T:Type)) .,. tv(Src:Nat, pointerType(T:Type)))) => strcpy-aux(Src:Nat, Dest:Nat, Dest:Nat)] ...</ k >
 	: KSentence .
 	
 	mb [strcpy-nz]: rule
@@ -703,7 +723,7 @@ mod COMMON-C-STANDARD-LIBRARY is
 		if notBool(N:Nat ==Bool 0)
 	: KSentence .
 	mb [strcpy-z]: rule
-		< k > [strcpy-aux(Src:Nat, Dest:Nat, Orig:Nat) => Orig:Nat] ...</ k >
+		< k > [strcpy-aux(Src:Nat, Dest:Nat, Orig:Nat) => tv(Orig:Nat, pointerType(char))] ...</ k >
 		< mem >... Src:Nat |-> 0 Dest:Nat |-> [? => 0] ...</ mem >
 	: KSentence .
 	--------------------------------------------
@@ -713,7 +733,7 @@ mod COMMON-C-STANDARD-LIBRARY is
 	
 	op strcmp-aux : Nat Nat -> K .
 	mb [strcmp-start]: rule
-		< k > [Apply(builtin(strcmp), (Loc1:Nat .,. Loc2:Nat)) => strcmp-aux(Loc1:Nat, Loc2:Nat)] ...</ k >
+		< k > [Apply(builtin(strcmp), (tv(Loc1:Nat, pointerType(?)) .,. tv(Loc2:Nat, pointerType(?)))) => strcmp-aux(Loc1:Nat, Loc2:Nat)] ...</ k >
 	: KSentence .
 	
 	mb [strcmp-same-addy]: rule
@@ -725,11 +745,11 @@ mod COMMON-C-STANDARD-LIBRARY is
 		if N:Nat =/=Bool 0
 		: KSentence .
 	mb [strcmp-done]: rule
-		< k > [strcmp-aux(Loc1:Nat, Loc2:Nat) => 0] ...</ k >
+		< k > [strcmp-aux(Loc1:Nat, Loc2:Nat) => tv(0, int)] ...</ k >
 		< mem >... Loc1:Nat |-> 0 Loc2:Nat |-> 0 ...</ mem >
 		: KSentence .
 	mb [strcmp-different]: rule
-		< k > [strcmp-aux(Loc1:Nat, Loc2:Nat) => if N1:Nat >Nat N2:Nat then 1 else -1 fi] ...</ k >
+		< k > [strcmp-aux(Loc1:Nat, Loc2:Nat) => tv(if N1:Nat >Nat N2:Nat then 1 else -1 fi, int)] ...</ k >
 		< mem >... Loc1:Nat |-> N1:Nat Loc2:Nat |-> N2:Nat ...</ mem >
 		if N1:Nat =/=Bool N2:Nat
 		: KSentence .
@@ -822,6 +842,13 @@ mod COMMON-PARAMETER-BINDING is
 		< k > [bind((tv(V:BaseValue, arrayType(T:Type, ?)),, L:List{KResult}), PD:List{K})
 			=> bind((tv(V:BaseValue, pointerType(T:Type)),, L:List{KResult}), PD:List{K})] ...</ k > : KSentence [metadata "structural"] .
 			
+	--- fixme can't this be done by heating bind?
+	mb rule
+		< k > [bind(L:List{KResult}, ('Parameter-Declaration(T:Typedef-Name,, D:Declarator),, P:List{K}))
+			=> bind(L:List{KResult}, ('Parameter-Declaration(T':Type,, D:Declarator),, P:List{K}))] ...</ k >
+		< typedefs >... T:Typedef-Name |-> T':Type ...</ typedefs >
+		: KSentence .	
+		
 	mb [bind-one]: rule
 		< k > [bind((tv(V:BaseValue, T:Type),, L:List{KResult}), ('Parameter-Declaration(T':Type,, X:Id),, P:List{K}))
 			=> addTypes(X:Id, T':Type) ~> '_;(allocate(sizeof(T':Type))) ~> putInMem(Loc:Nat, tv(V:BaseValue, T:Type), T':Type, sizeof(T':Type)) ~> bind(L:List{KResult}, P:List{K})] ...</ k > 
@@ -1242,6 +1269,10 @@ mod COMMON-EXPRESSIONS is
 	mb rule [tv(I1:Int, pointerType(void)) - tv(I2:Int, T:Type) 
 	=> cast(pointerType(void), '_-_(tv(I1:Int, cfg:sizeut),, tv(I2:Int, cfg:sizeut)))]
 		if integerTypes contains T:Type
+		: KSentence .
+	--- fixme need to use defined type
+	mb rule [tv(I1:Int, pointerType(T:Type)) - tv(I2:Int, pointerType(T:Type)) 
+	=> tv(_-Int_(I1:Int, I2:Int), long-int)]
 		: KSentence .
 		
 	--- fixme ignoring qualified types
@@ -1705,6 +1736,11 @@ and ll or LL
 		< k > [assign(Deref(tv(Loc:Nat, pointerType(T:Type))), tv(V:Int, T:Type)) 
 		=> putInMem(Loc:Nat, tv(V:Int, T:Type), T:Type, sizeof(T:Type)) ~> tv(V:Int, T:Type)] ...</ k >
 		: KSentence .
+	--- fixme this is to get around L:List{K} not comparing equal
+	mb [assign-fp]: rule
+		< k > [assign(Deref(tv(Loc:Nat, pointerType(pointerType(functionType(T:Type, L:List{K}))))), tv(V:Int, pointerType(functionType(T:Type, L':List{K})))) 
+		=> putInMem(Loc:Nat, tv(V:Int, pointerType(functionType(T:Type, L:List{K}))), pointerType(functionType(T:Type, L:List{K})), sizeof(pointerType(functionType(T:Type, L:List{K})))) ~> tv(V:Int, pointerType(functionType(T:Type, L:List{K})))] ...</ k >
+		: KSentence .
 		
 	--- fixme floats might have requirements
 	mb [assign-float]: rule
@@ -2147,6 +2183,12 @@ and ll or LL
 		< k > [cast(T:Type, tv(I:Int, T':Type)) => cast(T:Type, tv(I:Int +Int max(T:Type) +Int 1, T':Type))] ...</ k > 
 		if notBool(min(T:Type) <=Int I:Int andBool max(T:Type) >=Int I:Int andBool (integerTypes contains T':Type))
 		andBool (unsignedIntegerTypes contains T:Type andBool I:Int <=Int min(T:Type))
+		andBool (integerTypes contains T':Type)
+		: KSentence .
+	mb rule
+		< k > [cast(T:Type, tv(I:Int, T':Type)) => cast(T:Type, tv(_-Int_(I:Int, (max(T:Type) +Int 1)), T':Type))] ...</ k > 
+		if notBool(min(T:Type) <=Int I:Int andBool max(T:Type) >=Int I:Int andBool (integerTypes contains T':Type))
+		andBool (unsignedIntegerTypes contains T:Type andBool I:Int >=Int max(T:Type))
 		andBool (integerTypes contains T':Type)
 		: KSentence .
 	

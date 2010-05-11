@@ -261,7 +261,7 @@ mod COMMON-C-SYNTAX is
 		long-long unsigned-long-long
 		long-long-int unsigned-long-long-int
 		: -> Base-Type [ctor] .
-	op Pointer : Type-Specifier -> Type-Specifier [metadata "strict"] . 
+	op Pointer : Type-Specifier -> Type-Specifier [metadata "strict(1)"] . 
 	
 	--- ----ops `_Bool `_Complex : -> Type-Specifier [ctor] .
 	--- --- TODO
@@ -347,8 +347,8 @@ mod COMMON-C-SYNTAX is
 	subsort Type-Specifier < Direct-Declarator .
 
 	subsort Id < Direct-Declarator .
-	op Pointer : Direct-Declarator -> Direct-Declarator [metadata "strict"] .
-	op Pointer : Direct-Declarator Direct-Declarator -> Direct-Declarator [metadata "strict"] .
+	op Pointer : Direct-Declarator -> Direct-Declarator [metadata "strict(1)"] .
+	op Pointer : Direct-Declarator Direct-Declarator -> Direct-Declarator [metadata "strict(1)"] .
 	op Pointer`(`) : -> Direct-Declarator .
 	--- --- op `(_`) : Declarator -> Declarator . --- problem with (_)
 	--- op _`[`] : Declarator -> Declarator .
