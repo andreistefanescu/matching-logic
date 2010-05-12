@@ -1,13 +1,3 @@
- "String" "MD5 test suite results:\n\n
- d41d8cd98f00b204e9800998ecf8427e \"\"\n\n
- 0cc175b9c0f1b6a831c399e269772661 \"a\"\n\n
- 900150983cd24fb0d6963f7d28e17f72 \"abc\"\n\n
- f96b697d7cb7938d525a2f31aaf161d0 \"message digest\"\n\n
- c3fcd3d76192e4007dfb496cca67e13b \"abcdefghijklmnopqrstuvwxyz\"\n\n
- d174ab98d277d9f5a5611c2c9f419d9f \"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789\"\n\n
- 57edf4a22be3c955ac49da2e2107b67a \"12345678901234567890123456789012345678901234567890123456789012345678901234567890\"\n\n
- "
-
 --- $(value $var) gives what we want for pipestatus
 --- why isn't K ~> K proper?
 set print attribute on .
