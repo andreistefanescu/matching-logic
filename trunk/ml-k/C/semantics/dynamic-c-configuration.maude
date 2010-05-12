@@ -15,6 +15,8 @@ mod C-CONFIGURATION is
 			< typedefs > .Map </ typedefs >
 			< sizes > .Map </ sizes >
 			< structs > .Map </ structs >
+			< pad > "" </ pad >
+			< width > 0 </ width >
 			< local >
 				< k > .K </ k >
 				< type > .K </ type >

@@ -1,3 +1,13 @@
+ "String" "MD5 test suite results:\n\n
+ d41d8cd98f00b204e9800998ecf8427e \"\"\n\n
+ 0cc175b9c0f1b6a831c399e269772661 \"a\"\n\n
+ 900150983cd24fb0d6963f7d28e17f72 \"abc\"\n\n
+ f96b697d7cb7938d525a2f31aaf161d0 \"message digest\"\n\n
+ c3fcd3d76192e4007dfb496cca67e13b \"abcdefghijklmnopqrstuvwxyz\"\n\n
+ d174ab98d277d9f5a5611c2c9f419d9f \"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789\"\n\n
+ 57edf4a22be3c955ac49da2e2107b67a \"12345678901234567890123456789012345678901234567890123456789012345678901234567890\"\n\n
+ "
+
 --- $(value $var) gives what we want for pipestatus
 --- why isn't K ~> K proper?
 set print attribute on .
@@ -799,6 +809,37 @@ mod COMMON-C-STANDARD-LIBRARY is
 		< mem >... Loc:Nat |-> N:Nat ...</ mem >
 		if (N:Nat ==Bool asciiString("%"))
 	: KSentence .
+	--- fixme ignoring 0 flag for now
+	mb [lib-printf-0]: rule
+		< k > [printf-%(Len:Nat, Loc:Nat, L:List{Expression}) => printf-%(Len:Nat, sNat(Loc:Nat), L:List{Expression})] ...</ k >
+		< mem >... Loc:Nat |-> N:Nat ...</ mem >
+		if N:Nat ==Bool asciiString("0") 
+	: KSentence .
+	--- ignoring num width
+	mb [lib-printf-width]: rule
+		< k > [printf-%(Len:Nat, Loc:Nat, L:List{Expression}) => printf-%(Len:Nat, sNat(Loc:Nat), L:List{Expression})] ...</ k >
+		< mem >... Loc:Nat |-> N:Nat ...</ mem >
+		if N:Nat >Int asciiString("0") 
+		andBool N:Nat <=Int asciiString("9")
+	: KSentence .
+	
+	mb [lib-printf-x]: rule
+		< k > [printf-%(Len:Nat, Loc:Nat, (tv(D:Int, ?) .,. L:List{Expression})) => printf-aux(Len:Nat +Nat lengthString((if (lengthString(rat2stringConversion(D:Int, 16)) ==Bool 1) then
+				"0" +String rat2stringConversion(D:Int, 16)
+			else 
+				rat2stringConversion(D:Int, 16)
+			fi)), sNat(Loc:Nat), L:List{Expression})] ...</ k >
+		< mem >... Loc:Nat |-> N:Nat ...</ mem >
+		< output > [S:String => S:String +String 
+			(if (lengthString(rat2stringConversion(D:Int, 16)) ==Bool 1) then
+				"0" +String rat2stringConversion(D:Int, 16)
+			else 
+				rat2stringConversion(D:Int, 16)
+			fi)
+			] </ output >
+		if N:Nat ==Bool asciiString("x") 
+	: KSentence .
+	
 	mb [lib-printf-%d]: rule
 		< k > [printf-%(Len:Nat, Loc:Nat, (tv(D:Int, ?) .,. L:List{Expression})) => printf-aux(Len:Nat +Nat lengthString(rat2stringConversion(D:Int, 10)), sNat(Loc:Nat), L:List{Expression})] ...</ k >
 		< mem >... Loc:Nat |-> N:Nat ...</ mem >
@@ -1311,9 +1352,17 @@ mod COMMON-EXPRESSIONS is
 	mb rule [tv(I1:Int, T:Type) | tv(I2:Int, T:Type) => cast(T:Type, I1:Int |Int I2:Int)] 
 		if integerTypes contains T:Type
 		: KSentence .
-	mb rule [_&_(tv(I1:Int, T:Type), tv(I2:Int, T:Type)) => cast(T:Type, I1:Int &Int I2:Int)] 
+	mb rule [tv(I1:Int, T:Type) &binop tv(I2:Int, T:Type) => cast(T:Type, I1:Int &Int I2:Int)] 
 		if integerTypes contains T:Type
 		: KSentence .
+	--- fixme not exactly
+	mb rule [~ tv(I:Int, T:Type) => cast(T:Type, ~Int I:Int)] 
+		if integerTypes contains T:Type
+		: KSentence .
+	mb rule [tv(I1:Int, T:Type) ^ tv(I2:Int, T:Type) => cast(T:Type, I1:Int xorInt I2:Int)] 
+		if integerTypes contains T:Type
+		: KSentence .
+		--- --- mb rule [~ I:Int => ~Int I:Int] : KSentence .
 		
 	--- --- mb rule [I:Int >> N:Nat => I:Int >>Int N:Nat] : KSentence .
 	--- --- mb rule [I:Int << N:Nat => I:Int <<Int N:Nat] : KSentence .
@@ -1574,7 +1623,7 @@ and ll or LL
 	mb [assign-subtract]: rule [E1:Expression -= E2:Expression => E1:Expression := E1:Expression - E2:Expression] : KSentence .
 	mb [assign-lshift]: rule [E1:Expression <<= E2:Expression => E1:Expression := E1:Expression << E2:Expression] : KSentence .
 	mb [assign-rshift]: rule [E1:Expression >>= E2:Expression => E1:Expression := E1:Expression >> E2:Expression] : KSentence .
-	mb [assign-bit-and]: rule [E1:Expression &= E2:Expression => E1:Expression := _&_(E1:Expression,  E2:Expression)] : KSentence .
+	mb [assign-bit-and]: rule [E1:Expression &= E2:Expression => E1:Expression := E1:Expression &binop E2:Expression] : KSentence .
 	mb [assign-bit-xor]: rule [E1:Expression ^= E2:Expression => E1:Expression := E1:Expression ^ E2:Expression] : KSentence .
 	mb [assign-bit-or]: rule [E1:Expression |= E2:Expression => E1:Expression := E1:Expression | E2:Expression] : KSentence .
 	
@@ -1622,11 +1671,17 @@ and ll or LL
 		
 	--- fixme not sure about this
 	mb rule
-		[interpret(N:Nat, T:Type) => tv(_-Int_(N:Nat, (2 ^Nat absInt(numBits(T:Type)))), T:Type)]
+		[interpret(N:Nat, T:Type) => tv(N:Nat %Int (2 ^Nat absInt(numBits(T:Type))), T:Type)]
 		if notBool(min(T:Type) <=Int N:Nat andBool max(T:Type) >=Int N:Nat)
 		andBool (N:Nat >Int max(T:Type))
 		andBool integerTypes contains T:Type
 		: KSentence .
+	--- mb rule --- this is a more "correct" version of the above
+		--- [interpret(N:Nat, T:Type) => tv(_-Int_(N:Nat, (2 ^Nat absInt(numBits(T:Type)))), T:Type)]
+		--- if notBool(min(T:Type) <=Int N:Nat andBool max(T:Type) >=Int N:Nat)
+		--- andBool (N:Nat >Int max(T:Type))
+		--- andBool integerTypes contains T:Type
+		--- : KSentence .
 	
 	--- fixme not necessarily the case that pointers are unsigned-ints
 	mb rule [interpret(N:Nat, pointerType(T:Type)) => tv(N:Nat, pointerType(T:Type))]
@@ -2215,11 +2270,17 @@ and ll or LL
 		andBool (integerTypes contains T':Type)
 		: KSentence .
 	mb rule
-		< k > [cast(T:Type, tv(I:Int, T':Type)) => cast(T:Type, tv(_-Int_(I:Int, (max(T:Type) +Int 1)), T':Type))] ...</ k > 
+		< k > [cast(T:Type, tv(I:Int, T':Type)) => cast(T:Type, tv(I:Int %Int (max(T:Type) +Int 1), T':Type))] ...</ k > 
 		if notBool(min(T:Type) <=Int I:Int andBool max(T:Type) >=Int I:Int andBool (integerTypes contains T':Type))
 		andBool (unsignedIntegerTypes contains T:Type andBool I:Int >Int max(T:Type))
 		andBool (integerTypes contains T':Type)
 		: KSentence .
+	--- mb rule --- this is the "correct" version of the above mod
+		--- < k > [cast(T:Type, tv(I:Int, T':Type)) => cast(T:Type, tv(_-Int_(I:Int, (max(T:Type) +Int 1)), T':Type))] ...</ k > 
+		--- if notBool(min(T:Type) <=Int I:Int andBool max(T:Type) >=Int I:Int andBool (integerTypes contains T':Type))
+		--- andBool (unsignedIntegerTypes contains T:Type andBool I:Int >Int max(T:Type))
+		--- andBool (integerTypes contains T':Type)
+		--- : KSentence .
 	
 	---c99 6.3.1.3:3 Otherwise, the new type is signed and the value cannot be represented in it; either the result is implementation-defined or an implementation-defined signal is raised.
 	
@@ -2260,9 +2321,10 @@ and ll or LL
 		< k > [cast(pointerType(void), tv(I:Int, pointerType(T:Type))) => tv(I:Int, pointerType(void))] ...</ k > 
 		: KSentence .
 	--- possibly not true with other endiannesses
-	--- mb rule
-		--- < k > [cast(pointerType(T:Type), tv(I:Int, pointerType(?))) => tv(I:Int, pointerType(T:Type))] ...</ k > 
-		--- : KSentence .
+	mb rule
+		< k > [cast(pointerType(T:Type), tv(I:Int, pointerType(?))) => tv(I:Int, pointerType(T:Type))] ...</ k >
+		if min(unsigned-int) <=Int I:Int andBool max(unsigned-int) >=Int I:Int
+		: KSentence .
 	--- fixme not sure about this either...
 	mb rule
 		< k > [cast(T:Type, tv(I:Int, pointerType(arrayType(T':Type, ?)))) 
