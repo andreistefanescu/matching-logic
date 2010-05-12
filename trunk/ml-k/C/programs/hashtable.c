@@ -88,6 +88,11 @@ static hash_size def_hashfunc(const char *key)
 HASHTBL *hashtbl_create(hash_size size, hash_size (*hashfunc)(const char *))
 {
 	HASHTBL *hashtbl;
+	// printf("sizeof(HASHTBL)=%d\n", sizeof(HASHTBL));
+	// printf("sizeof(*hashtbl)=%d\n", sizeof(*hashtbl));
+	// printf("sizeof(hashtbl->size)=%d\n", sizeof(hashtbl->size));
+	// printf("sizeof(hashtbl->nodes)=%d\n", sizeof(hashtbl->nodes));
+	// printf("sizeof(hashtbl->hashfunc)=%d\n", sizeof(hashtbl->hashfunc));
 
 	if(!(hashtbl=malloc(sizeof(HASHTBL)))) return NULL;
 
@@ -136,6 +141,29 @@ int hashtbl_insert(HASHTBL *hashtbl, const char *key, void *data)
 
 	//printf("hashtbl_insert() key=%s, hash=%d, data=%s\n", key, hash, (char*)data);
 
+// "Rat" 123(.List{K}) |-> "Rat" 82(.List{K}) 
+// "Rat" 124(.List{K}) |-> "Rat" 0(.List{K}) 
+// "Rat" 125(.List{K}) |-> "Rat" 0(.List{K}) 
+// "Rat" 126(.List{K}) |-> "Rat" 0(.List{K}) 
+
+
+// "Rat" 82(.List{K}) |-> "Rat" 16(.List{K}) 
+// "Rat" 83(.List{K}) |-> "Rat" 0(.List{K}) 
+// "Rat" 84(.List{K}) |-> "Rat" 0(.List{K}) 
+// "Rat" 85(.List{K}) |-> "Rat" 0(.List{K}) 
+// "Rat" 86(.List{K}) |-> "Rat" 94(.List{K}) 
+// "Rat" 87(.List{K}) |-> "Rat" 0(.List{K}) 
+// "Rat" 88(.List{K}) |-> "Rat" 0(.List{K}) 
+// "Rat" 89(.List{K}) |-> "Rat" 0(.List{K}) 
+// "Rat" 90(.List{K}) |-> "Rat" 6(.List{K}) 
+// "Rat" 91(.List{K}) |-> "Rat" 0(.List{K}) 
+// "Rat" 92(.List{K}) |-> "Rat" 0(.List{K}) 
+// "Rat" 93(.List{K}) |-> "Rat" 0(.List{K}) 
+
+//doesn't seem like enough space was allocated for hashtbl->nodes
+// hashtbl->nodes[15] is at 154, but something else starts at 151 and 155
+
+	
 	node=hashtbl->nodes[hash];
 	while(node) {
 		if(!strcmp(node->key, key)) {

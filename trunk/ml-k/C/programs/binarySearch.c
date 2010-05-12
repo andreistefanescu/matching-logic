@@ -69,12 +69,16 @@ int main(void) {
             a[i] = rand() % num_elements;
         } while(a[i] == num_elements/7);
     }
-	insertion_sort(a, 32);
+	insertion_sort(a, num_elements);
+	// for (int i = 0; i < num_elements; i++){
+		// printf("%d, ", a[i]);
+	// }
 
     for(i=0; i<10; i++) {
         int present_val = a[rand() % num_elements];
+		printf("looking for %d, ", present_val);
         int found_at = binary_search(a, 0, num_elements - 1, present_val);
-		printf("looking for %d, found %d\n", present_val, a[found_at]);
+		printf("found %d\n", a[found_at]);
     }
     return 0;
 }

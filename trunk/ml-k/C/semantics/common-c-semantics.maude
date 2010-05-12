@@ -643,11 +643,16 @@ mod COMMON-C-STANDARD-LIBRARY is
 		< nextLoc > [Loc:Nat => Loc:Nat +Nat N:Nat] </ nextLoc >
 	: KSentence .
 	--------------------------------------------
+	--- Returns a pseudo-random integral number in the range 0 to RAND_MAX.
+	
 	mb [rand-is-value]: rule
 		< k > [rand => builtin(rand)] ...</ k >
 	: KSentence .
+	--- fixme should use RAND_MAX
 	mb [rand]: rule
-		< k > [Apply(builtin(rand), .List{Expression}) => tv(randomRandom(Loc:Nat), int)] ...</ k >
+		< k > [Apply(builtin(rand), .List{Expression}) => 
+		interpret(absInt(randomRandom(Loc:Nat)) %Int 2147483647, int)
+		] ...</ k >
 		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
 	: KSentence .
 	--------------------------------------------
@@ -1294,6 +1299,26 @@ mod COMMON-EXPRESSIONS is
 	mb rule [tv(I1:Int, T:Type) % tv(I2:Int, T:Type) => cast(T:Type, I1:Int %Int I2:Int)] 
 		if integerTypes contains T:Type
 		: KSentence .
+		
+	mb rule [tv(I:Int, T:Type) >> tv(N:Nat, T':Type) => cast(T:Type, I:Int >>Int N:Nat)] 
+		if integerTypes contains T:Type
+		andBool integerTypes contains T':Type
+		: KSentence .
+	mb rule [tv(I:Int, T:Type) << tv(N:Nat, T':Type) => cast(T:Type, I:Int <<Int N:Nat)] 
+		if integerTypes contains T:Type
+		andBool integerTypes contains T':Type
+		: KSentence .
+	mb rule [tv(I1:Int, T:Type) | tv(I2:Int, T:Type) => cast(T:Type, I1:Int |Int I2:Int)] 
+		if integerTypes contains T:Type
+		: KSentence .
+	mb rule [_&_(tv(I1:Int, T:Type), tv(I2:Int, T:Type)) => cast(T:Type, I1:Int &Int I2:Int)] 
+		if integerTypes contains T:Type
+		: KSentence .
+		
+	--- --- mb rule [I:Int >> N:Nat => I:Int >>Int N:Nat] : KSentence .
+	--- --- mb rule [I:Int << N:Nat => I:Int <<Int N:Nat] : KSentence .
+	--- --- mb rule [I1:Int | I2:Int => I1:Int |Int I2:Int] : KSentence .
+	--- --- mb rule [_&_(I1:Int, I2:Int) => I1:Int &Int I2:Int] : KSentence .
 	 
 	
 	--- mb rule [tv(I1:Int, T:Type) + tv(I2:Int, T:Type) => tv(I1:Int +Int I2:Int, T:Type)] 
@@ -1592,13 +1617,15 @@ and ll or LL
 
 	mb rule [interpret(N:Nat, T:Type) => tv(N:Nat, T:Type)]
 		if min(T:Type) <=Int N:Nat andBool max(T:Type) >=Int N:Nat
+		andBool integerTypes contains T:Type
 		: KSentence [metadata "structural"] .
 		
 	--- fixme not sure about this
 	mb rule
 		[interpret(N:Nat, T:Type) => tv(_-Int_(N:Nat, (2 ^Nat absInt(numBits(T:Type)))), T:Type)]
 		if notBool(min(T:Type) <=Int N:Nat andBool max(T:Type) >=Int N:Nat)
-		andBool (N:Nat >=Int max(T:Type))
+		andBool (N:Nat >Int max(T:Type))
+		andBool integerTypes contains T:Type
 		: KSentence .
 	
 	--- fixme not necessarily the case that pointers are unsigned-ints
@@ -2175,20 +2202,22 @@ and ll or LL
 	---c99 6.3.1.3:1 When a value with integer type is converted to another integer type other than _Bool, if the value can be represented by the new type, it is unchanged. 
 	mb rule
 		< k > [cast(T:Type, tv(I:Int, T':Type)) => tv(I:Int, T:Type)] ...</ k > 
-		if min(T:Type) <=Int I:Int andBool max(T:Type) >=Int I:Int andBool (integerTypes contains T':Type)
+		if min(T:Type) <=Int I:Int andBool max(T:Type) >=Int I:Int 
+		andBool (integerTypes contains T':Type)
+		andBool (integerTypes contains T:Type)
 		: KSentence .
 		
 	---c99 6.3.1.3:2 Otherwise, if the new type is unsigned, the value is converted by repeatedly adding or subtracting one more than the maximum value that can be represented in the new type until the value is in the range of the new type.
 	mb rule
 		< k > [cast(T:Type, tv(I:Int, T':Type)) => cast(T:Type, tv(I:Int +Int max(T:Type) +Int 1, T':Type))] ...</ k > 
 		if notBool(min(T:Type) <=Int I:Int andBool max(T:Type) >=Int I:Int andBool (integerTypes contains T':Type))
-		andBool (unsignedIntegerTypes contains T:Type andBool I:Int <=Int min(T:Type))
+		andBool (unsignedIntegerTypes contains T:Type andBool I:Int <Int min(T:Type))
 		andBool (integerTypes contains T':Type)
 		: KSentence .
 	mb rule
 		< k > [cast(T:Type, tv(I:Int, T':Type)) => cast(T:Type, tv(_-Int_(I:Int, (max(T:Type) +Int 1)), T':Type))] ...</ k > 
 		if notBool(min(T:Type) <=Int I:Int andBool max(T:Type) >=Int I:Int andBool (integerTypes contains T':Type))
-		andBool (unsignedIntegerTypes contains T:Type andBool I:Int >=Int max(T:Type))
+		andBool (unsignedIntegerTypes contains T:Type andBool I:Int >Int max(T:Type))
 		andBool (integerTypes contains T':Type)
 		: KSentence .
 	
