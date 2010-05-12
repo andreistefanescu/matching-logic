@@ -107,7 +107,7 @@ let d_binop () b =
 	| Ge -> text ">="
 	| Eq -> text "=="
 	| Ne -> text "!="
-	| BAnd -> text "&"
+	| BAnd -> text "&binop"
 	| BXor -> text "^"
 	| BOr -> text "|"
 	| LAnd -> text "&&"

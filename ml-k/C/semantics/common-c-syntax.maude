@@ -171,7 +171,7 @@ mod COMMON-C-SYNTAX is
 	ops _<<_ _>>_ : Expression Expression -> Expression [prec 35 gather(E e) metadata "strict"] .
 	ops _<_ _>_ _<=_ _>=_ : Expression Expression -> Expression [prec 37 gather(E e) metadata "strict"] .
 	ops _==_ _!=_ : Expression Expression -> Expression [prec 39 gather(E e) metadata "strict"] .
-	op _&_ : Expression Expression -> Expression [prec 41 gather(E e) metadata "strict"] .
+	op _&binop_ : Expression Expression -> Expression [prec 41 gather(E e) metadata "strict"] .
 	op _^_ : Expression Expression -> Expression [prec 43 gather(E e) metadata "strict"] .
 	op _|_ : Expression Expression -> Expression [prec 45 gather(E e) metadata "strict"] .
 	op _&&_ : Expression Expression -> Expression [prec 47 gather(E e) metadata "strict(1)"] .
