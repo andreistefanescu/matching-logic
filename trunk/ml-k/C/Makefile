@@ -37,7 +37,8 @@ kcompile: $(C_DIR)/*.gen.maude
 build-all: maude-fragments kcompile
 		
 run: 
-	@maude $(SEMANTICS_DIR)/test.maude
+#@maude -no-wrap $(SEMANTICS_DIR)/test.maude > profilenoclear.log
+	@maude -no-wrap $(SEMANTICS_DIR)/test.maude
 		
 clean:
 	make -C $(C_DIR) clean
