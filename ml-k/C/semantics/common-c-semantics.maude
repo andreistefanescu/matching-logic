@@ -648,10 +648,12 @@ mod COMMON-C-STANDARD-LIBRARY is
 	mb [rand-is-value]: rule
 		< k > [rand => builtin(rand)] ...</ k >
 	: KSentence .
+	--- unsignedIntegerTypes contains T:Type
+	--- (2 ^Nat absInt(numBits(int)))
 	--- fixme should use RAND_MAX
 	mb [rand]: rule
 		< k > [Apply(builtin(rand), .List{Expression}) => 
-		interpret(absInt(randomRandom(Loc:Nat)) %Int 2147483647, int)
+		tv(absInt(randomRandom(Loc:Nat)) %Int max(int), int)
 		] ...</ k >
 		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
 	: KSentence .
@@ -836,6 +838,21 @@ mod COMMON-C-STANDARD-LIBRARY is
 		< output > [S:String => S:String +String rat2stringConversion(D:Int, 10)] </ output >
 		if N:Nat ==Bool asciiString("d") 
 	: KSentence .
+	
+	mb [lib-printf-%u]: rule
+		< k > [printf-%(Len:Nat, Loc:Nat, (tv(D:Int, ?) .,. L:List{Expression})) => printf-aux(Len:Nat +Nat lengthString(rat2stringConversion(D:Int, 10)), sNat(Loc:Nat), L:List{Expression})] ...</ k >
+		< mem >... Loc:Nat |-> N:Nat ...</ mem >
+		< output > [S:String => S:String +String rat2stringConversion(D:Int, 10)] </ output >
+		if N:Nat ==Bool asciiString("u") 
+	: KSentence .
+	
+	mb [lib-printf-%f]: rule
+		< k > [printf-%(Len:Nat, Loc:Nat, (tv(D:Float, ?) .,. L:List{Expression})) => printf-aux(Len:Nat +Nat lengthString(float2stringConversion(D:Float)), sNat(Loc:Nat), L:List{Expression})] ...</ k >
+		< mem >... Loc:Nat |-> N:Nat ...</ mem >
+		< output > [S:String => S:String +String float2stringConversion(D:Float)] </ output >
+		if N:Nat ==Bool asciiString("f") 
+	: KSentence .
+	
 	mb [lib-printf-%s]: rule
 		< k > [printf-%(Len:Nat, Loc:Nat, (tv(S:Nat, pointerType(?)) .,. L:List{Expression})) => 
 			printf-aux(0, S:Nat, .List{Expression})
@@ -1084,6 +1101,11 @@ mod COMMON-GLOBAL-DECLARATION is
 		< types >... [.Map => X:Id |-> T:Base-Type] ...</ types >
 		< typedefs >... [.Map => X:Id |-> T:Base-Type] ...</ typedefs >
 		: KSentence .
+	mb rule
+		< k > [addGlobalTypes(X:Id, arrayType(T:Type, N:Nat)) => .K] ...</ k >
+		< types >... [.Map => X:Id |-> arrayType(T:Type, N:Nat)] ...</ types >
+		< typedefs >... [.Map => X:Id |-> arrayType(T:Type, N:Nat)] ...</ typedefs >
+		: KSentence .
 		
 	--- mb rule
 		--- < k > [addGlobalTypes(E:Expression, arrayType(T:Type, N:Nat)) => addGlobalTypes(E:Expression[0], T:Type)] ...</ k >
@@ -1158,16 +1180,18 @@ mod COMMON-LOCAL-DECLARATION is
 		--- < typedefs >... struct(X:Id) |-> struct(X:Id, DS:TogetherList) ...</ typedefs >
 		--- : KSentence .
 		
-
+	op addLocals : Nat -> K .
+	mb rule
+		< k > [tv(N:Nat, ?) ~> addLocals(Loc:Nat) => .K] ...</ k >
+		< locals >... [.Bag => Bag(Loc:Nat to (Loc:Nat +Nat N:Nat))] ...</ locals >
+		: KSentence .
+	
 	mb rule
 		< k > [declare(T:Type, X:Id)
-			=> addTypes(X:Id, T:Type) ~> '_;(allocate(sizeof(T:Type)))] ...</ k >
+			=> addTypes(X:Id, T:Type) ~> allocate(sizeof(T:Type)) ~> addLocals(Loc:Nat)] ...</ k >
 		< env >... [.Map => X:Id |-> Loc:Nat] ...</ env >
 		< nextLoc > Loc:Nat </ nextLoc >
-		---< types >... [.Map => X:Id |-> T:Type] ...</ types >
-		: KSentence 
-		--- [print "Declaring " X:Id] 
-		.
+		: KSentence .
 	mb rule
 		< k > [allocate(tv(Len:Nat, ?)) => Len:Nat] ...</ k >
 		< mem >... [.Map => Loc:Nat to (Loc:Nat +Nat Len:Nat) |-> unknown] ...</ mem >
@@ -1352,6 +1376,17 @@ mod COMMON-EXPRESSIONS is
 	mb rule [tv(I1:Int, T:Type) ^ tv(I2:Int, T:Type) => cast(T:Type, I1:Int xorInt I2:Int)] 
 		if integerTypes contains T:Type
 		: KSentence .
+		
+	--- floats
+	--- fixme
+	mb rule [tv(F1:Float, T:Type) + tv(F2:Float, T:Type) => cast(T:Type, F1:Float +Float F2:Float)] 
+		: KSentence .
+	mb rule [_-_(tv(F1:Float, T:Type), tv(F2:Float, T:Type)) => cast(T:Type, _-Float_(F1:Float, F2:Float))] 
+		: KSentence .
+	mb rule [tv(F1:Float, T:Type) * tv(F2:Float, T:Type) => cast(T:Type, F1:Float *Float F2:Float)] 
+		: KSentence .
+	mb rule [tv(F1:Float, T:Type) / tv(F2:Float, T:Type) => cast(T:Type, F1:Float /Float F2:Float)] 
+		: KSentence .
 		--- --- mb rule [~ I:Int => ~Int I:Int] : KSentence .
 		
 	--- --- mb rule [I:Int >> N:Nat => I:Int >>Int N:Nat] : KSentence .
@@ -1524,6 +1559,15 @@ and ll or LL
 		fi
 		] ...</ k > 
 		: KSentence .
+		
+		
+	---C99 6.4.4.2:4 An unsuffixed floating constant has type double. If suffixed by the letter f or F, it has type float. If suffixed by the letter l or L, it has type long double.
+	mb rule < k > [F:Float => tv(F:Float, double)] ...</ k > 
+		: KSentence .
+	mb rule < k > [L(F:Float) => tv(F:Float, long-double)] ...</ k > 
+		: KSentence .
+	mb rule < k > [F(F:Float) => tv(F:Float, float)] ...</ k > 
+		: KSentence .
 	
 	--- we're ignoring types for now
 	--- mb rule [U(I:Int) => tv(I:Int, unsigned-int)] : KSentence [metadata "structural"] .
@@ -1613,7 +1657,7 @@ and ll or LL
 	mb [assign-subtract]: rule [E1:Expression -= E2:Expression => E1:Expression := E1:Expression - E2:Expression] : KSentence .
 	mb [assign-lshift]: rule [E1:Expression <<= E2:Expression => E1:Expression := E1:Expression << E2:Expression] : KSentence .
 	mb [assign-rshift]: rule [E1:Expression >>= E2:Expression => E1:Expression := E1:Expression >> E2:Expression] : KSentence .
-	mb [assign-bit-and]: rule [E1:Expression &= E2:Expression => E1:Expression := E1:Expression &binop E2:Expression] : KSentence .
+	mb [assign-bit-and]: rule [E1:Expression &binop= E2:Expression => E1:Expression := E1:Expression &binop E2:Expression] : KSentence .
 	mb [assign-bit-xor]: rule [E1:Expression ^= E2:Expression => E1:Expression := E1:Expression ^ E2:Expression] : KSentence .
 	mb [assign-bit-or]: rule [E1:Expression |= E2:Expression => E1:Expression := E1:Expression | E2:Expression] : KSentence .
 	
@@ -1635,12 +1679,11 @@ and ll or LL
 		< env >... I:Id |-> Loc:Nat ...</ env >
 		< types >... I:Id |-> structType(S:Id) ...</ types >
 		: KSentence .
+	--- fixme not exactly
 	mb rule
 		< k > [readFromMem(Loc:Nat, T:Type, tv(0, ?), ?,  N:Nat) 
 		=> interpret(N:Nat, T:Type)] ...</ k >
-		: KSentence 
-		---[print "read " N:Nat " ending at " Loc:Nat] 
-		.
+		: KSentence .
 	--- fixme floats
 	mb rule
 		< k > [readFromMem(Loc:Nat, double, ?, ?, ?) => tv(V:Float, double)] ...</ k >
@@ -1660,18 +1703,20 @@ and ll or LL
 		: KSentence [metadata "structural"] .
 		
 	--- fixme not sure about this
-	mb rule
-		[interpret(N:Nat, T:Type) => tv(N:Nat %Int (2 ^Nat absInt(numBits(T:Type))), T:Type)]
-		if notBool(min(T:Type) <=Int N:Nat andBool max(T:Type) >=Int N:Nat)
-		andBool (N:Nat >Int max(T:Type))
-		andBool integerTypes contains T:Type
-		: KSentence .
-	--- mb rule --- this is a more "correct" version of the above
-		--- [interpret(N:Nat, T:Type) => tv(_-Int_(N:Nat, (2 ^Nat absInt(numBits(T:Type)))), T:Type)]
+	--- interpret is used to "cast" values read from memory
+	--- mb rule
+		--- [interpret(N:Nat, T:Type) => tv(N:Nat %Int (2 ^Nat absInt(numBits(T:Type))), T:Type)]
 		--- if notBool(min(T:Type) <=Int N:Nat andBool max(T:Type) >=Int N:Nat)
 		--- andBool (N:Nat >Int max(T:Type))
 		--- andBool integerTypes contains T:Type
 		--- : KSentence .
+	--- signed arithmetic isn't supposed to overflow
+	mb rule --- this is a more "correct" version of the above
+		[interpret(N:Nat, T:Type) => tv(_-Int_(N:Nat, (2 ^Nat absInt(numBits(T:Type)))), T:Type)]
+		if notBool(min(T:Type) <=Int N:Nat andBool max(T:Type) >=Int N:Nat)
+		andBool (N:Nat >Int max(T:Type))
+		andBool integerTypes contains T:Type
+		: KSentence .
 	
 	--- fixme not necessarily the case that pointers are unsigned-ints
 	mb rule [interpret(N:Nat, pointerType(T:Type)) => tv(N:Nat, pointerType(T:Type))]
@@ -2241,7 +2286,7 @@ and ll or LL
 	mb rule [Cast(T:TogetherList, E:Expression) => cast(T:TogetherList, E:Expression)] : KSentence [metadata "structural rule"] .
 	
 	mb rule
-		< k > [cast(T:Type, tv(I:Int, T:Type)) => tv(I:Int, T:Type)] ...</ k > 
+		< k > [cast(T:Type, tv(B:BaseValue, T:Type)) => tv(B:BaseValue, T:Type)] ...</ k > 
 		: KSentence .
 	
 	---c99 6.3.1.3:1 When a value with integer type is converted to another integer type other than _Bool, if the value can be represented by the new type, it is unchanged. 
@@ -2256,20 +2301,23 @@ and ll or LL
 	mb rule
 		< k > [cast(T:Type, tv(I:Int, T':Type)) => cast(T:Type, tv(I:Int +Int max(T:Type) +Int 1, T':Type))] ...</ k > 
 		if notBool(min(T:Type) <=Int I:Int andBool max(T:Type) >=Int I:Int andBool (integerTypes contains T':Type))
-		andBool (unsignedIntegerTypes contains T:Type andBool I:Int <Int min(T:Type))
-		andBool (integerTypes contains T':Type)
+		andBool unsignedIntegerTypes contains T:Type 
+		andBool I:Int <Int min(T:Type)
+		andBool integerTypes contains T':Type
 		: KSentence .
 	mb rule
 		< k > [cast(T:Type, tv(I:Int, T':Type)) => cast(T:Type, tv(I:Int %Int (max(T:Type) +Int 1), T':Type))] ...</ k > 
 		if notBool(min(T:Type) <=Int I:Int andBool max(T:Type) >=Int I:Int andBool (integerTypes contains T':Type))
-		andBool (unsignedIntegerTypes contains T:Type andBool I:Int >Int max(T:Type))
-		andBool (integerTypes contains T':Type)
+		andBool unsignedIntegerTypes contains T:Type 
+		andBool I:Int >Int max(T:Type)
+		andBool integerTypes contains T':Type
 		: KSentence .
 	--- mb rule --- this is the "correct" version of the above mod
 		--- < k > [cast(T:Type, tv(I:Int, T':Type)) => cast(T:Type, tv(_-Int_(I:Int, (max(T:Type) +Int 1)), T':Type))] ...</ k > 
 		--- if notBool(min(T:Type) <=Int I:Int andBool max(T:Type) >=Int I:Int andBool (integerTypes contains T':Type))
-		--- andBool (unsignedIntegerTypes contains T:Type andBool I:Int >Int max(T:Type))
-		--- andBool (integerTypes contains T':Type)
+		--- andBool unsignedIntegerTypes contains T:Type
+		--- andBool I:Int >Int max(T:Type)
+		--- andBool integerTypes contains T':Type
 		--- : KSentence .
 	
 	---c99 6.3.1.3:3 Otherwise, the new type is signed and the value cannot be represented in it; either the result is implementation-defined or an implementation-defined signal is raised.

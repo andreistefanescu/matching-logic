@@ -38,7 +38,7 @@ void insertion_sort(int a[], int length)
       /* Insert a[i] into the sorted sublist */
       int j, v = a[i];
 
-      for (j = i - 1; j >= 0; j--)
+      for (j = i - 1; j > 0; j--)
       {
           if (a[j] <= v) break;
           a[j + 1] = a[j];
