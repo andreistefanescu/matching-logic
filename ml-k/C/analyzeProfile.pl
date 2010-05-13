@@ -66,9 +66,9 @@ sub handleOp {
 	$line = <$file>;
 	if ($line =~ m/built-in eq rewrites: (\d+) \(/){
 		my $rewrites = $1;
-		my $sql = "INSERT INTO data (rule, type, rewrites) VALUES (?, ?, ?)";
+		my $sql = "INSERT INTO data (rule, type, rewrites, matches) VALUES (?, ?, ?, ?)";
 		my $sth = $dbh->prepare($sql);
-		$sth->execute($rule, 'op', $rewrites);
+		$sth->execute($rule, 'op', $rewrites, $rewrites);
 		return;
 	}
 }
