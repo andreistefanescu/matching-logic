@@ -59,6 +59,8 @@ mod COMMON-C-SYNTAX is
 	sort Floating-Constant .
 	subsort Float < Floating-Constant .
 	--- subsort Decimal-Floating-Constant Hexadecimal-Floating-Constant < Floating-Constant .
+	op F : Float -> Floating-Constant .
+	op L : Float -> Floating-Constant .
 	
 	--- sort Decimal-Floating-Constant .
 	--- --- TODO
@@ -182,7 +184,7 @@ mod COMMON-C-SYNTAX is
 	---sort Assignment-Expression .
 	---subsort Assignment-Expression < K .
 	---subsort Conditional-Expression < Assignment-Expression .
-	ops _*=_ _/=_ _%=_ _+=_ _-=_ _<<=_ _>>=_ _&=_ _^=_ _|=_ : Expression Expression -> Expression [prec 53] .
+	ops _*=_ _/=_ _%=_ _+=_ _-=_ _<<=_ _>>=_ _&binop=_ _^=_ _|=_ : Expression Expression -> Expression [prec 53] .
 	--- op _=_ : Unary-Expression Assignment-Expression -> Assignment-Expression .
 	op _:=_ : Expression Expression -> Expression [prec 53 metadata "strict(2)"] .
 			

@@ -69,7 +69,7 @@ void insertion_sort(void * base, size_t num_elements, size_t element_size,
    for (i=1; i < num_elements; i++)
    {
        int j;
-       for (j = i - 1; j >= 0; j--)
+       for (j = i - 1; j > 0; j--)
        {
            if (element_less_than(j, j + 1)) break;
            exchange_elements(j, j + 1);
