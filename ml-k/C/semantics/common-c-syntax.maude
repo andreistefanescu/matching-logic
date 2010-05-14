@@ -1,5 +1,15 @@
 mod COMMON-C-SYNTAX is
-	including PL-BUILTINS .
+	including PL-BOOL .
+	including PL-EXT-BOOL .
+	including PL-NAT .
+	including PL-INT .
+	including PL-RAT .
+	including PL-FLOAT .
+	including PL-STRING .
+	including PL-CONVERSION .
+	including PL-QID .
+	including PL-RANDOM .
+	including PL-ID .
 	
 	--- subsort 
 		--- Declaration-Specifiers 
@@ -365,6 +375,8 @@ mod COMMON-C-SYNTAX is
 	--- op _`(_`) : Direct-Declarator Parameter-Type-List -> Direct-Declarator . --- Ex: main(void)
 	op Direct-Function-Declarator : Direct-Declarator Parameter-Type-List -> Direct-Declarator .
 	op Direct-Function-Declarator : Parameter-Type-List -> Direct-Declarator .
+	op BitField : Expression -> Direct-Declarator .
+	op BitField : Declarator Expression -> Direct-Declarator .
 	--- --- TODO op _`(`) : Declarator -> Declarator .
 	--- --- TODO op _`(_`) : Declarator Identifier-List -> Declarator .
 	

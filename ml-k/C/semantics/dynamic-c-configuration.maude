@@ -1,7 +1,7 @@
 mod C-CONFIGURATION is
 	including C-SYNTAX .
 	including COMMON-C-CONFIGURATION .
-	including PL-BUILTINS .
+	---including PL-BUILTINS .
 
 	mb configuration 
 		< T > 

@@ -16,6 +16,8 @@ mod COMMON-SEMANTIC-SYNTAX is
 	op skipval : -> KResult .
 	op debugK : -> K .
 	op discard : -> K .
+	op unnamedBitField : -> Id [ctor] .
+	
 	sort State .
 	subsort String < State .
 	
@@ -35,6 +37,7 @@ mod COMMON-SEMANTIC-SYNTAX is
 	op sizeof : Type -> Expression .
 	op HOLE : -> Expression .
 	op arrayType : Type Nat -> Type .
+	op bitfieldType : Type Nat -> Type .
 	op functionType : Type List{K} -> Type .
 	op pointerType : Type -> Type .
 	op structType : Id -> Type .
@@ -378,6 +381,7 @@ mod TYPES is
 		['Pointer(T:Type) => pointerType(T:Type)]
 		: KSentence [metadata "structural"] .
 		
+
 	mb rule 
 		< k > ['Pointer(T:Type,, 'Direct-Function-Declarator('Parameter-Type-List(LL:List{Parameter}))) 
 		=> pointerType(functionType(T:Type, getList{K}(LL:List{Parameter})))] ...</ k >
@@ -389,6 +393,22 @@ mod TYPES is
 	--- move "Pointer" to where it belongs
 	mb rule 
 		[L:KLabel(T:Type,, 'Pointer(D:K)) => L:KLabel(pointerType(T:Type),, D:K)]
+		if false
+		orBool L:KLabel ==Bool 'Declaration
+		orBool L:KLabel ==Bool 'Field
+		orBool L:KLabel ==Bool 'Parameter-Declaration
+		orBool L:KLabel ==Bool 'Typedef
+		: KSentence [metadata "structural"] .
+	mb rule 
+		[L:KLabel(T:Type,, 'BitField(D:K,, N:Nat)) => L:KLabel(bitfieldType(T:Type, N:Nat),, D:K)]
+		if false
+		orBool L:KLabel ==Bool 'Declaration
+		orBool L:KLabel ==Bool 'Field
+		orBool L:KLabel ==Bool 'Parameter-Declaration
+		orBool L:KLabel ==Bool 'Typedef
+		: KSentence [metadata "structural"] .
+	mb rule 
+		[L:KLabel(T:Type,, 'BitField(N:Nat)) => L:KLabel(bitfieldType(T:Type, N:Nat),, unnamedBitField)]
 		if false
 		orBool L:KLabel ==Bool 'Declaration
 		orBool L:KLabel ==Bool 'Field
