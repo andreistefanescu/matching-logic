@@ -72,6 +72,7 @@ let noscores s =
 let mostNeg32BitInt : int64 = (Int64.of_string "-0x80000000")
 let mostNeg64BitInt : int64 = (Int64.of_string "-0x8000000000000000")
 
+let toString d = (sprint 1000 d)
 
 let d_ikind () = function
     IChar -> text "char"
@@ -1140,15 +1141,20 @@ class virtual defaultMaudePrinterClass = object (self)
 	| _ -> E.s (E.bug "Not handling this stmtkind")
 
 	method pFieldDecl () fi = 
-     (self#pType
-        (Some (text (if fi.fname = missingFieldName then "" else fi.fname)))
+	 match fi.fbitfield with 
+	 | None -> ((self#pType
+        (Some (text (if fi.fname = missingFieldName then "" else (fi.fname))))
+        () 
+        fi.ftype)
+	       ++ text " "
+	       ++ self#pAttrs () fi.fattr) 
+     | Some i -> ( (self#pType
+        (Some (text (if fi.fname = missingFieldName then ("BitField(" ^ string_of_int i ^ ")") else ("BitField(" ^ fi.fname ^ ", " ^ string_of_int i ^ ")"))))
         () 
         fi.ftype)
        ++ text " "
-       ++ (match fi.fbitfield with None -> nil 
-       | Some i -> text ": " ++ num i ++ text " ")
-       ++ self#pAttrs () fi.fattr
-	   
+       ++ self#pAttrs () fi.fattr)
+	   (*text ", " ++ num i ++ text " ")*)
 	   
   method pInit () =	
 	(print_string ("asdf");

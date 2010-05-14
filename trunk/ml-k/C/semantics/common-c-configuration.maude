@@ -1,6 +1,6 @@
 mod COMMON-C-CONFIGURATION is
 	including C-SYNTAX .
-	including PL-BUILTINS .
+	---including PL-BUILTINS .
 	including C-SYNTAX .
 	including MATCH-C-SYNTAX .
 	

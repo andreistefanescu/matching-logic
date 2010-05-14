@@ -4,6 +4,8 @@ int counter = 0;
 
 typedef struct struct_node {
 	unsigned int m:1, c:1, v:1; /* booleans */
+	unsigned int :2; // for testing purposes
+	unsigned int blah:2; // for testing purposes
 	struct struct_node *l, *r;
 	int value;
 } * node;
@@ -45,6 +47,7 @@ node createNode(){
 	newNode->l = NULL;
 	newNode->r = NULL;
 	newNode->value = counter;
+	newNode->blah = 0;
 	counter++;
 	return newNode;
 }
@@ -110,4 +113,5 @@ int main(void) {
 	
 	schorr_waite(root);
 	showGraph(root);
+	return 0;
 }
