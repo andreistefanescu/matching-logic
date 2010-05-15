@@ -54,7 +54,7 @@ mod COMMON-SEMANTIC-SYNTAX is
 	op addGlobalTypes : K K -> K .
 	op addGlobalTypes : K -> K .
 	op Closure : K K K -> Value .
-	op putInMem : Nat K Type K -> K [metadata "strict(2 4)"] .
+	op putInMem : BaseValue K Type K -> K [metadata "strict(2 4)"] .
 	op putBytesInMem : Nat List{K} Type K -> K [metadata "strict(4)"] .
 	op sizeofType : Type -> K .
 	op firstChar : String -> Char .
@@ -62,6 +62,8 @@ mod COMMON-SEMANTIC-SYNTAX is
 	op charToAscii : String -> Nat .
 	op _to_ : Nat Nat -> List{K} . 
 	op calcStructSize : List{KResult} -> K .
+	op necessaryBytes : K -> K [metadata "strict"] .
+	op calcStructSize-aux : List{KResult} Rat -> K .
 	op cast : K K -> K [metadata "strict"] .
 			
 	op integerTypes : -> Set .
@@ -216,6 +218,9 @@ mod SIZEOF is
 	mb rule
 		< k > [sizeofType(arrayType(T:Type, N:Nat)) => sizeof(T:Type) * tv(N:Nat, cfg:sizeut)] ...</ k >
 		: KSentence .
+	mb rule
+		< k > [sizeofType(bitfieldType(T:Type, N:Nat)) => tv(N:Nat /Rat 8, cfg:sizeut)] ...</ k >
+		: KSentence .
 	
 	---C99 6.2.6.1:26 ... Each unqualified type has several qualified versions of its type,40) corresponding to the combinations of one, two, or all three of the const, volatile, and restrict qualifiers. The qualified or unqualified versions of a type are distinct types that belong to the same type category and have the same representation and alignment requirements. ...
 	mb rule
@@ -310,18 +315,39 @@ mod SIZEOF is
 	--- mb [sizeof-pointer]: rule
 		--- < k > [sizeof(Pointer(?)) => tv(numBytes(unsigned-long-int), cfg:sizeut)] ...</ k >
 	--- : KSentence .
+
+	eq necessaryBytes(tv(R:Rat, T:Type)) = tv(truncRat(R:Rat +Rat (7 /Rat 8)), T:Type) .
 	mb [sizeof-struct]: rule
 		< k > [sizeofType(structType(X:Id)) => calcStructSize(L:List{KResult})] ...</ k >
 		< structs >... struct(X:Id) |-> L:List{KResult} ...</ structs >
 	: KSentence .
 	
+	mb [calcStructSize]: rule
+		< k > [calcStructSize(L:List{KResult}) => necessaryBytes(calcStructSize-aux(L:List{KResult}, 0))] ...</ k >
+		: KSentence .
 	
 	mb [calcStructSize]: rule
-		< k > [calcStructSize((typedField(T:Type, X:Id),, L:List{KResult})) 
-			=> '_+_(sizeof(T:Type),, calcStructSize(L:List{KResult}))] ...</ k >
+		< k > [calcStructSize-aux((typedField(T:Type, X:Id),, L:List{KResult}), R:Rat) 
+			=> sizeofType(T:Type) ~> calcStructSize-aux(L:List{KResult}, R:Rat)] ...</ k >
+		if T:Type isa 'bitfieldType
 		: KSentence .
+	mb [calcStructSize]: rule
+		< k > [calcStructSize-aux((typedField(T:Type, X:Id),, L:List{KResult}), R:Rat)
+			=> sizeofType(T:Type) ~> calcStructSize-aux(L:List{KResult}, truncRat(R:Rat +Rat (7 /Rat 8)))] ...</ k >
+		if notBool(T:Type isa 'bitfieldType)
+		: KSentence .
+	
+	op _isa _ : K KLabel -> Bool .
+	eq KL:KLabel(?) isa KL:KLabel = true .
+	eq ? isa ? = false [owise] .
+		
+	mb [calcStructSize-cool]: rule
+		< k > [tv(R':Rat, ?) ~> calcStructSize-aux(L:List{KResult}, R:Rat) 
+			=> calcStructSize-aux(L:List{KResult}, R:Rat +Rat R':Rat)] ...</ k >
+		: KSentence .
+		
 	mb [calcStructSize-done]: rule
-		[calcStructSize(.List{K}) => tv(0, cfg:sizeut)]
+		[calcStructSize-aux(.List{K}, R:Rat) => tv(R:Rat, cfg:sizeut)]
 		: KSentence .	
 	
 	--- mb [sizeof-id]: rule
@@ -1359,7 +1385,8 @@ mod COMMON-EXPRESSIONS is
 	mb rule [cast(qualifiedType(T:Type, ?), V:Value) => cast(T:Type, V:Value)] 
 		: KSentence .	
 	
-	mb rule [tv(I1:Int, T:Type) + tv(I2:Int, T:Type) => cast(T:Type, I1:Int +Int I2:Int)] 
+	--- fixme not sure which is correct
+	mb rule [tv(I1:Rat, T:Type) + tv(I2:Rat, T:Type) => interpret(I1:Rat +Rat I2:Rat, T:Type)] 
 		if integerTypes contains T:Type
 		: KSentence .
 	mb rule [_-_(tv(I1:Int, T:Type), tv(I2:Int, T:Type)) => cast(T:Type, _-Int_(I1:Int,I2:Int))] 
@@ -1721,6 +1748,10 @@ and ll or LL
 		if min(T:Type) <=Int N:Nat andBool max(T:Type) >=Int N:Nat
 		andBool integerTypes contains T:Type
 		: KSentence [metadata "structural"] .
+	mb rule [interpret(N:Rat, T:Type) => tv(N:Rat, T:Type)]
+		if min(T:Type) <=Rat N:Rat andBool max(T:Type) >=Rat N:Rat
+		andBool integerTypes contains T:Type
+		: KSentence [metadata "structural"] .
 		
 	--- fixme not sure about this
 	--- interpret is used to "cast" values read from memory
@@ -1873,6 +1904,14 @@ and ll or LL
 		< k > [assign(Deref(tv(Loc:Nat, pointerType(T:Type))), tv(V:Int, T:Type)) 
 		=> putInMem(Loc:Nat, tv(V:Int, T:Type), T:Type, sizeof(T:Type)) ~> tv(V:Int, T:Type)] ...</ k >
 		: KSentence .
+	mb [assign-bitfield]: rule
+		< k > [assign(Deref(tv(pair(N:Nat, O:Nat), pointerType(bitfieldType(T:Type, Len:Nat)))), tv(V:Int, T:Type)) 
+		=> putInMem(pair(N:Nat, O:Nat), tv(V:Int, T:Type), T:Type, tv(Len:Nat, cfg:sizeut)) ~> tv(V:Int, T:Type)] ...</ k >
+		: KSentence .
+	mb [assign-bitfield]: rule
+		< k > [assign(Deref(tv(N:Nat, pointerType(bitfieldType(T:Type, Len:Nat)))), tv(V:Int, T:Type)) 
+		=> putInMem(pair(N:Nat, 0), tv(V:Int, T:Type), T:Type, tv(Len:Nat, cfg:sizeut)) ~> tv(V:Int, T:Type)] ...</ k >
+		: KSentence .
 	--- fixme this is to get around L:List{K} not comparing equal
 	mb [assign-fp]: rule
 		< k > [assign(Deref(tv(Loc:Nat, pointerType(pointerType(functionType(T:Type, L:List{K}))))), tv(V:Int, pointerType(functionType(T:Type, L':List{K})))) 
@@ -1905,25 +1944,38 @@ and ll or LL
 		: KSentence .
 	
 	op putByteInMem : Nat BaseValue -> K .
+	op putBitInMem : BaseValue BaseValue -> K .
 	mb rule
 		< k > [putInMem(?, ?, ?, tv(0, ?)) => .K] ...</ k >
 		: KSentence .
 	mb rule
 		< k > [putInMem(Loc:Nat, tv(N:Int, pointerType(functionType(T:Type, L:List{K}))), pointerType(functionType(T:Type, L':List{K})), tv(Len:Nat, J:Type)) 
 		=> putInMem(Loc:Nat, tv(N:Int, pointerType(functionType(T:Type, L':List{K}))), pointerType(functionType(T:Type, L':List{K})), tv(Len:Nat, J:Type))] ...</ k >
-		: KSentence 
-		.
+		: KSentence .
 	mb rule
 		< k > [putInMem(Loc:Nat, tv(N:Int, T:Type), T:Type, tv(sNat(Len:Nat), J:Type)) 
 		=> putByteInMem(Loc:Nat, ((N:Int %Int 256) +Int 256) %Int 256) ~> putInMem(sNat(Loc:Nat), tv(N:Int >>Int 8, T:Type), T:Type, tv(Len:Nat, J:Type))] ...</ k >
-		: KSentence 
-		.
+		: KSentence .
+		
+	mb rule
+		< k > [putInMem(pair(Base:Nat, Offset:Nat), tv(N:Int, T:Type), T:Type, tv(sNat(Len:Nat), J:Type)) 
+		=> putBitInMem(pair(Base:Nat, Offset:Nat), ((N:Int %Int 2) +Int 2) %Int 2) ~> putInMem(pair(Base:Nat, sNat(Offset:Nat)), tv(N:Int >>Int 1, T:Type), T:Type, tv(Len:Nat, J:Type))] ...</ k >
+		if Offset:Nat % 8 =/=Bool 0
+		: KSentence .
+		
 	mb rule
 		< k > [putByteInMem(Loc:Nat, N:Nat) => .K] ...</ k >
 		< mem >... Loc:Nat |-> [? => N:Nat] ...</ mem >
-		: KSentence 
-		---[print "w@ " Loc:Nat ": " N:Nat] 
-		.
+		: KSentence .
+	--- fixme probably a better way to do this
+	mb rule
+		< k > putBitInMem(pair(Base:Nat, ?), ?) ...</ k >
+		< mem >... Base:Nat |-> [unknown => 0] ...</ mem >
+		: KSentence .
+	mb rule
+		< k > [putBitInMem(pair(Base:Nat, Offset:Nat), N:Nat) => .K] ...</ k >
+		< mem >... Base:Nat |-> [Old:Nat => Old:Nat &Nat (((1 <<Nat Offset:Nat) xorNat 255) |Nat (N:Nat <<Nat Offset:Nat))] ...</ mem >
+		: KSentence .
 	
 	--- mb rule
 		--- < k > [assign(Deref(tv(Loc:Nat, pointerType(T:Type))), tv(V:BaseValue, T:Type)) => V:BaseValue] ...</ k >
@@ -1966,12 +2018,24 @@ and ll or LL
 	eq fixPointerType(arrayType(T:Type, ?)) = pointerType(T:Type) .
 	eq fixPointerType(structType(X:Id)) = pointerType(structType(X:Id)) .
 	eq fixPointerType(pointerType(T:Type)) = pointerType(pointerType(T:Type)) .
+	eq fixPointerType(bitfieldType(T:Type, N:Nat)) = pointerType(bitfieldType(T:Type, N:Nat)) .
+	eq fixPointerType(bitfieldType(T:Type, N:Nat)) = pointerType(bitfieldType(T:Type, N:Nat)) .
 	
-	--- fixme if T:Type is an array type, this is wrong
+	op figureOffset : Nat K Type -> K [metadata "strict(2)"] .
+	op pair : Rat Rat -> BaseValue .
+	ceq figureOffset(Base:Nat, tv(R:Rat, ?), T:Type) = tv(pair(Base:Nat +Rat truncRat(R:Rat),_-Rat_(R:Rat, truncRat(R:Rat)) *Rat 8), pointerType(void))
+	if T:Type isa 'bitfieldType .
+	ceq figureOffset(Base:Nat, tv(R:Rat, ?), T:Type) = tv(truncRat((Base:Nat +Rat R:Rat) +Rat (7 /Rat 8)), pointerType(void))
+	if notBool(T:Type isa 'bitfieldType) .
+	---eq pair(N:Nat, 0) = N:Nat .
+	
+	--- todo
 	mb [address-of-arrow]: rule
-		< k > [&(tv(Base:Int, pointerType(structType(S:Id))) -> X:Id) => cast(fixPointerType(T:Type), '_+_( tv(Base:Int, pointerType(void)),, calcStructSize(L1:List{KResult})))] ...</ k >
+		< k > [&(tv(Base:Nat, pointerType(structType(S:Id))) -> X:Id) => cast(fixPointerType(T:Type), figureOffset(Base:Nat, calcStructSize-aux(L1:List{KResult}, 0), T:Type))] ...</ k >
 		< structs >... struct(S:Id) |-> (L1:List{KResult},, typedField(T:Type, X:Id),, ?:List{KResult}) ...</ structs >
 		: KSentence .
+		
+	--- '_+_(tv(Base:Int, pointerType(void)),, calcStructSize(L1:List{KResult}))
 	
 	mb [address-of-dot]: rule
 		< k > [&(E:Expression . X:Id) => &((&(E:Expression)) -> X:Id)] ...</ k >
@@ -2002,12 +2066,21 @@ and ll or LL
 	mb rule
 		< k > [dot-aux(E:Expression, F:Id, pointerType(T:Type)) => E:Expression ~> dot-aux(HOLE, F:Id, pointerType(T:Type))] ...</ k >
 		: KSentence .
+	mb rule
+		< k > [dot-aux(E:Expression, F:Id, bitfieldType(T:Type, N:Nat)) => E:Expression ~> dot-aux(HOLE, F:Id, bitfieldType(T:Type, N:Nat))] ...</ k >
+		: KSentence .
 		
 	--- fixme doesn't handle case where what we are looking up is a struct
+	--- todo
+	--- mb rule
+		--- < k > [structVal(L:List{K}, structType(S:Id)) ~> dot-aux(HOLE, F:Id, T:Type) => extractField(L:List{K}, T:Type, sizeof(T:Type), calcStructSize(L1:List{KResult}), 0, 0)] ...</ k >
+		--- < structs >... struct(S:Id) |-> (L1:List{KResult},, typedField(T:Type, F:Id),, ?:List{KResult}) ...</ structs >
+		--- : KSentence .
 	mb rule
-		< k > [structVal(L:List{K}, structType(S:Id)) ~> dot-aux(HOLE, F:Id, T:Type) => extractField(L:List{K}, T:Type, sizeof(T:Type), calcStructSize(L1:List{KResult}), 0, 0)] ...</ k >
+		< k > [structVal(L:List{K}, structType(S:Id)) ~> dot-aux(HOLE, F:Id, T:Type) => extractField(L:List{K}, T:Type, sizeofType(T:Type), figureOffset(0, calcStructSize-aux(L1:List{KResult}, 0), T:Type), 0, 0)] ...</ k >
 		< structs >... struct(S:Id) |-> (L1:List{KResult},, typedField(T:Type, F:Id),, ?:List{KResult}) ...</ structs >
-		: KSentence .
+		: KSentence .		
+	
 		
 	--- mb [dot-static]: rule
 		--- < k > [X:Id . F:Id => &(X:Id . F:Id)] ...</ k >
@@ -2034,17 +2107,23 @@ and ll or LL
 		--- < k > [V:Value ~> (HOLE . F:Id) => V:Value . F:Id] ...</ k >
 		--- : KSentence .
 		
+	--- only have to make T' =/= T'' because of figureOffset
+	mb [extractField-shift]: rule
+		< k > [extractField((K:K,, L:List{K}), T:Type, V:Value, tv(pair(sNat(Base:Nat), Offset:Nat), T':Type), 0, 0) => extractField(L:List{K}, T:Type, V:Value, tv(pair(Base:Nat, Offset:Nat), T':Type), 0, 0)] ...</ k >
+		: KSentence .
 	mb [extractField-shift]: rule
 		< k > [extractField((K:K,, L:List{K}), T:Type, V:Value, tv(sNat(Offset:Nat), T':Type), 0, 0) => extractField(L:List{K}, T:Type, V:Value, tv(Offset:Nat, T':Type), 0, 0)] ...</ k >
 		: KSentence .
+		
+	--- todo need to enable extracting bit fields
 	mb [extractField-grab]: rule
-		< k > [extractField((N':Nat,, L:List{K}), T:Type, tv(sNat(Left:Nat), T':Type), tv(0, T':Type), N:Nat, Len:Nat) 
-		=> extractField(L:List{K}, T:Type, tv(Left:Nat, T':Type), tv(0, T':Type), N:Nat |Nat (N':Nat <<Nat (8 *Nat Len:Nat)), sNat(Len:Nat))]
+		< k > [extractField((N':Nat,, L:List{K}), T:Type, tv(sNat(Left:Nat), T':Type), tv(0, T'':Type), N:Nat, Len:Nat) 
+		=> extractField(L:List{K}, T:Type, tv(Left:Nat, T':Type), tv(0, T'':Type), N:Nat |Nat (N':Nat <<Nat (8 *Nat Len:Nat)), sNat(Len:Nat))]
 		...</ k > : KSentence .
 	
 		
 	mb [extractField-done]: rule
-		< k > [extractField(?, T:Type, tv(0, T':Type), tv(0, T':Type), N:Nat, ?) => interpret(N:Nat, T:Type)]
+		< k > [extractField(?, T:Type, tv(0, T':Type), tv(0, T'':Type), N:Nat, ?) => interpret(N:Nat, T:Type)]
 		...</ k >
 		: KSentence .
 	
@@ -2393,6 +2472,12 @@ and ll or LL
 		< k > [cast(T:Type, tv(I:Int, pointerType(structType(S:Id)))) 
 		=> cast(T:Type, tv(I:Int, pointerType(T':Type)))] ...</ k > 
 		< structs >... struct(S:Id) |-> (typedField(T':Type, ?),, ?:List{KResult}) ...</ structs >
+		: KSentence .
+		
+		
+	mb rule
+		< k > [cast(pointerType(bitfieldType(T:Type, Len:Nat)), tv(pair(N:Nat, O:Nat), pointerType(?)))
+		=> tv(pair(N:Nat, O:Nat), pointerType(bitfieldType(T:Type, Len:Nat)))] ...</ k > 
 		: KSentence .
 	--- mb rule
 		--- < k > [cast(structType(X:Id), tv(I:Int, pointerType(void))) => tv(I:Int, structType(X:Id))] ...</ k > 
