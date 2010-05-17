@@ -258,6 +258,7 @@ mod COMMON-C-SYNTAX is
 	sort Base-Type .
 	--- subsort Struct-Or-Union-Specifier Enum-Specifier < Type-Specifier .
 	subsort Typedef-Name Struct-Or-Union-Specifier Base-Type < Type-Specifier .
+	subsort Typedef-Name < Id .
 	ops void 
 		no-type
 		float 

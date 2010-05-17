@@ -215,6 +215,14 @@ endm
 mod SIZEOF is
 	including COMMON-INCLUDE .
 
+	ceq min(bitfieldType(T:Type, N:Nat)) = 0
+		if unsignedIntegerTypes contains T:Type .
+	ceq max(bitfieldType(T:Type, N:Nat)) = _-Int_(2 ^Nat absInt(N:Nat), 1)
+		if unsignedIntegerTypes contains T:Type .
+	
+	
+	
+	
 	mb rule
 		< k > [sizeofType(arrayType(T:Type, N:Nat)) => sizeof(T:Type) * tv(N:Nat, cfg:sizeut)] ...</ k >
 		: KSentence .
@@ -1752,6 +1760,15 @@ and ll or LL
 		if min(T:Type) <=Rat N:Rat andBool max(T:Type) >=Rat N:Rat
 		andBool integerTypes contains T:Type
 		: KSentence [metadata "structural"] .
+	--- fixme todo bug why???
+	--- mb rule [interpret(N:Nat, bitfieldType(T:Type, Len:Nat)) => tv(N:Nat, T:Type)]
+		--- if min(bitfieldType(T:Type, Len:Nat)) <=Int N:Nat 
+		--- andBool max(bitfieldType(T:Type, Len:Nat)) >=Int N:Nat
+		--- : KSentence [metadata "structural"] .
+	mb rule [interpret(N:Nat, bitfieldType(T:Type, Len:Nat)) => tv(N:Nat, T:Type)]
+		if 0 <=Int N:Nat 
+		andBool _-Int_(2 ^Nat Len:Nat, 1) >=Int N:Nat
+		: KSentence [metadata "structural"] .
 		
 	--- fixme not sure about this
 	--- interpret is used to "cast" values read from memory
@@ -1974,9 +1991,12 @@ and ll or LL
 		: KSentence .
 	mb rule
 		< k > [putBitInMem(pair(Base:Nat, Offset:Nat), N:Nat) => .K] ...</ k >
-		< mem >... Base:Nat |-> [Old:Nat => Old:Nat &Nat (((1 <<Nat Offset:Nat) xorNat 255) |Nat (N:Nat <<Nat Offset:Nat))] ...</ mem >
+		< mem >... Base:Nat |-> [Old:Nat => 
+		---Old:Nat &Nat (((1 <<Nat Offset:Nat) xorNat 255) |Nat (N:Nat <<Nat Offset:Nat))
+		(Old:Nat &Nat ((1 <<Nat Offset:Nat) xorNat 255)) |Nat (N:Nat <<Nat Offset:Nat)
+		] ...</ mem >
 		: KSentence .
-	
+
 	--- mb rule
 		--- < k > [assign(Deref(tv(Loc:Nat, pointerType(T:Type))), tv(V:BaseValue, T:Type)) => V:BaseValue] ...</ k >
 		--- < mem >... Loc:Nat |-> [? => V:BaseValue] ...</ mem >
@@ -2045,7 +2065,7 @@ and ll or LL
 		< k > [tv(Base:Int, pointerType(structType(S:Id))) -> X:Id => Deref(tv(Base:Int, pointerType(structType(S:Id)))) . X:Id] ...</ k >
 		: KSentence .
 
-	op extractField : List{K} Type K K Nat Nat -> K [metadata "strict(3 4)"] .
+	op extractField : List{K} Type K K Nat Rat -> K [metadata "strict(3 4)"] .
 	--- mb [dot]: rule
 		--- < k > [tv(N:Nat, structType(S:Id)) . X:Id => extractField(N:Nat, T:Type, sizeof(T:Type), calcStructSize(L1:List{KResult}))] ...</ k >
 		--- < structs >... struct(S:Id) |-> (L1:List{KResult},, typedField(T:Type, X:Id),, ?:List{KResult}) ...</ structs >
@@ -2108,18 +2128,30 @@ and ll or LL
 		--- : KSentence .
 		
 	--- only have to make T' =/= T'' because of figureOffset
-	mb [extractField-shift]: rule
+	mb [extractField-shift-bitfield]: rule
 		< k > [extractField((K:K,, L:List{K}), T:Type, V:Value, tv(pair(sNat(Base:Nat), Offset:Nat), T':Type), 0, 0) => extractField(L:List{K}, T:Type, V:Value, tv(pair(Base:Nat, Offset:Nat), T':Type), 0, 0)] ...</ k >
+		: KSentence .
+	mb [extractField-shift-bitfield-combine]: rule
+		< k > [extractField((L:List{K},, N:Nat,, N':Nat), T:Type, V:Value, tv(pair(0, Offset:Nat), T':Type), 0, 0) => extractField((L:List{K},, (N':Nat <<Nat 8) |Nat N:Nat), T:Type, V:Value, tv(pair(0, Offset:Nat), T':Type), 0, 0)] ...</ k >
+		: KSentence .
+	mb [extractField-shift-bitfield-offset]: rule
+		< k > [extractField(N':Nat, T:Type, V:Value, tv(pair(0, sNat(Offset:Nat)), T':Type), 0, 0) => extractField(N':Nat >>Nat 1, T:Type, V:Value, tv(pair(0, Offset:Nat), T':Type), 0, 0)] ...</ k >
 		: KSentence .
 	mb [extractField-shift]: rule
 		< k > [extractField((K:K,, L:List{K}), T:Type, V:Value, tv(sNat(Offset:Nat), T':Type), 0, 0) => extractField(L:List{K}, T:Type, V:Value, tv(Offset:Nat, T':Type), 0, 0)] ...</ k >
 		: KSentence .
 		
 	--- todo need to enable extracting bit fields
-	mb [extractField-grab]: rule
+	mb [extractField-grab-normal]: rule
 		< k > [extractField((N':Nat,, L:List{K}), T:Type, tv(sNat(Left:Nat), T':Type), tv(0, T'':Type), N:Nat, Len:Nat) 
 		=> extractField(L:List{K}, T:Type, tv(Left:Nat, T':Type), tv(0, T'':Type), N:Nat |Nat (N':Nat <<Nat (8 *Nat Len:Nat)), sNat(Len:Nat))]
 		...</ k > : KSentence .
+	mb [extractField-grab-bitfield]: rule
+		< k > [extractField(N':Nat, T:Type, tv(Left:Rat, T':Type), tv(pair(0, 0), T'':Type), N:Nat, Len:Rat) 
+		=> extractField((N':Nat >>Nat 1), T:Type, tv(_-Rat_(Left:Rat, 1 /Rat 8), T':Type), tv(0, T'':Type), N:Nat |Nat ((N':Nat &Nat 1) <<Nat absInt(truncRat(8 *Rat Len:Rat))), Len:Rat +Rat (1 /Rat 8))] ...</ k > 
+		if Left:Rat =/=Bool 0
+		andBool (8 *Rat Len:Rat) ==Bool truncRat(8 *Rat Len:Rat)
+		: KSentence .
 	
 		
 	mb [extractField-done]: rule
