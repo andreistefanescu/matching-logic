@@ -1,5 +1,7 @@
 use strict;
 use DBI;
+my $RULE_LENGTH = 200;
+
 my $dbh = DBI->connect("dbi:SQLite:dbname=maudeProfileDBfile.sqlite","","");
 $dbh->do("DROP TABLE IF EXISTS data;");
 $dbh->do("CREATE TABLE data (rule NOT NULL, type NOT NULL, rewrites BIGINT NOT NULL, matches BIGINT, fragment NULL DEFAULT NULL, initialTries NULL DEFAULT NULL, resolveTries NULL DEFAULT NULL, successes NULL DEFAULT NULL, failures NULL DEFAULT NULL)");
@@ -43,7 +45,7 @@ ORDER BY a.matches DESC
 $sth->execute();
 print "Rule, Type, Rewrites, Matches, Fragment, Initial Tries, Resolve Tries, Successes, Failures\n";
 while (my $hash_ref = $sth->fetchrow_hashref) {
-	my $rule = substr($hash_ref->{rule}, 0, 100);
+	my $rule = substr($hash_ref->{rule}, 0, $RULE_LENGTH);
 	$rule =~ tr{\n}{ }; # turn newlines into spaces
 	$rule =~ s/["]/""/g; # escape quotes
 	my $type = $hash_ref->{type};

@@ -3,9 +3,6 @@ mod C-TEST is
 	including C .
 endm
 set print attribute on .
----set clear profile off .
----set profile on .
 --- rew eval("program"(.List{K})) .
 %s
----show profile .
 ---q
