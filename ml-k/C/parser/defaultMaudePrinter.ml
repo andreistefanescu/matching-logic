@@ -799,6 +799,7 @@ class virtual defaultMaudePrinterClass = object (self)
         proto ++ body ++ line
           
     | GType (typ, l) ->
+		typ.tname <- "typedefName(" ^ typ.tname ^ ")";
         self#pLineDirective ~forcefile:true l ++
           text "(Typedef ("
           ++ (self#pType (Some (text (typ.tname))) () typ.ttype)
