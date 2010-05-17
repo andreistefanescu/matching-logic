@@ -32,12 +32,20 @@ gcc-output:
 	@make -C $(C_DIR) gcc-output
 
 kcompile: $(C_DIR)/*.gen.maude
-	@make -C $(SEMANTICS_DIR) $(SEMANTICS) INPUT="$(realpath $^)"
+	@time (make -C $(SEMANTICS_DIR) $(SEMANTICS) INPUT="$(realpath $^)")
 	
 build-all: maude-fragments kcompile
+
+benchmark: profile.csv
+
+profile.csv: profile.log
+	perl analyzeProfile.pl > profile.csv
+
+profile.log: SEMANTICS=dynamic
+profile.log: build-all 
+	@time (maude -no-wrap $(SEMANTICS_DIR)/test-benchmark.maude > profile.log)
 		
 run: 
-#@maude -no-wrap $(SEMANTICS_DIR)/test.maude > profilenoclear.log
 	@maude -no-wrap $(SEMANTICS_DIR)/test.maude
 		
 clean:

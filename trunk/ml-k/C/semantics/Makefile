@@ -57,15 +57,18 @@ match: CONFIGURATION_FILE = "match-c-configuration"
 match: semantics
 
 # $(PROGRAM_TARGET) 
-semantics: c-compiled.maude test.maude 
+semantics: c-compiled.maude test.maude test-benchmark.maude
 
 #program-%-compiled.maude: $(PROGRAM_DIR)/% programs-gen.maude
 #	$(K-PROGRAM-COMPILE) sepcomp.maude C C-PROGRAM program-$(notdir $<)
 
 test.maude: force
 	@printf "`cat test.template`" "`echo -e "$(foreach var, $(PROGRAM_NAMES), rew eval(\\"$(var)\\"(.List{K})) . \n)\n"`" > test.maude
+	
+test-benchmark.maude: force
+	@printf "`cat test-benchmark.template`" "`echo -e "$(foreach var, $(PROGRAM_NAMES), rew eval(\\"$(var)\\"(.List{K})) . \n)\n"`" > test-benchmark.maude
 
 clean:
-	rm -f c-compiled.maude c.maude test.maude programs-gen.maude kcompile_*
+	rm -f c-compiled.maude c.maude test.maude programs-gen.maude test-benchmark.maude kcompile_*
 
 force: ;
