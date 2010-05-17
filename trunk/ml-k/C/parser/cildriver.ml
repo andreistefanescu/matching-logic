@@ -117,7 +117,8 @@ let rec printIdentifierList (out : out_channel) (l : string list) = match l with
 	
 let rec printTypedefList (out : out_channel) (l : string list) = match l with 
 	| x :: xs -> 
-		printString out (defineConstant x "Typedef-Name");
+		(*printString out (defineConstant x "Typedef-Name");*)
+		printString out (defineConstant x "Id");
 		printTypedefList out xs
 	| [] -> ()	
 	
