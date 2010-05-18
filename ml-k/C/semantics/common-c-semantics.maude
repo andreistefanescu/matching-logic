@@ -756,6 +756,12 @@ mod COMMON-C-STANDARD-LIBRARY is
 		< output > [S:String => S:String +String rat2stringConversion(D:Int, 10)] </ output >
 		if N:Nat ==Bool asciiString("d") 
 	: KSentence .
+	mb [lib-printf-%c]: rule
+		< k > [printf-%(Len:Nat, Loc:Nat, (tv(C:Nat, ?) .,. L:List{Expression})) => printf-aux(Len:Nat +Nat 1, sNat(Loc:Nat), L:List{Expression})] ...</ k >
+		< mem >... Loc:Nat |-> N:Nat ...</ mem >
+		< output > [S:String => S:String +String charString(C:Nat %Nat 256)] </ output >
+		if N:Nat ==Bool asciiString("c") 
+	: KSentence .
 	
 	mb [lib-printf-%u]: rule
 		< k > [printf-%(Len:Nat, Loc:Nat, (tv(D:Int, ?) .,. L:List{Expression})) => printf-aux(Len:Nat +Nat lengthString(rat2stringConversion(D:Int, 10)), sNat(Loc:Nat), L:List{Expression})] ...</ k >
@@ -1296,11 +1302,6 @@ and ll or LL
 		if min(T:Type) <=Rat N:Rat andBool max(T:Type) >=Rat N:Rat
 		andBool integerTypes contains T:Type
 		: KSentence [metadata "structural"] .
-	--- fixme todo bug in tool why???
-	--- mb rule [interpret(N:Nat, bitfieldType(T:Type, Len:Nat)) => tv(N:Nat, T:Type)]
-		--- if min(bitfieldType(T:Type, Len:Nat)) <=Int N:Nat 
-		--- andBool max(bitfieldType(T:Type, Len:Nat)) >=Int N:Nat
-		--- : KSentence [metadata "structural"] .
 	mb rule [interpret(N:Nat, bitfieldType(T:Type, Len:Nat)) => tv(N:Nat, T:Type)]
 		if 0 <=Int N:Nat 
 		andBool _-Int_(2 ^Nat Len:Nat, 1) >=Int N:Nat
@@ -1547,18 +1548,6 @@ and ll or LL
 		
 	---C99 6.5.2.3:4 86) If &E is a valid pointer expression (where & is the ‘‘address-of ’’ operator, which generates a pointer to its operand), the expression (&E)->MOS is the same as E.MOS.
 		
-	--- bug in tool
-	--- mb [arrow-cool]: rule
-		--- < k > [evalToType ~> E1:Expression -> X:Id => Deref(E1:Expression + getOffset(Deref(E1:Expression), X:Id)) ~> makeType(T:Type)] ...</ k >
-		--- [< type > pointerType(structType(X':Id, (?,, typedField(T:Type, X:Id),,  ?))) </ type > => .Bag] 
-		--- : KSentence .
-	--- Error: The sanity checks phase of compilation failed for rule arrow-cool .
-  --- Term
-        --- structType(X':Id,(?:List{K},,typedField(T:Type,X:Id),,?:List{K}))
-  --- does not parse to a sort but rather to kind
-        --- `[State`,List`{K`}`,Builtins`] .
-  --- Please resolve that before continuing.
-
   	---C99 6.5.2.3:4 86) If &E is a valid pointer expression (where & is the ‘‘address-of ’’ operator, which generates a pointer to its operand), the expression (&E)->MOS is the same as E.MOS.
   
 	mb [function-application-pre]: rule
