@@ -693,9 +693,21 @@ mod COMMON-C-STANDARD-LIBRARY is
 	: KSentence .
 	
 	op printf-aux : Nat Nat List{Expression} -> K .
+	op printf-string : Nat Nat -> K .
 	op printf-% : Nat Nat List{Expression} -> K .
 	mb [lib-printf-start]: rule
 		< k > [Apply(builtin(printf), (tv(Loc:Nat, pointerType(?)) .,. L:List{Expression})) => printf-aux(0, Loc:Nat, L:List{Expression})] ...</ k >
+	: KSentence .
+	
+	mb [lib-printf-string]: rule
+		< k > [printf-string(Len:Nat, Loc:Nat) => printf-string(sNat(Len:Nat), sNat(Loc:Nat))] ...</ k >
+		< mem >... Loc:Nat |-> N:Nat ...</ mem >
+		< output > [S:String => S:String +String charString(N:Nat)] </ output >
+		if notBool(N:Nat ==Bool 0)
+	: KSentence .
+	mb [lib-printf-string-done]: rule
+		< k > [printf-string(Len:Nat, Loc:Nat) => tv(Len:Nat, int)] ...</ k >
+		< mem >... Loc:Nat |-> 0 ...</ mem >
 	: KSentence .
 	
 	mb [lib-printf-normal]: rule
@@ -706,11 +718,11 @@ mod COMMON-C-STANDARD-LIBRARY is
 		andBool notBool(N:Nat ==Bool 0)
 	: KSentence .
 	mb [lib-printf-done]: rule
-		< k > [printf-aux(Len:Nat, Loc:Nat, L:List{Expression}) => Len:Nat] ...</ k >
+		< k > [printf-aux(Len:Nat, Loc:Nat, L:List{Expression}) => tv(Len:Nat, int)] ...</ k >
 		< mem >... Loc:Nat |-> 0 ...</ mem >
 	: KSentence .
 	mb [lib-printf-null]: rule
-		< k > [printf-aux(0, 0, .List{Expression}) => 6] ...</ k >
+		< k > [printf-aux(0, 0, .List{Expression}) => tv(6, int)] ...</ k >
 		< output > [S:String => S:String +String "(null)"] </ output >
 	: KSentence .
 	
@@ -779,7 +791,7 @@ mod COMMON-C-STANDARD-LIBRARY is
 	
 	mb [lib-printf-%s]: rule
 		< k > [printf-%(Len:Nat, Loc:Nat, (tv(S:Nat, pointerType(?)) .,. L:List{Expression})) => 
-			printf-aux(0, S:Nat, .List{Expression})
+			printf-string(0, S:Nat)
 			~> printf-aux(Len:Nat, sNat(Loc:Nat), L:List{Expression})] ...</ k >
 		< mem >... Loc:Nat |-> N:Nat ...</ mem >
 		if N:Nat ==Bool asciiString("s") 
