@@ -1845,17 +1845,42 @@ and ll or LL
 		< k > ['switch`(_`)_(V:Value,, 'Block(? ~> 'case_:_(V:Value,, K1:K) ~> K2:K)) => K1:K ~> K2:K ~> popLoop] ~> K:K </ k >
 		< loopStack > [.List => ListItem(_~>_(popLoop, K:K))] ...</ loopStack >
 		: KSentence .
+	mb [switch-default]: rule
+		< k > ['switch`(_`)_(?,, 'Block('default`:_(K1:K) ~> K2:K)) => K1:K ~> K2:K ~> popLoop] ~> K:K </ k >
+		< loopStack > [.List => ListItem(_~>_(popLoop, K:K))] ...</ loopStack >
+		: KSentence .
+		
+	mb [switch-notcase]: rule
+		< k > 'switch`(_`)_(V:Value,, 'Block(['case_:_(V':Value,, ?) => .K] ~> ?)) ...</ k >
+		if V:Value =/=Bool V':Value
+		: KSentence .
+	mb [switch-badcode]: rule
+		< k > 'switch`(_`)_(V:Value,, 'Block([KL:KLabel(?) => .K] ~> ?)) ...</ k >
+		if KL:KLabel =/=Bool 'case_:_
+		andBool KL:KLabel =/=Bool 'default`:_
+		: KSentence .
 
+		
+	mb [case-pullout]: rule
+		['case_:_(K1:K,, K2:K) => 'case_:_(K1:K,, .K) ~> K2:K]
+		if K2:K =/=Bool .K
+		: KSentence [metadata "structural"] .
+		
+	mb [case]: rule
+		< k > ['case_:_(?,, K:K) => K:K] ...</ k >
+		: KSentence .
+		
+		
 	mb [writeToFD-char] : rule
 		< k > [writeToFD(FD:Nat, N:Nat) => .K]  ...</ k >
 		< openFiles >... FD:Nat |-> Filename:String ...</ openFiles >
 		< files >... Filename:String |-> [S:String => S:String +String charString(N:Nat %Nat 256)] ...</ files >
-	: KSentence .
+		: KSentence .
 	mb [writeToFD-string] : rule
 		< k > [writeToFD(FD:Nat, S':String) => .K] ...</ k >
 		< openFiles >... FD:Nat |-> Filename:String ...</ openFiles >
 		< files >... Filename:String |-> [S:String => S:String +String S':String] ...</ files >
-	: KSentence .
+		: KSentence .
 		
 endm
 
