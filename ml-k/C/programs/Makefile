@@ -6,6 +6,7 @@ ALL_FILES = $(wildcard *.c)
 ALL_PROGRAMS = $(basename $(ALL_FILES))
 CIL_FLAGS = --noWrap --decil --noPrintLn --warnall --strictcheck --nokeepunused 
 PEDANTRY_OPTIONS=-Wall -Wextra -Werror -Wmissing-prototypes -pedantic -x c -std=c99
+GCC_OPTIONS=-nostdlib -nodefaultlibs
 
 #.SECONDARY:
 
@@ -30,7 +31,7 @@ gcc-output: $(addsuffix .gcc,$(ALL_PROGRAMS))
 	echo $(PIPESTATUS)
 
 %.gcc: %.c
-	gcc $(PEDANTRY_OPTIONS) -o $@ $<
+	gcc $(PEDANTRY_OPTIONS) $(GCC_OPTIONS) -o $@ $<
 		
 clean:
 	rm -f *.prepre.gen *.pre.gen *.gen.maude *.gcc *.tmp

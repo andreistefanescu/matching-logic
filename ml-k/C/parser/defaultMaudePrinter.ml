@@ -91,6 +91,13 @@ let d_ikind () = function
       if !msvcMode then text "unsigned __int64" 
       else text "unsigned-long-long"
 	
+
+let d_unop () u =
+  match u with
+    Neg -> text "-un "
+  | BNot -> text "~"
+  | LNot -> text "!"	
+
 let d_binop () b =
 	match b with
 	| PlusA | PlusPI | IndexPI -> text "+"

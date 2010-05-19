@@ -164,7 +164,7 @@ mod COMMON-C-SYNTAX is
 	---op *_ : Expression -> Expression [prec 22] .
 	op Deref : Expression -> Expression [metadata "strict"] .
 	---op +_ : Expression -> Expression [prec 22] .
-	---op -_ : Expression -> Expression [prec 22] .
+	op -un_ : Expression -> Expression [prec 22] .
 	op ~_ : Expression -> Expression [prec 22 metadata "strict"] .
 	op !_ : Expression -> Expression [prec 22 metadata "strict"] .
 	op sizeof : Expression -> Expression .
@@ -484,8 +484,8 @@ mod COMMON-C-SYNTAX is
 	sort Labeled-Statement .
 	---op _:_ : Id Statement -> Labeled-Statement .
 	op _:_ : Id SeqList -> Labeled-Statement .
-	--- op case_:_ : Constant-Expression Statement -> Labeled-Statement .
-	--- op default`:_ : Statement -> Labeled-Statement .
+	op case_:_ : Expression SeqList -> Labeled-Statement [metadata "strict(1)"] .
+	op default`:_ : SeqList -> Labeled-Statement .
 	
 	--- --- 6.8.2
 	sort Compound-Statement .
@@ -519,7 +519,7 @@ mod COMMON-C-SYNTAX is
 
 	op if`(_`)_ : Expression Statement -> Selection-Statement [metadata "strict(1)"] .
 	op if`(_`)_else_ : Expression Statement Statement -> Selection-Statement [metadata "strict(1)"] .
-	--- op switch`(_`)_ : Expression Statement -> Selection-Statement .
+	op switch`(_`)_ : Expression Statement -> Selection-Statement [metadata "strict(1)"] .
 	
 	--- --- 6.8.5
 	sort Iteration-Statement .
