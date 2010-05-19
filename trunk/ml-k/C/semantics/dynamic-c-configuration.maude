@@ -9,13 +9,13 @@ mod C-CONFIGURATION is
 			< mem > .Map </ mem >  
 			< callStack > .List </ callStack >
 			< nextLoc > 0 </ nextLoc >
+			< nextFile > 0 </ nextFile >
 			< malloced > .Map </ malloced >
 			< statics > .Map </ statics >
 			< typedefs > .Map </ typedefs >
 			< sizes > .Map </ sizes >
 			< structs > .Map </ structs >
-			< pad > "" </ pad >
-			< width > 0 </ width >
+			< openFiles > .Map </ openFiles >
 			< local >
 				< k > .K </ k >
 				< type > .K </ type >
@@ -24,10 +24,10 @@ mod C-CONFIGURATION is
 				< locals > .Bag </ locals >
 				< types > .Map </ types >
 			</ local >
-		</ T > 
-		< stdout > "" </ stdout >
-		< stdin > "" </ stdin >
-		< stderr > "" </ stderr >
+		</ T >
+		< files > .Map </ files > --- filenames to strings
+		< input > "" </ input >
+		< output > "" </ output >
 		< resultValue > .K </ resultValue >
 		: KSentence .
 endm
