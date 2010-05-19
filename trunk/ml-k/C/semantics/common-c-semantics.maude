@@ -417,6 +417,9 @@ mod TYPES is
 	mb rule
 		[static => .K]
 		: KSentence [metadata "structural"] .
+	mb rule
+		[register => .K]
+		: KSentence [metadata "structural"] .
 	--- mb rule
 		--- [extern ~> T:Type => qualifiedType(T:Type, extern)]
 		--- : KSentence [metadata "structural"] .
@@ -1062,6 +1065,11 @@ mod COMMON-EXPRESSIONS is
 	mb rule [tv(I1:Int, T:Type) % tv(I2:Int, T:Type) => cast(T:Type, I1:Int %Int I2:Int)] 
 		if integerTypes contains T:Type
 		: KSentence .
+	mb rule [-un tv(I1:Int, T:Type) => cast(T:Type, -Int_(I1:Int))] 
+		if integerTypes contains T:Type
+		: KSentence .
+	
+		
 		
 	mb rule [tv(I:Int, T:Type) >> tv(N:Nat, T':Type) => cast(T:Type, I:Int >>Int N:Nat)] 
 		if integerTypes contains T:Type
@@ -1730,7 +1738,7 @@ and ll or LL
 		< k > [while (B:Expression) S:Statement ~> K:K
 		=> (loopMarked while (B:Expression) S:Statement) ~> popLoop ~> K:K
 		] </ k >
-		< loopStack > [.List => ListItem(_~>_(_~>_((while (B:Expression) S:Statement), popLoop), K:K))] ...</ loopStack >
+		< loopStack > [.List => ListItem(_~>_(popLoop, K:K))] ...</ loopStack >
 		: KSentence .
 	mb [while]: rule
 		< k > [loopMarked ~> while (B:Expression) S:Statement
@@ -1743,8 +1751,8 @@ and ll or LL
 		< loopStack > [Li:ListItem => .List] ...</ loopStack >
 		: KSentence .
 	mb [while-break]: rule
-		< k > [break ; ~> ? => K:K ] </ k >
-		< loopStack > [ListItem(_~>_(_~>_((while (B:Expression) S:Statement), popLoop), K:K)) => .List] ...</ loopStack >
+		< k > [break ; ~> ? => K:K] </ k >
+		< loopStack > ListItem(K:K) ...</ loopStack >
 		: KSentence .
 
 	mb [return-value-clean-local]: rule 
@@ -1840,17 +1848,13 @@ and ll or LL
 		< k > [V:Value ~> discard => .K] ...</ k >
 		: KSentence .
 	
-	---mb context case [HOLE] : ? : KSentence .
-	
---- mb context 'switch`(_`)_(?,, 'Block('case_:_ ([HOLE],, ?) ~> ?)) : KSentence .
---- Warning: <standard input>, line 1022 (mod C): variable Kcxt:KProper is used before it is bound in equation:
---- eq 
---- < k > ("switch`(_`)_").KProperLabel(?5:List{K},,("Block").KProperLabel(("case_:_").KProperLabel(`[HOLE`]:List{K},,?6:List{K}) ~> ?7:K)) ~> Rest:K </ k > = 
---- < k > Kcxt:KProper ~> freezer("(\"switch`(_`)_\").KProperLabel(?5:List{K},,(\"Block\").KProperLabel((\"case_:_\").KProperLabel(`[HOLE`]:List{K},,?6:List{K})~>?7:K))")(freezeVar("?5:List`{K`}")(?5:List{K}),,freezeVar("`[HOLE`]:List`{K`}")(`[HOLE`]:List{K}),,freezeVar("?6:List`{K`}")(?6:List{K}),,freezeVar("?7:K")(?7:K)) ~> Rest:K </ k > .
+	mb context 'switch`(_`)_(?,, 'Block(? ~> 'case_:_(`[HOLE`]:K,, ?) ~> ?)) : KSentence .
 
-
-	--- mb [switch]: rule
-		--- < k > [switch(tv
-		--- : KSentence .
-	
+	mb [switch]: rule
+		< k > ['switch`(_`)_(V:Value,, 'Block(? ~> 'case_:_(V:Value,, K1:K) ~> K2:K)) => K1:K ~> K2:K ~> popLoop] ~> K:K </ k >
+		< loopStack > [.List => ListItem(_~>_(popLoop, K:K))] ...</ loopStack >
+		: KSentence .
+		
 endm
+
+
