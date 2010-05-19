@@ -2,7 +2,7 @@
 #define EXIT_FAILURE 1
 typedef unsigned long int size_t; // this needs to correspond to cfg:sizeut
 
-//#include "stdarg.h"
+#include "stdarg.h"
 
 
 // stdlib.h
@@ -36,6 +36,11 @@ int puts(const char * str){
 size_t strlen(char *str);
 int strcmp(const char *str1, const char *str2);
 char* strcpy(char *restrict s1, const char *restrict s2);
+char * strcat(char *dest, const char *src){
+    strcpy(dest + strlen(dest), src);
+    return dest;
+}
+
 char* strchr(const char *s, int c);
 char* strchr(const char *s, int c){
 	int i = 0;
