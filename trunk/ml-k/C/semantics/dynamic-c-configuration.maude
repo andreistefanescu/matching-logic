@@ -7,7 +7,6 @@ mod C-CONFIGURATION is
 		< T > 
 			< genv > .Map </ genv > 
 			< mem > .Map </ mem >  
-			< output > "" </ output >
 			< callStack > .List </ callStack >
 			< nextLoc > 0 </ nextLoc >
 			< malloced > .Map </ malloced >
@@ -26,7 +25,9 @@ mod C-CONFIGURATION is
 				< types > .Map </ types >
 			</ local >
 		</ T > 
+		< stdout > "" </ stdout >
+		< stdin > "" </ stdin >
+		< stderr > "" </ stderr >
 		< resultValue > .K </ resultValue >
-		< resultOutput > "" </ resultOutput > 
 		: KSentence .
 endm

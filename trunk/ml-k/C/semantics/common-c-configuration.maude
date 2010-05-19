@@ -5,7 +5,9 @@ mod COMMON-C-CONFIGURATION is
 	including MATCH-C-SYNTAX .
 	
 	op k : -> CellLabel .
-	op output : -> CellLabel .
+	op stdout : -> CellLabel .
+	op stdin : -> CellLabel .
+	op stderr : -> CellLabel .
 	op env : -> CellLabel .
 	op genv : -> CellLabel .
 	op mem : -> CellLabel .
