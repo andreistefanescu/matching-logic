@@ -2,6 +2,9 @@
 #define EXIT_FAILURE 1
 typedef unsigned long int size_t; // this needs to correspond to cfg:sizeut
 
+//#include "stdarg.h"
+
+
 // stdlib.h
 # define RAND_MAX 2147483647
 void *malloc(size_t size);
@@ -9,7 +12,6 @@ void free(void *pointer);
 void *calloc(size_t nelem, size_t elsize);
 void exit(int status);
 void debug(int i);
-int atoi ( const char * str );
 void srand (unsigned int seed);
 int rand (void);
 
@@ -19,6 +21,7 @@ double sqrt (double x);
 // stdio.h
 #define EOF -1
 int printf(const char *format, ...);
+//#include "printf.h"
 int putchar ( int character );
 int sprintf ( char * str, const char * format, ... );
 int puts (const char * str);
@@ -69,3 +72,5 @@ typedef unsigned int time_t;
 time_t time ( time_t * timer );
 
 
+
+// now include implementations

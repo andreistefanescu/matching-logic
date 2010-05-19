@@ -92,6 +92,7 @@ class maudeVisitor = object (self) inherit nopCilVisitor
 		let labelVisit = fun fi -> match fi with 
 			| Label (s, _, true) -> identifierList <- (replace "_" "u" s) :: identifierList
 			| Label (s, _, false) -> identifierList <- (replace "_" "u" s) :: identifierList	
+			| _ -> ()
 		in List.iter labelVisit s.labels;
 		DoChildren
 		

@@ -815,6 +815,9 @@ mod COMMON-PARAMETER-BINDING is
 	mb [bind-empty]: rule 
 		< k > [bind(.List{K}, .List{K}) => .K] ...</ k > 
 		: KSentence .
+	mb [bind-empty]: rule 
+		< k > [bind(.List{K}, ...) => .K] ...</ k > 
+		: KSentence .
 	--- bind one
 	--- consider same variable name
 	--- fixme doesn't add all derived types from T:Type
@@ -835,6 +838,11 @@ mod COMMON-PARAMETER-BINDING is
 		< k > [bind((tv(V:BaseValue, T:Type),, L:List{KResult}), ('Parameter-Declaration(T':Type,, X:Id),, P:List{K}))
 			=> addTypes(X:Id, T':Type) ~> allocate(sizeofType(T':Type)) ~> addLocals(Loc:Nat) ~> putInMem(Loc:Nat, tv(V:BaseValue, T:Type), T':Type, sizeofType(T':Type)) ~> bind(L:List{KResult}, P:List{K})] ...</ k > 
 		< env >... [.Map => X:Id |-> Loc:Nat] ...</ env >
+		< nextLoc > Loc:Nat </ nextLoc >
+		: KSentence .
+	mb [bind-var]: rule
+		< k > [bind((tv(V:BaseValue, T:Type),, L:List{KResult}), (...))
+			=> allocate(sizeofType(T:Type)) ~> addLocals(Loc:Nat) ~> putInMem(Loc:Nat, tv(V:BaseValue, T:Type), T:Type, sizeofType(T:Type)) ~> bind(L:List{KResult}, ...)] ...</ k > 
 		< nextLoc > Loc:Nat </ nextLoc >
 		: KSentence .
 	mb rule
@@ -1830,7 +1838,19 @@ and ll or LL
 
 	mb [discard]: rule
 		< k > [V:Value ~> discard => .K] ...</ k >
-		: KSentence .	
+		: KSentence .
+	
+	---mb context case [HOLE] : ? : KSentence .
+	
+--- mb context 'switch`(_`)_(?,, 'Block('case_:_ ([HOLE],, ?) ~> ?)) : KSentence .
+--- Warning: <standard input>, line 1022 (mod C): variable Kcxt:KProper is used before it is bound in equation:
+--- eq 
+--- < k > ("switch`(_`)_").KProperLabel(?5:List{K},,("Block").KProperLabel(("case_:_").KProperLabel(`[HOLE`]:List{K},,?6:List{K}) ~> ?7:K)) ~> Rest:K </ k > = 
+--- < k > Kcxt:KProper ~> freezer("(\"switch`(_`)_\").KProperLabel(?5:List{K},,(\"Block\").KProperLabel((\"case_:_\").KProperLabel(`[HOLE`]:List{K},,?6:List{K})~>?7:K))")(freezeVar("?5:List`{K`}")(?5:List{K}),,freezeVar("`[HOLE`]:List`{K`}")(`[HOLE`]:List{K}),,freezeVar("?6:List`{K`}")(?6:List{K}),,freezeVar("?7:K")(?7:K)) ~> Rest:K </ k > .
 
+
+	--- mb [switch]: rule
+		--- < k > [switch(tv
+		--- : KSentence .
 	
 endm
