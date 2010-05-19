@@ -3,6 +3,7 @@ K-COMPILE-BASE = tools/kcompile.sh
 K-PROGRAM-COMPILE = $(K-MAUDE-BASE)/tools/kcompile-program.sh
 
 K-MAUDE = $(K-MAUDE-BASE)/$(K-COMPILE-BASE)
+K-MAUDE-BENCH = $(K-MAUDE-BASE)/tools/kcompileBench.sh
 K-PRELUDE = $(K-MAUDE-BASE)/k-prelude
 
 ADDITIONAL_SYNTAX = "including MATCH-C-SYNTAX ."
@@ -13,7 +14,7 @@ PROGRAM_DIR = ../programs
 PROGRAM_TARGET = $(foreach var, $(PROGRAM_BASE_NAMES), program-$(var)-compiled.maude)
 
 
-.PHONY: all clean force check-input dynamic match semantics
+.PHONY: all clean force check-input dynamic match semantics bench
 
 #.SECONDARY:
 
@@ -25,6 +26,12 @@ check-input:
 ifeq ($(INPUT),)
 	exit 1
 endif
+
+bench: SEMANTICS_MODULE = "DYNAMIC-C-SEMANTICS" 
+bench: SEMANTICS_FILE = "dynamic-c-semantics"
+bench: CONFIGURATION_FILE = "dynamic-c-configuration"
+bench: force c.maude common-c-syntax.maude match-c-syntax.maude common-c-configuration.maude common-c-semantics.maude test.maude test-benchmark.maude
+	$(K-MAUDE-BENCH) c.maude C
 
 programs-gen.maude: programs-gen.template $(INPUT) Makefile
 ifeq ($(INPUT),)
@@ -43,7 +50,6 @@ endif
 	@printf "`cat c-maude.template`" $(K-PRELUDE) $(CONFIGURATION_FILE) $(SEMANTICS_FILE) $(SEMANTICS_MODULE) > c.maude
 	
 c-compiled.maude: force c.maude common-c-syntax.maude match-c-syntax.maude common-c-configuration.maude common-c-semantics.maude  
-#echo $(PROGRAM_NAMES)
 	$(K-MAUDE) c.maude C
 	
 dynamic: SEMANTICS_MODULE = "DYNAMIC-C-SEMANTICS" 
