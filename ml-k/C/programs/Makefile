@@ -16,7 +16,7 @@ all: $(addsuffix .gen.maude,$(ALL_PROGRAMS))
 
 benchmark: $(addsuffix .gen.maude,$(TEST_PROGRAMS))
 
-%.prepre.gen: %.c embed.pl Makefile fsl.h
+%.prepre.gen: %.c embed.pl Makefile fsl.h printf.h
 	@perl embed.pl -d=ML -o=$@ $<
 
 %.pre.gen: %.prepre.gen

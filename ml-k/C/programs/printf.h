@@ -46,6 +46,8 @@ static void printchar (char **str, int c)
 	if (str) {
 		**str = c;
 		++(*str);
+	} else {
+		(void)putchar(c);
 	}
 }
 

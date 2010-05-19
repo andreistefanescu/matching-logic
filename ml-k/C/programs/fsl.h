@@ -20,15 +20,16 @@ double sqrt (double x);
 
 // stdio.h
 #define EOF -1
+int putchar ( int character );
 int printf(const char *format, ...);
 //#include "printf.h"
-int putchar ( int character );
-int sprintf ( char * str, const char * format, ... );
+//int sprintf ( char * str, const char * format, ... );
 int puts (const char * str);
 int puts(const char * str){
 	//debug(0);
 	return printf("%s\n", str);
 }
+
 
 
 // string.h
