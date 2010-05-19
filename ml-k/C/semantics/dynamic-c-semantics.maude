@@ -13,14 +13,18 @@ mod DYNAMIC-C-SEMANTICS is
 			< sizes > .Map </ sizes >
 			< genv > .Map </ genv > 
 			< mem > .Map </ mem >  
-			< output > "" </ output >
+			
 			< callStack > .List </ callStack >
 			< nextLoc > 4 </ nextLoc >
 			< malloced > .Map </ malloced >
 			< statics > .Map </ statics >
 			< typedefs > .Map </ typedefs >
 			< structs > .Map </ structs >
-		</ T > .
+		</ T >
+		< stdout > "" </ stdout >
+		< stdin > "" </ stdin >
+		< stderr > "" </ stderr >
+	.
 	
 	--- throw away annotations
 	mb [no-annotations]: rule [annotation(?); => .K] : KSentence .
@@ -36,10 +40,9 @@ mod DYNAMIC-C-SEMANTICS is
 	
 	
 	mb [terminate]: rule 
-		[< T >... < k > V:Value </ k > < output > S:String </ output > ...</ T >
+		[< T >... < k > V:Value </ k > ...</ T >
 		=>
-		< resultValue > V:Value </ resultValue >
-		< resultOutput > S:String </ resultOutput >]
+		< resultValue > V:Value </ resultValue >]
 		: KSentence .
 	
 	
