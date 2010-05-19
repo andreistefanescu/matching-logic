@@ -5,7 +5,7 @@ SEMANTICS = match
 # match or dynamic semantics
 VPATH = programs
 
-.PHONY: all clean run test force cparser maude-fragments build-all dynamic match fix kcompile gcc-output
+.PHONY: all clean run test force cparser maude-fragments build-all dynamic match fix kcompile gcc-output kcompile-bench benchmark
 
 all: cparser maude-fragments 
 
@@ -34,6 +34,9 @@ gcc-output:
 kcompile: $(C_DIR)/*.gen.maude
 	@time (make -C $(SEMANTICS_DIR) $(SEMANTICS) INPUT="$(realpath $^)")
 	
+kcompile-bench: $(C_DIR)/*.gen.maude
+	@time (make -C $(SEMANTICS_DIR) bench INPUT="$(realpath $^)")
+	
 build-all: maude-fragments kcompile
 
 benchmark: profile.csv
@@ -42,7 +45,7 @@ profile.csv: profile.log
 	perl analyzeProfile.pl > profile.csv
 
 profile.log: SEMANTICS=dynamic
-profile.log: build-all 
+profile.log: maude-fragments kcompile-bench
 	@time (maude -no-wrap $(SEMANTICS_DIR)/test-benchmark.maude > profile.log)
 		
 run: 
