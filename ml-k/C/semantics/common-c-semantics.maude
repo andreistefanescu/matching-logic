@@ -69,6 +69,8 @@ mod COMMON-SEMANTIC-SYNTAX is
 	op integerTypes : -> Set [memo] .
 	op unsignedIntegerTypes : -> Set [memo] .
 	op typeof : Expression -> K .
+	op writeToFD : Nat Nat -> K .
+	op writeToFD : Nat String -> K .
 endm
 
 mod C-SETTINGS is
@@ -687,8 +689,7 @@ mod COMMON-C-STANDARD-LIBRARY is
 	: KSentence .
 	--- fixme doesn't cast to int
 	mb [putchar]: rule
-		< k > [Apply(builtin(putchar), tv(N:Nat, ?)) => tv(N:Nat, int)] ...</ k >
-		< stdout > [S:String => S:String +String charString(N:Nat %Nat 256)] </ stdout >
+		< k > [Apply(builtin(putchar), tv(N:Nat, ?)) => writeToFD(1, N:Nat) ~> tv(N:Nat, int)] ...</ k >
 	: KSentence .
 	--------------------------------------------
 	mb [lib-printf-is-value]: rule
@@ -703,9 +704,8 @@ mod COMMON-C-STANDARD-LIBRARY is
 	: KSentence .
 	
 	mb [lib-printf-string]: rule
-		< k > [printf-string(Len:Nat, Loc:Nat) => printf-string(sNat(Len:Nat), sNat(Loc:Nat))] ...</ k >
+		< k > [printf-string(Len:Nat, Loc:Nat) => writeToFD(1, N:Nat) ~> printf-string(sNat(Len:Nat), sNat(Loc:Nat))] ...</ k >
 		< mem >... Loc:Nat |-> N:Nat ...</ mem >
-		< stdout > [S:String => S:String +String charString(N:Nat)] </ stdout >
 		if notBool(N:Nat ==Bool 0)
 	: KSentence .
 	mb [lib-printf-string-done]: rule
@@ -714,9 +714,8 @@ mod COMMON-C-STANDARD-LIBRARY is
 	: KSentence .
 	
 	mb [lib-printf-normal]: rule
-		< k > [printf-aux(Len:Nat, Loc:Nat, L:List{Expression}) => printf-aux(sNat(Len:Nat), sNat(Loc:Nat), L:List{Expression})] ...</ k >
+		< k > [printf-aux(Len:Nat, Loc:Nat, L:List{Expression}) => writeToFD(1, N:Nat) ~> printf-aux(sNat(Len:Nat), sNat(Loc:Nat), L:List{Expression})] ...</ k >
 		< mem >... Loc:Nat |-> N:Nat ...</ mem >
-		< stdout > [S:String => S:String +String charString(N:Nat)] </ stdout >
 		if notBool(N:Nat ==Bool asciiString("%")) 
 		andBool notBool(N:Nat ==Bool 0)
 	: KSentence .
@@ -725,8 +724,7 @@ mod COMMON-C-STANDARD-LIBRARY is
 		< mem >... Loc:Nat |-> 0 ...</ mem >
 	: KSentence .
 	mb [lib-printf-null]: rule
-		< k > [printf-aux(0, 0, .List{Expression}) => tv(6, int)] ...</ k >
-		< stdout > [S:String => S:String +String "(null)"] </ stdout >
+		< k > [printf-aux(0, 0, .List{Expression}) => writeToFD(1, "(null)") ~> tv(6, int)] ...</ k >
 	: KSentence .
 	
 	mb [lib-printf-%]: rule
@@ -749,46 +747,39 @@ mod COMMON-C-STANDARD-LIBRARY is
 	: KSentence .
 	
 	mb [lib-printf-x]: rule
-		< k > [printf-%(Len:Nat, Loc:Nat, (tv(D:Int, ?) .,. L:List{Expression})) => printf-aux(Len:Nat +Nat lengthString((if (lengthString(rat2stringConversion(D:Int, 16)) ==Bool 1) then
+		< k > [printf-%(Len:Nat, Loc:Nat, (tv(D:Int, ?) .,. L:List{Expression})) => writeToFD(1, (if (lengthString(rat2stringConversion(D:Int, 16)) ==Bool 1) then
+				"0" +String rat2stringConversion(D:Int, 16)
+			else 
+				rat2stringConversion(D:Int, 16)
+			fi)) ~> printf-aux(Len:Nat +Nat lengthString((if (lengthString(rat2stringConversion(D:Int, 16)) ==Bool 1) then
 				"0" +String rat2stringConversion(D:Int, 16)
 			else 
 				rat2stringConversion(D:Int, 16)
 			fi)), sNat(Loc:Nat), L:List{Expression})] ...</ k >
 		< mem >... Loc:Nat |-> N:Nat ...</ mem >
-		< stdout > [S:String => S:String +String 
-			(if (lengthString(rat2stringConversion(D:Int, 16)) ==Bool 1) then
-				"0" +String rat2stringConversion(D:Int, 16)
-			else 
-				rat2stringConversion(D:Int, 16)
-			fi)
-			] </ stdout >
 		if N:Nat ==Bool asciiString("x") 
 	: KSentence .
 	
 	mb [lib-printf-%d]: rule
-		< k > [printf-%(Len:Nat, Loc:Nat, (tv(D:Int, ?) .,. L:List{Expression})) => printf-aux(Len:Nat +Nat lengthString(rat2stringConversion(D:Int, 10)), sNat(Loc:Nat), L:List{Expression})] ...</ k >
+		< k > [printf-%(Len:Nat, Loc:Nat, (tv(D:Int, ?) .,. L:List{Expression})) => writeToFD(1, rat2stringConversion(D:Int, 10)) ~> printf-aux(Len:Nat +Nat lengthString(rat2stringConversion(D:Int, 10)), sNat(Loc:Nat), L:List{Expression})] ...</ k >
 		< mem >... Loc:Nat |-> N:Nat ...</ mem >
-		< stdout > [S:String => S:String +String rat2stringConversion(D:Int, 10)] </ stdout >
-		if N:Nat ==Bool asciiString("d") 
+		if N:Nat ==Bool asciiString("d")
 	: KSentence .
 	mb [lib-printf-%c]: rule
-		< k > [printf-%(Len:Nat, Loc:Nat, (tv(C:Nat, ?) .,. L:List{Expression})) => printf-aux(Len:Nat +Nat 1, sNat(Loc:Nat), L:List{Expression})] ...</ k >
+		< k > [printf-%(Len:Nat, Loc:Nat, (tv(C:Nat, ?) .,. L:List{Expression})) => writeToFD(1, C:Nat) ~> printf-aux(Len:Nat +Nat 1, sNat(Loc:Nat), L:List{Expression})] ...</ k >
 		< mem >... Loc:Nat |-> N:Nat ...</ mem >
-		< stdout > [S:String => S:String +String charString(C:Nat %Nat 256)] </ stdout >
 		if N:Nat ==Bool asciiString("c") 
 	: KSentence .
 	
 	mb [lib-printf-%u]: rule
-		< k > [printf-%(Len:Nat, Loc:Nat, (tv(D:Int, ?) .,. L:List{Expression})) => printf-aux(Len:Nat +Nat lengthString(rat2stringConversion(D:Int, 10)), sNat(Loc:Nat), L:List{Expression})] ...</ k >
+		< k > [printf-%(Len:Nat, Loc:Nat, (tv(D:Int, ?) .,. L:List{Expression})) => writeToFD(1, rat2stringConversion(D:Int, 10)) ~> printf-aux(Len:Nat +Nat lengthString(rat2stringConversion(D:Int, 10)), sNat(Loc:Nat), L:List{Expression})] ...</ k >
 		< mem >... Loc:Nat |-> N:Nat ...</ mem >
-		< stdout > [S:String => S:String +String rat2stringConversion(D:Int, 10)] </ stdout >
 		if N:Nat ==Bool asciiString("u") 
 	: KSentence .
 	
 	mb [lib-printf-%f]: rule
-		< k > [printf-%(Len:Nat, Loc:Nat, (tv(D:Float, ?) .,. L:List{Expression})) => printf-aux(Len:Nat +Nat lengthString(float2stringConversion(D:Float)), sNat(Loc:Nat), L:List{Expression})] ...</ k >
+		< k > [printf-%(Len:Nat, Loc:Nat, (tv(D:Float, ?) .,. L:List{Expression})) => writeToFD(1, float2stringConversion(D:Float)) ~> printf-aux(Len:Nat +Nat lengthString(float2stringConversion(D:Float)), sNat(Loc:Nat), L:List{Expression})] ...</ k >
 		< mem >... Loc:Nat |-> N:Nat ...</ mem >
-		< stdout > [S:String => S:String +String float2stringConversion(D:Float)] </ stdout >
 		if N:Nat ==Bool asciiString("f") 
 	: KSentence .
 	
@@ -1854,6 +1845,17 @@ and ll or LL
 		< k > ['switch`(_`)_(V:Value,, 'Block(? ~> 'case_:_(V:Value,, K1:K) ~> K2:K)) => K1:K ~> K2:K ~> popLoop] ~> K:K </ k >
 		< loopStack > [.List => ListItem(_~>_(popLoop, K:K))] ...</ loopStack >
 		: KSentence .
+
+	mb [writeToFD-char] : rule
+		< k > [writeToFD(FD:Nat, N:Nat) => .K]  ...</ k >
+		< openFiles >... FD:Nat |-> Filename:String ...</ openFiles >
+		< files >... Filename:String |-> [S:String => S:String +String charString(N:Nat %Nat 256)] ...</ files >
+	: KSentence .
+	mb [writeToFD-string] : rule
+		< k > [writeToFD(FD:Nat, S':String) => .K] ...</ k >
+		< openFiles >... FD:Nat |-> Filename:String ...</ openFiles >
+		< files >... Filename:String |-> [S:String => S:String +String S':String] ...</ files >
+	: KSentence .
 		
 endm
 
