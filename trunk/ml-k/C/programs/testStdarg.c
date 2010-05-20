@@ -11,7 +11,7 @@ void printargs(int arg1, ...) /* print all int type args, finishing with -1 */
  
   va_start(ap, arg1); 
   for (i = arg1; i != -1; i = va_arg(ap, int))
-    printf("%d ", i);
+    printf("%d, ", i);
   va_end(ap);
   putchar('\n');
 }
@@ -48,6 +48,20 @@ char *vstrcat(const char *first, ...)
 	va_end(argp);
 	return retbuf;
 }
+
+int testDifferent(int x, ...){
+	va_list argp;
+	va_start(argp, x);
+	int y1 = va_arg(argp, int);
+	int y2 = va_arg(argp, int);
+	int y3 = va_arg(argp, int);
+	long int y4 = va_arg(argp, long int);
+	long long int y5 = va_arg(argp, long long int);
+	double y6 = va_arg(argp, double);
+	printf("%d, %d, %d, %d, %d, %f\n", y1, y2, y3, y4, y5, y6);
+	va_end(argp);
+	return 0;
+}
  
 
 int main(void) {
@@ -58,6 +72,12 @@ int main(void) {
 
 	char *str = vstrcat("Hello, ", "world!", "1", "23", "456", "789", (char *)NULL);
 	puts(str);
+	
+	char mychar = 5;
+	short int myshort = 10;
+	float myfloat = 30.0;
+	
+	testDifferent(0, mychar, myshort, (int)15, (long int)20L, (long long int)25LL, myfloat);
 
 	return 0;
 }
