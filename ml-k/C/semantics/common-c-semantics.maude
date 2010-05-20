@@ -90,6 +90,7 @@ mod C-SETTINGS is
 	eq numBytes(long-int) = 4 .
 	eq numBytes(long-long-int) = 8 .
 	
+	eq numBytes(float) = 4 .
 	eq numBytes(double) = 8 .
 	
 	
