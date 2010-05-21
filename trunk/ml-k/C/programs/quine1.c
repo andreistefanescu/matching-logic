@@ -7,7 +7,8 @@
  * below) to output the program code (which it represents) and its own
  * textual representation. */
  
-#include <stdio.h>
+//#include <stdio.h>
+#include "fsl.h"
  
 void quote(const char *s)
      /* This function takes a character string s and prints the
