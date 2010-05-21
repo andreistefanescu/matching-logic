@@ -164,7 +164,7 @@ mod COMMON-C-SYNTAX is
 	---op *_ : Expression -> Expression [prec 22] .
 	op Deref : Expression -> Expression [metadata "strict"] .
 	---op +_ : Expression -> Expression [prec 22] .
-	op -un_ : Expression -> Expression [prec 22] .
+	op -un_ : Expression -> Expression [prec 22 metadata "strict"] .
 	op ~_ : Expression -> Expression [prec 22 metadata "strict"] .
 	op !_ : Expression -> Expression [prec 22 metadata "strict"] .
 	op sizeof : Expression -> Expression .
