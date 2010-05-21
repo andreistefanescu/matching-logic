@@ -1,4 +1,4 @@
-CIL_BASE = ../cil
+CIL_BASE = ../cilSVN
 CIL_PLATFORM = x86_LINUX
 OCAMLOPT_FLAGS = -w a -warn-error a
 
@@ -23,7 +23,7 @@ cildriver.cmx cildriver.cmi: cildriver.ml maudeVisitor.cmi maudePrinter.cmi
 	$(OCAML_COMPILE) cildriver.ml 
 
 cparser: maudeVisitor.cmx defaultMaudePrinter.cmx maudePrinter.cmx cildriver.cmx 
-	$(OCAML_LINK) -o cparser unix.cmxa str.cmxa cil.cmxa maudeVisitor.cmx defaultMaudePrinter.cmx maudePrinter.cmx cildriver.cmx
+	$(OCAML_LINK) -o cparser unix.cmxa str.cmxa nums.cmxa cil.cmxa maudeVisitor.cmx defaultMaudePrinter.cmx maudePrinter.cmx cildriver.cmx
 
 
 clean:

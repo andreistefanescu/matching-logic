@@ -34,9 +34,6 @@ gcc-output:
 kcompile: $(C_DIR)/*.gen.maude
 	@time (make -C $(SEMANTICS_DIR) $(SEMANTICS) INPUT="$(realpath $^)")
 	
-kcompile-bench: $(C_DIR)/*.gen.maude
-	@time (make -C $(SEMANTICS_DIR) bench INPUT="$(realpath $^)")
-	
 build-all: maude-fragments kcompile
 
 benchmark: profile.csv
