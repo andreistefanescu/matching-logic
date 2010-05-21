@@ -139,7 +139,7 @@ let myDumpFile (pp: cilPrinter) (out : out_channel) (outfile: string) file =
 	printTypedefList out !typedefList;
 	printNewline out;
 	
-	let programName = replace ".tmp" "" ("program-" ^ outfile)  in
+	let programName = replace "-gen-maude-tmp" "" (replace "." "-" ("program-" ^ outfile))  in
 		fprintf out "%s\n" ("op " ^ programName ^ " : -> Program .");
 		fprintf out "%s\n" ("eq " ^ programName ^ " = ("); 
 	
