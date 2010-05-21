@@ -285,9 +285,9 @@ mod COMMON-C-SYNTAX is
 	---op struct`{_`} : SeqList -> Struct-Or-Union-Specifier .
 	--- ---op union`{_`} : Struct-Declaration-List -> Struct-Or-Union-Specifier .
 	op struct : Id SeqList -> Struct-Or-Union-Specifier .
-	--- op union_`{_`} : Identifier Struct-Declaration-List -> Struct-Or-Union-Specifier .
+	op union : Id SeqList -> Struct-Or-Union-Specifier .
 	op struct : Id -> Struct-Or-Union-Specifier .
-	--- op union_ : Identifier -> Struct-Or-Union-Specifier .
+	op union : Id -> Struct-Or-Union-Specifier .
 	
 	--- sort Struct-Declaration-List .
 	--- subsort Struct-Declaration < Struct-Declaration-List .

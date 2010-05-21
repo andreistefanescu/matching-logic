@@ -294,7 +294,7 @@ class virtual defaultMaudePrinterClass = object (self)
   method pOffset (base: doc) = function
     | NoOffset -> base
     | Field (fi, o) -> 
-        self#pOffset (base ++ text " . " ++ text fi.fname) o
+        self#pOffset (base ++ text " . " ++ text (noscores fi.fname)) o
     | Index (e, o) ->
         self#pOffset (base ++ text "[" ++ self#pExp () e ++ text "]") o
 
@@ -760,7 +760,7 @@ class virtual defaultMaudePrinterClass = object (self)
       Var vi, o -> self#pOffset (self#pVar vi) o
     | Mem e, Field(fi, o) ->
         self#pOffset
-          (((self#pExp () e)) ++ text (" -> " ^ fi.fname)) o
+          (((self#pExp () e)) ++ text (" -> " ^ (noscores fi.fname))) o
     | Mem e, NoOffset -> 
 		wrap (self#pExp () e) "Deref"
     | Mem e, o ->
