@@ -84,6 +84,9 @@ int main(void){
 		}
 	}
 	
+	int y = 0;
+	x += (y++, y += 3, ++y); // x += 5, x == 68
+	
 	
 	printf("%d\n",x);
 	return x;
