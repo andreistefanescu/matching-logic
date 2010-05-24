@@ -1,6 +1,7 @@
 --- $(value $var) gives what we want for pipestatus
 --- why isn't K ~> K proper?
 --- arrow unions?
+--- readunionfrommem not implemented
 set print attribute on .
 mod INCOMING-MODULES is
 	including K .
@@ -42,6 +43,7 @@ mod COMMON-SEMANTIC-SYNTAX is
 	op functionType : Type List{K} -> Type .
 	op pointerType : Type -> Type .
 	op structType : Id -> Type .
+	op enumType : Id -> Base-Type .
 	op unionType : Id -> Type .
 	op qualifiedType : Type K -> Type .
 	op typedField : Type Id -> Field .
@@ -97,6 +99,8 @@ mod C-SETTINGS is
 	eq numBytes(float) = 4 .
 	eq numBytes(double) = 8 .
 	
+	eq numBytes(enumType(X:Id)) = numBytes(int) .
+	
 	
 	op cfg:sizeut : -> Type .
 	eq cfg:sizeut = unsigned-long-int .
@@ -135,10 +139,14 @@ mod C-SETTINGS is
 	eq max(unsigned-long-int) = _-Int_(2 ^Nat absInt(numBits(unsigned-long-int)), 1) .
 	eq min(unsigned-long-long-int) = 0 .
 	eq max(unsigned-long-long-int) = _-Int_(2 ^Nat absInt(numBits(unsigned-long-long-int)), 1) .
+	
+	eq min(enumType(?)) = min(int) .
+	eq max(enumType(?)) = max(int) .
 		
 	eq sizeofType(T:Base-Type) = tv(numBytes(T:Base-Type), cfg:sizeut) .
 	eq sizeofType(pointerType(?)) = tv(numBytes(unsigned-long-int), cfg:sizeut) .
 
+	--- need to be careful about simplifying these into one rule because there may be variables with the same name as a typedef?
 	mb rule 
 		< k > [T:Typedef-Name => T:Type] ...</ k >
 		< types >... T:Typedef-Name |-> T:Type ...</ types > 
@@ -150,6 +158,10 @@ mod C-SETTINGS is
 	mb rule 
 		< k > [union(X:Id) => T:Type] ...</ k > 
 		< types >... union(X:Id) |-> T:Type ...</ types > 
+		: KSentence [metadata "structural"] .
+	mb rule 
+		< k > [enum(X:Id) => T:Type] ...</ k > 
+		< types >... enum(X:Id) |-> T:Type ...</ types > 
 		: KSentence [metadata "structural"] .
 	
 	--- — number of bits for smallest object that is not a bit-field (byte)
@@ -304,6 +316,9 @@ mod SIZEOF is
 		< k > [sizeofType(unionType(X:Id)) => calcUnionSize(L:List{KResult})] ...</ k >
 		< structs >... union(X:Id) |-> L:List{KResult} ...</ structs >
 	: KSentence .
+	mb [sizeof-enum]: rule
+		< k > [sizeofType(enumType(X:Id)) => tv(1, cfg:sizeut)] ...</ k >
+	: KSentence .
 	
 	mb [calcStructSize]: rule
 		< k > [calcStructSize(L:List{KResult}) => necessaryBytes(calcStructSize-aux(L:List{KResult}, 0))] ...</ k >
@@ -376,6 +391,9 @@ mod TYPES is
 	mb rule 
 		['_`[_`](T:Type,, N:Nat) => arrayType(T:Type, N:Nat)]
 		: KSentence [metadata "structural"] .
+	--- mb rule 
+		--- [enum(X:Id) => enumType(X:Id)]
+		--- : KSentence [metadata "structural"] .
 	mb rule 
 		['Pointer(T:Type) => pointerType(T:Type)]
 		: KSentence [metadata "structural"] .
@@ -392,6 +410,31 @@ mod TYPES is
 	--- move "Pointer" to where it belongs
 	mb rule 
 		[L:KLabel(T:Type,, 'Pointer(D:K)) => L:KLabel(pointerType(T:Type),, D:K)]
+		if false
+		orBool L:KLabel ==Bool 'Declaration
+		orBool L:KLabel ==Bool 'Field
+		orBool L:KLabel ==Bool 'Parameter-Declaration
+		orBool L:KLabel ==Bool 'Typedef
+		: KSentence [metadata "structural"] .
+	--- fixme these feel like cheating
+	mb rule 
+		[L:KLabel(struct(X:Id),, D:K) => L:KLabel(structType(X:Id),, D:K)]
+		if false
+		orBool L:KLabel ==Bool 'Declaration
+		orBool L:KLabel ==Bool 'Field
+		orBool L:KLabel ==Bool 'Parameter-Declaration
+		orBool L:KLabel ==Bool 'Typedef
+		: KSentence [metadata "structural"] .
+	mb rule 
+		[L:KLabel(enum(X:Id),, D:K) => L:KLabel(enumType(X:Id),, D:K)]
+		if false
+		orBool L:KLabel ==Bool 'Declaration
+		orBool L:KLabel ==Bool 'Field
+		orBool L:KLabel ==Bool 'Parameter-Declaration
+		orBool L:KLabel ==Bool 'Typedef
+		: KSentence [metadata "structural"] .
+	mb rule 
+		[L:KLabel(union(X:Id),, D:K) => L:KLabel(unionType(X:Id),, D:K)]
 		if false
 		orBool L:KLabel ==Bool 'Declaration
 		orBool L:KLabel ==Bool 'Field
@@ -930,6 +973,18 @@ mod COMMON-GLOBAL-DECLARATION is
 	mb rule
 		< k > [Global(Typedef(T:TogetherList, X:Declarator)) => Typedef(T:TogetherList, X:Declarator)] ...</ k >
 		: KSentence [metadata "structural"] .
+		
+	--- fixme this isn't how things are, but it seems to work out
+	---C99 6.7.2.2:3 The identifiers in an enumerator list are declared as constants that have type int and may appear wherever such are permitted
+	mb rule
+		< k > [Global(enum(X:Id, ((X':Id := E:Expression) .,. L:List{Expression}))) => '_=_('Declaration(int,, X':Id),, E:Expression) ~> Global(enum(X:Id, L:List{Expression}))] ...</ k >
+		: KSentence [metadata "structural"] .
+	mb rule
+		< k > [Global(enum(X:Id, .List{Expression})) => .K] ...</ k >
+		< types >... [.Map => enum(X:Id) |-> enumType(X:Id)] ...</ types >
+		< typedefs >... [.Map => enum(X:Id) |-> enumType(X:Id)] ...</ typedefs >
+		: KSentence [metadata "structural"] .
+		
 	mb [typedef-declaration]: rule
 		< k > ['Typedef(T:Type,, X:Typedef-Name) => .K] ...</ k >
 		< types >... [.Map => X:Typedef-Name |-> T:Type] ...</ types >
@@ -1010,6 +1065,21 @@ mod COMMON-GLOBAL-DECLARATION is
 		< typedefs >... [.Map => X:Id |-> pointerType(T:Type)] ...</ typedefs >
 		: KSentence [metadata "structural"] .
 	mb rule
+		< k > [addGlobalTypes(X:Id, structType(S:Id)) => .K] ...</ k >
+		< types >... [.Map => X:Id |-> structType(S:Id)] ...</ types >
+		< typedefs >... [.Map => X:Id |-> structType(S:Id)] ...</ typedefs >
+		: KSentence [metadata "structural"] .
+	mb rule
+		< k > [addGlobalTypes(X:Id, unionType(S:Id)) => .K] ...</ k >
+		< types >... [.Map => X:Id |-> unionType(S:Id)] ...</ types >
+		< typedefs >... [.Map => X:Id |-> unionType(S:Id)] ...</ typedefs >
+		: KSentence [metadata "structural"] .
+	mb rule
+		< k > [addGlobalTypes(X:Id, enumType(X':Id)) => .K] ...</ k >
+		< types >... [.Map => X:Id |-> enumType(X':Id)] ...</ types >
+		< typedefs >... [.Map => X:Id |-> enumType(X':Id)] ...</ typedefs >
+		: KSentence [metadata "structural"] .
+	mb rule
 		< k > [addGlobalTypes(X:Id, T:Base-Type) => .K] ...</ k >
 		< types >... [.Map => X:Id |-> T:Base-Type] ...</ types >
 		< typedefs >... [.Map => X:Id |-> T:Base-Type] ...</ typedefs >
@@ -1036,6 +1106,14 @@ mod COMMON-LOCAL-DECLARATION is
 	mb rule
 		< k > [addTypes(E:Expression, structType(X:Id)) => .K] ...</ k >
 		< types >... [.Map => E:Expression |-> structType(X:Id)] ...</ types >
+		: KSentence [metadata "structural"] .
+	mb rule
+		< k > [addTypes(E:Expression, unionType(X:Id)) => .K] ...</ k >
+		< types >... [.Map => E:Expression |-> unionType(X:Id)] ...</ types >
+		: KSentence [metadata "structural"] .
+	mb rule
+		< k > [addTypes(E:Expression, enumType(X:Id)) => .K] ...</ k >
+		< types >... [.Map => E:Expression |-> enumType(X:Id)] ...</ types >
 		: KSentence [metadata "structural"] .
 	--- fixme?
 	mb rule
@@ -1345,6 +1423,8 @@ and ll or LL
 
 	op readFromMem : Nat Type K Nat Nat -> K [metadata "strict(3)"] .
 	op readStructFromMem : Nat Type K List{K} -> K [metadata "strict(3)"] .
+	--- fixme todo not implemented
+	op readUnionFromMem : Nat Type K List{K} -> K [metadata "strict(3)"] .
 	op structVal : List{K} Type -> Value .
 	op unionVal : List{K} Type -> Value .
 	
@@ -1382,6 +1462,9 @@ and ll or LL
 	mb rule [interpret(N:Nat, T:Type) => tv(N:Nat, T:Type)]
 		if min(T:Type) <=Int N:Nat andBool max(T:Type) >=Int N:Nat
 		andBool integerTypes contains T:Type
+		: KSentence [metadata "structural"] .
+	mb rule [interpret(N:Nat, enumType(X:Id)) => tv(N:Nat, enumType(X:Id))]
+		if min(enumType(X:Id)) <=Int N:Nat andBool max(enumType(X:Id)) >=Int N:Nat
 		: KSentence [metadata "structural"] .
 	mb rule [interpret(N:Rat, T:Type) => tv(N:Rat, T:Type)]
 		if min(T:Type) <=Rat N:Rat andBool max(T:Type) >=Rat N:Rat
@@ -1731,6 +1814,11 @@ and ll or LL
 		=> readStructFromMem(Loc:Nat, structType(X:Id), sizeofType(structType(X:Id)), .List{K})
 		] ...</ k >
 		: KSentence .
+	mb [deref-union]: rule
+		< k > [Deref(tv(Loc:Nat, pointerType(unionType(X:Id)))) 
+		=> readUnionFromMem(Loc:Nat, unionType(X:Id), sizeofType(unionType(X:Id)), .List{K})
+		] ...</ k >
+		: KSentence .
 		
 	mb [if-then-else-true]: rule
 		< k > [if (tv(I:Int, ?)) S:Statement else S':Statement => S:Statement] ...</ k >
@@ -1756,6 +1844,24 @@ and ll or LL
 	
 	mb rule
 		< k > [cast(T:Type, tv(B:BaseValue, T:Type)) => tv(B:BaseValue, T:Type)] ...</ k > 
+		: KSentence .
+		
+	--- fixme cheating with enum types
+	mb rule
+		< k > [cast(enumType(X:Id), tv(I:Int, T:Type)) => cast(enumType(X:Id), cast(int, tv(I:Int, T:Type)))] ...</ k > 
+		if (integerTypes contains T:Type)
+		andBool T:Type =/=Bool int
+		: KSentence .
+	mb rule
+		< k > [cast(enumType(X:Id), tv(I:Int, int)) => tv(I:Int, enumType(X:Id))] ...</ k > 
+		: KSentence .
+	mb rule
+		< k > [cast(T:Type, tv(I:Int, enumType(X:Id))) => cast(T:Type, cast(int, tv(I:Int, enumType(X:Id))))] ...</ k > 
+		if (integerTypes contains T:Type)
+		andBool T:Type =/=Bool int
+		: KSentence .
+	mb rule
+		< k > [cast(int, tv(I:Int, enumType(X:Id))) => tv(I:Int, int)] ...</ k > 
 		: KSentence .
 	
 	---c99 6.3.1.3:1 When a value with integer type is converted to another integer type other than _Bool, if the value can be represented by the new type, it is unchanged. 
