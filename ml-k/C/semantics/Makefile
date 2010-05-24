@@ -17,7 +17,7 @@ COMPILED_PROGRAM_LOADS = `echo -e "$(foreach var, $(PROGRAM_TARGET_NO_MAUDE), lo
 
 .PHONY: all clean force check-input dynamic match semantics
 
-#.SECONDARY:
+.SECONDARY:
 
 all: dynamic 
 
@@ -26,18 +26,19 @@ ifeq ($(INPUT),)
 	exit 1
 endif
 
-programs-gen.maude: c-syntax.maude programs-gen.template $(INPUT) Makefile
+program-%-gen.maude: c-syntax.maude programs-gen.template $(INPUT) Makefile
 ifeq ($(INPUT),)
 	exit 1
 endif
-	@printf "`cat programs-gen.template`" $(ADDITIONAL_SYNTAX) > programs-gen.maude
-	@for i in $(INPUT); do cat $$i >> programs-gen.maude; done
-	@echo endm >> programs-gen.maude
+	@printf "`cat programs-gen.template`" $(ADDITIONAL_SYNTAX) > $@
+#@for i in $(INPUT); do cat $$i >> $@; done
+	@cat $(PROGRAM_DIR)/$*.gen.maude >> $@
+	@echo endm >> $@
 	
 c-syntax.maude: Makefile
 	@printf "`cat c-syntax.template`" $(ADDITIONAL_SYNTAX) > c-syntax.maude	
 	
-c.maude: c-syntax.maude programs-gen.maude c-maude.template Makefile
+c.maude: c-syntax.maude c-maude.template Makefile
 ifeq ($(INPUT),)
 	exit 1
 endif
@@ -46,10 +47,10 @@ endif
 c-compiled.maude: c.maude common-c-syntax.maude match-c-syntax.maude common-c-configuration.maude common-c-semantics.maude  
 	$(K-MAUDE) c.maude C
 	
-program-%-compiled.maude: c-compiled.maude programs-gen.maude
-	$(K-PROGRAM-COMPILE) programs-gen.maude C C-PROGRAM program-$*
-	sed '1 d' $@ > $@.tmp
-	mv $@.tmp $@
+program-%-compiled.maude: c-compiled.maude program-%-gen.maude
+	$(K-PROGRAM-COMPILE) program-$*-gen.maude C C-PROGRAM program-$*
+	@sed '1 d' $@ > $@.tmp
+	@mv $@.tmp $@
 	
 dynamic: SEMANTICS_MODULE = "DYNAMIC-C-SEMANTICS" 
 dynamic: SEMANTICS_FILE = "dynamic-c-semantics"
@@ -63,10 +64,13 @@ match: semantics
 
 semantics: c-compiled.maude test.maude
 
-test.maude: $(PROGRAM_TARGET)
+test.maude: $(PROGRAM_TARGET) test.template
 	@printf "`cat test.template`" "$(COMPILED_PROGRAM_LOADS)" "`echo -e "$(foreach var, $(PROGRAM_NAMES), rew in C-$(var) : eval(\\"$(var)\\"(.List{K})) . \n)\n"`" > test.maude
 	
+# test.maude: force
+# @printf "`cat test-together.template`" "`echo -e "$(foreach var, $(PROGRAM_NAMES), rew eval(\\"$(var)\\"(.List{K})) . \n)\n"`" > test.maude
+	
 clean:
-	rm -f program-*-compiled.maude program-*-compiled.maude.tmp c-syntax.maude c-compiled.maude c.maude test.maude programs-gen.maude test-benchmark.maude kcompile_*
+	rm -f program-*-gen.maude program-*-compiled.maude program-*-compiled.maude.tmp c-syntax.maude c-compiled.maude c.maude test.maude programs-gen.maude test-benchmark.maude kcompile_* quoted.maude
 
 force: ;
