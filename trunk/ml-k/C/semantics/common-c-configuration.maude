@@ -72,4 +72,6 @@ mod COMMON-C-CONFIGURATION is
 	---subsort Initializer-List < K .
 	subsort String < Builtins .
 	subsort Typedef-Name < Builtins .
+	subsort Enum-Specifier < K .
+	--- subsort Enumeration-Constant < K .
 endm

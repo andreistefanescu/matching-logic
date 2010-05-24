@@ -38,7 +38,7 @@ mod COMMON-C-SYNTAX is
 	--- ---- A.1.5 Constants
 	--- --- 6.4.4
 	sort Constant .
-	--- subsort Integer-Constant Enumeration-Constant Character-Constant < Constant .
+	--- subsort Integer-Constant Character-Constant Enumeration-Constant < Constant .
 	subsort Integer-Constant Floating-Constant < Constant .
 	
 	--- --- 6.4.4.1
@@ -82,7 +82,7 @@ mod COMMON-C-SYNTAX is
 	
 	--- --- 6.4.4.3
 	--- sort Enumeration-Constant .
-	--- subsort Identifier < Enumeration-Constant .
+	--- subsort Id < Enumeration-Constant .
 	
 	--- --- 6.4.4.4
 	--- sort Character-Constant .
@@ -256,8 +256,8 @@ mod COMMON-C-SYNTAX is
 	--- --- 6.7.2
 	sort Type-Specifier .
 	sort Base-Type .
-	--- subsort Struct-Or-Union-Specifier Enum-Specifier < Type-Specifier .
-	subsort Typedef-Name Struct-Or-Union-Specifier Base-Type < Type-Specifier .
+	--- subsort Struct-Or-Union-Specifier < Type-Specifier .
+	subsort Typedef-Name Struct-Or-Union-Specifier Enum-Specifier Base-Type < Type-Specifier .
 	op typedefName : Id -> Typedef-Name .
 	ops void 
 		no-type
@@ -318,13 +318,15 @@ mod COMMON-C-SYNTAX is
 	--- op _:_ : Declarator Constant-Expression -> Struct-Declarator .
 	
 	--- --- 6.7.2.2
-	--- sort Enum-Specifier .
+	sort Enum-Specifier .
 	--- --- Note: CIL gives names to anonymous enums
 	--- --- op enum`{_`} : Enumerator-List -> Enum-Specifier .
-	--- op enum_`{_`} : Identifier Enumerator-List -> Enum-Specifier .
+	---op enum_`{_`} : Id List{Expression} -> Enum-Specifier .
+	op enum : Id List{Expression} -> Enum-Specifier .
 	--- --- op enum`{_`,`} : Enumerator-List -> Enum-Specifier .
 	--- op enum_`{_`,`} : Identifier Enumerator-List -> Enum-Specifier .
-	--- op enum_ : Identifier -> Enum-Specifier .
+	---op enum_ : Id -> Enum-Specifier .
+	op enum : Id -> Enum-Specifier .
 	
 	--- sort Enumerator-List .
 	--- subsort Enumerator < Enumerator-List .

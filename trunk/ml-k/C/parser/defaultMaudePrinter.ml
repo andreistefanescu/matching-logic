@@ -353,8 +353,9 @@ class virtual defaultMaudePrinterClass = object (self)
           ++ name)
           
     | TEnum (enum, a) -> 
-        text ("enum " ^ enum.ename ^ " ")
+        text ("(enum(" ^ enum.ename ^ ")) ")
           ++ self#pAttrs () a 
+		  ++ (if needsNoComma then (nil) else (text ", "))
           ++ name
     | TPtr (bt, a)  -> 
         (* Parenthesize the ( * attr name) if a pointer to a function or an 
@@ -814,19 +815,19 @@ class virtual defaultMaudePrinterClass = object (self)
 
     | GEnumTag (enum, l) ->
         self#pLineDirective l ++
-          text "enum" ++ align ++ text (" " ^ enum.ename) ++
-          text " {" ++ line
+          text "enum(" ++ align ++ text (" " ^ enum.ename) ++
+          text ", " ++ line
           ++ (docList ~sep:(text ".,." ++ line)
                 (fun (n,i, loc) -> 
-                  text (n ^ " = ") 
-                    ++ self#pExp () i)
+                  paren (text (n ^ " := ") 
+                    ++ self#pExp () i))
                 () enum.eitems)
-          ++ unalign ++ line ++ text "} " 
-          ++ self#pAttrs () enum.eattr ++ text";\n"
+          ++ unalign ++ line ++ text ") " 
+          ++ self#pAttrs () enum.eattr ++ text"\n"
 
     | GEnumTagDecl (enum, l) -> (* This is a declaration of a tag *)
         self#pLineDirective l ++
-          text ("enum " ^ enum.ename ^ ";\n")
+          text ("enum(" ^ enum.ename ^ ")\n")
 
     | GCompTag (comp, l) -> (* This is a definition of a tag *)
         let n = noscores comp.cname in
