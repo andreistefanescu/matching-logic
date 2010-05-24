@@ -69,6 +69,12 @@ class maudeVisitor = object (self) inherit nopCilVisitor
 					identifierList <- (replace "_" "u" fi.vname) :: identifierList
 				in List.iter formalVisit fundec.sformals;
 			end *)
+			| GEnumTag (enum, _) -> 
+				identifierList <- (replace "_" "u" enum.ename) :: identifierList ;
+		      (* Do the values and attributes of the enumerated items *)
+		      let itemVisit (name, exp, loc) = 
+				identifierList <- (replace "_" "u" name) :: identifierList in
+		      List.iter itemVisit enum.eitems;
 			| GType(typeinfo, location) -> typedefList <- (replace "_" "u" typeinfo.tname) :: typedefList
 			| GVarDecl(varinfo, location) -> 
 				identifierList <- (replace "_" "u" varinfo.vname) :: identifierList

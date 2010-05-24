@@ -16,7 +16,7 @@ match: SEMANTICS=match
 match: build-all run
 
 fix: 
-	maude $(SEMANTICS_DIR)/c.maude
+	maude $(SEMANTICS_DIR)/programs-gen.maude
 fixnew: 
 	maude $(SEMANTICS_DIR)/kcompile_in.maude
 
