@@ -3,7 +3,7 @@
 typedef unsigned long int size_t; // this needs to correspond to cfg:sizeut
 
 #include "stdarg.h"
-
+#include "stdio.h"
 
 // stdlib.h
 # define RAND_MAX 2147483647
@@ -18,17 +18,6 @@ int rand (void);
 // math.h (real c99 needs -lm to get math library linked in)
 double sqrt (double x);
 
-// stdio.h
-#define EOF -1
-int putchar ( int character );
-int printf(const char *format, ...);
-//#include "printf.h"
-//int sprintf ( char * str, const char * format, ... );
-int puts (const char * str);
-int puts(const char * str){
-	//debug(0);
-	return printf("%s\n", str);
-}
 
 
 
