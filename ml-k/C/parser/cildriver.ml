@@ -73,7 +73,10 @@ with
 
 let replace input output =
     Str.global_replace (Str.regexp_string input) output
-
+	
+let noscores s = 
+	(replace "_" "u" s)
+	
 (* variables to help generate maude.  These get set by calling the maude visitor *)
 let identifierList : string list ref = ref []
 let typedefList : string list ref = ref []
@@ -87,7 +90,7 @@ let maudeFooter = "endm)" *)
 let maudeHeader = ""
 let maudeFooter = ""
   
-let defineConstant name sort = ("op " ^ name ^ " : -> " ^ sort ^ " [ctor] .\n")
+let defineConstant name sort = ("op " ^ (noscores name) ^ " : -> " ^ sort ^ " [ctor] .\n")
 let printString out x = fprintf out "%s" x
 
 type outfile = 
@@ -139,7 +142,7 @@ let myDumpFile (pp: cilPrinter) (out : out_channel) (outfile: string) file =
 	printTypedefList out !typedefList;
 	printNewline out;
 	
-	let programName = replace "-gen-maude-tmp" "" (replace "." "-" ("program-" ^ outfile))  in
+	let programName = replace "-gen-maude-tmp" "" (replace "." "-" ("program-" ^ (noscores outfile)))  in
 		fprintf out "%s\n" ("op " ^ programName ^ " : -> Program .");
 		fprintf out "%s\n" ("eq " ^ programName ^ " = ("); 
 	
