@@ -1224,7 +1224,7 @@ mod COMMON-EXPRESSIONS is
 	--- fixme
 	mb rule [tv(F1:Float, T:Type) + tv(F2:Float, T:Type) => cast(T:Type, F1:Float +Float F2:Float)] 
 		: KSentence .
-	mb rule [_-_(tv(F1:Float, T:Type), tv(F2:Float, T:Type)) => cast(T:Type, _-Float_(F1:Float, F2:Float))] 
+	mb rule [_-_(tv(F1:Float, T:Type), tv(F2:Float, T:Type)) => cast(T:Type, _-Float_(F1:Float, F2:Float))]
 		: KSentence .
 	mb rule [tv(F1:Float, T:Type) * tv(F2:Float, T:Type) => cast(T:Type, F1:Float *Float F2:Float)] 
 		: KSentence .
@@ -1232,6 +1232,15 @@ mod COMMON-EXPRESSIONS is
 		: KSentence .
 	mb rule [-un tv(F:Float, T:Type) => cast(T:Type, -Float_(F:Float))] 
 		: KSentence .
+		
+	mb rule [tv(F1:Float, T:Type) < tv(F2:Float, T:Type) => if (F1:Float <Float F2:Float) then tv(1, int) else tv(0, int) fi] : KSentence .
+	mb rule [tv(F1:Float, T:Type) <= tv(F2:Float, T:Type) => if (F1:Float <=Float F2:Float) then tv(1, int) else tv(0, int) fi] : KSentence .
+	mb rule [tv(F1:Float, T:Type) > tv(F2:Float, T:Type) => if (F1:Float >Float F2:Float) then tv(1, int) else tv(0, int) fi] : KSentence .
+	mb rule [tv(F1:Float, T:Type) >= tv(F2:Float, T:Type) => if (F1:Float >=Float F2:Float) then tv(1, int) else tv(0, int) fi] : KSentence .
+	mb rule [tv(F1:Float, T:Type) == tv(F2:Float, T:Type) => if (F1:Float ==Bool F2:Float) then tv(1, int) else tv(0, int) fi] : KSentence .
+	mb rule [tv(F1:Float, T:Type) != tv(F2:Float, T:Type) => if (F1:Float =/=Bool F2:Float) then tv(1, int) else tv(0, int) fi] : KSentence .
+	mb rule [!(tv(F:Float, T:Type)) => if (F:Float ==Bool 0.0) then tv(1, int) else tv(0, int) fi] : KSentence .
+		
 	--- --- mb rule [~ I:Int => ~Int I:Int] : KSentence .
 	
 	mb rule [tv(I1:Int, T:Type) < tv(I2:Int, T:Type) => if (I1:Int <Int I2:Int) then tv(1, int) else tv(0, int) fi] : KSentence .
@@ -1903,9 +1912,16 @@ and ll or LL
 		< k > [cast(double, tv(I:Int, T:Type)) => tv(rat2floatConversion(I:Int), double)] ...</ k > 
 		if integerTypes contains T:Type
 		: KSentence .
+	mb rule
+		< k > [cast(float, tv(I:Int, T:Type)) => tv(rat2floatConversion(I:Int), float)] ...</ k > 
+		if integerTypes contains T:Type
+		: KSentence .
 	--- fixme
 	mb rule
 		< k > [cast(float, tv(F:Float, double)) => tv(F:Float, float)] ...</ k > 
+		: KSentence .
+	mb rule
+		< k > [cast(double, tv(F:Float, float)) => tv(F:Float, double)] ...</ k > 
 		: KSentence .
 	
 	--- fixme 6.3.2.3 not handling this correctly
