@@ -2,6 +2,9 @@
 --- why isn't K ~> K proper?
 --- arrow unions?
 --- readunionfrommem not implemented
+--- arithmetic on a void * pointer
+--- argument of function type
+--- 6.7.5.3:11 if, in a parameter declaration, an identifier can be treated either as a typedef name or as a parameter name, it shall be taken as a typedef name
 set print attribute on .
 mod INCOMING-MODULES is
 	including K .
@@ -10,6 +13,38 @@ mod INCOMING-MODULES is
 	including K-CONTEXTS .
 	including K-PROPER .
 endm
+
+---C99 5.1.2.2.1:1
+--- The function called at program startup is named main. The implementation declares no
+--- prototype for this function. It shall be defined with a return type of int and with no
+--- parameters:
+--- int main(void) { /* ... */ }
+--- or with two parameters (referred to here as argc and argv, though any names may be
+--- used, as they are local to the function in which they are declared):
+--- int main(int argc, char *argv[]) { /* ... */ }
+--- or equivalent;9) or in some other implementation-defined manner
+
+---C99 5.1.2.2.1:2
+--- If they are declared, the parameters to the main function shall obey the following
+--- constraints:
+--- — The value of argc shall be nonnegative.
+--- — argv[argc] shall be a null pointer.
+--- — If the value of argc is greater than zero, the array members argv[0] through
+--- argv[argc-1] inclusive shall contain pointers to strings, which are given
+--- implementation-defined values by the host environment prior to program startup. The
+--- intent is to supply to the program information determined prior to program startup
+--- from elsewhere in the hosted environment. If the host environment is not capable of
+--- supplying strings with letters in both uppercase and lowercase, the implementation
+--- shall ensure that the strings are received in lowercase.
+--- — If the value of argc is greater than zero, the string pointed to by argv[0]
+--- represents the program name; argv[0][0] shall be the null character if the
+--- program name is not available from the host environment. If the value of argc is
+--- greater than one, the strings pointed to by argv[1] through argv[argc-1]
+--- represent the program parameters.
+--- — The parameters argc and argv and the strings pointed to by the argv array shall
+--- be modifiable by the program, and retain their last-stored values between program
+--- startup and program termination.
+
 
 mod COMMON-SEMANTIC-SYNTAX is
 	including INCOMING-MODULES .
@@ -86,6 +121,8 @@ mod C-SETTINGS is
 	--- S 6.2.5 p.35 i.15.  "The implementation shall define char to have the same range, representation, and behavior as either signed char or unsigned char.  37)... Irrespective of the choice made, char is a separate type from the other two and is not compatible with either
 	--- cme: I'm not sure what consequence being a separate type entails, so for now it will just be rewritten to the chosen type
 	mb rule [char => signed-char] : KSentence [metadata "stuctural"] .
+	
+	mb rule [NULL => tv(0, pointerType(void))] : KSentence [metadata "stuctural"] .
 	
 	---C99 6.4.4.1:5 The type of an integer constant is the first of the corresponding list in which its value can be represented
 
@@ -930,6 +967,12 @@ mod COMMON-PARAMETER-BINDING is
 			=> allocate(sizeofType(T:Type)) ~> addLocals(Loc:Nat) ~> putInMem(Loc:Nat, tv(V:BaseValue, T:Type), T:Type, sizeofType(T:Type)) ~> bind(L:List{KResult}, ...)] ...</ k > 
 		< nextLoc > Loc:Nat </ nextLoc >
 		: KSentence .
+	--- fixme todo this happens when we don't have the right prototype.  I think it's correct
+	mb [bind-var]: rule
+		< k > [bind((tv(V:BaseValue, T:Type),, L:List{KResult}), .List{K})
+			=> allocate(sizeofType(T:Type)) ~> addLocals(Loc:Nat) ~> putInMem(Loc:Nat, tv(V:BaseValue, T:Type), T:Type, sizeofType(T:Type)) ~> bind(L:List{KResult}, ...)] ...</ k > 
+		< nextLoc > Loc:Nat </ nextLoc >
+		: KSentence .
 	mb rule
 		< k > [bind(L:List{KResult}, ('Parameter-Declaration(T:Typedef-Name,, X:Id),, P:List{K}))
 			=> bind(L:List{KResult}, ('Parameter-Declaration(T':Type,, X:Id),, P:List{K}))] ...</ k > 
@@ -960,7 +1003,7 @@ mod COMMON-GLOBAL-DECLARATION is
 		: KSentence .
 		
 	mb [function-definition]: rule 
-		< k > ['_`{_`}('Declaration(T:Type,, X:Id),, B:TogetherList)=> .K] ...</ k >
+		< k > ['_`{_`}('Declaration(T:Type,, X:Id),, B:TogetherList) => .K] ...</ k >
 		< env >... [.Map => X:Id |-> Loc:Nat] ...</ env >
 		< genv >... [.Map => X:Id |-> Loc:Nat] ...</ genv >
 		< mem >... [.Map => Loc:Nat |-> Closure(X:Id, T:Type, B:TogetherList)] </ mem >
@@ -1279,6 +1322,9 @@ mod COMMON-C-SEMANTICS is
 	mb context assign(?, [HOLE]) : KSentence .
 
 	op eval : Program -> Bag .
+	op eval : Program String -> Bag .
+	
+	---eq eval(P:Program) = eval(P:Program, "") .
 	
 	----- start simple transformations -----
 	--- massage application with no argument
