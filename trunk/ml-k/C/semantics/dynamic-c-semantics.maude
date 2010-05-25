@@ -1,10 +1,15 @@
 mod DYNAMIC-C-SEMANTICS is
 	including COMMON-C-SEMANTICS .
 	
-	eq eval(P:Program) = 
+	op incomingArgumentArray : -> Id [ctor] .
+	eq eval(P:Program, Name:String) = 
 		< T >
 			< local >
-				< k > P:Program ~> Apply(main) </ k >
+				< k > P:Program 
+					~> Declaration(char, Pointer(incomingArgumentArray[2])) 
+					~> incomingArgumentArray[0] := Cast(Pointer(char), Name:String) ; 
+					~> incomingArgumentArray[1] := Cast(Pointer(char), NULL) ; 
+					~> Apply(main, (1 .,. incomingArgumentArray)) </ k >
 				< env > .Map </ env >
 				< loopStack > .List </ loopStack >
 				< locals > .Bag </ locals >

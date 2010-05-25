@@ -44,7 +44,7 @@ ifeq ($(INPUT),)
 endif
 	@printf "`cat c-maude.template`" $(K-PRELUDE) $(CONFIGURATION_FILE) $(SEMANTICS_FILE) $(SEMANTICS_MODULE) > c.maude
 	
-c-compiled.maude: c.maude common-c-syntax.maude match-c-syntax.maude common-c-configuration.maude common-c-semantics.maude  
+c-compiled.maude: c.maude common-c-syntax.maude match-c-syntax.maude common-c-configuration.maude common-c-semantics.maude dynamic-c-semantics.maude dynamic-c-configuration.maude match-c-semantics.maude match-c-configuration.maude
 	$(K-MAUDE) c.maude C
 	
 program-%-compiled.maude: c-compiled.maude program-%-gen.maude
@@ -65,7 +65,7 @@ match: semantics
 semantics: c-compiled.maude test.maude
 
 test.maude: $(PROGRAM_TARGET) test.template
-	@printf "`cat test.template`" "$(COMPILED_PROGRAM_LOADS)" "`echo -e "$(foreach var, $(PROGRAM_NAMES), rew in C-$(var) : eval(\\"$(var)\\"(.List{K})) . \n)\n"`" > test.maude
+	@printf "`cat test.template`" "$(COMPILED_PROGRAM_LOADS)" "`echo -e "$(foreach var, $(PROGRAM_NAMES), rew in C-$(var) : eval(\\"$(var)\\"(.List{K}), \\"$(var)\\") . \n)\n"`" > test.maude
 	
 # test.maude: force
 # @printf "`cat test-together.template`" "`echo -e "$(foreach var, $(PROGRAM_NAMES), rew eval(\\"$(var)\\"(.List{K})) . \n)\n"`" > test.maude

@@ -59,15 +59,15 @@ void * memset ( void * ptr, int value, size_t num );
 void * memcpy ( void * destination, const void * source, size_t num );
 // from http://www.danielvik.com/2010/02/fast-memcpy-in-c.html
 // by Daniel Vik
-// void* memcpy(void* dest, const void* src, size_t count) {
-	// char* dst8 = (char*)dest;
-	// char* src8 = (char*)src;
+void* memcpy(void* dest, const void* src, size_t count) {
+	char* dst8 = (char*)dest;
+	char* src8 = (char*)src;
 
-	// while (count--) {
-		// *dst8++ = *src8++;
-	// }
-	// return dest;
-// }
+	while (count--) {
+		*dst8++ = *src8++;
+	}
+	return dest;
+}
 
 // assert.h
 void assert (int expression);
