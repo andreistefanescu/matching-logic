@@ -628,7 +628,13 @@ mod COMMON-C-STANDARD-LIBRARY is
 	mb [sqrt]: rule
 		< k > [Apply(builtin(sqrt), tv(F:Float, double)) => tv(sqrtFloat(F:Float), double)] ...</ k >
 	: KSentence .
-	
+	--------------------------------------------
+	mb [cos-is-value]: rule
+		< k > [cos => builtin(cos)] ...</ k >
+	: KSentence .
+	mb [sqrt]: rule
+		< k > [Apply(builtin(cos), tv(F:Float, double)) => tv(cosFloat(F:Float), double)] ...</ k >
+	: KSentence .
 	--------------------------------------------
 	mb [malloc-is-value]: rule
 		< k > [malloc => builtin(malloc)] ...</ k >
@@ -1019,7 +1025,7 @@ mod COMMON-GLOBAL-DECLARATION is
 		: KSentence [metadata "structural"] .
 		
 	mb rule
-		< k > [initItem(tv(N:Nat, T:Type), Loc:Nat, T':Type) => putInMem(Loc:Nat, cast(T':Type, tv(N:Nat, T:Type)), T':Type, sizeofType(T':Type)) ~> sizeofType(T':Type)] ...</ k >
+		< k > [initItem(tv(I:Int, T:Type), Loc:Nat, T:Type) => putInMem(Loc:Nat, tv(I:Int, T:Type), T:Type, sizeofType(T:Type)) ~> sizeofType(T:Type)] ...</ k >
 		: KSentence [metadata "structural"] .
 			
 	op struct-aux : Id K List{KResult} -> K .
