@@ -52,6 +52,10 @@ program-%-compiled.maude: c-compiled.maude program-%-gen.maude
 	@sed '1 d' $@ > $@.tmp
 	@mv $@.tmp $@
 	
+dynamic-test: dynamic test.maude
+
+match-test: match test.maude
+
 dynamic: SEMANTICS_MODULE = "DYNAMIC-C-SEMANTICS" 
 dynamic: SEMANTICS_FILE = "dynamic-c-semantics"
 dynamic: CONFIGURATION_FILE = "dynamic-c-configuration"
@@ -62,13 +66,17 @@ match: SEMANTICS_FILE = "match-c-semantics"
 match: CONFIGURATION_FILE = "match-c-configuration"
 match: semantics
 
-semantics: c-compiled.maude test.maude
+semantics: c-compiled.maude
 
-test.maude: $(PROGRAM_TARGET) test.template
+test.maude: $(PROGRAM_TARGET) $(INPUT) test.template
 	@printf "`cat test.template`" "$(COMPILED_PROGRAM_LOADS)" "`echo -e "$(foreach var, $(PROGRAM_NAMES), rew in C-$(var) : eval(\\"$(var)\\"(.List{K}), \\"$(var)\\") . \n)\n"`" > test.maude
-	
-# test.maude: force
-# @printf "`cat test-together.template`" "`echo -e "$(foreach var, $(PROGRAM_NAMES), rew eval(\\"$(var)\\"(.List{K})) . \n)\n"`" > test.maude
+
+a.out: dynamic test.maude
+	echo "--- &> /dev/null; (maude -no-wrap \$$0 | perl wrapper.pl) ; exit \$$?" > a.tmp
+	cat test.maude | perl slurp.pl >> a.tmp
+	echo q >> a.tmp
+	chmod u+x a.tmp
+	mv a.tmp a.out
 	
 clean:
 	rm -f program-*-gen.maude program-*-compiled.maude program-*-compiled.maude.tmp c-syntax.maude c-compiled.maude c.maude test.maude programs-gen.maude test-benchmark.maude kcompile_* quoted.maude

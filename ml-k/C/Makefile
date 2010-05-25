@@ -7,12 +7,15 @@ VPATH = programs
 
 .PHONY: all clean run test force cparser maude-fragments build-all dynamic match fix kcompile gcc-output kcompile-bench benchmark
 
-all: cparser maude-fragments 
+all: cparser maude-fragments
 
-dynamic: SEMANTICS=dynamic
+dist: SEMANTICS=dynamic
+dist: kcompile
+
+dynamic: SEMANTICS=dynamic-test
 dynamic: build-all run
 
-match: SEMANTICS=match
+match: SEMANTICS=match-test
 match: build-all run
 
 fix: 
