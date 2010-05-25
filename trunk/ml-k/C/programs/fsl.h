@@ -12,8 +12,9 @@ void free(void *pointer);
 void *calloc(size_t nelem, size_t elsize);
 void exit(int status);
 void debug(int i);
-void srand (unsigned int seed);
 int rand (void);
+
+
 
 // math.h (real c99 needs -lm to get math library linked in)
 double sqrt (double x);
