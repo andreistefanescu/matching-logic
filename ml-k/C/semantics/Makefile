@@ -39,9 +39,6 @@ c-syntax.maude: Makefile
 	@printf "`cat c-syntax.template`" $(ADDITIONAL_SYNTAX) > c-syntax.maude	
 	
 c.maude: c-syntax.maude c-maude.template Makefile
-ifeq ($(INPUT),)
-	exit 1
-endif
 	@printf "`cat c-maude.template`" $(K-PRELUDE) $(CONFIGURATION_FILE) $(SEMANTICS_FILE) $(SEMANTICS_MODULE) > c.maude
 	
 c-compiled.maude: c.maude common-c-syntax.maude match-c-syntax.maude common-c-configuration.maude common-c-semantics.maude dynamic-c-semantics.maude dynamic-c-configuration.maude match-c-semantics.maude match-c-configuration.maude
@@ -70,13 +67,6 @@ semantics: c-compiled.maude
 
 test.maude: $(PROGRAM_TARGET) $(INPUT) test.template
 	@printf "`cat test.template`" "$(COMPILED_PROGRAM_LOADS)" "`echo -e "$(foreach var, $(PROGRAM_NAMES), rew in C-$(var) : eval(\\"$(var)\\"(.List{K}), \\"$(var)\\") . \n)\n"`" > test.maude
-
-a.out: dynamic test.maude
-	echo "--- &> /dev/null; (maude -no-wrap \$$0 | perl wrapper.pl) ; exit \$$?" > a.tmp
-	cat test.maude | perl slurp.pl >> a.tmp
-	echo q >> a.tmp
-	chmod u+x a.tmp
-	mv a.tmp a.out
 	
 clean:
 	rm -f program-*-gen.maude program-*-compiled.maude program-*-compiled.maude.tmp c-syntax.maude c-compiled.maude c.maude test.maude programs-gen.maude test-benchmark.maude kcompile_* quoted.maude

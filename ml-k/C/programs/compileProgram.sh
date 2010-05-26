@@ -20,10 +20,10 @@ if [ ! $? -eq 0 ]; then
 	echo "Error"
 	exit 1
 fi
-gcc $PEDANTRY_OPTIONS -E -I. -o $filename.pre.gen $filename.prepre.gen
-rm -f program-$filename-prepre.gen
+gcc $PEDANTRY_OPTIONS -E -I. -o $filename.pre.gen $filename.prepre.gen $myDirectory/fsl.h
+rm -f $filename.prepre.gen
 $myDirectory/cparser $CIL_FLAGS --out $filename.gen.maude.tmp $filename.pre.gen
-rm -f program-$filename-pre.gen
+#rm -f $filename.pre.gen
 mv $filename.gen.maude.tmp $filename.gen.maude
 
 echo "load $myDirectory/c-compiled" > program-$filename-gen.maude
@@ -32,7 +32,7 @@ echo "including C-SYNTAX ." >> program-$filename-gen.maude
 echo "including MATCH-C-SYNTAX ." >> program-$filename-gen.maude
 echo "including COMMON-C-CONFIGURATION ." >> program-$filename-gen.maude
 cat $filename.gen.maude >> program-$filename-gen.maude
-rm -f $filename-gen.maude
+rm -f $filename.gen.maude
 echo -e "endm\n" >> program-$filename-gen.maude
 
 $K_PROGRAM_COMPILE program-$filename-gen.maude C C-PROGRAM program-$filename
