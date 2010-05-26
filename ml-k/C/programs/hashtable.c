@@ -29,12 +29,10 @@
 #ifndef HASHTBL_H_INCLUDE_GUARD
 #define HASHTBL_H_INCLUDE_GUARD
 
-#include "fsl.h"
-
 //#include "hashtbl.h"
-//#include <string.h>
-//#include <stdio.h>
-//#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 
 typedef size_t hash_size;

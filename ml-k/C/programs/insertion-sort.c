@@ -24,8 +24,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Retrieved from: http://en.literateprograms.org/Insertion_sort_(C)?oldid=15530
 */
 
-//#include <stdio.h>
-
 void insertion_sort(int a[], int length);
 int checkThatArrayIsSorted (int array[], int length);
 

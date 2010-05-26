@@ -24,9 +24,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Retrieved from: http://en.literateprograms.org/Sierpinski_triangle_(C)?oldid=11926
 */
 
-//#include<stdio.h>
-//#include<string.h>
-#include "fsl.h"
+#include<stdio.h>
+#include<string.h>
 
 char *apply_rules(char *new_sl, const char *sl, size_t width)
 {

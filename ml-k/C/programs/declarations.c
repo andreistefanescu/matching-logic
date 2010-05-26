@@ -1,4 +1,3 @@
-#include "fsl.h"
 int* f(int x[]);
 
 typedef struct str {

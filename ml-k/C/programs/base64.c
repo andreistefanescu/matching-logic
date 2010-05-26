@@ -24,9 +24,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Retrieved from: http://en.literateprograms.org/Base64_(C)?oldid=10650
 */
 
-// #include <stdio.h>
-// #include <string.h>
-#include "fsl.h"
+#include <stdio.h>
+#include <string.h>
 
 char b64[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 int nbytes[] = { 3, 1, 1, 2 };

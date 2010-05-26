@@ -4,7 +4,7 @@
  *           if it is a prime or not. If not, it prints out a factor of N.
  */
 
-//#include <stdio.h>
+#include <stdio.h>
 int prime(int n);
 
 int main(void) {

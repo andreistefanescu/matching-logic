@@ -23,6 +23,11 @@ dist: cparser kcompile
 	@cp $(C_DIR)/embed.pl $(DIST_DIR)
 	@cp $(C_DIR)/fsl.h $(DIST_DIR)
 	@cp $(C_DIR)/stdio.h $(DIST_DIR)
+	@cp $(C_DIR)/stdlib.h $(DIST_DIR)
+	@cp $(C_DIR)/math.h $(DIST_DIR)
+	@cp $(C_DIR)/string.h $(DIST_DIR)
+	@cp $(C_DIR)/stdarg.h $(DIST_DIR)
+	@cp $(C_DIR)/stddef.h $(DIST_DIR)
 
 
 dynamic: SEMANTICS=dynamic-test

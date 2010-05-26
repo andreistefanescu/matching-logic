@@ -1,4 +1,4 @@
-#include "fsl.h"
+#include <stdio.h>
 
 void hanoi(char,char,char,int);
 

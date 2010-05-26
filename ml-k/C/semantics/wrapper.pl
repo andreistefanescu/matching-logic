@@ -22,18 +22,16 @@ while (my $line = <STDIN>) {
 		if ($line =~ m/< input > <\/ input >/){
 		} elsif ($line =~ m/< output > "String" (.*)\(\.List{K}\) <\/ output >/){
 			my $output = $1;
-			$output =~ s/%/%%/;
+			$output =~ s/\%/\%\%/g;
+			$output =~ s/\\\\/\\\\\\\\/g;
 			print `printf $output`;
 		} elsif ($line =~ m/< resultValue > \("tv"\)\.KResultLabel\("Rat" (\d+)\(\.List{K}\),,"Base-Type" int\(\.List{K}\)\) <\/ resultValue >/){
 			$retval = $1;
-			#print "xxx$retval\n";
 		}
-		
 	} 
 	
 	if ($state eq "failure"){
 		print "$line\n";
 	}
 }
-#print "yyy$retval\n";
 exit $retval;

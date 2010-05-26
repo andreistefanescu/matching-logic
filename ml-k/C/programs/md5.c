@@ -360,11 +360,8 @@ UINT4 *in;
  **********************************************************************
  */
 
-// #include <stdio.h>
-// #include <sys/types.h>
-// #include <time.h>
-// #include <string.h>
-#include "fsl.h"
+#include <stdio.h>
+#include <string.h>
 /* -- include the following file if the file md5.h is separate -- */
 /* #include "md5.h" */
 

@@ -1,4 +1,5 @@
-#include "fsl.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 struct list_el {
    int val;

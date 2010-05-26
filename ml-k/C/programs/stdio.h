@@ -1,3 +1,6 @@
+#define NULL 0
+typedef unsigned long int size_t; // this needs to correspond to cfg:sizeut
+
 // from http://tigcc.ticalc.org/doc/stdio.html#FILE
 enum FileFlags {_F_READ = 0x0001, _F_WRIT = 0x0002, _F_RDWR = 0x0003, _F_ERR = 0x0010, _F_EOF = 0x0020, _F_BIN = 0x0040};
 typedef struct {

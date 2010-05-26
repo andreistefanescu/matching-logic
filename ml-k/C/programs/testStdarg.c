@@ -1,8 +1,7 @@
-// #include <stdio.h>
-// #include <stdlib.h>		/* for malloc, NULL, size_t */
-// #include <stdarg.h>		/* for va_ stuff */
-// #include <string.h>		/* for strcat et al. */
-#include "fsl.h"
+#include <stdio.h>
+#include <stdlib.h>		/* for malloc, NULL, size_t */
+#include <stdarg.h>		/* for va_ stuff */
+#include <string.h>		/* for strcat et al. */
  
 void printargs(int arg1, ...) /* print all int type args, finishing with -1 */
 {
