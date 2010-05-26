@@ -1,8 +1,13 @@
 use strict;
 use File::Basename;
+my $numArgs = $#ARGV + 1;
+my $startingDir = './';
+if ($numArgs > 0) {
+	$startingDir = $ARGV[0];
+}
 
-slurp(*STDIN, './');
-
+slurp(*STDIN, $startingDir);
+print "\n";
 sub slurp {
 	my ($file, $path) = (@_);
 	while (my $line = <$file>){
@@ -22,5 +27,7 @@ sub slurp {
 			print "$line\n";
 		}
 	}
+	print "\n";
 	#print "done with $file\n";
 }
+
