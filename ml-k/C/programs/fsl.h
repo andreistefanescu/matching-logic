@@ -35,6 +35,7 @@ int abs( int num ){
 size_t strlen(char *str);
 int strcmp(const char *str1, const char *str2);
 char* strcpy(char *restrict s1, const char *restrict s2);
+char* strcat(char* dest, const char* src);
 char * strcat(char *dest, const char *src){
     strcpy(dest + strlen(dest), src);
     return dest;
