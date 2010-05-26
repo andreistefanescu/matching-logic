@@ -3,6 +3,7 @@
 #
 ## using getopts
 #
+set -e
 aflag=
 oflag=
 while getopts 'ao:' OPTION
@@ -32,6 +33,7 @@ fi
 inputFile=`readlink -f $1`
 inputDirectory=`dirname $inputFile`
 baseName=`basename $inputFile .c`
+myDirectory=`dirname $0`
 #printf "Remaining arguments are: %s\n" "$1"
 printf "Compiling %s to %s\n" $inputFile $oval
 if [ ! -f $inputFile ]; then
@@ -40,24 +42,24 @@ if [ ! -f $inputFile ]; then
 fi
 
 maudeInput=$inputDirectory/$baseName.gen.maude
-echo "inputFile = $inputFile"
-echo "inputDirectory = $inputDirectory"
-echo "baseName = $baseName"
-echo "maudeInput = $maudeInput"
+#echo "inputFile = $inputFile"
+#echo "inputDirectory = $inputDirectory"
+#echo "baseName = $baseName"
+#echo "maudeInput = $maudeInput"
 
-make -f ../programs/Makefile -C ../programs $maudeInput
-echo "load c-compiled" > out.tmp
-echo "load c-syntax" >> out.tmp
-echo "load common-c-configuration" >> out.tmp
+#make -f ../programs/Makefile -C ../programs $maudeInput
+$myDirectory/compileProgram.sh $inputFile
+echo "load $myDirectory/c-compiled" > out.tmp
 echo "load program-$baseName-compiled" >> out.tmp
 echo "rew in C-program-$baseName : eval(\"program-$baseName\"(.List{K}), \"$baseName\") ." >> out.tmp
 
-echo "--- &> /dev/null; (maude -no-wrap \$0 | perl wrapper.pl) ; exit \$?" > a.tmp
-cat out.tmp | perl slurp.pl >> a.tmp
+echo "--- &> /dev/null; (maude -no-wrap \$0 | perl $myDirectory/wrapper.pl) ; exit \$?" > a.tmp
+cat out.tmp | perl $myDirectory/slurp.pl >> a.tmp
+rm -f program-$baseName-compiled.maude
 echo q >> a.tmp
 chmod u+x a.tmp
 mv a.tmp $oval
 
-clean:
-	rm out.tmp
-	rm a.tmp
+# clean up
+rm -f out.tmp
+rm -f a.tmp
