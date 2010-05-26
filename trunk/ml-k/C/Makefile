@@ -6,7 +6,7 @@ DIST_DIR = dist
 # match or dynamic semantics
 VPATH = programs
 
-.PHONY: all clean run test force cparser maude-fragments build-all dynamic match fix kcompile gcc-output kcompile-bench benchmark
+.PHONY: all clean run test force cparser maude-fragments build-all dynamic match fix kcompile gcc-output kcompile-bench benchmark dist
 
 all: cparser maude-fragments
 
@@ -22,6 +22,7 @@ dist: cparser kcompile
 	@cp $(C_DIR)/compileProgram.sh $(DIST_DIR)
 	@cp $(C_DIR)/embed.pl $(DIST_DIR)
 	@cp $(C_DIR)/fsl.h $(DIST_DIR)
+	@cp $(C_DIR)/stdio.h $(DIST_DIR)
 
 
 dynamic: SEMANTICS=dynamic-test

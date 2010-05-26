@@ -10,20 +10,23 @@ if [ ! $1 ]; then
 	exit 1
 fi
 filename=`basename "$1" .c`
-if [ ! -e $filename.c ]; then
+directoryname=`dirname "$1"`/
+if [ ! -e $directoryname$filename.c ]; then
 	echo "$filename.c not found"
 	exit 1
 fi
 
-perl $myDirectory/embed.pl -d=ML -o=$filename.prepre.gen $filename.c
+perl $myDirectory/embed.pl -d=ML -o=$filename.prepre.gen $directoryname$filename.c
 if [ ! $? -eq 0 ]; then 
 	echo "Error"
 	exit 1
 fi
-gcc $PEDANTRY_OPTIONS -E -I. -o $filename.pre.gen $filename.prepre.gen $myDirectory/fsl.h
+gcc $PEDANTRY_OPTIONS $GCC_OPTIONS -E -I. -I$myDirectory $filename.prepre.gen > $filename.pre.gen
+#echo "done with gcc"
 rm -f $filename.prepre.gen
 $myDirectory/cparser $CIL_FLAGS --out $filename.gen.maude.tmp $filename.pre.gen
-#rm -f $filename.pre.gen
+#echo "done with cil"
+rm -f $filename.pre.gen
 mv $filename.gen.maude.tmp $filename.gen.maude
 
 echo "load $myDirectory/c-compiled" > program-$filename-gen.maude
