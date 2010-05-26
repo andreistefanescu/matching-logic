@@ -24,10 +24,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Retrieved from: http://en.literateprograms.org/Binary_search_(C)?oldid=16429
 */
 
-// #include <stdio.h>
-// #include <stdlib.h>
-// #include <time.h>
-#include "fsl.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 int binary_search(int a[], int low, int high, int target) {
     while (low <= high) {

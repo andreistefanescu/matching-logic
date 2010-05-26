@@ -25,8 +25,7 @@ Retrieved from: http://en.literateprograms.org/Bubble_sort_(C)?oldid=15710
 */
 
 
-//#include <stdio.h>
-#include "fsl.h"
+#include <stdio.h>
 
 /* Swapping of elements in an array. Because there is a void* we need to give
 this function the element_size of the to be sorted elements, we then can exchange the

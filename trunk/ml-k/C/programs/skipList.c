@@ -24,11 +24,9 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Retrieved from: http://en.literateprograms.org/Skip_list_(C)?oldid=12811
 */
 
-// #include <stdio.h>
-// #include <stdlib.h>
-// #include <time.h>
-// #include <string.h>
-#include "fsl.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #define P 0.5
 

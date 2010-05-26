@@ -1,4 +1,4 @@
-#include "fsl.h"
+#include <stdio.h>
 
 struct s0 {
 	char* z;

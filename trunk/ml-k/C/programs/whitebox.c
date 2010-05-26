@@ -1,5 +1,4 @@
-#include "fsl.h"
-//#include <stdio.h>
+#include <stdio.h>
 
 struct bigstruct {
 	int a;

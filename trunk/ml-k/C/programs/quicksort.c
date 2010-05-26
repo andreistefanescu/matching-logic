@@ -27,9 +27,8 @@ Retrieved from: http://en.literateprograms.org/Quicksort_(C)?oldid=10011
 #ifndef _QUICKSORT_H_
 #define _QUICKSORT_H_
 
-//#include <stddef.h>
-#include "fsl.h"
-
+#include <stdio.h>
+#include <stdlib.h>
 
 void quicksort(void * base, size_t num_elements, size_t element_size,
                int (*comparer)(const void *, const void *));

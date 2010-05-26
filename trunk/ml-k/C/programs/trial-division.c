@@ -24,14 +24,10 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Retrieved from: http://en.literateprograms.org/Trial_division_(C)?oldid=15839
 */
 
-// #include <math.h>  /* For sqrt() */
-
-// #include <stdlib.h>   /* for malloc, calloc, free */
-
-// #include <string.h>
-// #include <stdio.h>
-#include "fsl.h"
-
+#include <math.h>  /* For sqrt() */
+#include <stdlib.h>   /* for malloc, calloc, free */
+#include <string.h>
+#include <stdio.h>
 
 #define IS_PRIME 0
 

@@ -1,6 +1,6 @@
 // based on code from http://stackoverflow.com/questions/252552/unions-in-c (comment by Adam Rosenfield)
 
-#include "fsl.h"
+#include <stdio.h>
 
 //enum TYPE { INTS, FLOATS, DOUBLE };
 struct S {

@@ -1,4 +1,5 @@
-#include "fsl.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 int* listCons(int* p, int n);
 int* mergesort(int* p);

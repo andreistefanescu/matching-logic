@@ -24,9 +24,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Retrieved from: http://en.literateprograms.org/Euclidean_algorithm_(C)?oldid=6998
 */
 
-// #include <stdio.h>  /* printf */
-// #include <stdlib.h> /* atoi */
-#include "fsl.h"
+#include <stdio.h>  /* printf */
 
 int euclidean_gcd(int a, int b) {
 	if (b > a) { int t = a; a = b; b = t; }

@@ -306,10 +306,9 @@ int fix_fftr(short f[], int m, int inverse)
 #define DEBUG 1
 #define SPECTRUM 0
 
-// #include <stdio.h>
-// #include <stdlib.h>
-// #include <math.h>
-#include "fsl.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
 
 #define FFT_SIZE  128
 #define log2FFT   7

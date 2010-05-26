@@ -1,4 +1,4 @@
-#include "fsl.h"
+#include <stdio.h>
 
 int fold(int* arr, int length, int start, int (*)(int, int));
 int sum(int x, int y);

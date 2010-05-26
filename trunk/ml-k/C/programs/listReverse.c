@@ -1,6 +1,5 @@
-//#include <stddef.h>
-//#include <stdlib.h>
-#include "fsl.h"
+#include <stdlib.h>
+#include <stdio.h>
 int* listReverseUnchecked(int* p);
 int* listReverse(int* p);
 int* listAppend(int* p, int n);
