@@ -40,7 +40,8 @@
  */
 
 /* typedef a 32 bit type */
-typedef unsigned long int UINT4;
+#include <stdint.h>
+typedef uint32_t UINT4;
 
 /* Data structure for MD5 (Message Digest) computation */
 typedef struct {
@@ -502,7 +503,7 @@ static void MDTestSuite ()
   //MDFile ("foo");
 }
 
-void main (void)
+int main (void)
 {
   int i;
 
@@ -524,6 +525,7 @@ void main (void)
       // else if (strcmp (argv[i], "-x") == 0)
         MDTestSuite ();
       // else MDFile (argv[i]);
+	  return 0;
 }
 
 /*

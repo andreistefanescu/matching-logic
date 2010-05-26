@@ -25,7 +25,7 @@ while (my $line = <STDIN>) {
 			$output =~ s/\%/\%\%/g;
 			$output =~ s/\\\\/\\\\\\\\/g;
 			print `printf $output`;
-		} elsif ($line =~ m/< resultValue > \("tv"\)\.KResultLabel\("Rat" (\d+)\(\.List{K}\),,"Base-Type" int\(\.List{K}\)\) <\/ resultValue >/){
+		} elsif ($line =~ m/< resultValue > \("tv"\)\.KResultLabel\("Rat" (-?\d+)\(\.List{K}\),,"Base-Type" int\(\.List{K}\)\) <\/ resultValue >/){
 			$retval = $1;
 		}
 	} 

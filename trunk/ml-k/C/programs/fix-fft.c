@@ -353,7 +353,12 @@ puts("");
 // #endif
 		diff += abs(x[i]-sample);
 	}
-	printf("sum(abs(diffs)))/N = %f\n", diff/(double)N);
+	double result = diff/(double)N;
+	if (result < 4.305 && result > 4.304){
+		printf("SUCCESS\n");
+	} else {
+		printf("ERROR: %f\n", result);
+	}
 
 	return 0;
 }
