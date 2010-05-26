@@ -25,9 +25,7 @@ shift $(($OPTIND - 1))
 # then
   # printf "Option -a specified\n"
 # fi
-if [ "$oflag" ]; then
-	printf 'Option -o "%s" specified\n' "$oval"
-else
+if [ ! "$oflag" ]; then
 	oval="a.out"
 fi
 inputFile=`readlink -f $1`
@@ -35,7 +33,7 @@ inputDirectory=`dirname $inputFile`
 baseName=`basename $inputFile .c`
 myDirectory=`dirname $0`
 #printf "Remaining arguments are: %s\n" "$1"
-printf "Compiling %s to %s\n" $inputFile $oval
+#printf "Compiling %s to %s\n" $inputFile $oval
 if [ ! -f $inputFile ]; then
 	printf "Input file %s does not exist\n" $inputFile
 	exit 1
