@@ -38,7 +38,7 @@ cat $filename.gen.maude >> program-$filename-gen.maude
 rm -f $filename.gen.maude
 echo -e "endm\n" >> program-$filename-gen.maude
 
-$K_PROGRAM_COMPILE program-$filename-gen.maude C C-PROGRAM program-$filename
+$K_PROGRAM_COMPILE program-$filename-gen.maude C C-PROGRAM program-$filename >> compilation.log
 rm -f program-$filename-gen.maude
 sed '1 d' program-$filename-compiled.maude > program-$filename-compiled.maude.tmp
 mv program-$filename-compiled.maude.tmp program-$filename-compiled.maude
