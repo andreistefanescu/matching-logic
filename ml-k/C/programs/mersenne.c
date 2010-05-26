@@ -136,39 +136,6 @@ unsigned long genrand_int32(void)
     return y;
 }
 
-/* generates a random number on [0,0x7fffffff]-interval */
-long genrand_int31(void)
-{
-    return (long)(genrand_int32()>>1);
-}
-
-/* generates a random number on [0,1]-real-interval */
-double genrand_real1(void)
-{
-    return genrand_int32()*(1.0/4294967295.0); 
-    /* divided by 2^32-1 */ 
-}
-
-/* generates a random number on [0,1)-real-interval */
-double genrand_real2(void)
-{
-    return genrand_int32()*(1.0/4294967296.0); 
-    /* divided by 2^32 */
-}
-
-/* generates a random number on (0,1)-real-interval */
-double genrand_real3(void)
-{
-    return (((double)genrand_int32()) + 0.5)*(1.0/4294967296.0); 
-    /* divided by 2^32 */
-}
-
-/* generates a random number on [0,1) with 53-bit resolution*/
-double genrand_res53(void) 
-{ 
-    unsigned long a=genrand_int32()>>5, b=genrand_int32()>>6; 
-    return(a*67108864.0+b)*(1.0/9007199254740992.0); 
-} 
 /* These real versions are due to Isaku Wada, 2002/01/09 added */
 
 int main(void)
@@ -177,13 +144,8 @@ int main(void)
     unsigned long init[4]={0x123, 0x234, 0x345, 0x456}, length=4;
     init_by_array(init, length);
     printf("5 outputs of genrand_int32()\n");
-    for (i=0; i<5; i++) {
+    for (i=0; i<10; i++) {
       printf("%u ", genrand_int32());
-      if (i%5==4) printf("\n");
-    }
-    printf("\n5 outputs of genrand_real2()\n");
-    for (i=0; i<5; i++) {
-      printf("%f ", genrand_real2());
       if (i%5==4) printf("\n");
     }
     return 0;

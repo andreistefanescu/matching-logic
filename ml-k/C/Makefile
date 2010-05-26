@@ -28,13 +28,14 @@ dist: cparser kcompile
 	@cp $(C_DIR)/string.h $(DIST_DIR)
 	@cp $(C_DIR)/stdarg.h $(DIST_DIR)
 	@cp $(C_DIR)/stddef.h $(DIST_DIR)
+	@cp $(C_DIR)/stdint.h $(DIST_DIR)
 
+test: dist
+	@make -C $(C_DIR) test
+	
 
-dynamic: SEMANTICS=dynamic-test
-dynamic: build-all run
-
-match: SEMANTICS=match-test
-match: build-all run
+# match: SEMANTICS=match-test
+# match: build-all run
 
 fix: 
 	maude $(SEMANTICS_DIR)/programs-gen.maude
@@ -46,29 +47,23 @@ force: ;
 cparser:
 	@make -C $(PARSER_DIR)
 
-maude-fragments: cparser
-	@make -C $(C_DIR)
-
-gcc-output:
-	@make -C $(C_DIR) gcc-output
-
 kcompile:
 	@make -C $(SEMANTICS_DIR) $(SEMANTICS)
 	
-build-all: maude-fragments kcompile
-	@time (make -C $(SEMANTICS_DIR) $(SEMANTICS) INPUT="$(realpath $^)")
+# build-all: maude-fragments kcompile
+# @time (make -C $(SEMANTICS_DIR) $(SEMANTICS) INPUT="$(realpath $^)")
 
 benchmark: profile.csv
 
 profile.csv: profile.log
 	perl analyzeProfile.pl > profile.csv
 
-profile.log: SEMANTICS=dynamic
-profile.log: maude-fragments kcompile-bench
-	@time (maude -no-wrap $(SEMANTICS_DIR)/test-benchmark.maude > profile.log)
+# profile.log: SEMANTICS=dynamic
+# profile.log: maude-fragments kcompile-bench
+	# @time (maude -no-wrap $(SEMANTICS_DIR)/test-benchmark.maude > profile.log)
 		
-run: 
-	@maude -no-wrap $(SEMANTICS_DIR)/test.maude
+# run: 
+	# @maude -no-wrap $(SEMANTICS_DIR)/test.maude
 		
 clean:
 	make -C $(C_DIR) clean

@@ -51,7 +51,7 @@ echo "load $myDirectory/c-compiled" > out.tmp
 echo "load program-$baseName-compiled" >> out.tmp
 echo "rew in C-program-$baseName : eval(\"program-$baseName\"(.List{K}), \"$baseName\") ." >> out.tmp
 
-echo "--- &> /dev/null; (maude -no-wrap \$0 | perl $myDirectory/wrapper.pl) ; exit \$?" > a.tmp
+echo "--- &> /dev/null; if [ \$DEBUG ]; then maude -no-wrap \$0; else (maude -no-wrap \$0 | perl $myDirectory/wrapper.pl); fi ; exit \$?" > a.tmp
 cat out.tmp | perl $myDirectory/slurp.pl >> a.tmp
 rm -f program-$baseName-compiled.maude
 echo q >> a.tmp
