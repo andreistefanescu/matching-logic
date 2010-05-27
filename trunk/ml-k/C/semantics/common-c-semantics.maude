@@ -5,6 +5,16 @@
 --- arithmetic on a void * pointer
 --- argument of function type
 --- 6.7.5.3:11 if, in a parameter declaration, an identifier can be treated either as a typedef name or as a parameter name, it shall be taken as a typedef name
+
+--- # of expected passes            44527
+--- # of unexpected failures        7081
+--- # of unexpected successes       6
+--- # of expected failures          183
+--- # of unresolved testcases       241
+--- # of unsupported tests          1285
+--- /usr/bin/gcc  version 4.1.2 20080704 (Red Hat 4.1.2-48)
+
+
 set print attribute on .
 mod INCOMING-MODULES is
 	including K .
