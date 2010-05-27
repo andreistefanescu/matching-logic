@@ -4,13 +4,13 @@
 ## using getopts
 #
 set -e
-aflag=
+dflag=
 oflag=
 usage="Usage: %s: [-o outputFileName] inputFileName\n"
-while getopts ':ao:v' OPTION
+while getopts ':do:v' OPTION
 do
 	case $OPTION in
-	a)	aflag=1
+	d)	dflag=1
 		;;
 	o)	oflag=1
 		oval="$OPTARG"
@@ -55,15 +55,21 @@ maudeInput=$inputDirectory/$baseName.gen.maude
 #echo "maudeInput = $maudeInput"
 
 #make -f ../programs/Makefile -C ../programs $maudeInput
-$myDirectory/compileProgram.sh $inputFile
+if [ "$dflag" ]; then
+	$myDirectory/compileProgram.sh -d $inputFile
+else
+	$myDirectory/compileProgram.sh $inputFile
+fi
 echo "load $myDirectory/c-compiled" > out.tmp
 echo "load program-$baseName-compiled" >> out.tmp
 echo "rew in C-program-$baseName : eval(\"program-$baseName\"(.List{K}), \"$baseName\") ." >> out.tmp
 
-echo "--- &> /dev/null; if [ \$DEBUG ]; then maude -no-wrap \$0; else (maude -no-wrap \$0 | perl $myDirectory/wrapper.pl); fi ; exit \$?" > a.tmp
+echo "--- &> /dev/null; if [ \$DEBUG ]; then maude -no-wrap \$0; else (echo q | maude -no-wrap \$0 | perl $myDirectory/wrapper.pl); fi ; exit \$?" > a.tmp
 cat out.tmp | perl $myDirectory/slurp.pl >> a.tmp
-rm -f program-$baseName-compiled.maude
-echo q >> a.tmp
+if [ ! "$dflag" ]; then
+	rm -f program-$baseName-compiled.maude
+fi
+#echo q >> a.tmp
 chmod u+x a.tmp
 mv a.tmp $oval
 
