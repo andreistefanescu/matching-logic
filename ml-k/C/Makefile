@@ -29,6 +29,7 @@ dist: cparser kcompile
 	@cp $(C_DIR)/stdarg.h $(DIST_DIR)
 	@cp $(C_DIR)/stddef.h $(DIST_DIR)
 	@cp $(C_DIR)/stdint.h $(DIST_DIR)
+	@ln -s -f compile.sh $(DIST_DIR)/kcc
 
 test: dist
 	@make -C $(C_DIR) test

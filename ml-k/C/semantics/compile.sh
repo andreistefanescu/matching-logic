@@ -6,15 +6,19 @@
 set -e
 aflag=
 oflag=
-while getopts 'ao:' OPTION
+usage="Usage: %s: [-o outputFileName] inputFileName\n"
+while getopts ':ao:v' OPTION
 do
-  case $OPTION in
-  a)	aflag=1
+	case $OPTION in
+	a)	aflag=1
 		;;
-  o)	oflag=1
+	o)	oflag=1
 		oval="$OPTARG"
 		;;
-  ?)	printf "Usage: %s: [-o value] args\n" $(basename $0) >&2
+	v)	printf "kcc version 0.0.1"
+		exit 0
+		;;
+	?)	printf "$usage" $(basename $0) >&2
 		exit 2
 		;;
   esac
@@ -28,6 +32,11 @@ shift $(($OPTIND - 1))
 if [ ! "$oflag" ]; then
 	oval="a.out"
 fi
+if [ ! "$1" ]; then
+	printf "$usage" $(basename $0) >&2
+	exit 2
+fi
+
 inputFile=`readlink -f $1`
 inputDirectory=`dirname $inputFile`
 baseName=`basename $inputFile .c`

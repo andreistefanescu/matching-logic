@@ -406,6 +406,8 @@ mod COMMON-C-SYNTAX is
 	---op .Parameter-Type-List : -> Parameter-Type-List .
 	---op Parameter-Type-List : Declaration-Specifiers -> Parameter-Type-List .
 	op Parameter-Type-List : List{Parameter} -> Parameter-Type-List .
+	op Parameter-Type-List`(`) : -> Parameter-Type-List .
+	eq Parameter-Type-List() = Parameter-Type-List(.List{Parameter}) .
 	---op _`,... : Parameter-Declaration -> Parameter-Type-List .
 	--- --- TODO
 	
