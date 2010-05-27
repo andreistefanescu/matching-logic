@@ -1,9 +1,9 @@
---- $(value $var) gives what we want for pipestatus
 --- why isn't K ~> K proper?
 --- arrow unions?
 --- readunionfrommem not implemented
 --- arithmetic on a void * pointer
 --- argument of function type
+--- need one past array
 --- 6.7.5.3:11 if, in a parameter declaration, an identifier can be treated either as a typedef name or as a parameter name, it shall be taken as a typedef name
 
 --- # of expected passes            44527
@@ -119,6 +119,7 @@ mod COMMON-SEMANTIC-SYNTAX is
 	op addLocals : Nat -> K .			
 	op integerTypes : -> Set [memo] .
 	op unsignedIntegerTypes : -> Set [memo] .
+	op hasIntegerType : Type -> Bool [memo] .
 	op typeof : Expression -> K .
 	op writeToFD : Nat Nat -> K .
 	op writeToFD : Nat String -> K .
@@ -250,7 +251,34 @@ mod C-SETTINGS is
 	--- — maximum value for an object of type unsigned long long int
 	--- ULLONG_MAX 18446744073709551615 // 264 - 1
 	
+	op rank : Type -> Nat .
 	
+	eq rank(char) = 1 .
+	eq rank(signed-char) = 1 .
+	eq rank(unsigned-char) = 1 .
+	eq rank(short-int) = 2 .
+	eq rank(unsigned-short-int) = 2 .
+	eq rank(int) = 3 .
+	eq rank(unsigned-int) = 3 .
+	eq rank(long-int) = 4 .
+	eq rank(unsigned-long-int) = 4 .
+	eq rank(long-long-int) = 5 .
+	eq rank(unsigned-long-long-int) = 5 .
+	
+	--- fixme unlikely but possible to have more than int enum values
+	eq rank(enumType(?)) = rank(int) .
+	---C99 6.3.1.1
+	
+	***(
+	--- no two signed are the same
+	rank of signed shall be greater than rank of signed with less precision
+	rank(long-long-int) > rank(long int) > rank(int) > rank(short int) > rank(signed-char)
+	rank unsigned is same as signed
+	rank(char) == rank(signed char) == rank(unsigned-char)
+	rank(_Bool) < rank(char)
+	rank(enumType) == rank compatible int type
+	transitive
+	***)
 endm
 
 mod COMMON-INCLUDE is
@@ -281,6 +309,9 @@ mod COMMON-INCLUDE is
 		if K1:K =/=Bool K2:K .
 	eq .Set contains K:K = false .
 
+	ceq hasIntegerType(T:Type) = true
+		if (integerTypes contains T:Type) .
+	eq hasIntegerType(enumType(?)) = true .
 endm
 
 mod SIZEOF is
@@ -558,24 +589,34 @@ mod TYPES is
 	
 	op arithConversion : K K -> K [metadata "strict"] .
 	op arithConversion-int : K K -> K [metadata "strict"] .
-	op integerPromotion : K -> K .
+	op promote : K -> K .
 
-	--- fixme should only happen if arguments are arithmetic
-	--- mb rule
-		--- < k > [.K => arithConversion(V:Value, V':Value)] ~> L:KLabel(V:Value,, V':Value) ...</ k > 
-		--- if false
-		--- orBool L:KLabel ==Bool '_*_
-		--- orBool L:KLabel ==Bool '_/_
-		--- orBool L:KLabel ==Bool '_+_
-		--- orBool L:KLabel ==Bool '_-_
-		--- orBool L:KLabel ==Bool '_%_
-		--- orBool L:KLabel ==Bool '_<_
-		--- orBool L:KLabel ==Bool '_>_
-		--- orBool L:KLabel ==Bool '_<=_
-		--- orBool L:KLabel ==Bool '_>=_
-		--- orBool L:KLabel ==Bool '_==_
-		--- orBool L:KLabel ==Bool '_!=_
-		--- : KSentence .
+	
+	op isArithBinOp : KLabel -> Bool .
+	op arithBinOps : -> Set [memo] .
+	op l : KLabel -> K .
+	eq arithBinOps = Set(
+		l('_*_),, l('_/_),, l('_%_),,
+		l('_+_),, l('_-_),,
+		l('_<<_),, l('_>>_),,
+		l('_<_),, l('_>_),, l('_<=_),, l('_>=_),,
+		l('_==_),, l('_!=_)
+	) .
+	eq isArithBinOp(KL:KLabel) = if arithBinOps contains l(KL:KLabel)  then true else false fi .
+	
+	--- fixme
+	mb rule
+		< k > L:KLabel([tv(V:BaseValue, T:Type) => promote(tv(V:BaseValue, T:Type))],, ?) ...</ k > 
+		if     isArithBinOp(L:KLabel)
+		andBool rank(T:Type) <Int rank(int)
+		andBool hasIntegerType(T:Type)
+		: KSentence .
+	mb rule
+		< k > L:KLabel(?,, [tv(V:BaseValue, T:Type) => promote(tv(V:BaseValue, T:Type))]) ...</ k > 
+		if     isArithBinOp(L:KLabel)
+		andBool rank(T:Type) <Int rank(int)
+		andBool hasIntegerType(T:Type)
+		: KSentence .
 	
 		
 	---C99 6.3.1.8
@@ -613,21 +654,21 @@ mod TYPES is
 		--- : KSentence .
 	
 	---C99 6.3.1.4:2 For objects or expressions with an integer type  whose integer conversion rank is less than or equal to the rank of int and unsigned int, and a bit field of type _Bool, int, signed int, or unsigned int, If an int can represent all values of the original type, the value is converted to an int; otherwise, it is converted to an unsigned int.  These are called the integer promotions.  All other types are unchanged by the integer promotions.
-	--- mb rule
-		--- < k > [integerPromotion(tv(V:BaseValue, int)) => tv(V:BaseValue, int)] ...</ k >
-		--- : KSentence .
-	--- mb rule
-		--- < k > [integerPromotion(tv(V:BaseValue, unsigned-int)) => tv(V:BaseValue, unsigned-int)] ...</ k >
-		--- : KSentence .
-	--- mb rule
-		--- < k > [integerPromotion(tv(V:BaseValue, unsigned-long-int)) => tv(V:BaseValue, unsigned-long-int)] ...</ k >
-		--- : KSentence .
-	--- mb rule
-		--- < k > [integerPromotion(tv(V:BaseValue, pointerType(T:Type))) => tv(V:BaseValue, pointerType(T:Type))] ...</ k >
-		--- : KSentence .
-	--- mb rule
-		--- < k > [integerPromotion(tv(V:BaseValue, arrayType(T:Type, N:Nat))) => tv(V:BaseValue, arrayType(T:Type, N:Nat))] ...</ k >
-		--- : KSentence .
+	mb rule
+		< k > [promote(tv(V:BaseValue, int)) => tv(V:BaseValue, int)] ...</ k >
+		: KSentence .
+	mb rule
+		< k > [promote(tv(V:BaseValue, unsigned-int)) => tv(V:BaseValue, unsigned-int)] ...</ k >
+		: KSentence .
+	mb rule
+		< k > [promote(tv(V:BaseValue, unsigned-long-int)) => tv(V:BaseValue, unsigned-long-int)] ...</ k >
+		: KSentence .
+	mb rule
+		< k > [promote(tv(V:BaseValue, pointerType(T:Type))) => tv(V:BaseValue, pointerType(T:Type))] ...</ k >
+		: KSentence .
+	mb rule
+		< k > [promote(tv(V:BaseValue, arrayType(T:Type, N:Nat))) => tv(V:BaseValue, arrayType(T:Type, N:Nat))] ...</ k >
+		: KSentence .
 	
 	--- Then the following rules are applied to the promoted operands:
 	
@@ -1210,21 +1251,21 @@ mod COMMON-EXPRESSIONS is
 	--- fixme totally wrong
 	mb rule [tv(I1:Int, pointerType(T':Type)) + tv(I2:Int, T:Type) 
 	=> cast(pointerType(T':Type), '_+_(tv(I1:Int, cfg:sizeut),, '_*_(sizeofType(T':Type),, tv(I2:Int, cfg:sizeut))))]
-		if integerTypes contains T:Type
+		if hasIntegerType(T:Type)
 		andBool T':Type =/=Bool void
 		: KSentence .
 	mb rule [tv(I1:Int, pointerType(void)) + tv(I2:Int, T:Type) 
 	=> cast(pointerType(void), '_+_(tv(I1:Int, cfg:sizeut),, tv(I2:Int, cfg:sizeut)))]
-		if integerTypes contains T:Type
+		if hasIntegerType(T:Type)
 		: KSentence .
 	--- fixme totally wrong
 	mb rule [tv(I1:Int, pointerType(T':Type)) - tv(I2:Int, T:Type) 
 	=> cast(pointerType(T':Type), '_-_(tv(I1:Int, cfg:sizeut),, '_*_(sizeofType(T':Type),, tv(I2:Int, cfg:sizeut))))]
-		if integerTypes contains T:Type
+		if hasIntegerType(T:Type)
 		: KSentence .
 	mb rule [tv(I1:Int, pointerType(void)) - tv(I2:Int, T:Type) 
 	=> cast(pointerType(void), '_-_(tv(I1:Int, cfg:sizeut),, tv(I2:Int, cfg:sizeut)))]
-		if integerTypes contains T:Type
+		if hasIntegerType(T:Type)
 		: KSentence .
 	--- fixme need to use defined type
 	mb rule [tv(I1:Int, pointerType(T:Type)) - tv(I2:Int, pointerType(T:Type)) 
@@ -1237,46 +1278,46 @@ mod COMMON-EXPRESSIONS is
 	
 	--- fixme not sure which is correct
 	mb rule [tv(I1:Rat, T:Type) + tv(I2:Rat, T:Type) => interpret(I1:Rat +Rat I2:Rat, T:Type)] 
-		if integerTypes contains T:Type
+		if hasIntegerType(T:Type)
 		: KSentence .
 	mb rule [_-_(tv(I1:Int, T:Type), tv(I2:Int, T:Type)) => cast(T:Type, _-Int_(I1:Int,I2:Int))] 
-		if integerTypes contains T:Type
+		if hasIntegerType(T:Type)
 		: KSentence .
 	mb rule [tv(I1:Int, T:Type) * tv(I2:Int, T:Type) => cast(T:Type, I1:Int *Int I2:Int)] 
-		if integerTypes contains T:Type
+		if hasIntegerType(T:Type)
 		: KSentence .
 	mb rule [tv(I1:Int, T:Type) / tv(I2:Int, T:Type) => cast(T:Type, I1:Int /Int I2:Int)] 
-		if integerTypes contains T:Type
+		if hasIntegerType(T:Type)
 		: KSentence .
 	mb rule [tv(I1:Int, T:Type) % tv(I2:Int, T:Type) => cast(T:Type, I1:Int %Int I2:Int)] 
-		if integerTypes contains T:Type
+		if hasIntegerType(T:Type)
 		: KSentence .
 	mb rule [-un tv(I1:Int, T:Type) => cast(T:Type, -Int_(I1:Int))] 
-		if integerTypes contains T:Type
+		if hasIntegerType(T:Type)
 		: KSentence .
 	
 		
 		
 	mb rule [tv(I:Int, T:Type) >> tv(N:Nat, T':Type) => cast(T:Type, I:Int >>Int N:Nat)] 
-		if integerTypes contains T:Type
-		andBool integerTypes contains T':Type
+		if hasIntegerType(T:Type)
+		andBool hasIntegerType(T':Type)
 		: KSentence .
 	mb rule [tv(I:Int, T:Type) << tv(N:Nat, T':Type) => cast(T:Type, I:Int <<Int N:Nat)] 
-		if integerTypes contains T:Type
-		andBool integerTypes contains T':Type
+		if hasIntegerType(T:Type)
+		andBool hasIntegerType(T':Type)
 		: KSentence .
 	mb rule [tv(I1:Int, T:Type) | tv(I2:Int, T:Type) => cast(T:Type, I1:Int |Int I2:Int)] 
-		if integerTypes contains T:Type
+		if hasIntegerType(T:Type)
 		: KSentence .
 	mb rule [tv(I1:Int, T:Type) &binop tv(I2:Int, T:Type) => cast(T:Type, I1:Int &Int I2:Int)] 
-		if integerTypes contains T:Type
+		if hasIntegerType(T:Type)
 		: KSentence .
 	--- fixme not exactly
 	mb rule [~ tv(I:Int, T:Type) => cast(T:Type, ~Int I:Int)] 
-		if integerTypes contains T:Type
+		if hasIntegerType(T:Type)
 		: KSentence .
 	mb rule [tv(I1:Int, T:Type) ^ tv(I2:Int, T:Type) => cast(T:Type, I1:Int xorInt I2:Int)] 
-		if integerTypes contains T:Type
+		if hasIntegerType(T:Type)
 		: KSentence .
 		
 	--- floats
@@ -1532,14 +1573,14 @@ and ll or LL
 
 	mb rule [interpret(N:Nat, T:Type) => tv(N:Nat, T:Type)]
 		if min(T:Type) <=Int N:Nat andBool max(T:Type) >=Int N:Nat
-		andBool integerTypes contains T:Type
+		andBool hasIntegerType(T:Type)
 		: KSentence [metadata "structural"] .
 	mb rule [interpret(N:Nat, enumType(X:Id)) => tv(N:Nat, enumType(X:Id))]
 		if min(enumType(X:Id)) <=Int N:Nat andBool max(enumType(X:Id)) >=Int N:Nat
 		: KSentence [metadata "structural"] .
 	mb rule [interpret(N:Rat, T:Type) => tv(N:Rat, T:Type)]
 		if min(T:Type) <=Rat N:Rat andBool max(T:Type) >=Rat N:Rat
-		andBool integerTypes contains T:Type
+		andBool hasIntegerType(T:Type)
 		: KSentence [metadata "structural"] .
 	mb rule [interpret(N:Nat, bitfieldType(T:Type, Len:Nat)) => tv(N:Nat, T:Type)]
 		if 0 <=Int N:Nat 
@@ -1553,7 +1594,7 @@ and ll or LL
 		[interpret(N:Nat, T:Type) => tv(_-Int_(N:Nat, (2 ^Nat absInt(numBits(T:Type)))), T:Type)]
 		if notBool(min(T:Type) <=Int N:Nat andBool max(T:Type) >=Int N:Nat)
 		andBool (N:Nat >Int max(T:Type))
-		andBool integerTypes contains T:Type
+		andBool hasIntegerType(T:Type)
 		: KSentence .
 	
 	--- fixme not necessarily the case that pointers are unsigned-ints
@@ -1821,8 +1862,6 @@ and ll or LL
 		=> tv(F:Float, float)]
 		...</ k > : KSentence .
 
-
-		
 	--- mb rule
 		--- < k > [readFromMem(Loc:Nat, double, ?, ?, ?) => tv(V:Float, double)] ...</ k >
 		--- < mem >... Loc:Nat |-> V:Float ...</ mem >
@@ -1916,47 +1955,37 @@ and ll or LL
 	mb rule
 		< k > [cast(T:Type, tv(B:BaseValue, T:Type)) => tv(B:BaseValue, T:Type)] ...</ k > 
 		: KSentence .
-		
-	--- fixme cheating with enum types
-	mb rule
-		< k > [cast(enumType(X:Id), tv(I:Int, T:Type)) => cast(enumType(X:Id), cast(int, tv(I:Int, T:Type)))] ...</ k > 
-		if (integerTypes contains T:Type)
-		andBool T:Type =/=Bool int
-		: KSentence .
-	mb rule
-		< k > [cast(enumType(X:Id), tv(I:Int, int)) => tv(I:Int, enumType(X:Id))] ...</ k > 
-		: KSentence .
-	mb rule
-		< k > [cast(T:Type, tv(I:Int, enumType(X:Id))) => cast(T:Type, cast(int, tv(I:Int, enumType(X:Id))))] ...</ k > 
-		if (integerTypes contains T:Type)
-		andBool T:Type =/=Bool int
-		: KSentence .
-	mb rule
-		< k > [cast(int, tv(I:Int, enumType(X:Id))) => tv(I:Int, int)] ...</ k > 
-		: KSentence .
 	
 	---c99 6.3.1.3:1 When a value with integer type is converted to another integer type other than _Bool, if the value can be represented by the new type, it is unchanged. 
 	mb rule
 		< k > [cast(T:Type, tv(I:Int, T':Type)) => tv(I:Int, T:Type)] ...</ k > 
 		if min(T:Type) <=Int I:Int andBool max(T:Type) >=Int I:Int 
-		andBool (integerTypes contains T':Type)
-		andBool (integerTypes contains T:Type)
+		andBool hasIntegerType(T':Type)
+		andBool hasIntegerType(T:Type)
 		: KSentence .
 		
 	---c99 6.3.1.3:2 Otherwise, if the new type is unsigned, the value is converted by repeatedly adding or subtracting one more than the maximum value that can be represented in the new type until the value is in the range of the new type.
 	mb rule
 		< k > [cast(T:Type, tv(I:Int, T':Type)) => cast(T:Type, tv(I:Int +Int max(T:Type) +Int 1, T':Type))] ...</ k > 
-		if notBool(min(T:Type) <=Int I:Int andBool max(T:Type) >=Int I:Int andBool (integerTypes contains T':Type))
+		if notBool(
+			min(T:Type) <=Int I:Int 
+			andBool max(T:Type) >=Int I:Int 
+			andBool hasIntegerType(T':Type)
+		)
 		andBool unsignedIntegerTypes contains T:Type 
 		andBool I:Int <Int min(T:Type)
-		andBool integerTypes contains T':Type
+		andBool hasIntegerType(T':Type)
 		: KSentence .
 	mb rule
 		< k > [cast(T:Type, tv(I:Int, T':Type)) => cast(T:Type, tv(I:Int %Int (max(T:Type) +Int 1), T':Type))] ...</ k > 
-		if notBool(min(T:Type) <=Int I:Int andBool max(T:Type) >=Int I:Int andBool (integerTypes contains T':Type))
+		if notBool(
+			min(T:Type) <=Int I:Int 
+			andBool max(T:Type) >=Int I:Int 
+			andBool hasIntegerType(T':Type)
+		)
 		andBool unsignedIntegerTypes contains T:Type 
 		andBool I:Int >Int max(T:Type)
-		andBool integerTypes contains T':Type
+		andBool hasIntegerType(T':Type)
 		: KSentence .
 	
 	---c99 6.3.1.3:3 Otherwise, the new type is signed and the value cannot be represented in it; either the result is implementation-defined or an implementation-defined signal is raised.
@@ -1965,18 +1994,18 @@ and ll or LL
 	--- fixme
 	mb rule
 		< k > [cast(T:Type, tv(V:Float, double)) => cast(T:Type, tv(truncRat(float2ratConversion(V:Float)), long-long-int))] ...</ k > 
-		if integerTypes contains T:Type
+		if hasIntegerType(T:Type)
 		: KSentence .
 	
 	---C99 6.3.1.4:2 When a value of integer type is converted to a real floating type, if the value being converted can be represented exactly in the new type, it is unchanged. If the value being converted is in the range of values that can be represented but cannot be represented exactly, the result is either the nearest higher or nearest lower representable value, chosen in an implementation-defined manner. If the value being converted is outside the range of values that can be represented, the behavior is undefined.
 	--- fixme not handling floats correctly
 	mb rule
 		< k > [cast(double, tv(I:Int, T:Type)) => tv(rat2floatConversion(I:Int), double)] ...</ k > 
-		if integerTypes contains T:Type
+		if hasIntegerType(T:Type)
 		: KSentence .
 	mb rule
 		< k > [cast(float, tv(I:Int, T:Type)) => tv(rat2floatConversion(I:Int), float)] ...</ k > 
-		if integerTypes contains T:Type
+		if hasIntegerType(T:Type)
 		: KSentence .
 	--- fixme
 	mb rule
@@ -1989,11 +2018,11 @@ and ll or LL
 	--- fixme 6.3.2.3 not handling this correctly
 	mb rule
 		< k > [cast(pointerType(T:Type), tv(I:Int, T':Type)) => tv(I:Int, pointerType(T:Type))] ...</ k >
-		if min(unsigned-int) <=Int I:Int andBool max(unsigned-int) >=Int I:Int andBool (integerTypes contains T':Type)
+		if min(unsigned-int) <=Int I:Int andBool max(unsigned-int) >=Int I:Int andBool hasIntegerType(T':Type)
 		: KSentence .
 	mb rule
 		< k > [cast(T:Type, tv(I:Int, pointerType(T':Type))) => cast(T:Type, tv(I:Int, unsigned-int))] ...</ k > 
-		if integerTypes contains T:Type
+		if hasIntegerType(T:Type)
 		: KSentence .
 		
 	--- fixme not sure where it says this
@@ -2113,7 +2142,7 @@ and ll or LL
 		< k > [postInc(Loc:Nat, tv(I:Int, T:Type), T:Type)
 		=> assign(Deref(tv(Loc:Nat, pointerType(T:Type))), tv(I:Int, T:Type) + tv(1, T:Type)) ~> discard ~> tv(I:Int, T:Type)
 		] ...</ k >
-		if integerTypes contains T:Type
+		if hasIntegerType(T:Type)
 		: KSentence .
 	--- fixme would be simpler if i did integer promotions etc.
 	mb [post-increment]: rule
@@ -2132,7 +2161,7 @@ and ll or LL
 		< k > [postDec(Loc:Nat, tv(I:Int, T:Type), T:Type)
 		=> assign(Deref(tv(Loc:Nat, pointerType(T:Type))), tv(I:Int, T:Type) - tv(1, T:Type)) ~> discard ~> tv(I:Int, T:Type)
 		] ...</ k >
-		if integerTypes contains T:Type
+		if hasIntegerType(T:Type)
 		: KSentence .
 	--- fixme would be simpler if i did integer promotions etc.
 	mb [post-decrement]: rule

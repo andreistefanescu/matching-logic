@@ -25,15 +25,6 @@ check-input:
 ifeq ($(INPUT),)
 	exit 1
 endif
-
-program-%-gen.maude: c-syntax.maude programs-gen.template $(INPUT) Makefile
-ifeq ($(INPUT),)
-	exit 1
-endif
-	@printf "`cat programs-gen.template`" $(ADDITIONAL_SYNTAX) > $@
-#@for i in $(INPUT); do cat $$i >> $@; done
-	@cat $(PROGRAM_DIR)/$*.gen.maude >> $@
-	@echo endm >> $@
 	
 c-syntax.maude: Makefile
 	@printf "`cat c-syntax.template`" $(ADDITIONAL_SYNTAX) > c-syntax.maude	
@@ -41,13 +32,12 @@ c-syntax.maude: Makefile
 c.maude: c-syntax.maude c-maude.template Makefile
 	@printf "`cat c-maude.template`" $(K-PRELUDE) $(CONFIGURATION_FILE) $(SEMANTICS_FILE) $(SEMANTICS_MODULE) > c.maude
 	
-c-compiled.maude: c.maude common-c-syntax.maude match-c-syntax.maude common-c-configuration.maude common-c-semantics.maude dynamic-c-semantics.maude dynamic-c-configuration.maude match-c-semantics.maude match-c-configuration.maude
+c-compiled.maude: c.maude common-c-syntax.maude match-c-syntax.maude common-c-configuration.maude common-c-semantics.maude dynamic-c-semantics.maude dynamic-c-configuration.maude match-c-semantics.maude match-c-configuration.maude $(K-MAUDE)
 	$(K-MAUDE) c.maude C
 	
-program-%-compiled.maude: c-compiled.maude program-%-gen.maude
-	$(K-PROGRAM-COMPILE) program-$*-gen.maude C C-PROGRAM program-$*
-	@sed '1 d' $@ > $@.tmp
-	@mv $@.tmp $@
+c-total.maude: c-compiled.maude
+#echo adds a newline
+	@echo | cat c-compiled.maude c-syntax.maude - common-c-configuration.maude | perl slurp.pl ./ > c-total.maude
 	
 dynamic-test: dynamic test.maude
 
@@ -63,12 +53,9 @@ match: SEMANTICS_FILE = "match-c-semantics"
 match: CONFIGURATION_FILE = "match-c-configuration"
 match: semantics
 
-semantics: c-compiled.maude
+semantics: c-total.maude
 
-test.maude: $(PROGRAM_TARGET) $(INPUT) test.template
-	@printf "`cat test.template`" "$(COMPILED_PROGRAM_LOADS)" "`echo -e "$(foreach var, $(PROGRAM_NAMES), rew in C-$(var) : eval(\\"$(var)\\"(.List{K}), \\"$(var)\\") . \n)\n"`" > test.maude
-	
 clean:
-	rm -f program-*-gen.maude program-*-compiled.maude program-*-compiled.maude.tmp c-syntax.maude c-compiled.maude c.maude test.maude programs-gen.maude test-benchmark.maude kcompile_* quoted.maude
+	rm -f program-*-gen.maude program-*-compiled.maude program-*-compiled.maude.tmp c-syntax.maude c-compiled.maude c.maude test.maude programs-gen.maude test-benchmark.maude kcompile_* quoted.maude c-total.maude
 
 force: ;

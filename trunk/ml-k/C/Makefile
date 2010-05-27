@@ -8,12 +8,12 @@ VPATH = programs
 
 .PHONY: all clean run test force cparser maude-fragments build-all dynamic match fix kcompile gcc-output kcompile-bench benchmark dist
 
-all: cparser maude-fragments
+all: cparser
 
 dist: SEMANTICS=dynamic
-dist: cparser kcompile
+dist: cparser kcompile Makefile
 	@mkdir -p $(DIST_DIR)
-	@echo | cat $(SEMANTICS_DIR)/c-compiled.maude $(SEMANTICS_DIR)/c-syntax.maude - $(SEMANTICS_DIR)/common-c-configuration.maude | perl $(SEMANTICS_DIR)/slurp.pl $(SEMANTICS_DIR)/ > $(DIST_DIR)/c-compiled.maude
+	@cp $(SEMANTICS_DIR)/c-total.maude $(DIST_DIR)/c-compiled.maude
 	@cp $(SEMANTICS_DIR)/compile.sh $(DIST_DIR)
 #@ln -s $(DIST_DIR)/compile.sh $(DIST_DIR)/kcc
 	@cp $(SEMANTICS_DIR)/slurp.pl $(DIST_DIR)

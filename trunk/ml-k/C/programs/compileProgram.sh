@@ -5,9 +5,24 @@ K_MAUDE_BASE=`readlink -f ~/k-framework/trunk`
 K_PROGRAM_COMPILE="$K_MAUDE_BASE/tools/kcompile-program.sh"
 myDirectory=`dirname $0`
 set -e
-if [ ! $1 ]; then
+
+dflag=
+usage="Usage: %s: [-d] inputFileName\n"
+while getopts 'd' OPTION
+do
+	case $OPTION in
+	d)	dflag=1
+		;;
+	?)	printf "$usage" $(basename $0) >&2
+		exit 2
+		;;
+  esac
+done
+shift $(($OPTIND - 1))
+
+if [ ! "$1" ]; then
 	echo "filename expected"
-	exit 1
+	exit 2
 fi
 filename=`basename "$1" .c`
 directoryname=`dirname "$1"`/
@@ -23,10 +38,14 @@ if [ ! $? -eq 0 ]; then
 fi
 gcc $PEDANTRY_OPTIONS $GCC_OPTIONS -E -I. -I$myDirectory $filename.prepre.gen > $filename.pre.gen
 #echo "done with gcc"
-rm -f $filename.prepre.gen
+if [ ! "$dflag" ]; then
+	rm -f $filename.prepre.gen
+fi
 $myDirectory/cparser $CIL_FLAGS --out $filename.gen.maude.tmp $filename.pre.gen
 #echo "done with cil"
-rm -f $filename.pre.gen
+if [ ! "$dflag" ]; then
+	rm -f $filename.pre.gen
+fi
 mv $filename.gen.maude.tmp $filename.gen.maude
 
 echo "load $myDirectory/c-compiled" > program-$filename-gen.maude
@@ -35,7 +54,9 @@ echo "including C-SYNTAX ." >> program-$filename-gen.maude
 echo "including MATCH-C-SYNTAX ." >> program-$filename-gen.maude
 echo "including COMMON-C-CONFIGURATION ." >> program-$filename-gen.maude
 cat $filename.gen.maude >> program-$filename-gen.maude
-rm -f $filename.gen.maude
+if [ ! "$dflag" ]; then
+	rm -f $filename.gen.maude
+fi
 echo -e "endm\n" >> program-$filename-gen.maude
 
 $K_PROGRAM_COMPILE program-$filename-gen.maude C C-PROGRAM program-$filename >> compilation.log

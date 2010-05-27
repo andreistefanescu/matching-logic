@@ -20,6 +20,8 @@ test: prepare $(ALL_TARGETS)
 
 prepare:
 	@rm -f information.log
+	
+test-%:	compare-%.pass
 
 test-%.kcc: %.c $(KCC) $(PARSER)
 	@$(KCC) -o $@ $<
