@@ -1,6 +1,10 @@
 /* Verify that flexible arrays can be initialized from STRING_CST
    constructors. */
 #include <stdio.h>
+
+int basicInit = 5;
+char basicInit2 = 10;
+int basicArr[] = {15, 20};
 /* Baselines.  */
 struct {
   char a1c;
@@ -50,6 +54,15 @@ struct {
 };
 
 int main(void) {
+	if (basicInit != 5)
+		printf("FAIL");
+	if (basicInit2 != 10)
+		printf("FAIL");
+	if (basicArr[0] != 15)
+		printf("FAIL");
+	if (basicArr[1] != 20)
+		printf("FAIL");
+
   if (a1.a1c != '4')
     printf("FAIL");
   if (a1.a1p[0] != '6')

@@ -37,18 +37,26 @@ if [ ! $? -eq 0 ]; then
 	exit 1
 fi
 gcc $PEDANTRY_OPTIONS $GCC_OPTIONS -E -I. -I$myDirectory $filename.prepre.gen > $filename.pre.gen
+if [ ! $? -eq 0 ]; then 
+	echo "Error running gcc"
+	exit 1
+fi
 #echo "done with gcc"
 if [ ! "$dflag" ]; then
 	rm -f $filename.prepre.gen
 fi
 $myDirectory/cparser $CIL_FLAGS --out $filename.gen.maude.tmp $filename.pre.gen
+if [ ! $? -eq 0 ]; then 
+	echo "Error running cil"
+	exit 1
+fi
 #echo "done with cil"
 if [ ! "$dflag" ]; then
 	rm -f $filename.pre.gen
 fi
 mv $filename.gen.maude.tmp $filename.gen.maude
 
-echo "load $myDirectory/c-compiled" > program-$filename-gen.maude
+echo "load $myDirectory/c-total" > program-$filename-gen.maude
 echo "mod C-PROGRAM is" >> program-$filename-gen.maude
 echo "including C-SYNTAX ." >> program-$filename-gen.maude
 echo "including MATCH-C-SYNTAX ." >> program-$filename-gen.maude
@@ -60,6 +68,10 @@ fi
 echo -e "endm\n" >> program-$filename-gen.maude
 
 $K_PROGRAM_COMPILE program-$filename-gen.maude C C-PROGRAM program-$filename >> compilation.log
+if [ ! $? -eq 0 ]; then 
+	echo "Error compiling program"
+	exit 1
+fi
 rm -f program-$filename-gen.maude
 sed '1 d' program-$filename-compiled.maude > program-$filename-compiled.maude.tmp
 mv program-$filename-compiled.maude.tmp program-$filename-compiled.maude

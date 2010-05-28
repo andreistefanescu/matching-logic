@@ -1,51 +1,48 @@
 C_DIR = programs
 SEMANTICS_DIR = semantics
 PARSER_DIR = parser
-SEMANTICS = match 
+PARSER = $(PARSER_DIR)/cparser
 DIST_DIR = dist
-# match or dynamic semantics
-VPATH = programs
+#VPATH = programs
 
-.PHONY: all clean run test force cparser maude-fragments build-all dynamic match fix kcompile gcc-output kcompile-bench benchmark dist fast-test
+FILES_TO_DIST = \
+	$(SEMANTICS_DIR)/c-total.maude \
+	$(SEMANTICS_DIR)/compile.sh \
+	$(SEMANTICS_DIR)/slurp.pl \
+	$(SEMANTICS_DIR)/wrapper.pl \
+	$(PARSER_DIR)/cparser \
+	$(C_DIR)/compileProgram.sh \
+	$(C_DIR)/embed.pl \
+	$(C_DIR)/stdio.h \
+	$(C_DIR)/stdlib.h \
+	$(C_DIR)/math.h \
+	$(C_DIR)/string.h \
+	$(C_DIR)/stdarg.h \
+	$(C_DIR)/stddef.h \
+	$(C_DIR)/stdint.h
+	
+.PHONY: all clean run test force cparser maude-fragments build-all dynamic match fix kcompile gcc-output kcompile-bench benchmark dist fast-test dist-make
 
 all: cparser
 
-dist: SEMANTICS=dynamic
-dist: Makefile $(C_DIR)/dist.done fast-test
-	
-$(C_DIR)/dist.done:	cparser kcompile
+dist: $(DIST_DIR)/dist.tested
+
+$(DIST_DIR)/dist.done: Makefile cparser kcompile $(FILES_TO_DIST)
 	@mkdir -p $(DIST_DIR)
-	@cp $(SEMANTICS_DIR)/c-total.maude $(DIST_DIR)/c-compiled.maude
-	@cp $(SEMANTICS_DIR)/compile.sh $(DIST_DIR)
-	@cp $(SEMANTICS_DIR)/slurp.pl $(DIST_DIR)
-	@cp $(SEMANTICS_DIR)/wrapper.pl $(DIST_DIR)
-	@cp $(PARSER_DIR)/cparser $(DIST_DIR)
-	@cp $(C_DIR)/compileProgram.sh $(DIST_DIR)
-	@cp $(C_DIR)/embed.pl $(DIST_DIR)
-	@cp $(C_DIR)/fsl.h $(DIST_DIR)
-	@cp $(C_DIR)/stdio.h $(DIST_DIR)
-	@cp $(C_DIR)/stdlib.h $(DIST_DIR)
-	@cp $(C_DIR)/math.h $(DIST_DIR)
-	@cp $(C_DIR)/string.h $(DIST_DIR)
-	@cp $(C_DIR)/stdarg.h $(DIST_DIR)
-	@cp $(C_DIR)/stddef.h $(DIST_DIR)
-	@cp $(C_DIR)/stdint.h $(DIST_DIR)
+	@cp $(FILES_TO_DIST) $(DIST_DIR)
 	@ln -s -f compile.sh $(DIST_DIR)/kcc
 	@touch $(DIST_DIR)/dist.done
+
+$(DIST_DIR)/dist.tested: $(DIST_DIR)/dist.done 
+	@make -C $(C_DIR) fast-test
+	@touch $(DIST_DIR)/dist.tested
 	
 test: dist
 	@make -C $(C_DIR) test
 	
-fast-test: $(C_DIR)/dist.done 
-	@make -C $(C_DIR) fast-test
-	
-
-# match: SEMANTICS=match-test
-# match: build-all run
-
 fix: 
 	maude $(SEMANTICS_DIR)/programs-gen.maude
-fixnew: 
+fixnew:
 	maude $(SEMANTICS_DIR)/kcompile_in.maude
 
 force: ;
@@ -54,23 +51,13 @@ cparser:
 	@make -C $(PARSER_DIR)
 
 kcompile:
-	@make -C $(SEMANTICS_DIR) $(SEMANTICS)
-	
-# build-all: maude-fragments kcompile
-# @time (make -C $(SEMANTICS_DIR) $(SEMANTICS) INPUT="$(realpath $^)")
+	@make -C $(SEMANTICS_DIR) dynamic
 
 benchmark: profile.csv
 
 profile.csv: profile.log
 	perl analyzeProfile.pl > profile.csv
 
-# profile.log: SEMANTICS=dynamic
-# profile.log: maude-fragments kcompile-bench
-	# @time (maude -no-wrap $(SEMANTICS_DIR)/test-benchmark.maude > profile.log)
-		
-# run: 
-	# @maude -no-wrap $(SEMANTICS_DIR)/test.maude
-		
 clean:
 	make -C $(C_DIR) clean
 	make -C $(PARSER_DIR) clean
