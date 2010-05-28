@@ -6,16 +6,17 @@ DIST_DIR = dist
 # match or dynamic semantics
 VPATH = programs
 
-.PHONY: all clean run test force cparser maude-fragments build-all dynamic match fix kcompile gcc-output kcompile-bench benchmark dist
+.PHONY: all clean run test force cparser maude-fragments build-all dynamic match fix kcompile gcc-output kcompile-bench benchmark dist fast-test
 
 all: cparser
 
 dist: SEMANTICS=dynamic
-dist: cparser kcompile Makefile
+dist: Makefile $(C_DIR)/dist.done fast-test
+	
+$(C_DIR)/dist.done:	cparser kcompile
 	@mkdir -p $(DIST_DIR)
 	@cp $(SEMANTICS_DIR)/c-total.maude $(DIST_DIR)/c-compiled.maude
 	@cp $(SEMANTICS_DIR)/compile.sh $(DIST_DIR)
-#@ln -s $(DIST_DIR)/compile.sh $(DIST_DIR)/kcc
 	@cp $(SEMANTICS_DIR)/slurp.pl $(DIST_DIR)
 	@cp $(SEMANTICS_DIR)/wrapper.pl $(DIST_DIR)
 	@cp $(PARSER_DIR)/cparser $(DIST_DIR)
@@ -30,9 +31,13 @@ dist: cparser kcompile Makefile
 	@cp $(C_DIR)/stddef.h $(DIST_DIR)
 	@cp $(C_DIR)/stdint.h $(DIST_DIR)
 	@ln -s -f compile.sh $(DIST_DIR)/kcc
-
+	@touch $(DIST_DIR)/dist.done
+	
 test: dist
 	@make -C $(C_DIR) test
+	
+fast-test: $(C_DIR)/dist.done 
+	@make -C $(C_DIR) fast-test
 	
 
 # match: SEMANTICS=match-test
