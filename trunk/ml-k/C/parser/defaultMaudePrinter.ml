@@ -150,13 +150,12 @@ let d_const () c =
         let high = Int64.shift_right i 32 in
         if ik <> IULongLong && ik <> ILongLong && high = Int64.of_int (-1) then
           (* Print only the low order 32 bits *)
-          text (prefix ^ "0x " ^ 
-				suffix ^ "(" ^
+          text (prefix ^ suffix ^ "(" ^"hex(\"" ^ 
                 (Int64.format "%x" 
                   (Int64.logand i (Int64.shift_right_logical high 32))
-                ^ ")"))
+                ^ "\"))"))
         else
-          text (prefix ^ "0x " ^ suffix ^ "(" ^ Int64.format "%x" i ^ ")")
+          text (prefix ^ suffix ^ "(" ^ "hex(\"" ^ Int64.format "%x" i ^ "\"))")
       else (
         if (i = mostNeg32BitInt) then
           (* sm: quirk here: if you print -2147483648 then this is two tokens *)
@@ -164,10 +163,10 @@ let d_const () c =
           (* int.. so we do what's done in limits.h, and print (-2147483467-1); *)
           (* in gcc this avoids a warning, but it might avoid a real problem *)
           (* on another compiler or a 64-bit architecture *)
-          text (prefix ^ "(-0x7FFFFFFF-1)")
+          text (prefix ^ "(-un hex(\"7FFFFFFF\") - 1)")
         else if (i = mostNeg64BitInt) then
           (* The same is true of the largest 64-bit negative. *)
-          text (prefix ^ "(-0x7FFFFFFFFFFFFFFF-1)")
+          text (prefix ^ "(-un hex(\"7FFFFFFFFFFFFFFF\") - 1)")
         else
           text (prefix ^ suffix ^ "(" ^ (Int64.to_string i ^ ")"))
       ) in if cast then rest ++ text ")" else rest
