@@ -7,23 +7,37 @@ set -e
 dflag=
 oflag=
 usage="Usage: %s: [-o outputFileName] inputFileName\n"
-while getopts ':do:v' OPTION
-do
-	case $OPTION in
-	d)	dflag=1
-		;;
-	o)	oflag=1
-		oval="$OPTARG"
-		;;
-	v)	printf "kcc version 0.0.1"
-		exit 0
-		;;
-	?)	printf "$usage" $(basename $0) >&2
-		exit 2
-		;;
-  esac
-done
+oval=
+myDirectory=`dirname $0`
+inputFile=
+function getoptsFunc {
+	# echo "inside getopts"
+	# echo "hmm"
+	while getopts ':do:v' OPTION
+	do
+		# echo "xxx $1"
+		case $OPTION in
+		d)	dflag=1
+			;;
+		o)	oflag=1
+			oval="$OPTARG"
+			;;
+		v)	printf "kcc version 0.0.1"
+			exit 0
+			;;
+		?)	if [ ! -f $inputFile ]; then
+				printf "$usage" $(basename $0) >&2
+				exit 2
+			fi
+			;;
+	  esac
+	done
+	# echo "leaving getopts"
+}
+# echo "before getopts"
+getoptsFunc "$@"
 shift $(($OPTIND - 1))
+# echo "after getopts"
 
 # if [ "$aflag" ]
 # then
@@ -40,30 +54,35 @@ fi
 inputFile=`readlink -f $1`
 inputDirectory=`dirname $inputFile`
 baseName=`basename $inputFile .c`
-myDirectory=`dirname $0`
-#printf "Remaining arguments are: %s\n" "$1"
+
 #printf "Compiling %s to %s\n" $inputFile $oval
 if [ ! -f $inputFile ]; then
 	printf "Input file %s does not exist\n" $inputFile
 	exit 1
 fi
+# printf "Remaining arguments are: %s\n" "$@"
+shift 1
+
+getoptsFunc "$@"
+shift $(($OPTIND - 1))
+# echo "after getopts"
 
 maudeInput=$inputDirectory/$baseName.gen.maude
-#echo "inputFile = $inputFile"
-#echo "inputDirectory = $inputDirectory"
-#echo "baseName = $baseName"
-#echo "maudeInput = $maudeInput"
-
+# echo "inputFile = $inputFile"
+# echo "inputDirectory = $inputDirectory"
+# echo "baseName = $baseName"
+# echo "maudeInput = $maudeInput"
+# echo "myDirectory = $myDirectory"
 #make -f ../programs/Makefile -C ../programs $maudeInput
 if [ "$dflag" ]; then
 	$myDirectory/compileProgram.sh -d $inputFile
-	if [ ! "$1" ]; then
+	if [ ! "$?" ]; then
 		echo "compilation failed"
 		exit 2
 	fi
 else
 	$myDirectory/compileProgram.sh $inputFile
-	if [ ! "$1" ]; then
+	if [ ! "$?" ]; then
 		echo "compilation failed"
 		exit 2
 	fi

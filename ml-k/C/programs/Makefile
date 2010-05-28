@@ -5,7 +5,7 @@ PARSER ?= ../dist/cparser
 
 DONT_RUN = goto resizeArray testStdarg testPrintf testStructInitializer
 FAST_TESTS = quine2
-CURRENT_TESTS = testStructInitializer
+CURRENT_TESTS = hexNums
 
 ALL_FILES = $(wildcard *.c)
 ALL_PROGRAMS_BASIC = $(basename $(ALL_FILES))

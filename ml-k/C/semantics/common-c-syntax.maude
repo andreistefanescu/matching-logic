@@ -50,6 +50,10 @@ mod COMMON-C-SYNTAX is
 	op UL : Int -> Integer-Constant .
 	op LL : Int -> Integer-Constant .
 	op ULL : Int -> Integer-Constant .
+	
+	op hex : String -> Integer-Constant .
+	eq hex(S:String) = string2ratConversion(S:String, 16) .
+	
 	--- subsort Decimal-Constant < Integer-Constant .
 	--- Octal-Constant Hexadecimal-Constant 
 	--- --- TODO

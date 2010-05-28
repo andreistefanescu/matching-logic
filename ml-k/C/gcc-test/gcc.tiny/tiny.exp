@@ -22,6 +22,7 @@
 # These tests come from Torbjorn Granlund (tege@cygnus.com)
 # C torture test suite.
 #
+set timeout 30
 
 if $tracelevel then {
     strace $tracelevel
