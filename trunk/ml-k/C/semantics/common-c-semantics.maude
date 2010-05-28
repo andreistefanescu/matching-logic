@@ -1058,9 +1058,9 @@ mod COMMON-GLOBAL-DECLARATION is
 		< typedefs >... TD:Typedef-Name |-> T:Type ...</ typedefs >
 		: KSentence [metadata "structural"] .
 	
-	--- mb [global-variable-declaration-init]: rule
-		--- < k > ['_=_('Declaration(T:Type,, X:Id),, E:Expression) => 'Global('Declaration(T:Type,, X:Id)) ~> Deref(&(X:Id)) := E:Expression ;] ...</ k >
-		--- : KSentence .
+	mb [global-variable-declaration-init]: rule
+		< k > ['_=_('Declaration(T:Type,, X:Id),, E:Expression) => 'Global('Declaration(T:Type,, X:Id)) ~> Deref(&(X:Id)) := E:Expression ;] ...</ k >
+		: KSentence .
 		
 	mb [function-definition]: rule 
 		< k > ['_`{_`}('Declaration(T:Type,, X:Id),, B:TogetherList) => .K] ...</ k >
@@ -1085,9 +1085,9 @@ mod COMMON-GLOBAL-DECLARATION is
 		
 	--- fixme this isn't how things are, but it seems to work out
 	---C99 6.7.2.2:3 The identifiers in an enumerator list are declared as constants that have type int and may appear wherever such are permitted
-	--- mb rule
-		--- < k > [Global(enum(X:Id, ((X':Id := E:Expression) .,. L:List{Expression}))) => '_=_('Declaration(int,, X':Id),, E:Expression) ~> Global(enum(X:Id, L:List{Expression}))] ...</ k >
-		--- : KSentence [metadata "structural"] .
+	mb rule
+		< k > [Global(enum(X:Id, ((X':Id := E:Expression) .,. L:List{Expression}))) => '_=_('Declaration(int,, X':Id),, E:Expression) ~> Global(enum(X:Id, L:List{Expression}))] ...</ k >
+		: KSentence [metadata "structural"] .
 	mb rule
 		< k > [Global(enum(X:Id, .List{Expression})) => .K] ...</ k >
 		< types >... [.Map => enum(X:Id) |-> enumType(X:Id)] ...</ types >
