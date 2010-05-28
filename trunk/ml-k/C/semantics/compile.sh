@@ -57,10 +57,18 @@ maudeInput=$inputDirectory/$baseName.gen.maude
 #make -f ../programs/Makefile -C ../programs $maudeInput
 if [ "$dflag" ]; then
 	$myDirectory/compileProgram.sh -d $inputFile
+	if [ ! "$1" ]; then
+		echo "compilation failed"
+		exit 2
+	fi
 else
 	$myDirectory/compileProgram.sh $inputFile
+	if [ ! "$1" ]; then
+		echo "compilation failed"
+		exit 2
+	fi
 fi
-echo "load $myDirectory/c-compiled" > out.tmp
+echo "load $myDirectory/c-total" > out.tmp
 echo "load program-$baseName-compiled" >> out.tmp
 echo "rew in C-program-$baseName : eval(\"program-$baseName\"(.List{K}), \"$baseName\") ." >> out.tmp
 
