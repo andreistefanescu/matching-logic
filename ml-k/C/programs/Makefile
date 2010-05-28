@@ -3,7 +3,7 @@ GCC ?= gcc -lm -Wall -Wextra -Wmissing-prototypes -pedantic -x c -std=c99
 #-Werror 
 PARSER ?= ../dist/cparser
 
-DONT_RUN = goto resizeArray testStdarg testPrintf
+DONT_RUN = goto resizeArray testStdarg testPrintf testStructInitializer
 FAST_TESTS = quine2
 CURRENT_TESTS = testStructInitializer
 
@@ -11,7 +11,7 @@ ALL_FILES = $(wildcard *.c)
 ALL_PROGRAMS_BASIC = $(basename $(ALL_FILES))
 ALL_PROGRAMS = $(filter-out $(DONT_RUN), $(ALL_PROGRAMS_BASIC))
 FAST_PROGRAMS = $(filter $(FAST_TESTS), $(ALL_PROGRAMS))
-CURRENT_PROGRAMS = $(filter $(CURRENT_TESTS), $(ALL_PROGRAMS))
+CURRENT_PROGRAMS = $(filter $(CURRENT_TESTS), $(ALL_PROGRAMS_BASIC))
 ALL_TARGETS = $(foreach var, $(ALL_PROGRAMS), compare-$(var).pass)
 FAST_TARGETS = $(foreach var, $(FAST_PROGRAMS), compare-$(var).pass)
 CURRENT_TARGETS = $(foreach var, $(CURRENT_PROGRAMS), work-run-$(var))
