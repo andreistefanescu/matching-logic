@@ -1166,40 +1166,26 @@ class virtual defaultMaudePrinterClass = object (self)
 	   (*text ", " ++ num i ++ text " ")*)
 	   
   method pInit () =	
-	(print_string ("asdf");
+	(*(print_string ("asdf");*)
   function 
       SingleInit e -> self#pExp () e
     | CompoundInit (t, initl) -> 
       (* We do not print the type of the Compound *)
-        let printDesignator = 
-          if not !msvcMode then begin
-            (* Print only for union when we do not initialize the first field *)
-            match unrollType t, initl with
-              TComp(ci, _), [(Field(f, NoOffset), _)] -> 
-                if not (ci.cstruct) && ci.cfields != [] && 
-                  (List.hd ci.cfields) != f then
-                  true
-                else
-                  false
-            | _ -> false
-          end else 
-            false 
-        in
         let d_oneInit = function
             Field(f, NoOffset), i -> 
-              (if printDesignator then 
-                text ("." ^ f.fname ^ " = ") 
-              else nil) ++ self#pInit () i
+              text ("Designation(FieldDesignator(" ^ f.fname ^ "), ") 
+              ++ self#pInit () i
+			  ++ text ")"
           | Index(e, NoOffset), i -> 
-              (if printDesignator then 
-                text "[" ++ self#pExp () e ++ text "] = " else nil) ++ 
+                (text "Designation(ArrayDesignator(" ++ self#pExp () e ++ text "), ") ++ 
                 self#pInit () i
+				++ text ")"
           | _ -> E.s (unimp "Trying to print malformed initializer")
         in
-        chr '{' ++ (align 
+        text "InitList(" ++ (align 
                       ++ ((docList ~sep:(text ".,." ++ break) d_oneInit) () initl) 
                       ++ unalign)
-          ++ chr '}')
+          ++ chr ')'
 		  
  (* dump initializers to a file. *)
   method dInit (out: out_channel) (ind: int) (i: init) = 

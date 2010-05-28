@@ -4,7 +4,7 @@ GCC ?= gcc -lm -Wall -Wextra -Wmissing-prototypes -pedantic -x c -std=c99
 PARSER ?= ../dist/cparser
 
 DONT_RUN = goto resizeArray testStdarg testPrintf
-FAST_TESTS = arr whitebox hanoi quine2
+FAST_TESTS = quine2
 
 ALL_FILES = $(wildcard *.c)
 ALL_PROGRAMS_BASIC = $(basename $(ALL_FILES))
