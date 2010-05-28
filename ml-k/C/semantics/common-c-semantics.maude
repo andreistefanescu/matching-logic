@@ -5,6 +5,11 @@
 --- argument of function type
 --- need one past array
 --- 6.7.5.3:11 if, in a parameter declaration, an identifier can be treated either as a typedef name or as a parameter name, it shall be taken as a typedef name
+--- memcpy uninit memory
+
+---C99 6.7.8:10 If an object has static duration ... if it has pointer type, it is NULL, if it is arithmetic, 0, aggregate, recursively these, union, first member by these
+
+
 
 --- # of expected passes            44527
 --- # of unexpected failures        7081

@@ -453,10 +453,12 @@ mod COMMON-C-SYNTAX is
 	---subsort Identifier < Typedef-Name .
 	
 	--- --- 6.7.8
+	---	Initializer ({Initializer (((Cast (((char)), (((52))))))) ., . Initializer (((Cast ((Pointer ((char))), ((("62")))))))})
 	---sort Initializer .
+	op Initializer : Expression -> Expression .
 	---subsort Expression < Initializer .
 	--- subsort Assignment-Expression < Initializer .
-	---op `{_`} : Initializer-List -> Initializer .
+	op InitList : List{Expression} -> Expression .
 	--- op `{_`,`} : Initializer-List -> Initializer .
 	---op _,_ : Initializer-List Initializer-List -> Initializer-List [assoc] .
 	---subsort Expression < Initializer-List .
@@ -467,7 +469,7 @@ mod COMMON-C-SYNTAX is
 	
 	--- sort Designation .
 	--- op _= : Designator-List -> Designation .
-	
+	op Designation : Expression Expression -> Expression .
 	--- sort Designator-List .
 	--- --- TODO subsort Designator < Designator-List .
 	--- --- TODO op __ : Designator-List Designator -> Designator-List .
@@ -475,6 +477,8 @@ mod COMMON-C-SYNTAX is
 	--- sort Designator .	
 	--- op `[_`] : Constant-Expression -> Designator .
 	--- op ._ : Identifier -> Designator .
+	op ArrayDesignator : Expression -> Expression .
+	op FieldDesignator : Id -> Expression .
 	
 	--- ---- A.2.3 Statements
 	--- --- 6.8
