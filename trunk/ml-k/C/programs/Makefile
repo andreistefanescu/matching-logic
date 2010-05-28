@@ -3,21 +3,26 @@ GCC ?= gcc -lm -Wall -Wextra -Wmissing-prototypes -pedantic -x c -std=c99
 #-Werror 
 PARSER ?= ../dist/cparser
 
-DONT_RUN = goto resizeArray testStdarg
+DONT_RUN = goto resizeArray testStdarg testPrintf
+FAST_TESTS = arr whitebox hanoi quine2
 
 ALL_FILES = $(wildcard *.c)
 ALL_PROGRAMS_BASIC = $(basename $(ALL_FILES))
 ALL_PROGRAMS = $(filter-out $(DONT_RUN), $(ALL_PROGRAMS_BASIC))
+FAST_PROGRAMS = $(filter $(FAST_TESTS), $(ALL_PROGRAMS))
 ALL_TARGETS = $(foreach var, $(ALL_PROGRAMS), compare-$(var).pass)
+FAST_TARGETS = $(foreach var, $(FAST_PROGRAMS), compare-$(var).pass)
 
 #.SECONDARY:
 
 .DELETE_ON_ERROR:
 
-.PHONY: all test clean prepare
+.PHONY: all test clean prepare fast-test
 
 test: prepare $(ALL_TARGETS)
 
+fast-test: prepare $(FAST_TARGETS)
+	
 prepare:
 	@rm -f information.log
 	
@@ -41,4 +46,4 @@ compare-%.pass: output-%.gcc retval-%.gcc output-%.kcc retval-%.kcc
 	@touch compare-$*.pass
 		
 clean:
-	rm -f *.gcc *.kcc *.tmp compare-*.pass information.log compilation.log *-gen.maude
+	rm -f *.gcc *.kcc *.tmp compare-*.pass information.log compilation.log *-gen.maude *.pre.gen *.prepre.gen *.gen.maude a.out
