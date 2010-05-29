@@ -3,9 +3,14 @@ GCC ?= gcc -lm -Wall -Wextra -Wmissing-prototypes -pedantic -x c -std=c99
 #-Werror 
 PARSER ?= ../dist/cparser
 
-DONT_RUN = goto resizeArray testStdarg testPrintf testStructInitializer
+DONT_RUN = goto resizeArray testStdarg testPrintf testStructInitializer twoFile1 twoFile2
 FAST_TESTS = quine2
 CURRENT_TESTS = hexNums
+
+# gcc -c twoFile1.c 
+# gcc -c twoFile2.c 
+# gcc -o a.out twoFile1.o twoFile2.o 
+
 
 ALL_FILES = $(wildcard *.c)
 ALL_PROGRAMS_BASIC = $(basename $(ALL_FILES))
