@@ -35,6 +35,7 @@ mod COMMON-C-SYNTAX is
 	op sqrt : -> Id [ctor] .
 	op cos : -> Id [ctor] .
 	op NULL : -> Id [ctor] .
+	op exit : -> Id [ctor] .
 	
 	--- ---- A.1.5 Constants
 	--- --- 6.4.4
@@ -523,6 +524,7 @@ mod COMMON-C-SYNTAX is
 	
 	--- --- 6.8.3
 	sort Expression-Statement .
+	op EmptyStatement`; : -> Expression-Statement .	
 	--- ---- TODO op ; : -> Expression-Statement .
 	op _; : Expression -> Expression-Statement [prec 75 metadata "strict"] .
 	---op _; : K -> K [prec 45] .

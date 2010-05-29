@@ -743,7 +743,7 @@ class virtual defaultMaudePrinterClass = object (self)
       * statement is empty, print a semicolon  *)
       ++ 
       paren(if s.skind = Instr [] && s.labels <> [] then
-        text ";"
+        text "EmptyStatement ;"
       else
         (if s.labels <> [] then line else nil) 
           ++ self#pStmtKind next () s.skind)

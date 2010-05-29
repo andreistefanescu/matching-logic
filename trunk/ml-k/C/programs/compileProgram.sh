@@ -7,11 +7,14 @@ myDirectory=`dirname $0`
 set -e
 
 dflag=
+nowarn=0
 usage="Usage: %s: [-d] inputFileName\n"
-while getopts 'd' OPTION
+while getopts 'dw' OPTION
 do
 	case $OPTION in
 	d)	dflag=1
+		;;
+	w)	nowarn=1
 		;;
 	?)	printf "$usage" $(basename $0) >&2
 		exit 2
@@ -36,19 +39,25 @@ if [ ! $? -eq 0 ]; then
 	echo "Error"
 	exit 1
 fi
-gcc $PEDANTRY_OPTIONS $GCC_OPTIONS -E -I. -I$myDirectory $filename.prepre.gen > $filename.pre.gen
+gcc $PEDANTRY_OPTIONS $GCC_OPTIONS -E -I. -I$myDirectory $filename.prepre.gen > $filename.pre.gen 2> $filename.warnings.log
 if [ ! $? -eq 0 ]; then 
 	echo "Error running gcc"
 	exit 1
+fi
+if [ ! "$nowarn" ]; then
+	cat $filename.warnings.log >&2
 fi
 #echo "done with gcc"
 if [ ! "$dflag" ]; then
 	rm -f $filename.prepre.gen
 fi
-$myDirectory/cparser $CIL_FLAGS --out $filename.gen.maude.tmp $filename.pre.gen
+$myDirectory/cparser $CIL_FLAGS --out $filename.gen.maude.tmp $filename.pre.gen 2> $filename.warnings.log
 if [ ! $? -eq 0 ]; then 
 	echo "Error running cil"
 	exit 1
+fi
+if [ ! "$nowarn" ]; then
+	cat $filename.warnings.log >&2
 fi
 #echo "done with cil"
 if [ ! "$dflag" ]; then

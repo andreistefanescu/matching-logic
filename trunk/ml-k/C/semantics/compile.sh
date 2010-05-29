@@ -4,26 +4,29 @@
 ## using getopts
 #
 set -e
-dflag=
+dumpFlag=
 oflag=
 usage="Usage: %s: [-o outputFileName] inputFileName\n"
 oval=
+warnFlag=
 myDirectory=`dirname $0`
 inputFile=
 function getoptsFunc {
 	# echo "inside getopts"
 	# echo "hmm"
-	while getopts ':do:v' OPTION
+	while getopts ':do:vw' OPTION
 	do
 		# echo "xxx $1"
 		case $OPTION in
-		d)	dflag=1
+		d)	dumpFlag="-d"
 			;;
 		o)	oflag=1
 			oval="$OPTARG"
 			;;
 		v)	printf "kcc version 0.0.1"
 			exit 0
+			;;
+		w)	warnFlag="-w"
 			;;
 		?)	if [ ! -f $inputFile ]; then
 				printf "$usage" $(basename $0) >&2
@@ -74,18 +77,10 @@ maudeInput=$inputDirectory/$baseName.gen.maude
 # echo "maudeInput = $maudeInput"
 # echo "myDirectory = $myDirectory"
 #make -f ../programs/Makefile -C ../programs $maudeInput
-if [ "$dflag" ]; then
-	$myDirectory/compileProgram.sh -d $inputFile
-	if [ ! "$?" ]; then
-		echo "compilation failed"
-		exit 2
-	fi
-else
-	$myDirectory/compileProgram.sh $inputFile
-	if [ ! "$?" ]; then
-		echo "compilation failed"
-		exit 2
-	fi
+$myDirectory/compileProgram.sh $warnFlag $dumpFlag $inputFile
+if [ ! "$?" ]; then
+	echo "compilation failed"
+	exit 2
 fi
 echo "load $myDirectory/c-total" > out.tmp
 echo "load program-$baseName-compiled" >> out.tmp
@@ -93,7 +88,7 @@ echo "rew in C-program-$baseName : eval(\"program-$baseName\"(.List{K}), \"$base
 
 echo "--- &> /dev/null; if [ \$DEBUG ]; then maude -no-wrap \$0; else (echo q | maude -no-wrap \$0 | perl $myDirectory/wrapper.pl); fi ; exit \$?" > a.tmp
 cat out.tmp | perl $myDirectory/slurp.pl >> a.tmp
-if [ ! "$dflag" ]; then
+if [ ! "$dumpFlag" ]; then
 	rm -f program-$baseName-compiled.maude
 fi
 #echo q >> a.tmp
