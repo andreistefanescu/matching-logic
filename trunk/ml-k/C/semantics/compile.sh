@@ -11,13 +11,16 @@ oval=
 warnFlag=
 myDirectory=`dirname $0`
 inputFile=
+compileOnlyFlag=
 function getoptsFunc {
 	# echo "inside getopts"
 	# echo "hmm"
-	while getopts ':do:vw' OPTION
+	while getopts ':cdo:vw' OPTION
 	do
 		# echo "xxx $1"
 		case $OPTION in
+		c)	compileOnlyFlag="-c"
+			;;
 		d)	dumpFlag="-d"
 			;;
 		o)	oflag=1
@@ -82,18 +85,21 @@ if [ ! "$?" ]; then
 	echo "compilation failed"
 	exit 2
 fi
-echo "load $myDirectory/c-total" > out.tmp
-echo "load program-$baseName-compiled" >> out.tmp
-echo "rew in C-program-$baseName : eval(\"program-$baseName\"(.List{K}), \"$baseName\") ." >> out.tmp
+if [ ! "$compileOnlyFlag" ]; then 
+	echo "load $myDirectory/c-total" > out.tmp
+	echo "load program-$baseName-compiled" >> out.tmp
+	echo "rew in C-program-$baseName : eval(\"program-$baseName\"(.List{K}), \"$baseName\") ." >> out.tmp
 
-echo "--- &> /dev/null; if [ \$DEBUG ]; then maude -no-wrap \$0; else (echo q | maude -no-wrap \$0 | perl $myDirectory/wrapper.pl); fi ; exit \$?" > a.tmp
-cat out.tmp | perl $myDirectory/slurp.pl >> a.tmp
-if [ ! "$dumpFlag" ]; then
-	rm -f program-$baseName-compiled.maude
+	echo "--- &> /dev/null; if [ \$DEBUG ]; then maude -no-wrap \$0; else (echo q | maude -no-wrap \$0 | perl $myDirectory/wrapper.pl); fi ; exit \$?" > a.tmp
+	cat out.tmp | perl $myDirectory/slurp.pl >> a.tmp
+	if [ ! "$dumpFlag" ]; then
+		rm -f program-$baseName-compiled.maude
+	fi
+	chmod u+x a.tmp
+	mv a.tmp $oval
+else
+	mv program-$baseName-compiled.maude $oval
 fi
-#echo q >> a.tmp
-chmod u+x a.tmp
-mv a.tmp $oval
 
 # clean up
 rm -f out.tmp
