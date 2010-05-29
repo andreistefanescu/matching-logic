@@ -47,6 +47,7 @@ fi
 if [ ! "$nowarn" ]; then
 	cat $filename.warnings.log >&2
 fi
+rm -f $filename.warnings.log
 #echo "done with gcc"
 if [ ! "$dflag" ]; then
 	rm -f $filename.prepre.gen

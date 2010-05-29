@@ -9,6 +9,8 @@
 
 ---C99 6.7.8:10 If an object has static duration ... if it has pointer type, it is NULL, if it is arithmetic, 0, aggregate, recursively these, union, first member by these
 
+--- 33, 42, 33
+--- 62, 31, 15
 
 
 --- # of expected passes            44527
@@ -659,21 +661,26 @@ mod TYPES is
 		--- : KSentence .
 	
 	---C99 6.3.1.4:2 For objects or expressions with an integer type  whose integer conversion rank is less than or equal to the rank of int and unsigned int, and a bit field of type _Bool, int, signed int, or unsigned int, If an int can represent all values of the original type, the value is converted to an int; otherwise, it is converted to an unsigned int.  These are called the integer promotions.  All other types are unchanged by the integer promotions.
+	---C99 6.3.1.4:3 The integer promotions preserve value including sign. As discussed earlier, whether a "plain" char is treated as signed is implementation-defined.
 	mb rule
-		< k > [promote(tv(V:BaseValue, int)) => tv(V:BaseValue, int)] ...</ k >
+		< k > [promote(tv(V:BaseValue, T:Type)) => tv(V:BaseValue, int)] ...</ k >
+		if     hasIntegerType(T:Type)
+		andBool rank(T:Type) <=Int rank(int)
+		andBool min(int) <=Int min(T:Type) 
+		andBool max(int) >=Int max(T:Type)		
 		: KSentence .
+	--- fixme unclear what 6.3.1.4:3 means
 	mb rule
-		< k > [promote(tv(V:BaseValue, unsigned-int)) => tv(V:BaseValue, unsigned-int)] ...</ k >
+		< k > [promote(tv(V:BaseValue, T:Type)) => interpret(V:BaseValue, unsigned-int)] ...</ k >
+		if     hasIntegerType(T:Type)
+		andBool rank(T:Type) <=Int rank(int)
+		andBool notBool (
+			min(int) <=Int min(T:Type) 
+			andBool max(int) >=Int max(T:Type)		
+		)
 		: KSentence .
-	mb rule
-		< k > [promote(tv(V:BaseValue, unsigned-long-int)) => tv(V:BaseValue, unsigned-long-int)] ...</ k >
-		: KSentence .
-	mb rule
-		< k > [promote(tv(V:BaseValue, pointerType(T:Type))) => tv(V:BaseValue, pointerType(T:Type))] ...</ k >
-		: KSentence .
-	mb rule
-		< k > [promote(tv(V:BaseValue, arrayType(T:Type, N:Nat))) => tv(V:BaseValue, arrayType(T:Type, N:Nat))] ...</ k >
-		: KSentence .
+
+
 	
 	--- Then the following rules are applied to the promoted operands:
 	
@@ -1599,6 +1606,7 @@ and ll or LL
 		if min(T:Type) <=Rat N:Rat andBool max(T:Type) >=Rat N:Rat
 		andBool hasIntegerType(T:Type)
 		: KSentence [metadata "structural"] .
+	--- fixme look at promotions to do this correct
 	mb rule [interpret(N:Nat, bitfieldType(T:Type, Len:Nat)) => tv(N:Nat, T:Type)]
 		if 0 <=Int N:Nat 
 		andBool _-Int_(2 ^Nat Len:Nat, 1) >=Int N:Nat

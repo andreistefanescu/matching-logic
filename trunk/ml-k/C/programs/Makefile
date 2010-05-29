@@ -18,7 +18,7 @@ CURRENT_TARGETS = $(foreach var, $(CURRENT_PROGRAMS), work-run-$(var))
 
 #.SECONDARY:
 
-.DELETE_ON_ERROR:
+#.DELETE_ON_ERROR:
 
 .PHONY: all test clean prepare fast-test working
 
@@ -30,7 +30,6 @@ working: prepare $(CURRENT_TARGETS)
 	
 prepare:
 	@rm -f information.log
-	@make -C .. dist/dist.done
 	
 fix:
 	maude kcompile_in.maude
