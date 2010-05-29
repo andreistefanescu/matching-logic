@@ -49,9 +49,7 @@ shift $(($OPTIND - 1))
 # then
   # printf "Option -a specified\n"
 # fi
-if [ ! "$oflag" ]; then
-	oval="a.out"
-fi
+
 if [ ! "$1" ]; then
 	printf "$usage" $(basename $0) >&2
 	exit 2
@@ -60,6 +58,14 @@ fi
 inputFile=`readlink -f $1`
 inputDirectory=`dirname $inputFile`
 baseName=`basename $inputFile .c`
+
+if [ ! "$oflag" ]; then
+	if [ "$compileOnlyFlag" ]; then
+		oval="$baseName.o"
+	else
+		oval="a.out"
+	fi
+fi
 
 #printf "Compiling %s to %s\n" $inputFile $oval
 if [ ! -f $inputFile ]; then
