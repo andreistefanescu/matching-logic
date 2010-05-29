@@ -713,7 +713,13 @@ mod COMMON-C-STANDARD-LIBRARY is
 	including COMMON-INCLUDE .
 	
 	op builtin : Id -> Value .
-	
+	--------------------------------------------
+	mb [exit-is-value]: rule
+		< k > [exit => builtin(exit)] ...</ k >
+	: KSentence .
+	mb [exit]: rule
+		< k > [Apply(builtin(exit), tv(I:Int, int)) ~> ? => tv(I:Int, int)] </ k >
+	: KSentence .
 	--------------------------------------------
 	mb [sqrt-is-value]: rule
 		< k > [sqrt => builtin(sqrt)] ...</ k >
@@ -1370,6 +1376,8 @@ mod COMMON-C-SEMANTICS is
 	including COMMON-EXPRESSIONS .
 	including COMMON-PARAMETER-BINDING .
 	including TYPES .
+	
+	mb rule [EmptyStatement ; => .K] : KSentence [metadata "structural"] .
 	
 	--- mb context Deref([HOLE]) := ? : KSentence .
 	mb context Deref([HOLE]) ++ : KSentence .
