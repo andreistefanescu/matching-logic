@@ -69,7 +69,8 @@ endm
 mod COMMON-SEMANTIC-SYNTAX is
 	including INCOMING-MODULES .
 	op List : BagItem -> ListItem .
-	op unknown : -> K .
+	op unknown : -> Nat .
+	eq unknown = 0 .
 	op skipval : -> KResult .
 	op debugK : -> K .
 	op discard : -> K .
