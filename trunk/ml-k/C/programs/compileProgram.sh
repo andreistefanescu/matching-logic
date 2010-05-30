@@ -39,7 +39,7 @@ if [ ! $? -eq 0 ]; then
 	echo "Error"
 	exit 1
 fi
-gcc $PEDANTRY_OPTIONS $GCC_OPTIONS -E -I. -I$myDirectory $filename.prepre.gen > $filename.pre.gen 2> $filename.warnings.log
+gcc $PEDANTRY_OPTIONS $GCC_OPTIONS -E -I. -I$myDirectory $filename.prepre.gen $myDirectory/clib.h > $filename.pre.gen 2> $filename.warnings.log
 if [ ! $? -eq 0 ]; then 
 	echo "Error running gcc"
 	exit 1

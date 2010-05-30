@@ -699,9 +699,10 @@ class virtual defaultMaudePrinterClass = object (self)
       ++ unalign ++ line
 	  
   method private pAttrsGen (block: bool) (a: attributes) = 
+	text " "
     (* Scan all the attributes and separate those that must be printed inside 
      * the __attribute__ list *)
-    let rec loop (in__attr__: doc list) = function
+    (*let rec loop (in__attr__: doc list) = function
         [] -> begin 
           match in__attr__ with
             [] -> nil
@@ -734,7 +735,7 @@ class virtual defaultMaudePrinterClass = object (self)
     if res = nil then
       res
     else
-      text " " ++ res ++ text " "
+      text " " ++ res ++ text " "*)
 	  
   method private pStmtNext (next: stmt) () (s: stmt) =
     (* print the labels *)
@@ -796,7 +797,7 @@ class virtual defaultMaudePrinterClass = object (self)
         let proto = 
           if oldattr <> [] then 
             (self#pLineDirective l) ++ (self#pVDecl () fundec.svar) 
-              ++ chr ';' ++ line 
+               ++ line 
           else nil in
         (* Temporarily remove the function attributes *)
         fundec.svar.vattr <- [];
@@ -932,7 +933,7 @@ class virtual defaultMaudePrinterClass = object (self)
          let proto = 
            if oldattr <> [] then 
              (self#pLineDirective l) ++ (self#pVDecl () fdec.svar) 
-               ++ chr ';' ++ line
+                ++ line
            else nil in
          fprint out !lineLength
            (proto ++ (self#pLineDirective ~forcefile:true l));

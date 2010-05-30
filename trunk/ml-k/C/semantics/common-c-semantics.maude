@@ -12,6 +12,37 @@
 --- 33, 42, 33
 --- 62, 31, 15
 
+--- FAIL: gcc.tiny/20011024-1.c execution,  
+--- FAIL: gcc.tiny/20020508-1.c execution,  
+--- FAIL: gcc.tiny/20021204-1.c execution,  
+--- FAIL: gcc.tiny/20030501-1.c compilation,  
+--- FAIL: gcc.tiny/20031204-1.c compilation,  
+--- FAIL: gcc.tiny/20040703-1.c compilation,  
+--- FAIL: gcc.tiny/20071029-1.c execution,  
+--- FAIL: gcc.tiny/20081218-1.c compilation,  
+--- FAIL: gcc.tiny/921029-1.c compilation,  
+--- FAIL: gcc.tiny/921104-1.c compilation,  
+--- FAIL: gcc.tiny/931004-10.c execution,  
+--- FAIL: gcc.tiny/931004-11.c execution,  
+--- FAIL: gcc.tiny/980205.c execution,  
+--- FAIL: gcc.tiny/990829-1.c execution,  
+--- FAIL: gcc.tiny/991030-1.c compilation,  
+--- FAIL: gcc.tiny/991228-1.c execution,  
+--- FAIL: gcc.tiny/bcp-1.c compilation,  
+--- FAIL: gcc.tiny/bitfld-1.c execution,  
+--- FAIL: gcc.tiny/builtin-prefetch-1.c compilation,  
+--- FAIL: gcc.tiny/complex-2.c compilation,  
+--- FAIL: gcc.tiny/loop-6.c execution,  
+--- FAIL: gcc.tiny/multi-ix.c compilation,  
+--- FAIL: gcc.tiny/pr33382.c execution,  
+--- FAIL: gcc.tiny/pr39240.c execution,  
+--- FAIL: gcc.tiny/simd-6.c compilation,  
+--- FAIL: gcc.tiny/stdarg-3.c execution,  
+--- FAIL: gcc.tiny/strcmp-1.c compilation,  
+--- FAIL: gcc.tiny/string-opt-17.c execution,  
+--- FAIL: gcc.tiny/va-arg-6.c compilation,  
+
+
 
 --- # of expected passes            44527
 --- # of unexpected failures        7081
@@ -793,83 +824,6 @@ mod COMMON-C-STANDARD-LIBRARY is
 		< malloced >... [.Map => Loc:Nat |-> N:Nat] ...</ malloced >
 		< nextLoc > [Loc:Nat => Loc:Nat +Nat (N:Nat *Nat Size:Nat)] </ nextLoc >
 	: KSentence .
-	--------------------------------------------
-	mb [memset-is-value]: rule
-		< k > [memset => builtin(memset)] ...</ k >
-	: KSentence .
-	
-	--- fixme should be checking and casting types
-	--- fixme should be making sure N:Nat is a char
-	mb [memset]: rule
-		< k > [Apply(builtin(memset), (tv(Loc:Nat, pointerType(T:Type)) .,. tv(N:Nat, int) .,. tv(Len:Nat, ?))) => tv(Loc:Nat, pointerType(void))] ...</ k >
-		< mem > [M:Map => M:Map[N:Nat / Loc:Nat to (Loc:Nat +Nat Len:Nat)]] </ mem >
-	: KSentence .
-	--------------------------------------------
-	mb [strlen-is-value]: rule
-		< k > [strlen => builtin(strlen)] ...</ k >
-	: KSentence .
-	
-	op strlen-aux : Nat Nat -> K .
-	mb [strlen-start]: rule
-		< k > [Apply(builtin(strlen), tv(Loc:Nat, pointerType(?))) => strlen-aux(0, Loc:Nat)] ...</ k >
-	: KSentence .
-	
-	mb [strlen-nz]: rule
-		< k > [strlen-aux(Len:Nat, Loc:Nat) => strlen-aux(sNat(Len:Nat), sNat(Loc:Nat))] ...</ k >
-		< mem >... Loc:Nat |-> N:Nat ...</ mem >
-		if notBool(N:Nat ==Bool 0)
-	: KSentence .
-	mb [strlen-z]: rule
-		< k > [strlen-aux(Len:Nat, Loc:Nat) => tv(Len:Nat, cfg:sizeut)] ...</ k >
-		< mem >... Loc:Nat |-> 0 ...</ mem >
-	: KSentence .
-	--------------------------------------------
-	mb [strcpy-is-value]: rule
-		< k > [strcpy => builtin(strcpy)] ...</ k >
-	: KSentence .
-	
-	--- fixme ensure char
-	op strcpy-aux : Nat Nat Nat -> K .
-	mb [strcpy-start]: rule
-		< k > [Apply(builtin(strcpy), (tv(Dest:Nat, pointerType(T:Type)) .,. tv(Src:Nat, pointerType(T:Type)))) => strcpy-aux(Src:Nat, Dest:Nat, Dest:Nat)] ...</ k >
-	: KSentence .
-	
-	mb [strcpy-nz]: rule
-		< k > [strcpy-aux(Src:Nat, Dest:Nat, Orig:Nat) => strcpy-aux(sNat(Src:Nat), sNat(Dest:Nat), Orig:Nat)] ...</ k >
-		< mem >... Src:Nat |-> N:Nat Dest:Nat |-> [? => N:Nat] ...</ mem >
-		if notBool(N:Nat ==Bool 0)
-	: KSentence .
-	mb [strcpy-z]: rule
-		< k > [strcpy-aux(Src:Nat, Dest:Nat, Orig:Nat) => tv(Orig:Nat, pointerType(char))] ...</ k >
-		< mem >... Src:Nat |-> 0 Dest:Nat |-> [? => 0] ...</ mem >
-	: KSentence .
-	--------------------------------------------
-	mb [strcmp-is-value]: rule
-		< k > [strcmp => builtin(strcmp)] ...</ k >
-	: KSentence .
-	
-	op strcmp-aux : Nat Nat -> K .
-	mb [strcmp-start]: rule
-		< k > [Apply(builtin(strcmp), (tv(Loc1:Nat, pointerType(?)) .,. tv(Loc2:Nat, pointerType(?)))) => strcmp-aux(Loc1:Nat, Loc2:Nat)] ...</ k >
-	: KSentence .
-	
-	mb [strcmp-same-addy]: rule
-		< k > [strcmp-aux(Loc:Nat, Loc:Nat) => 0] ...</ k >
-		: KSentence .
-	mb [strcmp-same]: rule
-		< k > [strcmp-aux(Loc1:Nat, Loc2:Nat) => strcmp-aux(sNat(Loc1:Nat), sNat(Loc2:Nat))] ...</ k >
-		< mem >... Loc1:Nat |-> N:Nat Loc2:Nat |-> N:Nat ...</ mem >
-		if N:Nat =/=Bool 0
-		: KSentence .
-	mb [strcmp-done]: rule
-		< k > [strcmp-aux(Loc1:Nat, Loc2:Nat) => tv(0, int)] ...</ k >
-		< mem >... Loc1:Nat |-> 0 Loc2:Nat |-> 0 ...</ mem >
-		: KSentence .
-	mb [strcmp-different]: rule
-		< k > [strcmp-aux(Loc1:Nat, Loc2:Nat) => tv(if N1:Nat >Nat N2:Nat then 1 else -1 fi, int)] ...</ k >
-		< mem >... Loc1:Nat |-> N1:Nat Loc2:Nat |-> N2:Nat ...</ mem >
-		if N1:Nat =/=Bool N2:Nat
-		: KSentence .
 	--------------------------------------------
 	mb [putchar-is-value]: rule
 		< k > [putchar => builtin(putchar)] ...</ k >

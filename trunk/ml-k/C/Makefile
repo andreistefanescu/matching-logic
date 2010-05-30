@@ -19,7 +19,8 @@ FILES_TO_DIST = \
 	$(C_DIR)/string.h \
 	$(C_DIR)/stdarg.h \
 	$(C_DIR)/stddef.h \
-	$(C_DIR)/stdint.h
+	$(C_DIR)/stdint.h \
+	$(C_DIR)/clib.h
 	
 .PHONY: all clean run test force cparser maude-fragments build-all dynamic match fix kcompile gcc-output kcompile-bench benchmark dist fast-test dist-make
 
