@@ -21,21 +21,17 @@ mod COMMON-C-SYNTAX is
 	sort Program .
 	
 	---op debug : -> Statement .
+	op NULL : -> Id [ctor] .
+	op calloc : -> Id [ctor] .
+	op cos : -> Id [ctor] .
+	op exit : -> Id [ctor] .
+	op free : -> Id [ctor] .
 	op main : -> Id [ctor] .
 	op malloc : -> Id [ctor] .
-	op calloc : -> Id [ctor] .
-	op strlen : -> Id [ctor] .
-	op strcpy : -> Id [ctor] .
-	op strcmp : -> Id [ctor] .
-	op putchar : -> Id [ctor] .
-	op memset : -> Id [ctor] .
-	op rand : -> Id [ctor] .
-	op free : -> Id [ctor] .
 	op printf : -> Id [ctor] .
+	op putchar : -> Id [ctor] .
+	op rand : -> Id [ctor] .
 	op sqrt : -> Id [ctor] .
-	op cos : -> Id [ctor] .
-	op NULL : -> Id [ctor] .
-	op exit : -> Id [ctor] .
 	
 	--- ---- A.1.5 Constants
 	--- --- 6.4.4
