@@ -69,6 +69,7 @@ endm
 mod COMMON-SEMANTIC-SYNTAX is
 	including INCOMING-MODULES .
 	op List : BagItem -> ListItem .
+	---op unknown : -> K [ctor] .
 	op unknown : -> Nat .
 	eq unknown = 0 .
 	op skipval : -> KResult .
@@ -1471,7 +1472,7 @@ and ll or LL
 		
 		
 	---C99 6.4.4.2:4 An unsuffixed floating constant has type double. If suffixed by the letter f or F, it has type float. If suffixed by the letter l or L, it has type long double.
-	mb rule [F:Float => tv(F:Float, double)] 
+	mb rule < k > [F:Float => tv(F:Float, double)] ...</ k > 
 		: KSentence .
 	mb rule [L(F:Float) => tv(F:Float, long-double)]
 		: KSentence .
