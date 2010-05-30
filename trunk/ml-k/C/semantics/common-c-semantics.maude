@@ -9,38 +9,10 @@
 
 ---C99 6.7.8:10 If an object has static duration ... if it has pointer type, it is NULL, if it is arithmetic, 0, aggregate, recursively these, union, first member by these
 
+--- EP, UF, UT
 --- 33, 42, 33
 --- 62, 31, 15
-
---- FAIL: gcc.tiny/20011024-1.c execution,  
---- FAIL: gcc.tiny/20020508-1.c execution,  
---- FAIL: gcc.tiny/20021204-1.c execution,  
---- FAIL: gcc.tiny/20030501-1.c compilation,  
---- FAIL: gcc.tiny/20031204-1.c compilation,  
---- FAIL: gcc.tiny/20040703-1.c compilation,  
---- FAIL: gcc.tiny/20071029-1.c execution,  
---- FAIL: gcc.tiny/20081218-1.c compilation,  
---- FAIL: gcc.tiny/921029-1.c compilation,  
---- FAIL: gcc.tiny/921104-1.c compilation,  
---- FAIL: gcc.tiny/931004-10.c execution,  
---- FAIL: gcc.tiny/931004-11.c execution,  
---- FAIL: gcc.tiny/980205.c execution,  
---- FAIL: gcc.tiny/990829-1.c execution,  
---- FAIL: gcc.tiny/991030-1.c compilation,  
---- FAIL: gcc.tiny/991228-1.c execution,  
---- FAIL: gcc.tiny/bcp-1.c compilation,  
---- FAIL: gcc.tiny/bitfld-1.c execution,  
---- FAIL: gcc.tiny/builtin-prefetch-1.c compilation,  
---- FAIL: gcc.tiny/complex-2.c compilation,  
---- FAIL: gcc.tiny/loop-6.c execution,  
---- FAIL: gcc.tiny/multi-ix.c compilation,  
---- FAIL: gcc.tiny/pr33382.c execution,  
---- FAIL: gcc.tiny/pr39240.c execution,  
---- FAIL: gcc.tiny/simd-6.c compilation,  
---- FAIL: gcc.tiny/stdarg-3.c execution,  
---- FAIL: gcc.tiny/strcmp-1.c compilation,  
---- FAIL: gcc.tiny/string-opt-17.c execution,  
---- FAIL: gcc.tiny/va-arg-6.c compilation,  
+--- 63, 28, 13
 
 
 
