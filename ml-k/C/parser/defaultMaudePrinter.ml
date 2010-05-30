@@ -930,13 +930,8 @@ class virtual defaultMaudePrinterClass = object (self)
          (* If the function has attributes then print a prototype because 
           * GCC cannot accept function attributes in a definition *)
          let oldattr = fdec.svar.vattr in
-         let proto = 
-           if oldattr <> [] then 
-             (self#pLineDirective l) ++ (self#pVDecl () fdec.svar) 
-                ++ line
-           else nil in
          fprint out !lineLength
-           (proto ++ (self#pLineDirective ~forcefile:true l));
+           ((self#pLineDirective ~forcefile:true l));
          (* Temporarily remove the function attributes *)
          fdec.svar.vattr <- [];
          fprint out !lineLength (self#pFunDecl () fdec);               
