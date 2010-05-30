@@ -63,4 +63,5 @@ clean:
 	make -C $(C_DIR) clean
 	make -C $(PARSER_DIR) clean
 	make -C $(SEMANTICS_DIR) clean
+	make -C gcc-test clean
 	rm -rf $(DIST_DIR)
