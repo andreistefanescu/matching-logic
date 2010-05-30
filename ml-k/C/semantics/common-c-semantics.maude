@@ -93,6 +93,8 @@ mod COMMON-SEMANTIC-SYNTAX is
 	subsort TogetherList < Expression .
 	op sizeof : Type -> Expression .
 	op HOLE : -> Expression .
+	
+	--- Types
 	op arrayType : Type Nat -> Type .
 	op bitfieldType : Type Nat -> Type .
 	op functionType : Type List{K} -> Type .
@@ -101,6 +103,8 @@ mod COMMON-SEMANTIC-SYNTAX is
 	op enumType : Id -> Base-Type .
 	op unionType : Id -> Type .
 	op qualifiedType : Type K -> Type .
+	
+	
 	op typedField : Type Id -> Field .
 	op declare : K K -> K [metadata "strict(1)"] .
 	op declare-aux : K K List{K} -> K .
@@ -343,14 +347,59 @@ mod SIZEOF is
 		< k > [sizeof(E:Expression) => evalToType ~> sizeof(HOLE)] ...</ k >
 		[.Bag => < type > E:Expression </ type >]
 		: KSentence [metadata "stuctural"] .
+	--- fixme the below rule actually changes itself to "value" and there can be values that aren't yet types
+	--- mb rule
+		--- < k > [evalToType ~> sizeof(HOLE) => sizeofType(T:Type)] ...</ k >
+		--- [< type > T:Type </ type > => .Bag]
+		--- : KSentence [metadata "stuctural"] .
+	--- fixme should be able to do this for all types
 	mb rule
-		< k > [evalToType ~> sizeof(HOLE) => sizeofType(T:Type)] ...</ k >
-		[< type > T:Type </ type > => .Bag]
+		< k > [evalToType ~> sizeof(HOLE) => sizeofType(T:Base-Type)] ...</ k >
+		[< type > T:Base-Type </ type > => .Bag]
 		: KSentence [metadata "stuctural"] .
+	mb rule
+		< k > [evalToType ~> sizeof(HOLE) => sizeofType(arrayType(T:Type, N:Nat))] ...</ k >
+		[< type > arrayType(T:Type, N:Nat) </ type > => .Bag]
+		: KSentence [metadata "stuctural"] .
+	mb rule
+		< k > [evalToType ~> sizeof(HOLE) => sizeofType(structType(X:Id))] ...</ k >
+		[< type > structType(X:Id) </ type > => .Bag]
+		: KSentence [metadata "stuctural"] .
+	mb rule
+		< k > [evalToType ~> sizeof(HOLE) => sizeofType(unionType(X:Id))] ...</ k >
+		[< type > unionType(X:Id) </ type > => .Bag]
+		: KSentence [metadata "stuctural"] .
+	mb rule
+		< k > [evalToType ~> sizeof(HOLE) => sizeofType(bitfieldType(T:Type, N:Nat))] ...</ k >
+		[< type > bitfieldType(T:Type, N:Nat) </ type > => .Bag]
+		: KSentence [metadata "stuctural"] .
+	mb rule
+		< k > [evalToType ~> sizeof(HOLE) => sizeofType(functionType(T:Type, L:List{K}))] ...</ k >
+		[< type > functionType(T:Type, L:List{K}) </ type > => .Bag]
+		: KSentence [metadata "stuctural"] .
+	mb rule
+		< k > [evalToType ~> sizeof(HOLE) => sizeofType(pointerType(T:Type))] ...</ k >
+		[< type > pointerType(T:Type) </ type > => .Bag]
+		: KSentence [metadata "stuctural"] .
+	mb rule
+		< k > [evalToType ~> sizeof(HOLE) => sizeofType(enumType(X:Id))] ...</ k >
+		[< type > enumType(X:Id) </ type > => .Bag]
+		: KSentence [metadata "stuctural"] .
+	mb rule
+		< k > [evalToType ~> sizeof(HOLE) => sizeofType(qualifiedType(T:Type, K:K))] ...</ k >
+		[< type > qualifiedType(T:Type, K:K) </ type > => .Bag]
+		: KSentence [metadata "stuctural"] .
+	
 	
 	mb rule
 		< type > [E:Expression => T:Type] ...</ type >
 		< types >... E:Expression |-> T:Type ...</ types >
+		: KSentence [metadata "stuctural"] .
+	mb rule
+		< type > [tv(?, T:Type) => T:Type] ...</ type >
+		: KSentence [metadata "stuctural"] .
+	mb rule
+		< type > [cast(T:Type, ?) => T:Type] ...</ type >
 		: KSentence [metadata "stuctural"] .
 	mb [type-arrow-heat]: rule
 		< type > ['_->_(Kp:KProper,, X:Id) => Kp:KProper ~> '_->_(HOLE,, X:Id)] ...</ type >
@@ -1380,7 +1429,7 @@ and ll or LL
 		] ...</ k > 
 		: KSentence .
 		
-	mb rule < k > [U(I:Int) => 
+	mb rule [U(I:Int) => 
 		if ((I:Int <=Int max(unsigned-int)) andBool (I:Int >=Int min(unsigned-int))) then tv(I:Int, unsigned-int) else
 			if ((I:Int <=Int max(unsigned-long-int)) andBool (I:Int >=Int min(unsigned-long-int))) then tv(I:Int, unsigned-long-int) else
 				if ((I:Int <=Int max(unsigned-long-long-int)) andBool (I:Int >=Int min(unsigned-long-long-int))) then tv(I:Int, unsigned-long-long-int) else 
@@ -1388,44 +1437,44 @@ and ll or LL
 				fi
 			fi
 		fi
-		] ...</ k > 
+		]
 		: KSentence .
-	mb rule < k > [L(I:Int) => 
+	mb rule [L(I:Int) => 
 		if ((I:Int <=Int max(long-int)) andBool (I:Int >=Int min(long-int))) then tv(I:Int, long-int) else
 			if ((I:Int <=Int max(long-long-int)) andBool (I:Int >=Int min(long-long-int))) then tv(I:Int, long-long-int) else
 				tv(I:Int, no-type)
 			fi
 		fi
-		] ...</ k > 
+		]
 		: KSentence .
-	mb rule < k > [UL(I:Int) => 
+	mb rule [UL(I:Int) => 
 		if ((I:Int <=Int max(unsigned-long-int)) andBool (I:Int >=Int min(unsigned-long-int))) then tv(I:Int, unsigned-long-int) else
 			if ((I:Int <=Int max(unsigned-long-long-int)) andBool (I:Int >=Int min(unsigned-long-long-int))) then tv(I:Int, unsigned-long-long-int) else
 				tv(I:Int, no-type)
 			fi
 		fi
-		] ...</ k > 
+		]
 		: KSentence .
-	mb rule < k > [LL(I:Int) => 
+	mb rule [LL(I:Int) => 
 		if ((I:Int <=Int max(long-long-int)) andBool (I:Int >=Int min(long-long-int))) then tv(I:Int, long-long-int) else
 			tv(I:Int, no-type)
 		fi
-		] ...</ k > 
+		]
 		: KSentence .
-	mb rule < k > [ULL(I:Int) => 
+	mb rule [ULL(I:Int) => 
 		if ((I:Int <=Int max(unsigned-long-long-int)) andBool (I:Int >=Int min(unsigned-long-long-int))) then tv(I:Int, unsigned-long-long-int) else
 			tv(I:Int, no-type)
 		fi
-		] ...</ k > 
+		]
 		: KSentence .
 		
 		
 	---C99 6.4.4.2:4 An unsuffixed floating constant has type double. If suffixed by the letter f or F, it has type float. If suffixed by the letter l or L, it has type long double.
-	mb rule < k > [F:Float => tv(F:Float, double)] ...</ k > 
+	mb rule [F:Float => tv(F:Float, double)] 
 		: KSentence .
-	mb rule < k > [L(F:Float) => tv(F:Float, long-double)] ...</ k > 
+	mb rule [L(F:Float) => tv(F:Float, long-double)]
 		: KSentence .
-	mb rule < k > [F(F:Float) => tv(F:Float, float)] ...</ k > 
+	mb rule [F(F:Float) => tv(F:Float, float)]
 		: KSentence .
 		
 	--- skip labels
@@ -2001,6 +2050,13 @@ and ll or LL
 		< k > [cast(T:Type, tv(I:Int, pointerType(structType(S:Id)))) 
 		=> cast(T:Type, tv(I:Int, pointerType(T':Type)))] ...</ k > 
 		< structs >... struct(S:Id) |-> (typedField(T':Type, ?),, ?:List{KResult}) ...</ structs >
+		: KSentence .
+		
+	--- fixme not sure why this comes up, i think because we have no extended types
+	mb rule
+		< k > [cast(T:Type, tv(I:Int, no-type)) 
+		=> interpret(I:Int, T:Type)] ...</ k >
+		if unsignedIntegerTypes contains T:Type 		
 		: KSentence .
 		
 	mb rule
