@@ -82,7 +82,9 @@ if [ ! $? -eq 0 ]; then
 	echo "Error compiling program"
 	exit 1
 fi
-rm -f program-$filename-gen.maude
+if [ ! "$dflag" ]; then
+	rm -f program-$filename-gen.maude
+fi
 sed '1 d' program-$filename-compiled.maude > program-$filename-compiled.maude.tmp
 mv program-$filename-compiled.maude.tmp program-$filename-compiled.maude
 
