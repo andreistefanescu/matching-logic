@@ -53,6 +53,10 @@ let paren (d:Pretty.doc) : Pretty.doc = "(" ^+ d +^ ")"
 let giveType (d1:Pretty.doc) (d2:string) : Pretty.doc = paren(d1) ++ (text d2)
 let wrap (d1:Pretty.doc) (d2:string) : Pretty.doc = d2 ^+ paren(d1)
 
+(* Get the full name of a comp *)
+let compFullName comp = 
+  (if comp.cstruct then "struct " else "union ") ^ "(" ^ comp.cname ^ ")"
+  
 let typeSig t = 
   typeSigWithAttrs (fun al -> al) t
 
@@ -837,7 +841,7 @@ class virtual defaultMaudePrinterClass = object (self)
         in
         let sto_mod, rest_attr = separateStorageModifiers comp.cattr in
         self#pLineDirective ~forcefile:true l ++
-          text su1 ++ (align ++ text su2 ++ chr ' ' ++ paren ((self#pAttrs () sto_mod)
+          text su1 ++ (align ++ text su2 ++ paren ((self#pAttrs () sto_mod)
                          ++ text n ++ text ", "
                          ++ text " (" ++ line
                          ++ ((docList ~sep:line ((self#pFieldDecl ()) )) () 
@@ -848,7 +852,7 @@ class virtual defaultMaudePrinterClass = object (self)
 
     | GCompTagDecl (comp, l) -> (* This is a declaration of a tag *)
         self#pLineDirective l ++
-          text (compFullName comp) ++ text ";\n"
+          text (compFullName comp) ++ text "\n"
 
     | GVar (vi, io, l) ->
         self#pLineDirective ~forcefile:true l ++

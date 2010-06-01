@@ -13,6 +13,9 @@
 --- 33, 42, 33
 --- 62, 31, 15
 --- 63, 28, 13
+--- 60, 29, 15
+--- ptrdiff is int
+--- 65, 26, 13
 
 
 
@@ -169,6 +172,9 @@ mod C-SETTINGS is
 	op cfg:sizeut : -> Type .
 	eq cfg:sizeut = unsigned-long-int .
 
+	--- fixme unfortunate, but this is what cil assumes
+	op cfg:ptrdiffut : -> Type .
+	eq cfg:ptrdiffut = int .
 	
 	---- derived
 	eq numBytes(unsigned-char) = numBytes(signed-char) .
@@ -1129,6 +1135,11 @@ mod COMMON-GLOBAL-DECLARATION is
 		< typedefs >... [.Map => struct(X:Id) |-> structType(X:Id)] ...</ typedefs >
 		: KSentence [metadata "structural"] .
 	mb rule 
+		< k > [Global(struct(X:Id)) => .K] ...</ k >
+		< types >... [.Map => struct(X:Id) |-> structType(X:Id)] ...</ types >
+		< typedefs >... [.Map => struct(X:Id) |-> structType(X:Id)] ...</ typedefs >
+		: KSentence [metadata "structural"] .
+	mb rule 
 		< k > [Global(union(X:Id, DS:TogetherList) ;) => union-aux(X:Id, DS:TogetherList, .List{K}) ~> addGlobalTypes(X:Id)] ...</ k >
 		< types >... [.Map => union(X:Id) |-> unionType(X:Id)] ...</ types >
 		< typedefs >... [.Map => union(X:Id) |-> unionType(X:Id)] ...</ typedefs >
@@ -1268,7 +1279,7 @@ mod COMMON-EXPRESSIONS is
 		: KSentence .
 	--- fixme need to use defined type
 	mb rule [tv(I1:Int, pointerType(T:Type)) - tv(I2:Int, pointerType(T:Type)) 
-	=> tv(_-Int_(I1:Int, I2:Int), long-int)]
+	=> tv(_-Int_(I1:Int, I2:Int), cfg:ptrdiffut)]
 		: KSentence .
 		
 	--- fixme ignoring qualified types
