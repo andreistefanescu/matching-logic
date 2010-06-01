@@ -318,6 +318,9 @@ mod COMMON-INCLUDE is
 		[butFirstChar(S:String) => substrString(S:String, 1, lengthString(S:String))]
 		: KSentence .
 		
+		
+	eq hex(S:String) = string2ratConversion(S:String, 16) .
+	eq Parameter-Type-List() = Parameter-Type-List(.List{Parameter}) .
 
 	eq N:Nat to N:Nat = .List{K} .
 	ceq N:Nat to N':Nat = (N:Nat,,((N:Nat +Nat 1) to N':Nat))
@@ -788,6 +791,13 @@ mod COMMON-C-STANDARD-LIBRARY is
 		< k > [Apply(builtin(exit), tv(I:Int, int)) ~> ? => tv(I:Int, int)] </ k >
 	: KSentence .
 	--------------------------------------------
+	mb [abort-is-value]: rule
+		< k > [abort => builtin(abort)] ...</ k >
+	: KSentence .
+	mb [abort]: rule
+		< k > [Apply(builtin(abort), .List{Expression}) ~> ? => tv(134, int)] </ k >
+	: KSentence .
+	--------------------------------------------
 	mb [sqrt-is-value]: rule
 		< k > [sqrt => builtin(sqrt)] ...</ k >
 	: KSentence .
@@ -1010,7 +1020,7 @@ mod COMMON-PARAMETER-BINDING is
 		
 	mb [bind-one]: rule
 		< k > [bind((tv(V:BaseValue, T:Type),, L:List{KResult}), ('Parameter-Declaration(T':Type,, X:Id),, P:List{K}))
-			=> addTypes(X:Id, T':Type) ~> allocate(sizeofType(T':Type)) ~> addLocals(Loc:Nat) ~> putInMem(Loc:Nat, tv(V:BaseValue, T:Type), T':Type, sizeofType(T':Type)) ~> bind(L:List{KResult}, P:List{K})] ...</ k > 
+			=> addTypes(X:Id, T':Type) ~> allocate(sizeofType(T':Type)) ~> addLocals(Loc:Nat) ~> putInMem(Loc:Nat, cast(T':Type, tv(V:BaseValue, T:Type)), T':Type, sizeofType(T':Type)) ~> bind(L:List{KResult}, P:List{K})] ...</ k > 
 		< env >... [.Map => X:Id |-> Loc:Nat] ...</ env >
 		< nextLoc > Loc:Nat </ nextLoc >
 		: KSentence .
@@ -1442,7 +1452,7 @@ and ll or LL
 		] ...</ k > 
 		: KSentence .
 		
-	mb rule [U(I:Int) => 
+	mb rule [@U(I:Int) => 
 		if ((I:Int <=Int max(unsigned-int)) andBool (I:Int >=Int min(unsigned-int))) then tv(I:Int, unsigned-int) else
 			if ((I:Int <=Int max(unsigned-long-int)) andBool (I:Int >=Int min(unsigned-long-int))) then tv(I:Int, unsigned-long-int) else
 				if ((I:Int <=Int max(unsigned-long-long-int)) andBool (I:Int >=Int min(unsigned-long-long-int))) then tv(I:Int, unsigned-long-long-int) else 
@@ -1452,7 +1462,7 @@ and ll or LL
 		fi
 		]
 		: KSentence .
-	mb rule [L(I:Int) => 
+	mb rule [@L(I:Int) => 
 		if ((I:Int <=Int max(long-int)) andBool (I:Int >=Int min(long-int))) then tv(I:Int, long-int) else
 			if ((I:Int <=Int max(long-long-int)) andBool (I:Int >=Int min(long-long-int))) then tv(I:Int, long-long-int) else
 				tv(I:Int, no-type)
@@ -1460,7 +1470,7 @@ and ll or LL
 		fi
 		]
 		: KSentence .
-	mb rule [UL(I:Int) => 
+	mb rule [@UL(I:Int) => 
 		if ((I:Int <=Int max(unsigned-long-int)) andBool (I:Int >=Int min(unsigned-long-int))) then tv(I:Int, unsigned-long-int) else
 			if ((I:Int <=Int max(unsigned-long-long-int)) andBool (I:Int >=Int min(unsigned-long-long-int))) then tv(I:Int, unsigned-long-long-int) else
 				tv(I:Int, no-type)
@@ -1468,13 +1478,13 @@ and ll or LL
 		fi
 		]
 		: KSentence .
-	mb rule [LL(I:Int) => 
+	mb rule [@LL(I:Int) => 
 		if ((I:Int <=Int max(long-long-int)) andBool (I:Int >=Int min(long-long-int))) then tv(I:Int, long-long-int) else
 			tv(I:Int, no-type)
 		fi
 		]
 		: KSentence .
-	mb rule [ULL(I:Int) => 
+	mb rule [@ULL(I:Int) => 
 		if ((I:Int <=Int max(unsigned-long-long-int)) andBool (I:Int >=Int min(unsigned-long-long-int))) then tv(I:Int, unsigned-long-long-int) else
 			tv(I:Int, no-type)
 		fi
@@ -1485,9 +1495,9 @@ and ll or LL
 	---C99 6.4.4.2:4 An unsuffixed floating constant has type double. If suffixed by the letter f or F, it has type float. If suffixed by the letter l or L, it has type long double.
 	mb rule < k > [F:Float => tv(F:Float, double)] ...</ k > 
 		: KSentence .
-	mb rule [L(F:Float) => tv(F:Float, long-double)]
+	mb rule [@L(F:Float) => tv(F:Float, long-double)]
 		: KSentence .
-	mb rule [F(F:Float) => tv(F:Float, float)]
+	mb rule [@F(F:Float) => tv(F:Float, float)]
 		: KSentence .
 		
 	--- skip labels

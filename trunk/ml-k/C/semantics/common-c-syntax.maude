@@ -32,6 +32,7 @@ mod COMMON-C-SYNTAX is
 	op putchar : -> Id [ctor] .
 	op rand : -> Id [ctor] .
 	op sqrt : -> Id [ctor] .
+	op abort : -> Id [ctor] .
 	
 	--- ---- A.1.5 Constants
 	--- --- 6.4.4
@@ -42,14 +43,14 @@ mod COMMON-C-SYNTAX is
 	--- --- 6.4.4.1
 	sort Integer-Constant .
 	subsort Int < Integer-Constant .
-	op U : Int -> Integer-Constant .
-	op L : Int -> Integer-Constant .
-	op UL : Int -> Integer-Constant .
-	op LL : Int -> Integer-Constant .
-	op ULL : Int -> Integer-Constant .
+	op @U : Integer-Constant -> Integer-Constant .
+	op @L : Integer-Constant -> Integer-Constant .
+	op @UL : Integer-Constant -> Integer-Constant .
+	op @LL : Integer-Constant -> Integer-Constant .
+	op @ULL : Integer-Constant -> Integer-Constant .
 	
 	op hex : String -> Integer-Constant .
-	eq hex(S:String) = string2ratConversion(S:String, 16) .
+
 	
 	--- subsort Decimal-Constant < Integer-Constant .
 	--- Octal-Constant Hexadecimal-Constant 
@@ -71,8 +72,8 @@ mod COMMON-C-SYNTAX is
 	sort Floating-Constant .
 	subsort Float < Floating-Constant .
 	--- subsort Decimal-Floating-Constant Hexadecimal-Floating-Constant < Floating-Constant .
-	op F : Float -> Floating-Constant .
-	op L : Float -> Floating-Constant .
+	op @F : Floating-Constant -> Floating-Constant .
+	op @L : Floating-Constant -> Floating-Constant .
 	
 	--- sort Decimal-Floating-Constant .
 	--- --- TODO
@@ -408,7 +409,6 @@ mod COMMON-C-SYNTAX is
 	---op Parameter-Type-List : Declaration-Specifiers -> Parameter-Type-List .
 	op Parameter-Type-List : List{Parameter} -> Parameter-Type-List .
 	op Parameter-Type-List`(`) : -> Parameter-Type-List .
-	eq Parameter-Type-List() = Parameter-Type-List(.List{Parameter}) .
 	---op _`,... : Parameter-Declaration -> Parameter-Type-List .
 	--- --- TODO
 	

@@ -134,11 +134,11 @@ let d_const () c =
        * constants this is done with a suffix, for others with a cast prefix.*)
       let suffix : string = 
         match ik with
-          IUInt -> "U"
-        | ILong -> "L"
-        | IULong -> "UL"
-        | ILongLong -> if !msvcMode then "L" else "LL"
-        | IULongLong -> if !msvcMode then "UL" else "ULL"
+          IUInt -> "@U"
+        | ILong -> "@L"
+        | IULong -> "@UL"
+        | ILongLong -> if !msvcMode then "@L" else "@LL"
+        | IULongLong -> if !msvcMode then "@UL" else "@ULL"
         | _ -> ""
       in
       let prefix, cast  = 
