@@ -17,6 +17,7 @@
 --- ptrdiff is int
 --- 65, 26, 13
 --- 68, 22, 8
+--- 69, 21, 8
 
 
 
@@ -1748,6 +1749,12 @@ and ll or LL
 	mb rule
 		< k > [putInMem(Loc:Nat, tv(N:Int, T:Type), T:Type, tv(sNat(Len:Nat), J:Type)) 
 		=> putByteInMem(Loc:Nat, ((N:Int %Int 256) +Int 256) %Int 256) ~> putInMem(sNat(Loc:Nat), tv(N:Int >>Int 8, T:Type), T:Type, tv(Len:Nat, J:Type))] ...</ k >
+		: KSentence .
+	mb rule
+		< k > [putInMem(Loc:Nat, tv(F:Float, T:Type), T:Type, tv(sNat(Len:Nat), J:Type)) => .K] ...</ k >
+		< mem >... Loc:Nat |-> [? => F:Float] ...</ mem >
+		if (T:Type ==Bool double)
+		orBool T:Type ==Bool float
 		: KSentence .
 		
 	mb rule
