@@ -16,6 +16,7 @@
 --- 60, 29, 15
 --- ptrdiff is int
 --- 65, 26, 13
+--- 68, 22, 8
 
 
 
@@ -118,6 +119,8 @@ mod COMMON-SEMANTIC-SYNTAX is
 	op interpret : K Type -> K .
 	op allocate : K -> K [metadata "strict"] .
 	op tv : BaseValue Type -> Value .
+	op structVal : List{K} Type -> Value .
+	op unionVal : List{K} Type -> Value .
 	op addTypes : K K -> K .
 	op addGlobalTypes : K K -> K .
 	op addGlobalTypes : K -> K .
@@ -995,8 +998,6 @@ mod COMMON-PARAMETER-BINDING is
 	--- bind one
 	--- consider same variable name
 	--- fixme doesn't add all derived types from T:Type
-	--- fixme not cleaning memory on return
-	--- fixme would be nice to check types match, but argument names etc might not be identical
 	mb rule
 		< k > [bind((tv(V:BaseValue, arrayType(T:Type, ?)),, L:List{KResult}), PD:List{K})
 			=> bind((tv(V:BaseValue, pointerType(T:Type)),, L:List{KResult}), PD:List{K})] ...</ k > : KSentence [metadata "structural"] .
@@ -1021,6 +1022,14 @@ mod COMMON-PARAMETER-BINDING is
 	mb [bind-one]: rule
 		< k > [bind((tv(V:BaseValue, T:Type),, L:List{KResult}), ('Parameter-Declaration(T':Type,, X:Id),, P:List{K}))
 			=> addTypes(X:Id, T':Type) ~> allocate(sizeofType(T':Type)) ~> addLocals(Loc:Nat) ~> putInMem(Loc:Nat, cast(T':Type, tv(V:BaseValue, T:Type)), T':Type, sizeofType(T':Type)) ~> bind(L:List{KResult}, P:List{K})] ...</ k > 
+		< env >... [.Map => X:Id |-> Loc:Nat] ...</ env >
+		< nextLoc > Loc:Nat </ nextLoc >
+		: KSentence .
+	mb [bind-struct]: rule
+		< k > [bind((structVal(V:List{K}, T:Type),, L:List{KResult}), ('Parameter-Declaration(T:Type,, X:Id),, P:List{K}))
+			=> addTypes(X:Id, T:Type) ~> allocate(sizeofType(T:Type)) ~> addLocals(Loc:Nat) 
+			~> putBytesInMem(Loc:Nat, V:List{K}, T:Type, sizeofType(T:Type)) 
+			~> bind(L:List{KResult}, P:List{K})] ...</ k > 
 		< env >... [.Map => X:Id |-> Loc:Nat] ...</ env >
 		< nextLoc > Loc:Nat </ nextLoc >
 		: KSentence .
@@ -1559,8 +1568,6 @@ and ll or LL
 	op readStructFromMem : Nat Type K List{K} -> K [metadata "strict(3)"] .
 	--- fixme todo not implemented
 	op readUnionFromMem : Nat Type K List{K} -> K [metadata "strict(3)"] .
-	op structVal : List{K} Type -> Value .
-	op unionVal : List{K} Type -> Value .
 	
 	--- generic lookup
 	mb [lookup]: rule
