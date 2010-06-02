@@ -34,6 +34,7 @@ mod COMMON-C-SYNTAX is
 	op sqrt : -> Id [ctor] .
 	op abort : -> Id [ctor] .
 	op debug : -> Id [ctor] .
+	op getchar : -> Id [ctor] .
 	
 	--- ---- A.1.5 Constants
 	--- --- 6.4.4
