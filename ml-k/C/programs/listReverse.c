@@ -39,14 +39,9 @@ int main(void){
 
 int* listAppend(int* p, int n){
 	int* x;
-    /*assume <config> <env> a |-> a0 ;; b |-> b0 ;; x |-> ?x </env>
-                    <heap> list(a0)(A) ** list(b0)(B) </heap> <form> TrueFormula </form> </config> ;*/
 
     if (p != NULL) {
         x = p;
-        /*invariant <config> <env> a |-> a0 ;; x |-> ?x ;; !E </env>
-                           <heap> lseg(a0,?x)(?A) ** list(?x)(?X) ** !H </heap>
-                           <form> ?A :: ?X === A /\ ~(?x === 0) </form> </config> ;*/
         while (*(x + 1) != NULL) {
             x = *(x + 1);
         }		
@@ -56,12 +51,6 @@ int* listAppend(int* p, int n){
 		*(next + 1) = NULL;
     }
 	return p;
-    // else {
-        // p = b ;
-    // }
-    /*assert <config> <env> a |-> ?a ;; b |-> b0 ;; x |-> ?x </env>
-                    <heap> list(?a)(A :: B) </heap> <form> (~(a0 === 0) /\ (?a === a0)) \/ ((a0 === 0) /\ (?a === b0)) </form> </config> ;*/
-
 }
 
 int listSum(int* p){
