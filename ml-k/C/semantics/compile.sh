@@ -96,7 +96,7 @@ if [ ! "$compileOnlyFlag" ]; then
 	echo "load program-$baseName-compiled" >> out.tmp
 	#echo "rew in C-program-$baseName : eval(\"program-$baseName\"(.List{K}), \"$baseName\") ." >> out.tmp
 
-	echo "--- &> /dev/null; if [ \$DEBUG ]; then maude -no-wrap \$0; else (echo rew in C-program-$baseName : eval\\(\\\"program-$baseName\\\"\\(.List{K}\\), \\(\`for i in \$0 \$*; do echo \"\\\"String\\\" \\\"\$i\\\"(.List{K}),,\" ; done\` .List{K}\\)\\) . | maude -no-wrap \$0 | perl /home/grosu/celliso2/matching-logic/trunk/ml-k/C/dist/wrapper.pl); fi ; exit \$?" > a.tmp
+	echo "--- &> /dev/null; if [ \$DEBUG ]; then maude -no-wrap \$0; else (echo rew in C-program-$baseName : eval\\(\\\"program-$baseName\\\"\\(.List{K}\\), \\(\`for i in \$0 \"\$@\"; do echo \"\\\"String\\\" \\\"\$i\\\"(.List{K}),,\" ; done\` .List{K}\\)\\) . | maude -no-wrap \$0 | perl /home/grosu/celliso2/matching-logic/trunk/ml-k/C/dist/wrapper.pl); fi ; exit \$?" > a.tmp
 	cat out.tmp | perl $myDirectory/slurp.pl >> a.tmp
 	if [ ! "$dumpFlag" ]; then
 		rm -f program-$baseName-compiled.maude
