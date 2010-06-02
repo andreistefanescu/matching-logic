@@ -3,7 +3,8 @@
 #
 ## using getopts
 #
-set -e
+set -o errexit
+set -o nounset
 dumpFlag=
 oflag=
 usage="Usage: %s: [-o outputFileName] inputFileName\n"
@@ -13,11 +14,8 @@ myDirectory=`dirname $0`
 inputFile=
 compileOnlyFlag=
 function getoptsFunc {
-	# echo "inside getopts"
-	# echo "hmm"
 	while getopts ':cdo:vw' OPTION
 	do
-		# echo "xxx $1"
 		case $OPTION in
 		c)	compileOnlyFlag="-c"
 			;;
@@ -38,17 +36,9 @@ function getoptsFunc {
 			;;
 	  esac
 	done
-	# echo "leaving getopts"
 }
-# echo "before getopts"
 getoptsFunc "$@"
 shift $(($OPTIND - 1))
-# echo "after getopts"
-
-# if [ "$aflag" ]
-# then
-  # printf "Option -a specified\n"
-# fi
 
 if [ ! "$1" ]; then
 	printf "$usage" $(basename $0) >&2
@@ -72,12 +62,10 @@ if [ ! -f $inputFile ]; then
 	printf "Input file %s does not exist\n" $inputFile
 	exit 1
 fi
-# printf "Remaining arguments are: %s\n" "$@"
 shift 1
 
 getoptsFunc "$@"
 shift $(($OPTIND - 1))
-# echo "after getopts"
 
 maudeInput=$inputDirectory/$baseName.gen.maude
 # echo "inputFile = $inputFile"
@@ -85,18 +73,18 @@ maudeInput=$inputDirectory/$baseName.gen.maude
 # echo "baseName = $baseName"
 # echo "maudeInput = $maudeInput"
 # echo "myDirectory = $myDirectory"
-#make -f ../programs/Makefile -C ../programs $maudeInput
+set +o errexit
 $myDirectory/compileProgram.sh $warnFlag $dumpFlag $inputFile
-if [ ! "$?" ]; then
+if [ "$?" -ne 0 ]; then
 	echo "compilation failed"
 	exit 2
 fi
-if [ ! "$compileOnlyFlag" ]; then 
+set -o errexit
+if [ ! "$compileOnlyFlag" ]; then
 	echo "load $myDirectory/c-total" > out.tmp
 	echo "load program-$baseName-compiled" >> out.tmp
-	#echo "rew in C-program-$baseName : eval(\"program-$baseName\"(.List{K}), \"$baseName\") ." >> out.tmp
-
-	echo "--- &> /dev/null; if [ -t 0 ]; then stdin=\"\"; else stdin=\$(cat); fi; if [ \$DEBUG ]; then maude -no-wrap \$0; else (echo rew in C-program-$baseName : eval\\(\\\"program-$baseName\\\"\\(.List{K}\\), \\(\`for i in \$0 \"\$@\"; do echo \"\\\"String\\\" \\\"\$i\\\"(.List{K}),,\" ; done\` .List{K}\\), \\\"\$stdin\\\"\\) . | maude -no-wrap \$0 | perl /home/grosu/celliso2/matching-logic/trunk/ml-k/C/dist/wrapper.pl); fi ; exit \$?" > a.tmp
+	exec="echo rew in C-program-$baseName : eval\\(\\\"program-$baseName\\\"\\(.List{K}\\), \\(\`for i in \$0 \"\$@\"; do echo \"\\\"String\\\" \\\"\$i\\\"(.List{K}),,\" ; done\` .List{K}\\), \\\"\$stdin\\\"\\) . | maude -ansi-color -no-wrap \$0"
+	echo "--- &> /dev/null; if [ -t 0 ]; then stdin=\"\"; else stdin=\$(cat); fi; if [ \$DEBUG ]; then $exec; else $exec | perl /home/grosu/celliso2/matching-logic/trunk/ml-k/C/dist/wrapper.pl; fi ; exit \$?" > a.tmp
 	cat out.tmp | perl $myDirectory/slurp.pl >> a.tmp
 	if [ ! "$dumpFlag" ]; then
 		rm -f program-$baseName-compiled.maude

@@ -1,9 +1,13 @@
 use strict;
 my $state = "start";
 my $retval = -1;
-
+my $reduced = 0;
+my $buffer = "";
 while (my $line = <STDIN>) {
+	$buffer .= $line;
 	chomp($line);
+	$line =~ s/[\000-\037]\[(\d|;)+m//g;
+	#print "$line\n";
 	if ($state eq "start"){
 		if ($line =~ m/^rewrite in /){
 			$state = "rewrite";
@@ -11,6 +15,9 @@ while (my $line = <STDIN>) {
 		}
 	} elsif ($state eq "rewrite"){
 		$line = <STDIN>;
+		$buffer .= $line;
+		$line =~ s/[\000-\037]\[(\d|;)+m//g;
+		#print "$line\n";
 		if ($line =~ m/^result NeBag:/){
 			$state = "success";
 			#printf "SUCCESS\n";
@@ -19,19 +26,23 @@ while (my $line = <STDIN>) {
 			printf "FAILURE\n";
 		}
 	} elsif ($state eq "success"){
-		if ($line =~ m/< input > <\/ input >/){
-		} elsif ($line =~ m/< output > "String" (.*)\(\.List{K}\) <\/ output >/){
-			my $output = $1;
+		if ($line =~ m/< (input|\(input\)\.CellLabel) > .* <\/ \1 >/){
+			$reduced = 1;
+		} elsif ($line =~ m/< (output|\(output\)\.CellLabel) > "String" (.*)\(\.List{K}\) <\/ \1 >/){
+			my $output = $2;
 			$output =~ s/\%/\%\%/g;
 			$output =~ s/\\\\/\\\\\\\\/g;
 			print `printf $output`;
-		} elsif ($line =~ m/< resultValue > \("tv"\)\.KResultLabel\("Rat" (-?\d+)\(\.List{K}\),,"Base-Type" int\(\.List{K}\)\) <\/ resultValue >/){
-			$retval = $1;
+		} elsif ($line =~ m/< (resultValue|\(resultValue\)\.CellLabel) > \("tv"\)\.KResultLabel\("Rat" (-?\d+)\(\.List{K}\),,"Base-Type" int\(\.List{K}\)\) <\/ \1 >/){
+			$retval = $2;
 		}
 	} 
 	
 	if ($state eq "failure"){
 		print "$line\n";
 	}
+}
+if ($reduced == 0) {
+	print "$buffer\n";
 }
 exit $retval;

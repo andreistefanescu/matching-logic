@@ -4,7 +4,7 @@ GCC_OPTIONS="-nostdlib -nodefaultlibs"
 K_MAUDE_BASE=`readlink -f ~/k-framework/trunk`
 K_PROGRAM_COMPILE="$K_MAUDE_BASE/tools/kcompile-program.sh"
 myDirectory=`dirname $0`
-set -e
+set -o nounset
 
 dflag=
 nowarn=0
@@ -35,12 +35,12 @@ if [ ! -e $directoryname$filename.c ]; then
 fi
 
 perl $myDirectory/embed.pl -d=ML -o=$filename.prepre.gen $directoryname$filename.c
-if [ ! $? -eq 0 ]; then 
+if [ "$?" -ne 0 ]; then 
 	echo "Error"
 	exit 1
 fi
 gcc $PEDANTRY_OPTIONS $GCC_OPTIONS -E -I. -I$myDirectory $filename.prepre.gen $myDirectory/clib.h > $filename.pre.gen 2> $filename.warnings.log
-if [ ! $? -eq 0 ]; then 
+if [ "$?" -ne 0 ]; then 
 	echo "Error running gcc"
 	exit 1
 fi
@@ -52,7 +52,7 @@ if [ ! "$dflag" ]; then
 	rm -f $filename.prepre.gen
 fi
 $myDirectory/cparser $CIL_FLAGS --out $filename.gen.maude.tmp $filename.pre.gen 2> $filename.warnings.log
-if [ ! $? -eq 0 ]; then 
+if [ "$?" -ne 0 ]; then 
 	echo "Error running cil"
 	exit 1
 fi
@@ -78,7 +78,7 @@ fi
 echo -e "endm\n" >> program-$filename-gen.maude
 
 $K_PROGRAM_COMPILE program-$filename-gen.maude C C-PROGRAM program-$filename >> compilation.log
-if [ ! $? -eq 0 ]; then 
+if [ "$?" -ne 0 ]; then 
 	echo "Error compiling program"
 	exit 1
 fi
