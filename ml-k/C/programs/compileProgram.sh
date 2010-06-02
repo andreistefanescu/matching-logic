@@ -36,12 +36,13 @@ fi
 
 perl $myDirectory/embed.pl -d=ML -o=$filename.prepre.gen $directoryname$filename.c
 if [ "$?" -ne 0 ]; then 
-	echo "Error"
+	echo "Error generating ML annotations."
 	exit 1
 fi
 gcc $PEDANTRY_OPTIONS $GCC_OPTIONS -E -I. -I$myDirectory $filename.prepre.gen $myDirectory/clib.h > $filename.pre.gen 2> $filename.warnings.log
 if [ "$?" -ne 0 ]; then 
-	echo "Error running gcc"
+	echo "Error running preprocessor:"
+	cat $filename.warnings.log >&2
 	exit 1
 fi
 if [ ! "$nowarn" ]; then
