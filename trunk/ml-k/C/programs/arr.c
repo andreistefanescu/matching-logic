@@ -93,11 +93,11 @@ int main(void){
 	//int pointArrPlus3 = (int)(*(pointArr + 3)) ;
 	//debug(0);
 	if ((*(pointArr + 3)).x != 7) {
-		printf("(*(pointArr + 3)).x != 7\n");
+		printf("(*(pointArr + 3)).x != 7, == %d\n", (*(pointArr + 3)).x);
 		//printf("(*(pointArr + 3)).x == %d\n", (*(pointArr + 3)).x);
 	} else OK
 	if ((*(pointArr + 3)).y != 8) {
-		printf("(*(pointArr + 3)).y != 8\n");
+		printf("(*(pointArr + 3)).y != 8, == %d\n", (*(pointArr + 3)).y);
 		//printf("(*(pointArr + 3)).y == %d\n", (*(pointArr + 3)).y);
 	} else OK
 	if (*((int*)(&(*(pointArr + 3)))) != 7) {

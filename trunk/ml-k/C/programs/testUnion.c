@@ -53,7 +53,8 @@ int main(void){
 	esses[1].u.s_floats[1] = -3.14159265;
 	esses[2].s_type = 2;
 	esses[2].u.s_double = 3.14159265358979 / 2.0;
-	
+	struct S newStruct = esses[1];
+
 	for (int i = 0; i < numEsses; i++){
 		do_something(&esses[i]);
 	}
