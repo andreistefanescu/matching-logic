@@ -11,3 +11,4 @@ void debug(int i);
 void srand (unsigned int seed);
 int rand (void);
 void abort( void );
+int atoi ( const char * str );
