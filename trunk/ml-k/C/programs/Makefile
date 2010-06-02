@@ -70,4 +70,4 @@ compare-%.pass: output-%.gcc retval-%.gcc output-%.kcc retval-%.kcc
 	@touch compare-$*.pass
 		
 clean:
-	rm -f *.gcc *.kcc *.tmp compare-*.pass information.log compilation.log *-gen.maude *.pre.gen *.prepre.gen *.gen.maude a.out kcompile_* program-*-compiled.maude
+	rm -f *.gcc *.kcc *.tmp compare-*.pass information.log compilation.log *-gen.maude *.pre.gen *.prepre.gen *.gen.maude a.out kcompile_* program-*-compiled.maude *.o

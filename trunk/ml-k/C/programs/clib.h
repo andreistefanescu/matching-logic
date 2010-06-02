@@ -70,3 +70,19 @@ int atoi(const char *c) {
 		res = res * 10 + *c++ - '0';
 	return res;
 }
+
+// math.h
+int abs( int num ){
+	if (num >= 0) {
+		return num;
+	} else {
+		return -num;
+	}
+}
+double fabs( double num ){
+	if (num >= 0.0) {
+		return num;
+	} else {
+		return -num;
+	}
+}

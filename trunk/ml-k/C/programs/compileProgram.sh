@@ -78,9 +78,11 @@ if [ ! "$dflag" ]; then
 fi
 echo -e "endm\n" >> program-$filename-gen.maude
 
-$K_PROGRAM_COMPILE program-$filename-gen.maude C C-PROGRAM program-$filename >> compilation.log
+$K_PROGRAM_COMPILE program-$filename-gen.maude C C-PROGRAM program-$filename > compilation.log
 if [ "$?" -ne 0 ]; then 
 	echo "Error compiling program"
+	cat compilation.log
+	rm -f compilation.log
 	exit 1
 fi
 if [ ! "$dflag" ]; then
