@@ -1423,7 +1423,7 @@ mod COMMON-C-SEMANTICS is
 	mb context assign(?, [HOLE]) : KSentence .
 
 	op eval : Program -> Bag .
-	op eval : Program String -> Bag .
+	op eval : Program List{K} -> Bag .
 	
 	---eq eval(P:Program) = eval(P:Program, "") .
 	
