@@ -150,6 +150,7 @@ mod COMMON-SEMANTIC-SYNTAX is
 	op typeof : Expression -> K .
 	op writeToFD : Nat Nat -> K .
 	op writeToFD : Nat String -> K .
+	op readFromFD : Nat -> K .
 endm
 
 mod C-SETTINGS is
@@ -892,6 +893,14 @@ mod COMMON-C-STANDARD-LIBRARY is
 		< k > [Apply(builtin(putchar), tv(N:Nat, ?)) => writeToFD(1, N:Nat) ~> tv(N:Nat, int)] ...</ k >
 	: KSentence .
 	--------------------------------------------
+	mb [getchar-is-value]: rule
+		< k > [getchar => builtin(getchar)] ...</ k >
+	: KSentence .
+	--- fixme doesn't cast to int
+	mb [getchar]: rule
+		< k > [Apply(builtin(getchar), .List{Expression}) => readFromFD(0)] ...</ k >
+	: KSentence .
+	--------------------------------------------
 	mb [lib-printf-is-value]: rule
 		< k > [printf => builtin(printf)] ...</ k >
 	: KSentence .
@@ -1423,7 +1432,7 @@ mod COMMON-C-SEMANTICS is
 	mb context assign(?, [HOLE]) : KSentence .
 
 	op eval : Program -> Bag .
-	op eval : Program List{K} -> Bag .
+	op eval : Program List{K} String -> Bag .
 	
 	---eq eval(P:Program) = eval(P:Program, "") .
 	
@@ -2339,7 +2348,11 @@ and ll or LL
 		< openFiles >... FD:Nat |-> Filename:String ...</ openFiles >
 		< files >... Filename:String |-> [S:String => S:String +String S':String] ...</ files >
 		: KSentence .
-		
+	mb [readFromFD-char] : rule
+		< k > [readFromFD(FD:Nat) => tv(charToAscii(firstChar(S:String)), int)]  ...</ k >
+		< openFiles >... FD:Nat |-> Filename:String ...</ openFiles >
+		< files >... Filename:String |-> [S:String => butFirstChar(S:String)] ...</ files >
+		: KSentence .
 endm
 
 

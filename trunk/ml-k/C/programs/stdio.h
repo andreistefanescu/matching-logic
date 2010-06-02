@@ -17,5 +17,6 @@ typedef struct {
 // stdio.h
 #define EOF -1
 int putchar ( int character );
+int getchar ( void );
 int printf(const char *format, ...);
 int puts (const char * str);

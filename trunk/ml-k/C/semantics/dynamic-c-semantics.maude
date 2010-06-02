@@ -7,7 +7,7 @@ mod DYNAMIC-C-SEMANTICS is
 	eq incomingArguments(L:List{K}) = incomingArguments-aux(L:List{K}, 0) .
 	eq incomingArguments-aux((E:Expression,, L:List{K}), N:Nat) = ((incomingArgumentArray[N:Nat] := Cast(Pointer(char), E:Expression) ;) ~> incomingArguments-aux(L:List{K}, sNat(N:Nat))) .
 	eq incomingArguments-aux(.List{K}, N:Nat) = (incomingArgumentArray[N:Nat] := Cast(Pointer(char), NULL) ;) .
-	eq eval(P:Program, L:List{K}) = 
+	eq eval(P:Program, L:List{K}, Input:String) = 
 		< T >
 			< local >
 				< k > P:Program 
@@ -38,7 +38,7 @@ mod DYNAMIC-C-SEMANTICS is
 			</ openFiles >
 		</ T >
 		< files > 
-			"stdin" |-> ""
+			"stdin" |-> Input:String
 			"stdout" |-> ""
 		</ files >
 	.
