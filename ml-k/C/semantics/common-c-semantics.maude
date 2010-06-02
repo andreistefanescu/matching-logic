@@ -18,6 +18,7 @@
 --- 65, 26, 13
 --- 68, 22, 8
 --- 69, 21, 8
+--- 70, 18, 8
 
 
 
@@ -120,6 +121,7 @@ mod COMMON-SEMANTIC-SYNTAX is
 	op interpret : K Type -> K .
 	op allocate : K -> K [metadata "strict"] .
 	op tv : BaseValue Type -> Value .
+	op atv : List{K} Type -> Value .
 	op structVal : List{K} Type -> Value .
 	op unionVal : List{K} Type -> Value .
 	op addTypes : K K -> K .
@@ -678,7 +680,7 @@ mod TYPES is
 	) .
 	eq isArithBinOp(KL:KLabel) = if arithBinOps contains l(KL:KLabel)  then true else false fi .
 	
-	--- fixme
+	--- fixme should these promotions be done elsewhere?
 	mb rule
 		< k > L:KLabel([tv(V:BaseValue, T:Type) => promote(tv(V:BaseValue, T:Type))],, ?) ...</ k > 
 		if     isArithBinOp(L:KLabel)
@@ -860,7 +862,6 @@ mod COMMON-C-STANDARD-LIBRARY is
 		< k > [calloc => builtin(calloc)] ...</ k >
 	: KSentence .
 	
-	--- fixme ignoring size for now
 	mb [calloc]: rule
 		< k > ['Apply(builtin(calloc),, (tv(N:Nat, ?) .,. tv(Size:Nat, ?))) => tv(Loc:Nat, pointerType(void))] ...</ k >
 		< mem >... [.Map => Loc:Nat to (Loc:Nat +Nat (N:Nat *Nat Size:Nat)) |-> 0] ...</ mem >
@@ -998,7 +999,6 @@ mod COMMON-PARAMETER-BINDING is
 		: KSentence .
 	--- bind one
 	--- consider same variable name
-	--- fixme doesn't add all derived types from T:Type
 	mb rule
 		< k > [bind((tv(V:BaseValue, arrayType(T:Type, ?)),, L:List{KResult}), PD:List{K})
 			=> bind((tv(V:BaseValue, pointerType(T:Type)),, L:List{KResult}), PD:List{K})] ...</ k > : KSentence [metadata "structural"] .
@@ -1297,8 +1297,8 @@ mod COMMON-EXPRESSIONS is
 	=> cast(pointerType(void), '_-_(tv(I1:Int, cfg:sizeut),, tv(I2:Int, cfg:sizeut)))]
 		if hasIntegerType(T:Type)
 		: KSentence .
-	--- fixme need to use defined type
-	mb rule [tv(I1:Int, pointerType(T:Type)) - tv(I2:Int, pointerType(T:Type)) 
+
+	mb [pointer-difference]: rule [tv(I1:Int, pointerType(T:Type)) - tv(I2:Int, pointerType(T:Type)) 
 	=> tv(_-Int_(I1:Int, I2:Int), cfg:ptrdiffut)]
 		: KSentence .
 		
