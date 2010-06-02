@@ -2352,6 +2352,7 @@ and ll or LL
 		< k > [readFromFD(FD:Nat) => tv(charToAscii(firstChar(S:String)), int)]  ...</ k >
 		< openFiles >... FD:Nat |-> Filename:String ...</ openFiles >
 		< files >... Filename:String |-> [S:String => butFirstChar(S:String)] ...</ files >
+		if S:String =/=Bool ""
 		: KSentence .
 endm
 
