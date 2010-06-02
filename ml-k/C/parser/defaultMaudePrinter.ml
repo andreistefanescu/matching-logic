@@ -770,7 +770,7 @@ class virtual defaultMaudePrinterClass = object (self)
 		wrap (self#pExp () e) "Deref"
     | Mem e, o ->
         self#pOffset
-          (text "(*" ++ self#pExp () e ++ text ")") o
+          (text "Deref(" ++ self#pExp () e ++ text ")") o
 
   method private pFunDecl () f =
       self#pVDecl () f.svar
