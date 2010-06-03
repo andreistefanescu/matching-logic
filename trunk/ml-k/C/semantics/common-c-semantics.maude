@@ -357,7 +357,7 @@ mod COMMON-INCLUDE is
 	ceq hasIntegerType(T:Type) = true
 		if (integerTypes contains T:Type) .
 	eq hasIntegerType(enumType(?)) = true .
-	eq hasIntegerType(bitfieldType(?, ?)) = true .
+	---eq hasIntegerType(bitfieldType(?, ?)) = true .
 endm
 
 mod SIZEOF is
@@ -1420,6 +1420,8 @@ and ll or LL
 	op concretize-aux : Value Nat -> K .
 	ceq concretize(atv(L:List{K}, T:Type)) = concretize-aux(atv(L:List{K}, T:Type), 0) 
 		if hasIntegerType(T:Type) .
+	ceq concretize(atv(L:List{K}, bitfieldType(T:Type, ?))) = concretize-aux(atv(L:List{K}, T:Type), 0) 
+		if hasIntegerType(T:Type) .
 	eq concretize(atv((F:Float,, L:List{K}), float)) = tv(F:Float, float) .
 	eq concretize(atv((F:Float,, L:List{K}), double)) = tv(F:Float, double) .
 	--- fixme for now
@@ -1557,7 +1559,13 @@ and ll or LL
 	mb rule
 		< k > [putInMem(pair(Base:Nat, Offset:Nat), tv(N:Int, T:Type), T:Type, tv(sNat(Len:Nat), J:Type)) 
 		=> putBitInMem(pair(Base:Nat, Offset:Nat), ((N:Int %Int 2) +Int 2) %Int 2) ~> putInMem(pair(Base:Nat, sNat(Offset:Nat)), tv(N:Int >>Int 1, T:Type), T:Type, tv(Len:Nat, J:Type))] ...</ k >
-		if Offset:Nat % 8 =/=Bool 0
+		if (Offset:Nat <Nat 8)
+		---andBool Len:Nat =/=Bool 15
+		: KSentence [metadata "structural"] .
+	mb rule
+		< k > [putInMem(pair(Base:Nat, 8), tv(N:Int, T:Type), T:Type, tv(sNat(Len:Nat), J:Type)) 
+		=> putInMem(pair(sNat(Base:Nat), 0), tv(N:Int, T:Type), T:Type, tv(sNat(Len:Nat), J:Type))] ...</ k >
+		---andBool Len:Nat =/=Bool 15
 		: KSentence [metadata "structural"] .
 		
 	mb rule
