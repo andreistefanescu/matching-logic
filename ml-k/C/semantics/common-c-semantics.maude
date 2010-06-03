@@ -870,6 +870,13 @@ mod COMMON-C-STANDARD-LIBRARY is
 		< k > [Apply(builtin(cos), tv(F:Float, double)) => tv(cosFloat(F:Float), double)] ...</ k >
 	: KSentence .
 	--------------------------------------------
+	mb [sin-is-value]: rule
+		< k > [sin => builtin(sin)] ...</ k >
+	: KSentence .
+	mb [sqrt]: rule
+		< k > [Apply(builtin(sin), tv(F:Float, double)) => tv(sinFloat(F:Float), double)] ...</ k >
+	: KSentence .
+	--------------------------------------------
 	mb [malloc-is-value]: rule
 		< k > [malloc => builtin(malloc)] ...</ k >
 	: KSentence .
