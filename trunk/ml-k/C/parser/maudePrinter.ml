@@ -56,8 +56,6 @@ let wrapifne (d1:Pretty.doc) (d2:string) =
 
 let replace input output =
     Str.global_replace (Str.regexp_string input) output
-let noscores s = 
-	(replace "_" "u" s)
 (* val replace : string -> string -> string -> string = <fun> *)
 
 
@@ -79,8 +77,8 @@ class maudePrinter = object(self)
 	method pFieldDecl () (f:fieldinfo) = wrap (super#pFieldDecl () f) "Field"
 	
     (** Print initializers. This can be slow and is used by {!Cil.printGlobal} *)
-	(*method pInit () (i:init) = wrap (super#pInit () i) "Initializer"*)
-	method pInit () (i:init) = (super#pInit () i)
+	method pInit () (i:init) = wrap (super#pInit () i) "Initializer"
+	
     (** Invoked on each instruction occurrence. *)
 	(* method pInstr () (i:instr) = wrap (super#pInstr () i) "Instruction" *)
 
@@ -105,7 +103,7 @@ class maudePrinter = object(self)
 		* visit it.  *)
 	
 	(*method pType (d:Pretty.doc option) () (t:typ) = wrap (super#pType d () t) "Type"*)
-	method pType (d:Pretty.doc option) () (t:typ) = text (noscores (sprint 1000 (super#pType d () t)))
+	method pType (d:Pretty.doc option) () (t:typ) = text (replace "_" "u" (sprint 1000 (super#pType d () t)))
 	(*method pType (d:Pretty.doc option) () (t:typ) = paren (super#pType d () t) *)
 	 (*method pType (d:Pretty.doc option) () (t:typ) = 
 		(* wrap (super#pType d () t) "Type" *)
@@ -122,11 +120,11 @@ class maudePrinter = object(self)
 	
 	(** Invoked on each variable use. *)
 	(* method pVar (v:varinfo) = (super#pVar v) *)
-	method pVar (v:varinfo) = text (noscores (sprint 1000 (super#pVar v)))
+	method pVar (v:varinfo) = text (replace "_" "u" (sprint 1000 (super#pVar v)))
 
 	(** Global (vars, types, etc.). This can be slow and is used only by 
      * {!Cil.printGlobal} but not by {!Cil.dumpGlobal}. *)
-	method pGlobal () (g:global) = wrap (super#pGlobal () g) "Global"
+	method pGlobal () (g:global) = wrap (text (replace "_" "u" (sprint 1000 (super#pGlobal () g)))) "Global"
    
 (*
   
