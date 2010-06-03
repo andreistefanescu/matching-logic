@@ -55,6 +55,7 @@ fi
 $myDirectory/cparser $CIL_FLAGS --out $filename.gen.maude.tmp $filename.pre.gen 2> $filename.warnings.log
 if [ "$?" -ne 0 ]; then 
 	echo "Error running cil"
+	cat $filename.warnings.log
 	exit 1
 fi
 if [ ! "$nowarn" ]; then
