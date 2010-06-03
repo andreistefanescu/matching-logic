@@ -51,11 +51,11 @@ work-run-%: work-compile-%.kcc
 	@DEBUG=1 ./work-compile-$*.kcc 
 
 test-%.kcc: %.c $(KCC) $(PARSER)
-	@echo "Running kcc..." >> information.log
+	@echo "Compiling $@..."
 	@$(KCC) -o $@ $<
 	
 test-%.gcc: %.c
-	@echo "Running gcc..." >> information.log
+	@echo "Compiling $@..."
 	@$(GCC) -o $@ $< 2>> information.log
 	
 output-% retval-%: test-%
