@@ -1,5 +1,6 @@
 #include <stdio.h>
-
+#include <stdint.h>
+#include <stdlib.h>
 struct bfs {
 	unsigned int a0 : 1;
 	unsigned int a1 : 1;
@@ -25,9 +26,9 @@ struct bfs {
 	unsigned int j;
 };
 struct bfs s;
+struct bfs* p = &s;
 
 int testOnes(void){
-	struct bfs* p = &s;
 	s.a0 = 0;
 	s.a1 = 0;
 	s.a2 = 0;
@@ -94,11 +95,16 @@ int testOnes(void){
 	if (p->a5 != 1){ puts("BUG: a4"); }
 	if (p->a6 != 1){ puts("BUG: a4"); }
 	if (p->a7 != 1){ puts("BUG: a4"); }
+	p->a5 = 0;
+	p->a7 = 0;
+	p->a6 = (unsigned int)15;
+	if (p->a5 != 0){ puts("BUG: a5"); }
+	if (p->a6 != 1){ puts("BUG: a5"); }
+	if (p->a7 != 0){ puts("BUG: a5"); }
 	return 0;
 }
 
 int testTwos(){
-	struct bfs* p = &s;
 	s.b0 = 0;
 	s.b1 = 0;
 	s.b2 = 0;
@@ -151,10 +157,56 @@ int testTwos(){
 	} else {
 		printf("BUG: b5: %d\n", firstChar);
 	}
+	p->b2 = 3;
+	if (p->b1 != 2){ puts("BUG: b5"); }
+	if (p->b2 != 3){ puts("BUG: b5"); }
+	if (p->b3 != 1){ puts("BUG: b5"); }
+	return 0;
+}
+
+int testEights(void){
+	s.d = 183;
+	if (s.d != 183){ puts("BUG: d0"); }
+	s.d = 75;
+	if (s.d != 75){ puts("BUG: d1"); }
+
+	unsigned char firstChar = (char)*(((char*)&(s))+3);
+	if (firstChar == 75){
+		puts("byte interp OK");
+	} else {
+		printf("BUG: d2: %d\n", firstChar);
+	}
+	p->d = 112;
+	if (p->d != 112){ puts("BUG: d2"); }
+	return 0;
+}
+
+int testSixteens(void){
+	// 70 FB
+	// 75 FB
+	//char* v = ((char*)&(s)) + 4;
+	s.e = (unsigned int)30203;
+	//unsigned int hmm = s.e;
+	//debug(v);
+	if (s.e != (unsigned int)30203){ puts("BUG: e0"); }
+	s.e = (unsigned int)23213;
+	if (s.e != (unsigned int)23213){ puts("BUG: e1"); }
+
+	uint16_t firstChar = (uint16_t)*((uint16_t*)(((char*)&(s))+4));
+	if (firstChar == 23213){
+		puts("short interp OK");
+	} else {
+		printf("BUG: e2: %d\n", firstChar);
+	}
+	p->e = 11606;
+	if (p->e != 11606){ puts("BUG: e2"); }
+	return 0;
 }
 
 int main(void){
 	testOnes();
 	testTwos();
+	testEights();
+	testSixteens();
 	return 0;
 }
