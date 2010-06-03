@@ -1,8 +1,4 @@
 #!/usr/bin/env bash
-# cookbook filename: getopts_example
-#
-## using getopts
-#
 set -o errexit
 set -o nounset
 dumpFlag=
