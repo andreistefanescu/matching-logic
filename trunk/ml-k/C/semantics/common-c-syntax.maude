@@ -444,7 +444,7 @@ mod COMMON-C-SYNTAX is
 	subsort TogetherList < Type-Name .
 	---op __ : Specifier-Qualifier-List Declarator -> Type-Name [ditto] .
 	sort TogetherList .
-	op __ : TogetherList TogetherList -> TogetherList [prec 85 assoc] .
+	op __ : TogetherList TogetherList -> TogetherList [prec 85] .
 	subsort Declarator < TogetherList .
 	--- --- TODO op __ : Specifier-Qualifier-List Abstract-Declarator -> Type-Name .
 	
@@ -574,7 +574,7 @@ mod COMMON-C-SYNTAX is
 	subsort External-Declaration < SeqList .
 
 	subsort Function-Definition < External-Declaration .
-	op Global : Block-Item -> External-Declaration .
+	op Global : SeqList -> External-Declaration .
 	op Global`(`) : -> External-Declaration .
 	---subsort Block-Item < External-Declaration . --- SOOO WRONG, but parsing is dumb
 	---subsort Function-Definition < External-Declaration .
