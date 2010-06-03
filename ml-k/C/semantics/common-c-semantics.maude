@@ -77,6 +77,7 @@ mod COMMON-SEMANTIC-SYNTAX is
 	including INCOMING-MODULES .
 	op List : BagItem -> ListItem .
 	op unknown : -> Nat [ctor] .
+	op unknownF : -> Float [ctor] .
 	---op unknown : -> Nat .
 	---eq unknown = 0 .
 	op skipval : -> KResult .
@@ -320,6 +321,20 @@ mod COMMON-INCLUDE is
 	--- fixme can do a much better job than this
 	eq ? &Nat unknown = unknown .
 	eq ? |Nat unknown = unknown .
+	eq ? *Float unknownF = unknownF .
+	eq unknownF *Float ? = unknownF .
+	eq ? +Float unknownF = unknownF .
+	eq unknownF +Float ? = unknownF .
+	eq float2ratConversion(unknownF) = unknown .
+	eq _-Float_(?, unknownF) = unknownF .
+	eq _-Float_(unknownF, ?) = unknownF .
+	eq _/Float_(?, unknownF) = unknownF .
+	eq _/Float_(unknownF, ?) = unknownF .
+	eq -Float(unknownF) = unknownF .
+	eq expFloat(unknownF) = unknownF .
+	eq logFloat(unknownF) = unknownF .
+	ceq logFloat(F:Float) = unknownF 
+		if F:Float <Float 0.0 .
 	
 	mb [firstChar]: rule
 		[firstChar(S:String) => substrString(S:String, 0, 1)]
@@ -825,6 +840,20 @@ mod COMMON-C-STANDARD-LIBRARY is
 	: KSentence .
 	mb [sqrt]: rule
 		< k > [Apply(builtin(sqrt), tv(F:Float, double)) => tv(sqrtFloat(F:Float), double)] ...</ k >
+	: KSentence .
+	--------------------------------------------
+	mb [log-is-value]: rule
+		< k > [log => builtin(log)] ...</ k >
+	: KSentence .
+	mb [sqrt]: rule
+		< k > [Apply(builtin(log), tv(F:Float, double)) => tv(logFloat(F:Float), double)] ...</ k >
+	: KSentence .
+	--------------------------------------------
+	mb [exp-is-value]: rule
+		< k > [exp => builtin(exp)] ...</ k >
+	: KSentence .
+	mb [sqrt]: rule
+		< k > [Apply(builtin(exp), tv(F:Float, double)) => tv(expFloat(F:Float), double)] ...</ k >
 	: KSentence .
 	--------------------------------------------
 	mb [cos-is-value]: rule

@@ -35,6 +35,8 @@ mod COMMON-C-SYNTAX is
 	op abort : -> Id [ctor] .
 	op debug : -> Id [ctor] .
 	op getchar : -> Id [ctor] .
+	op exp : -> Id [ctor] .
+	op log : -> Id [ctor] .
 	
 	--- ---- A.1.5 Constants
 	--- --- 6.4.4

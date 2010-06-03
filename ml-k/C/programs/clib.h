@@ -1,5 +1,6 @@
 #define NULL 0
 typedef unsigned long int size_t;
+
 // nice pd implementations at http://en.wikibooks.org/wiki/C_Programming/Strings
 char *strcpy(char *dest, const char *src)
 {
@@ -85,4 +86,17 @@ double fabs( double num ){
 	} else {
 		return -num;
 	}
+}
+#include <math.h>
+double pow(double x, double y){
+	if (x < 0){
+		if (y/1.00 == (int)y){
+			if ((int)y % 2){
+				return -exp(y*log(-x));
+			} else {
+				return exp(y*log(-x));
+			}
+		}
+	}
+	return exp(y*log(x));
 }
