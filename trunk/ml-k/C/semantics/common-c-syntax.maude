@@ -24,6 +24,7 @@ mod COMMON-C-SYNTAX is
 	op NULL : -> Id [ctor] .
 	op calloc : -> Id [ctor] .
 	op cos : -> Id [ctor] .
+	op sin : -> Id [ctor] .
 	op exit : -> Id [ctor] .
 	op free : -> Id [ctor] .
 	op main : -> Id [ctor] .
