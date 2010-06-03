@@ -78,6 +78,12 @@ let mostNeg64BitInt : int64 = (Int64.of_string "-0x8000000000000000")
 
 let toString d = (sprint 1000 d)
 
+let rec parenRight f xs = 
+	match xs with
+		| x::xs -> paren(paren(f x) ++ (parenRight f xs))
+		| [] -> nil
+
+
 let d_ikind () = function
     IChar -> text "char"
   | ISChar -> text "signed-char"
@@ -356,7 +362,7 @@ class virtual defaultMaudePrinterClass = object (self)
           ++ name)
           
     | TEnum (enum, a) -> 
-        text ("(enum(" ^ enum.ename ^ ")) ")
+        text ("(enum(" ^ (noscores enum.ename) ^ ")) ")
           ++ self#pAttrs () a 
 		  ++ (if needsNoComma then (nil) else (text ", "))
           ++ name
@@ -683,67 +689,31 @@ class virtual defaultMaudePrinterClass = object (self)
 	
   (* The pBlock will put the unalign itself *)
   method pBlock () (blk: block) = 
-    let rec dofirst () = function
+    (*let rec dofirst () = function
         [] -> nil
-      | [x] -> self#pStmtNext invalidStmt () x
-      | x :: rest -> dorest nil x rest
+      | [x] -> paren(self#pStmtNext invalidStmt () x)
+      | x :: rest -> paren(dorest nil x rest)
     and dorest acc prev = function
-        [] -> acc ++ (self#pStmtNext invalidStmt () prev)
+        [] -> paren(acc ++ paren(self#pStmtNext invalidStmt () prev))
       | x :: rest -> 
-          dorest (acc ++ (self#pStmtNext x () prev) ++ line)
-            x rest
-    in
+          paren(dorest (acc ++ paren(self#pStmtNext x () prev) ++ line)
+            x rest)
+    in*)
     (* Let the host of the block decide on the alignment. The d_block will 
      * pop the alignment as well  *)
-      (if blk.battrs <> [] then 
-        self#pAttrsGen true blk.battrs
-      else nil)
-      ++ line
-      ++ (dofirst () blk.bstmts)
-      ++ unalign ++ line
-	  
+		(if blk.battrs <> [] then 
+			self#pAttrsGen true blk.battrs
+		else nil)
+		++ (parenRight (fun x -> self#pStmtNext x () x) blk.bstmts )
+		++ unalign ++ line
+
   method private pAttrsGen (block: bool) (a: attributes) = 
 	text " "
-    (* Scan all the attributes and separate those that must be printed inside 
-     * the __attribute__ list *)
-    (*let rec loop (in__attr__: doc list) = function
-        [] -> begin 
-          match in__attr__ with
-            [] -> nil
-          | _ :: _->
-              (* sm: added 'forgcc' calls to not comment things out
-               * if CIL is the consumer; this is to address a case
-               * Daniel ran into where blockattribute(nobox) was being
-               * dropped by the merger
-               *)
-              (if block then 
-                text (" " ^ (forgcc "/*") ^ " __blockattribute__(")
-               else
-                 text "__attribute__((")
-
-                ++ (docList ~sep:(chr ',' ++ break)
-                      (fun a -> a)) () in__attr__
-                ++ text ")"
-                ++ (if block then text (forgcc "*/") else text ")")
-        end
-      | x :: rest -> 
-          let dx, ina = self#pAttr x in
-          if ina then 
-            loop (dx :: in__attr__) rest
-          else if dx = nil then
-            loop in__attr__ rest
-          else
-            dx ++ text " " ++ loop in__attr__ rest
-    in
-    let res = loop [] a in
-    if res = nil then
-      res
-    else
-      text " " ++ res ++ text " "*)
 	  
   method private pStmtNext (next: stmt) () (s: stmt) =
     (* print the labels *)
-    ((docList ~sep:line (fun l -> self#pLabel () l)) () s.labels)
+    (*((docList ~sep:line (fun l -> self#pLabel () l)) () s.labels)*)
+	(parenRight (self#pLabel ()) s.labels)
       (* print the statement itself. If the labels are non-empty and the
       * statement is empty, print a semicolon  *)
       ++ 
@@ -751,7 +721,7 @@ class virtual defaultMaudePrinterClass = object (self)
         text "EmptyStatement ;"
       else
         (if s.labels <> [] then line else nil) 
-          ++ self#pStmtKind next () s.skind)
+          ++ paren(self#pStmtKind next () s.skind))
 		  
 	method private pLabel () = function
       Label (s, _, true) -> text (noscores s ^ " : ")
@@ -773,14 +743,14 @@ class virtual defaultMaudePrinterClass = object (self)
           (text "Deref(" ++ self#pExp () e ++ text ")") o
 
   method private pFunDecl () f =
-      self#pVDecl () f.svar
+      paren(self#pVDecl () f.svar
       ++  line
       ++ text "{ "
       ++ (align
             (* locals. *)
             (* ++ (docList ~sep:line (fun vi -> self#pVDecl () vi ++ text ";") *)
-			++ (docList ~sep:line (fun vi -> self#pVDecl () vi) 
-                  () f.slocals)
+			++ (*(docList ~sep:line (fun vi -> self#pVDecl () vi) () f.slocals)*)
+				(parenRight (self#pVDecl ()) f.slocals)
             ++ line ++ line
             (* the body *)
             ++ ((* remember the declaration *) currentFormals <- f.sformals; 
@@ -788,7 +758,7 @@ class virtual defaultMaudePrinterClass = object (self)
                 currentFormals <- [];
                 body))
       ++ line
-      ++ text "}"	
+      ++ text "}")
 
   (*** GLOBALS ***)
   method pGlobal () (g:global) : doc =       (* global (vars, types, etc.) *)
@@ -819,11 +789,11 @@ class virtual defaultMaudePrinterClass = object (self)
 
     | GEnumTag (enum, l) ->
         self#pLineDirective l ++
-          text "enum(" ++ align ++ text (" " ^ enum.ename) ++
+          text "enum(" ++ align ++ text (" " ^ (noscores enum.ename)) ++
           text ", " ++ line
           ++ (docList ~sep:(text ".,." ++ line)
                 (fun (n,i, loc) -> 
-                  paren (text (n ^ " := ") 
+                  paren (text ((noscores n) ^ " := ") 
                     ++ self#pExp () i))
                 () enum.eitems)
           ++ unalign ++ line ++ text ") " 
@@ -831,7 +801,7 @@ class virtual defaultMaudePrinterClass = object (self)
 
     | GEnumTagDecl (enum, l) -> (* This is a declaration of a tag *)
         self#pLineDirective l ++
-          text ("enum(" ^ enum.ename ^ ")\n")
+          text ("enum(" ^ (noscores enum.ename) ^ ")\n")
 
     | GCompTag (comp, l) -> (* This is a definition of a tag *)
         let n = noscores comp.cname in
@@ -844,8 +814,9 @@ class virtual defaultMaudePrinterClass = object (self)
           text su1 ++ (align ++ text su2 ++ paren ((self#pAttrs () sto_mod)
                          ++ text n ++ text ", "
                          ++ text " (" ++ line
-                         ++ ((docList ~sep:line ((self#pFieldDecl ()) )) () 
-                               comp.cfields))
+                         ++ (*((docList ~sep:line ((self#pFieldDecl ()) )) () comp.cfields)*)
+							(parenRight (self#pFieldDecl ()) comp.cfields)
+						 )
                          ++ unalign)
           ++ line ++ text ")" ++
           (self#pAttrs () rest_attr) ++ text ";\n"
@@ -1043,9 +1014,8 @@ class virtual defaultMaudePrinterClass = object (self)
           ++ text "continue ;"
 
     | Instr il ->
-        align
-          ++ (docList ~sep:line (fun i -> self#pInstr () i) () il)
-          ++ unalign
+          (* (docList ~sep:line (fun i -> paren(self#pInstr () i)) () il) *)
+			(parenRight (self#pInstr ()) il)
 
     | If(be,t,{bstmts=[];battrs=[]},l) when not !printCilAsIs ->
         self#pLineDirective l
@@ -1166,7 +1136,7 @@ class virtual defaultMaudePrinterClass = object (self)
 	   
   method pInit () =	
 	(*(print_string ("asdf");*)
-  function 
+  (*function 
       SingleInit e -> self#pExp () e
     | CompoundInit (t, initl) -> 
       (* We do not print the type of the Compound *)
@@ -1184,7 +1154,38 @@ class virtual defaultMaudePrinterClass = object (self)
         text "InitList(" ++ (align 
                       ++ ((docList ~sep:(text ".,." ++ break) d_oneInit) () initl) 
                       ++ unalign)
-          ++ chr ')'
+          ++ chr ')'*)
+		function SingleInit e -> self#pExp () e
+    | CompoundInit (t, initl) -> 
+         let printDesignator = 
+          if not !msvcMode then begin
+            (* Print only for union when we do not initialize the first field *)
+            match unrollType t, initl with
+              TComp(ci, _), [(Field(f, NoOffset), _)] -> 
+                if not (ci.cstruct) && ci.cfields != [] && 
+                  (List.hd ci.cfields) != f then
+                  true
+                else
+                  false
+            | _ -> false
+          end else 
+            false 
+        in
+        let d_oneInit = function
+            Field(f, NoOffset), i -> 
+              (if printDesignator then 
+                text ("." ^ f.fname ^ " = ") 
+              else nil) ++ self#pInit () i
+          | Index(e, NoOffset), i -> 
+              (if printDesignator then 
+                text "[" ++ self#pExp () e ++ text "] = " else nil) ++ 
+                self#pInit () i
+          | _ -> E.s (unimp "Trying to print malformed initializer")
+        in
+        chr '{' ++ (align 
+                      ++ ((docList ~sep:(text " .,. " ++ break) d_oneInit) () initl) 
+                      ++ unalign)
+          ++ chr '}'
 		  
  (* dump initializers to a file. *)
   method dInit (out: out_channel) (ind: int) (i: init) = 
