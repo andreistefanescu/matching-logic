@@ -8,15 +8,16 @@ struct list_el {
 
 typedef struct list_el item;
 
-item* listReverseUnchecked(item* p);
 item* listReverse(item* p);
 item* listAppend(item* p, int n);
-int listSum(item* p);
 
 item* listAppend(item* p, int n){
 	item* x;
-
-    if (p != NULL) {
+	if (p == NULL){
+		p = (item*)malloc(sizeof(item));
+		p->val = n;
+		p->next = NULL;	
+	} else {
         x = p;
         while (x->next != NULL) {
             x = x->next;
@@ -27,20 +28,6 @@ item* listAppend(item* p, int n){
 		next->next = NULL;
     }
 	return p;
-}
-
-int listSum(item* p){
-	int sum = 0;
-	item* x;
-    if (p != NULL) {
-        x = p;
-		sum += x->val;
-        while (x->next != NULL) {
-            x = x->next;
-			sum += x->val;
-        }		
-	}
-	return sum;
 }
 
 item* listReverse(item* p){
@@ -58,10 +45,7 @@ item* listReverse(item* p){
 }
 
 int main(void){
-	item* head = (item*)malloc(sizeof(item));
-	head->val = 20; 
-	head->next = NULL;
-	
+	item* head = listAppend(NULL, 20);
 	listAppend(head, 25);
 	listAppend(head, 15);
 	listAppend(head, 30);
@@ -75,7 +59,6 @@ int main(void){
 	}
 	printf("\n");
 	
-	int sum1 = listSum(head);
 	int first = head->val;
 	head = listReverse(head);
 	curr = head;
@@ -84,7 +67,6 @@ int main(void){
 		curr = curr->next;
 	}
 	printf("\n");	
-	int last = head->val;
-	int sum2 = listSum(head);
-	return (sum1 - sum2) + (last - first); // should be 15
+	
+	return 0;
 }
