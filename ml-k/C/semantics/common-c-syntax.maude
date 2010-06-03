@@ -37,6 +37,7 @@ mod COMMON-C-SYNTAX is
 	op getchar : -> Id [ctor] .
 	op exp : -> Id [ctor] .
 	op log : -> Id [ctor] .
+	op atan : -> Id [ctor] .
 	
 	--- ---- A.1.5 Constants
 	--- --- 6.4.4

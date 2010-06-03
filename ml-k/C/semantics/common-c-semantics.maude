@@ -856,6 +856,13 @@ mod COMMON-C-STANDARD-LIBRARY is
 		< k > [Apply(builtin(exp), tv(F:Float, double)) => tv(expFloat(F:Float), double)] ...</ k >
 	: KSentence .
 	--------------------------------------------
+	mb [atan-is-value]: rule
+		< k > [atan => builtin(atan)] ...</ k >
+	: KSentence .
+	mb [sqrt]: rule
+		< k > [Apply(builtin(atan), tv(F:Float, double)) => tv(atanFloat(F:Float), double)] ...</ k >
+	: KSentence .
+	--------------------------------------------
 	mb [cos-is-value]: rule
 		< k > [cos => builtin(cos)] ...</ k >
 	: KSentence .

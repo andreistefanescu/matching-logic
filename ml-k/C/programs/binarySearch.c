@@ -73,9 +73,9 @@ int main(void) {
 
     for(i=0; i<10; i++) {
         int present_val = a[rand() % num_elements];
-		printf("VOLATILE looking for %d, ", present_val);
+		//printf("VOLATILE looking for %d, ", present_val);
         int found_at = binary_search(a, 0, num_elements - 1, present_val);
-		printf("VOLATILE found %d\n", a[found_at]);
+		//printf("VOLATILE found %d\n", a[found_at]);
 		if (present_val == a[found_at]){
 			printf("present_val == a[found_at]\n");
 		} else {
