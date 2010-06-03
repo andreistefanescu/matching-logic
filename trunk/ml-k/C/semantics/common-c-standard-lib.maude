@@ -1,0 +1,245 @@
+------------------------------------------------
+---- C standard library
+mod COMMON-C-STANDARD-LIBRARY is
+	including COMMON-INCLUDE .
+	
+	op builtin : Id -> Value .
+	
+	mb [debug-is-value]: rule
+		< k > [debug => builtin(debug)] ...</ k >
+	: KSentence .
+	mb [debug]: rule
+		< k > [Apply(builtin(debug), .List{Expression}) => skipval] ...</ k >
+	: KSentence .
+	
+	--------------------------------------------
+	mb [exit-is-value]: rule
+		< k > [exit => builtin(exit)] ...</ k >
+	: KSentence .
+	mb [exit]: rule
+		< k > [Apply(builtin(exit), tv(I:Int, int)) ~> ? => tv(I:Int, int)] </ k >
+	: KSentence .
+	--------------------------------------------
+	mb [abort-is-value]: rule
+		< k > [abort => builtin(abort)] ...</ k >
+	: KSentence .
+	mb [abort]: rule
+		< k > [Apply(builtin(abort), .List{Expression}) ~> ? => tv(134, int)] </ k >
+	: KSentence .
+	--------------------------------------------
+	mb [sqrt-is-value]: rule
+		< k > [sqrt => builtin(sqrt)] ...</ k >
+	: KSentence .
+	mb [sqrt]: rule
+		< k > [Apply(builtin(sqrt), tv(F:Float, double)) => tv(sqrtFloat(F:Float), double)] ...</ k >
+	: KSentence .
+	--------------------------------------------
+	mb [log-is-value]: rule
+		< k > [log => builtin(log)] ...</ k >
+	: KSentence .
+	mb [sqrt]: rule
+		< k > [Apply(builtin(log), tv(F:Float, double)) => tv(logFloat(F:Float), double)] ...</ k >
+	: KSentence .
+	--------------------------------------------
+	mb [exp-is-value]: rule
+		< k > [exp => builtin(exp)] ...</ k >
+	: KSentence .
+	mb [sqrt]: rule
+		< k > [Apply(builtin(exp), tv(F:Float, double)) => tv(expFloat(F:Float), double)] ...</ k >
+	: KSentence .
+	--------------------------------------------
+	mb [atan-is-value]: rule
+		< k > [atan => builtin(atan)] ...</ k >
+	: KSentence .
+	mb [sqrt]: rule
+		< k > [Apply(builtin(atan), tv(F:Float, double)) => tv(atanFloat(F:Float), double)] ...</ k >
+	: KSentence .
+	--------------------------------------------
+	mb [cos-is-value]: rule
+		< k > [cos => builtin(cos)] ...</ k >
+	: KSentence .
+	mb [sqrt]: rule
+		< k > [Apply(builtin(cos), tv(F:Float, double)) => tv(cosFloat(F:Float), double)] ...</ k >
+	: KSentence .
+	--------------------------------------------
+	mb [sin-is-value]: rule
+		< k > [sin => builtin(sin)] ...</ k >
+	: KSentence .
+	mb [sqrt]: rule
+		< k > [Apply(builtin(sin), tv(F:Float, double)) => tv(sinFloat(F:Float), double)] ...</ k >
+	: KSentence .
+	--------------------------------------------
+	mb [malloc-is-value]: rule
+		< k > [malloc => builtin(malloc)] ...</ k >
+	: KSentence .
+	
+	mb [malloc]: rule
+		< k > [Apply(builtin(malloc), tv(N:Nat, ?)) => tv(Loc:Nat, pointerType(void))] ...</ k >
+		< mem >... [.Map => Loc:Nat to (Loc:Nat +Nat N:Nat) |-> piece(unknown, 8)] ...</ mem >
+		< malloced >... [.Map => Loc:Nat |-> N:Nat] ...</ malloced >
+		< nextLoc > [Loc:Nat => Loc:Nat +Nat N:Nat] </ nextLoc >
+	: KSentence .
+	--------------------------------------------
+	--- Returns a pseudo-random integral number in the range 0 to RAND_MAX.
+	
+	mb [rand-is-value]: rule
+		< k > [rand => builtin(rand)] ...</ k >
+	: KSentence .
+	--- unsignedIntegerTypes contains T:Type
+	--- (2 ^Nat absInt(numBits(int)))
+	--- fixme should use RAND_MAX
+	mb [rand]: rule
+		< k > [Apply(builtin(rand), .List{Expression}) => 
+		tv(absInt(randomRandom(Loc:Nat)) %Int max(int), int)
+		] ...</ k >
+		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
+	: KSentence .
+	--------------------------------------------
+	mb [free-is-value]: rule
+		< k > [free => builtin(free)] ...</ k >
+	: KSentence .
+	
+	mb [free]: rule
+		< k > [Apply(builtin(free), tv(Loc:Nat, pointerType(T:Type))) => Apply(builtin(free), tv(sNat(Loc:Nat), pointerType(T:Type)))] ...</ k >
+		< mem >...  [Loc:Nat |-> ? => .Map] ...</ mem >
+		< malloced >... [Loc:Nat |-> sNat(N:Nat) => sNat(Loc:Nat) |-> N:Nat] ...</ malloced >
+	: KSentence .
+	mb [free-done]: rule
+		< k > [Apply(builtin(free), tv(Loc:Nat, pointerType(T:Type))) => skipval] ...</ k >
+		< malloced >... [Loc:Nat |-> 0 => .Map] ...</ malloced >
+	: KSentence .
+	--------------------------------------------
+	mb [calloc-is-value]: rule
+		< k > [calloc => builtin(calloc)] ...</ k >
+	: KSentence .
+	
+	mb [calloc]: rule
+		< k > ['Apply(builtin(calloc),, (tv(N:Nat, ?) .,. tv(Size:Nat, ?))) => tv(Loc:Nat, pointerType(void))] ...</ k >
+		< mem >... [.Map => Loc:Nat to (Loc:Nat +Nat (N:Nat *Nat Size:Nat)) |-> piece(0, 8)] ...</ mem >
+		< malloced >... [.Map => Loc:Nat |-> N:Nat] ...</ malloced >
+		< nextLoc > [Loc:Nat => Loc:Nat +Nat (N:Nat *Nat Size:Nat)] </ nextLoc >
+	: KSentence .
+	--------------------------------------------
+	mb [putchar-is-value]: rule
+		< k > [putchar => builtin(putchar)] ...</ k >
+	: KSentence .
+	--- fixme doesn't cast to int
+	mb [putchar]: rule
+		< k > [Apply(builtin(putchar), tv(N:Nat, ?)) => writeToFD(1, N:Nat) ~> tv(N:Nat, int)] ...</ k >
+	: KSentence .
+	--------------------------------------------
+	mb [getchar-is-value]: rule
+		< k > [getchar => builtin(getchar)] ...</ k >
+	: KSentence .
+	--- fixme doesn't cast to int
+	mb [getchar]: rule
+		< k > [Apply(builtin(getchar), .List{Expression}) => readFromFD(0)] ...</ k >
+	: KSentence .
+	--------------------------------------------
+	mb [lib-printf-is-value]: rule
+		< k > [printf => builtin(printf)] ...</ k >
+	: KSentence .
+	
+	op printf-aux : Nat Nat List{Expression} -> K .
+	op printf-string : Nat Nat -> K .
+	op printf-% : Nat Nat List{Expression} -> K .
+	mb [lib-printf-start]: rule
+		< k > [Apply(builtin(printf), (tv(Loc:Nat, pointerType(?)) .,. L:List{Expression})) => printf-aux(0, Loc:Nat, L:List{Expression})] ...</ k >
+	: KSentence .
+	
+	mb [lib-printf-string]: rule
+		< k > [printf-string(Len:Nat, Loc:Nat) => writeToFD(1, N:Nat) ~> printf-string(sNat(Len:Nat), sNat(Loc:Nat))] ...</ k >
+		< mem >... Loc:Nat |-> piece(N:Nat, 8) ...</ mem >
+		if N:Nat =/=Bool 0
+	: KSentence .
+	mb [lib-printf-string-done]: rule
+		< k > [printf-string(Len:Nat, Loc:Nat) => tv(Len:Nat, int)] ...</ k >
+		< mem >... Loc:Nat |-> piece(0, 8) ...</ mem >
+	: KSentence .
+	
+	---fixme why do i have to have the 0--255 check?
+	mb [lib-printf-normal]: rule
+		< k > [printf-aux(Len:Nat, Loc:Nat, L:List{Expression}) => writeToFD(1, N:Nat) ~> printf-aux(sNat(Len:Nat), sNat(Loc:Nat), L:List{Expression})] ...</ k >
+		< mem >... Loc:Nat |-> piece(N:Nat, 8) ...</ mem >
+		if N:Nat =/=Bool asciiString("%") 
+		andBool N:Nat =/=Bool 0
+		andBool N:Nat >=Nat 0 
+		andBool N:Nat <=Nat 255
+	: KSentence .
+	mb [lib-printf-done]: rule
+		< k > [printf-aux(Len:Nat, Loc:Nat, L:List{Expression}) => tv(Len:Nat, int)] ...</ k >
+		< mem >... Loc:Nat |-> piece(0, 8) ...</ mem >
+	: KSentence .
+	mb [lib-printf-null]: rule
+		< k > [printf-aux(0, 0, .List{Expression}) => writeToFD(1, "(null)") ~> tv(6, int)] ...</ k >
+	: KSentence .
+	
+	mb [lib-printf-%]: rule
+		< k > [printf-aux(Len:Nat, Loc:Nat, L:List{Expression}) => printf-%(Len:Nat, sNat(Loc:Nat), L:List{Expression})] ...</ k >
+		< mem >... Loc:Nat |-> piece(N:Nat, 8) ...</ mem >
+		if (N:Nat ==Bool asciiString("%"))
+	: KSentence .
+	--- fixme ignoring 0 flag for now
+	mb [lib-printf-0]: rule
+		< k > [printf-%(Len:Nat, Loc:Nat, L:List{Expression}) => printf-%(Len:Nat, sNat(Loc:Nat), L:List{Expression})] ...</ k >
+		< mem >... Loc:Nat |-> piece(N:Nat, 8) ...</ mem >
+		if N:Nat ==Bool asciiString("0") 
+	: KSentence .
+	--- ignoring num width
+	mb [lib-printf-width]: rule
+		< k > [printf-%(Len:Nat, Loc:Nat, L:List{Expression}) => printf-%(Len:Nat, sNat(Loc:Nat), L:List{Expression})] ...</ k >
+		< mem >... Loc:Nat |-> piece(N:Nat, 8) ...</ mem >
+		if N:Nat >Int asciiString("0") 
+		andBool N:Nat <=Int asciiString("9")
+	: KSentence .
+	
+	mb [lib-printf-x]: rule
+		< k > [printf-%(Len:Nat, Loc:Nat, (tv(D:Int, ?) .,. L:List{Expression})) => writeToFD(1, (if (lengthString(rat2stringConversion(D:Int, 16)) ==Bool 1) then
+				"0" +String rat2stringConversion(D:Int, 16)
+			else 
+				rat2stringConversion(D:Int, 16)
+			fi)) ~> printf-aux(Len:Nat +Nat lengthString((if (lengthString(rat2stringConversion(D:Int, 16)) ==Bool 1) then
+				"0" +String rat2stringConversion(D:Int, 16)
+			else 
+				rat2stringConversion(D:Int, 16)
+			fi)), sNat(Loc:Nat), L:List{Expression})] ...</ k >
+		< mem >... Loc:Nat |-> piece(N:Nat, 8) ...</ mem >
+		if N:Nat ==Bool asciiString("x") 
+	: KSentence .
+	
+	mb [lib-printf-%d]: rule
+		< k > [printf-%(Len:Nat, Loc:Nat, (tv(D:Int, ?) .,. L:List{Expression})) => writeToFD(1, rat2stringConversion(D:Int, 10)) ~> printf-aux(Len:Nat +Nat lengthString(rat2stringConversion(D:Int, 10)), sNat(Loc:Nat), L:List{Expression})] ...</ k >
+		< mem >... Loc:Nat |-> piece(N:Nat, 8) ...</ mem >
+		if N:Nat ==Bool asciiString("d")
+	: KSentence .
+	mb [lib-printf-%c]: rule
+		< k > [printf-%(Len:Nat, Loc:Nat, (tv(C:Nat, ?) .,. L:List{Expression})) => writeToFD(1, C:Nat) ~> printf-aux(Len:Nat +Nat 1, sNat(Loc:Nat), L:List{Expression})] ...</ k >
+		< mem >... Loc:Nat |-> piece(N:Nat, 8) ...</ mem >
+		if N:Nat ==Bool asciiString("c") 
+	: KSentence .
+	
+	mb [lib-printf-%u]: rule
+		< k > [printf-%(Len:Nat, Loc:Nat, (tv(D:Int, ?) .,. L:List{Expression})) => writeToFD(1, rat2stringConversion(D:Int, 10)) ~> printf-aux(Len:Nat +Nat lengthString(rat2stringConversion(D:Int, 10)), sNat(Loc:Nat), L:List{Expression})] ...</ k >
+		< mem >... Loc:Nat |-> piece(N:Nat, 8) ...</ mem >
+		if N:Nat ==Bool asciiString("u") 
+	: KSentence .
+	
+	mb [lib-printf-%f]: rule
+		< k > [printf-%(Len:Nat, Loc:Nat, (tv(D:Float, ?) .,. L:List{Expression})) => writeToFD(1, float2stringConversion(D:Float)) ~> printf-aux(Len:Nat +Nat lengthString(float2stringConversion(D:Float)), sNat(Loc:Nat), L:List{Expression})] ...</ k >
+		< mem >... Loc:Nat |-> piece(N:Nat, 8) ...</ mem >
+		if N:Nat ==Bool asciiString("f") 
+	: KSentence .
+	
+	mb [lib-printf-%s]: rule
+		< k > [printf-%(Len:Nat, Loc:Nat, (tv(S:Nat, pointerType(?)) .,. L:List{Expression})) => 
+			printf-string(0, S:Nat)
+			~> printf-aux(Len:Nat, sNat(Loc:Nat), L:List{Expression})] ...</ k >
+		< mem >... Loc:Nat |-> piece(N:Nat, 8) ...</ mem >
+		if N:Nat ==Bool asciiString("s") 
+	: KSentence .
+
+	mb [lib-printf-%s-done]: rule
+		< k > [tv(Len':Nat, int) ~> printf-aux(Len:Nat, Loc:Nat, L:List{Expression}) => 
+			printf-aux(Len:Nat +Nat Len':Nat, Loc:Nat, L:List{Expression})] ...</ k >
+	: KSentence .
+endm
