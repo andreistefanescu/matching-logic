@@ -29,11 +29,9 @@
 #ifndef HASHTBL_H_INCLUDE_GUARD
 #define HASHTBL_H_INCLUDE_GUARD
 
-//#include "hashtbl.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-
 
 typedef size_t hash_size;
 
@@ -66,7 +64,7 @@ int hashtbl_resize(HASHTBL *hashtbl, hash_size size);
 static char *mystrdup(const char *s)
 {
 	char *b;
-	if(!(b=malloc(strlen(s)+1))) return NULL;
+	if(!(b=malloc(strlen((char*)s)+1))) return NULL;
 	strcpy(b, s);
 	return b;
 }
@@ -86,11 +84,6 @@ static hash_size def_hashfunc(const char *key)
 HASHTBL *hashtbl_create(hash_size size, hash_size (*hashfunc)(const char *))
 {
 	HASHTBL *hashtbl;
-	// printf("sizeof(HASHTBL)=%d\n", sizeof(HASHTBL));
-	// printf("sizeof(*hashtbl)=%d\n", sizeof(*hashtbl));
-	// printf("sizeof(hashtbl->size)=%d\n", sizeof(hashtbl->size));
-	// printf("sizeof(hashtbl->nodes)=%d\n", sizeof(hashtbl->nodes));
-	// printf("sizeof(hashtbl->hashfunc)=%d\n", sizeof(hashtbl->hashfunc));
 
 	if(!(hashtbl=malloc(sizeof(HASHTBL)))) return NULL;
 
@@ -103,12 +96,7 @@ HASHTBL *hashtbl_create(hash_size size, hash_size (*hashfunc)(const char *))
 
 	if(hashfunc) hashtbl->hashfunc=hashfunc;
 	else hashtbl->hashfunc=def_hashfunc;
-	
-	// for (int i = 0; i < 16; i++){
-		// struct hashnode_s* entry = hashtbl->nodes[i];
-		// printf("%d: %s\n", i, entry);
-	// }
-	
+
 	return hashtbl;
 }
 
@@ -131,36 +119,10 @@ void hashtbl_destroy(HASHTBL *hashtbl)
 	free(hashtbl);
 }
 
-
 int hashtbl_insert(HASHTBL *hashtbl, const char *key, void *data)
 {
 	struct hashnode_s *node;
 	hash_size hash=hashtbl->hashfunc(key)%hashtbl->size;
-
-	//printf("hashtbl_insert() key=%s, hash=%d, data=%s\n", key, hash, (char*)data);
-
-// "Rat" 123(.List{K}) |-> "Rat" 82(.List{K}) 
-// "Rat" 124(.List{K}) |-> "Rat" 0(.List{K}) 
-// "Rat" 125(.List{K}) |-> "Rat" 0(.List{K}) 
-// "Rat" 126(.List{K}) |-> "Rat" 0(.List{K}) 
-
-
-// "Rat" 82(.List{K}) |-> "Rat" 16(.List{K}) 
-// "Rat" 83(.List{K}) |-> "Rat" 0(.List{K}) 
-// "Rat" 84(.List{K}) |-> "Rat" 0(.List{K}) 
-// "Rat" 85(.List{K}) |-> "Rat" 0(.List{K}) 
-// "Rat" 86(.List{K}) |-> "Rat" 94(.List{K}) 
-// "Rat" 87(.List{K}) |-> "Rat" 0(.List{K}) 
-// "Rat" 88(.List{K}) |-> "Rat" 0(.List{K}) 
-// "Rat" 89(.List{K}) |-> "Rat" 0(.List{K}) 
-// "Rat" 90(.List{K}) |-> "Rat" 6(.List{K}) 
-// "Rat" 91(.List{K}) |-> "Rat" 0(.List{K}) 
-// "Rat" 92(.List{K}) |-> "Rat" 0(.List{K}) 
-// "Rat" 93(.List{K}) |-> "Rat" 0(.List{K}) 
-
-//doesn't seem like enough space was allocated for hashtbl->nodes
-// hashtbl->nodes[15] is at 154, but something else starts at 151 and 155
-
 	
 	node=hashtbl->nodes[hash];
 	while(node) {
@@ -171,7 +133,6 @@ int hashtbl_insert(HASHTBL *hashtbl, const char *key, void *data)
 		node=node->next;
 	}
 
-
 	if(!(node=malloc(sizeof(struct hashnode_s)))) return -1;
 	if(!(node->key=mystrdup(key))) {
 		free(node);
@@ -180,7 +141,6 @@ int hashtbl_insert(HASHTBL *hashtbl, const char *key, void *data)
 	node->data=data;
 	node->next=hashtbl->nodes[hash];
 	hashtbl->nodes[hash]=node;
-
 
 	return 0;
 }
@@ -212,17 +172,6 @@ void *hashtbl_get(HASHTBL *hashtbl, const char *key)
 {
 	struct hashnode_s *node;
 	hash_size hash=hashtbl->hashfunc(key)%hashtbl->size;
-
-	//printf("hashtbl_get() key=%s, hash=%d\n", key, hash);
-
-	// for (int i = 0; i < hashtbl->size; i++){
-		// struct hashnode_s* entry = hashtbl->nodes[i];
-		// if (entry == NULL){
-			// printf("%d: %s\n", i, entry);
-		// } else {
-			// printf("%d: %s -> %s\n", i, entry->key, entry->data);
-		// }
-	// }
 
 	node=hashtbl->nodes[hash];
 	while(node) {
@@ -291,13 +240,11 @@ int main()
 	spain=hashtbl_get(hashtbl, "Spain");
 	printf("Spain: %s\n", spain?spain:"-");
 
-
 	hashtbl_remove(hashtbl, "Spain");
 
 	printf("After remove:\n");
 	spain=hashtbl_get(hashtbl, "Spain");
 	printf("Spain: %s\n", spain?spain:"-");
-
 
 	hashtbl_resize(hashtbl, 8);
 
@@ -309,4 +256,3 @@ int main()
 
 	return 0;
 }
-
