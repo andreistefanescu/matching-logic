@@ -1,4 +1,5 @@
 #define NULL 0
+#include <math.h>
 typedef unsigned long int size_t;
 
 // nice pd implementations at http://en.wikibooks.org/wiki/C_Programming/Strings
@@ -87,7 +88,6 @@ double fabs( double num ){
 		return -num;
 	}
 }
-#include <math.h>
 double pow(double x, double y){
 	if (x < 0){
 		if (y/1.00 == (int)y){
