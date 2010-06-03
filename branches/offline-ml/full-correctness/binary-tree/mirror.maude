@@ -1,39 +1,43 @@
 in ../../match-imp
 
-mod MIRROR-TREE is inc IMP + MEM-TREE .
+mod MIRROR-TREE is inc IMP + TREE .
   ops root x : -> PVar .
   op root0 : -> FreeInt .
   op ?x : -> ?Int .
   ops !l !r : -> !Int .
   op !E : -> !Env .
   ops !H1 !H2 : -> !Heap .
+  op T : -> FreeIntTree .
+  ops !TL !TR : -> !IntTree .
 
   op pTreeMirror : -> K .
   eq pTreeMirror = (
     assume <config> <env> root |-> root0 ;; x |-> ?x </env>
-                    <heap> tree(root0) </heap> <form> TrueFormula </form> </config> ;
+                    <heap> tree(root0)(T) </heap> <form> TrueFormula </form> </config> ;
     if (root != 0) {
+        --- swap the left and right subtrees
         x = *(root + 1) ;
         *(root + 1) = *(root + 2) ;
         *(root + 2) = x ;
+        --- mirror(*(root + 1))
         x = *(root + 1) ;
         assert <config> <env> x |-> !l ;; !E </env>
-                        <heap> tree(!l) ** !H1 </heap>
+                        <heap> tree(!l)(!TR) ** !H1 </heap>
                         <form> TrueFormula </form> </config> ;
         assume <config> <env> x |-> !l ;; !E </env>
-                        <heap> tree(!l) ** !H1 </heap>
+                        <heap> tree(!l)(mirror(!TR)) ** !H1 </heap>
                         <form> TrueFormula </form> </config> ;
-                        
+        --- mirror(*(root + 2))
         x = *(root + 2) ;
         assert <config> <env> x |-> !r ;; !E </env>
-                        <heap> tree(!r) ** !H2 </heap>
+                        <heap> tree(!r)(!TL) ** !H2 </heap>
                         <form> TrueFormula </form> </config> ;
         assume <config> <env> x |-> !r ;; !E </env>
-                        <heap> tree(!r) ** !H2 </heap>
+                        <heap> tree(!r)(mirror(!TL)) ** !H2 </heap>
                         <form> TrueFormula </form> </config> ;
     }
     assert <config> <env> root |-> root0 ;; x |-> ?x </env>
-                    <heap> tree(root0) </heap> <form> TrueFormula </form> </config> ;
+                    <heap> tree(root0)(mirror(T)) </heap> <form> TrueFormula </form> </config> ;
   ) .
 endm
 
