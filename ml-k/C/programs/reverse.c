@@ -13,38 +13,6 @@ item* listReverse(item* p);
 item* listAppend(item* p, int n);
 int listSum(item* p);
 
-int main(void){
-	item* head = (item*)malloc(sizeof(item));
-	head->val = 20; 
-	head->next = NULL;
-	
-	listAppend(head, 25);
-	listAppend(head, 15);
-	listAppend(head, 30);
-	listAppend(head, 10);
-	listAppend(head, 35);
-	
-	item* curr = head;
-	while (curr != NULL){
-		printf("%d,", curr->val);
-		curr = curr->next;
-	}
-	printf("\n");
-	
-	int sum1 = listSum(head);
-	int first = head->val;
-	head = listReverse(head);
-	curr = head;
-	while (curr != NULL){
-		printf("%d,", curr->val);
-		curr = curr->next;
-	}
-	printf("\n");	
-	int last = head->val;
-	int sum2 = listSum(head);
-	return (sum1 - sum2) + (last - first); // should be 15
-}
-
 item* listAppend(item* p, int n){
 	item* x;
 
@@ -89,3 +57,34 @@ item* listReverse(item* p){
 	return p;
 }
 
+int main(void){
+	item* head = (item*)malloc(sizeof(item));
+	head->val = 20; 
+	head->next = NULL;
+	
+	listAppend(head, 25);
+	listAppend(head, 15);
+	listAppend(head, 30);
+	listAppend(head, 10);
+	listAppend(head, 35);
+	
+	item* curr = head;
+	while (curr != NULL){
+		printf("%d,", curr->val);
+		curr = curr->next;
+	}
+	printf("\n");
+	
+	int sum1 = listSum(head);
+	int first = head->val;
+	head = listReverse(head);
+	curr = head;
+	while (curr != NULL){
+		printf("%d,", curr->val);
+		curr = curr->next;
+	}
+	printf("\n");	
+	int last = head->val;
+	int sum2 = listSum(head);
+	return (sum1 - sum2) + (last - first); // should be 15
+}
