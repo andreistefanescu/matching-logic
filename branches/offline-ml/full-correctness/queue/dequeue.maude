@@ -1,0 +1,37 @@
+in ../../match-imp
+
+mod DEQUEUE is inc IMP + QUEUE .
+
+  ops q r : -> PVar .
+  ops q0 : -> FreeInt .
+  ops ?r ?e ?x : -> ?Int .
+  op A : -> FreeInt .
+  op ?A : -> ?IntSeq .
+  
+  op pDequeue : -> K .
+  eq pDequeue = (
+    assume <config> <env> q |-> q0 ;; r |-> ?r </env>
+                    <heap> queue(q0)(A) </heap> <form> TrueFormula </form> </config> ;
+    r = 0 ;
+    if (q != 0) {
+        if (* q != 0) {
+            r = * q ;
+            if (* q == *(q + 1)) {
+                * q = 0 ;
+                *(q + 1) = 0 ;
+                --- little extra help to unfold the queue heap pattern
+                derive(?Int(1)) ;
+            }
+            else {
+                * q = *(r + 1) ;
+            }
+        }
+    }
+    assert <config> <env> q |-> q0 ;; r |-> ?r </env>
+                    <heap> ?r |-> ?e : node ** (?r +Int 1) |-> ?x : next ** queue(q0)(?A) </heap> <form> (A === ?e :: ?A) </form> </config>
+           <config> <env> q |-> q0 ;; r |-> ?r </env>
+                    <heap> queue(q0)(A) </heap> <form> (?r === 0) /\ (A === epsilon) </form> </config> ;
+  ) .
+endm
+
+rew [| pDequeue |] .

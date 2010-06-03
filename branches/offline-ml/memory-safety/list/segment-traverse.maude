@@ -1,0 +1,24 @@
+in ../../match-imp
+
+mod LIST-SEGMENT-TRAVERSE is inc IMP + MEM-LIST .
+  ops x l m : -> PVar .
+  ops l0 m0 : -> FreeInt .
+  ops ?x : -> ?Int .
+  
+  op pListSegTraverse : -> K .
+  eq pListSegTraverse = (
+    assume <config> <env> x |-> ?x ;; l |-> l0 ;; m |-> m0 </env>
+           <heap> lseg(l0,m0) </heap> <form> TrueFormula </form> </config> ;
+    x = l ;
+        invariant <config> <env> x |-> ?x ;; l |-> l0 ;; m |-> m0 </env>
+                  <heap> lseg(l0,?x) ** lseg(?x,m0) </heap> <form> TrueFormula </form> </config> ;
+        while (x != m)
+        {
+            x = *(x + 1) ;
+        }
+    assert <config> <env>  x |-> ?x ;; l |-> l0 ;; m |-> m0 </env>
+           <heap> lseg(l0,m0) </heap> <form> TrueFormula </form> </config> ;
+  ) .
+endm
+
+rew [| pListSegTraverse |] .

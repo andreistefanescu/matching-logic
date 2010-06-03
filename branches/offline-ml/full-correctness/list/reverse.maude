@@ -1,0 +1,28 @@
+in ../../match-imp
+
+mod REVERSE is inc IMP + LIST .
+  ops p x y : -> PVar .
+  ops ?p ?x ?y : -> ?Int .
+  op A : -> FreeIntSeq .
+  ops ?B ?C : -> ?IntSeq .
+  
+  op pListReverse : -> K .
+  eq pListReverse = (
+    assume <config> <env> p |-> ?p ;; x |-> ?x ;; y |-> ?y </env>
+                <heap> list(?x)(A) </heap> <form> TrueFormula </form> </config> ;
+    p = 0 ;
+    invariant <config> <env> p |-> ?p ;; x |-> ?x ;; y |-> ?y </env>
+                       <heap> list(?p)(?B) ** list(?x)(?C) </heap> <form> rev(A) === rev(?C) :: ?B </form> </config> ;
+    while(x != 0) {
+      y = *(x + 1) ;
+      *(x + 1) = p ;
+      p = x ;
+      x = y ;
+    }
+    assert <config> <env> p |-> ?p ;; x |-> ?x ;; y |-> ?y </env>
+                <heap> list(?p)(rev(A)) </heap> <form> TrueFormula </form> </config> ;
+) .
+
+endm
+
+rew [| pListReverse |] .

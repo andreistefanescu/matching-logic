@@ -1,0 +1,52 @@
+in ../../match-imp
+
+mod FILTER-LIST is inc IMP + LIST .
+  ops a x y z l : -> PVar .
+  ops ?a ?v ?x ?y ?w ?z : -> ?Int .
+  ops a0 x0 : -> FreeInt .
+  ops ?A ?B ?X ?A' : -> ?IntSeq .
+  op A : -> FreeIntSeq .
+  
+  op pFilter : -> K .
+  eq pFilter = (
+    assume <config> <env> x |-> x0 ;; y |-> a0 ;; z |-> ?z ;; l |-> a0 </env>
+                    <heap> list(a0)(A) </heap> <form> ~(a0 === 0) </form> </config> ;
+    y = l ;
+    z = 0 ;
+    
+    invariant <config> <env> x |-> x0 ;; y |-> ?a ;; z |-> 0 ;; l |-> ?a </env>
+                       <heap> list(?a)(?A) </heap>
+                       <form> TrueFormula </form> </config> 
+               <config> <env> x |-> x0 ;; y |-> ?y ;; z |-> ?z ;; l |-> ?a </env>
+                        <heap> lseg(?a,?z)(?A) ** ?z |-> ?v : node ** (?z +Int 1) |-> ?y : next ** list(?y)(?X) </heap>
+                        <form> ~(?z === 0) /\ isFiltered(?A  ,x0) /\ ~(?v === x0) </form> </config> ;
+      while(y != 0) 
+      {
+        if (*(y) == x)
+        {
+            if(z == 0)
+                {
+                    l = *(y + 1) ;
+                    free(y) ;
+                    y = l ;
+                }
+            else 
+                {
+                    *(z + 1) = *(y + 1) ;
+                    free(y) ;
+                    y = *(z + 1) ;
+                }
+        }
+        else
+            {
+                z = y ;
+                y = *(y + 1) ;
+            }
+      }
+    assert <config> <env> x |-> x0 ;; y |-> ?y ;; z |-> ?z ;; l |-> ?a </env>
+        <heap> list(?a)(?A') </heap> <form> isFiltered(?A', x0) </form> </config> ;
+  ) .
+  
+endm
+
+rew [| pFilter |] .

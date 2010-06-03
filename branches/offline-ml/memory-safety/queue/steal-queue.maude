@@ -1,0 +1,33 @@
+in ../../match-imp
+
+mod STEAL-QUEUE is inc IMP + MEM-QUEUE .
+
+  ops dest src  : -> PVar .
+  ops dest0 src0 : -> FreeInt .
+  
+  op pStealQueue : -> K .
+  eq pStealQueue = (
+    assume <config> <env> dest |-> dest0 ;; src |-> src0 </env>
+           <heap> queue(dest0) ** queue(src0) </heap> <form> TrueFormula </form> </config> ;
+    if (src != 0) {
+        if (dest != 0) {
+            if (* src != 0) {
+                if (* dest != 0) {
+                    *(*(dest + 1) + 1) = * src ;
+                } else {
+                    * dest = * src ;
+                }
+                *(dest + 1) = *(src + 1) ;
+            }
+            free(src) ;
+        }
+    }
+    assert <config> <env> dest |-> dest0 ;; src |-> src0 </env>
+                    <heap> queue(dest0) </heap> <form> TrueFormula </form> </config>
+           <config> <env> dest |-> dest0 ;; src |-> src0 </env>
+                    <heap> queue(dest0) ** queue(src0) </heap> <form> (dest0 === 0) \/ (src0 === 0) </form> </config> ;
+  ) .
+
+endm
+
+rew [| pStealQueue |] .

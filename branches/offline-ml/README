@@ -1,0 +1,11 @@
+The actual tool is represented by the match-*.maude and pl-builtins.maude files.
+
+The algorithms defined so far can be found in the “memory-safety” and “full-correctness” directories. They share most of their structure. The first criteria for determining the subdirectories is the heap pattern the algorithm uses (e.g. list, binary tree etc.). If the heap pattern is general then the structures has subdirectories for the more specific cases of the pattern(e.g. list/ double-linked-list). Also, algorithms that have the same purpose will be grouped in the same directory depending on the heap pattern they use (e.g. different types of sorting for lists).
+The algorithms are either classic with regards of use in programming or they have been collected from other proving tools(at the moment Holfoot and Smallfoot) in order to determine the efficiency of the matching logic prover.
+
+Prerequisites for running the examples:
+- working version of Maude
+- set the working directory to the one which contains the examples
+- load “filename.maude”
+
+Please report issues to Elena Naum <naum@illinois.edu> .

@@ -1,0 +1,29 @@
+in ../../match-imp
+
+mod ENQUEUE is inc IMP + MEM-QUEUE .
+
+  ops q n : -> PVar .
+  ops e0 q0 : -> FreeInt .
+  ops ?x ?n : -> ?Int .
+  
+
+  op pEnqueue : -> K .
+  eq pEnqueue = (
+    assume <config> <env> q |-> q0 ;; n |-> ?n </env>
+                    <heap> queue(q0) ** ?n |-> e0 : node ** (?n +Int 1) |-> ?x : next </heap> <form> ~(q0 === 0) </form> </config> ;
+    if (q != 0) {
+        if (* q != 0) {
+            *(*(q + 1) + 1) = n ;
+        }
+        else {
+            * q = n ;
+        }
+        *(q + 1) = n ;
+    }
+    assert <config> <env> q |-> q0 ;; n |-> ?n </env>
+                    <heap> queue(q0) </heap> <form> ~(q0 === 0) </form> </config> ;
+  ) .
+
+endm
+
+rew [| pEnqueue |] .

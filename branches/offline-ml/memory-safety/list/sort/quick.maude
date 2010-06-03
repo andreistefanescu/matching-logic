@@ -1,0 +1,71 @@
+in ../../../match-imp
+
+mod QUICK-SORT is inc IMP + MEM-LIST .
+  ops l a b h t e p x y : -> PVar .
+  ops ?a ?b ?h ?t ?e ?x ?y ?p ?n ?u ?v ?l : -> ?Int .
+  op l0 : -> FreeInt .
+  
+  op pListQuickSort : -> K .
+  eq pListQuickSort = (
+    assume <config> <env> l |-> ?l ;; p |-> ?p ;; x |-> ?x ;; y |-> ?y ;; a |-> ?a ;; b |-> ?b </env>
+                    <heap> list(?l) </heap> <form> TrueFormula </form> </config> ;
+    if (l != 0) {
+        p = l ;
+        x = *(l + 1) ;
+        *(p + 1) = 0 ;
+        a = 0 ;
+        b = 0 ;
+        invariant <config> <env> l |-> ?l ;; p |-> ?p ;; x |-> ?x ;; y |-> ?y ;; a |-> ?a ;; b |-> ?b </env>
+                           <heap> ?p |-> ?v : node ** (?p +Int 1) |-> 0 : next ** list(?a) ** list(?b) ** list(?x) </heap>
+                           <form> TrueFormula </form> </config> ;
+        while(x != 0) {
+            y = x ;
+            x = *(x + 1) ;
+            if (* y > * p) {
+                *(y + 1) = b ;
+                b = y ;
+            }
+            else {
+                *(y + 1) = a ;
+                a = y ;
+            }
+        }
+
+        --- a = quicksort(a);
+        assert <config> <env> l |-> ?l ;; p |-> ?p ;; x |-> ?x ;; y |-> ?y ;; a |-> ?a ;; b |-> ?b </env>
+                        <heap> ?p |-> ?v : node ** (?p +Int 1) |-> 0 : next ** list(?a) ** list(?b) </heap>
+                        <form> TrueFormula </form> </config> ;
+        assume <config> <env> l |-> ?l ;; p |-> ?p ;; x |-> ?x ;; y |-> ?y ;; a |-> ?a ;; b |-> ?b </env>
+                        <heap> ?p |-> ?v : node ** (?p +Int 1) |-> 0 : next ** list(?a) ** list(?b) </heap>
+                        <form> TrueFormula </form> </config> ;
+
+        --- b = quicksort(b);
+        assert <config> <env> l |-> ?l ;; p |-> ?p ;; x |-> ?x ;; y |-> ?y ;; a |-> ?a ;; b |-> ?b </env>
+                        <heap> ?p |-> ?v : node ** (?p +Int 1) |-> 0 : next ** list(?a) ** list(?b) </heap>
+                        <form> TrueFormula </form> </config> ;
+        assume <config> <env> l |-> ?l ;; p |-> ?p ;; x |-> ?x ;; y |-> ?y ;; a |-> ?a ;; b |-> ?b </env>
+                        <heap> ?p |-> ?v : node ** (?p +Int 1) |-> 0 : next ** list(?a) ** list(?b) </heap>
+                        <form> TrueFormula </form> </config> ;
+
+        --- l = append(a, p);
+        assert <config> <env> l |-> ?l ;; p |-> ?p ;; x |-> ?x ;; y |-> ?y ;; a |-> ?a ;; b |-> ?b </env>
+                        <heap> list(?p) ** list(?a) ** list(?b) </heap>
+                        <form> TrueFormula </form> </config> ;
+        assume <config> <env> l |-> ?l ;; p |-> ?p ;; x |-> ?x ;; y |-> ?y ;; a |-> ?a ;; b |-> ?b </env>
+                        <heap> list(?l) ** list(?b) </heap>
+                        <form> TrueFormula </form> </config> ;
+
+        --- l = append(l, b);
+        assert <config> <env> l |-> ?l ;; p |-> ?p ;; x |-> ?x ;; y |-> ?y ;; a |-> ?a ;; b |-> ?b </env>
+                        <heap> list(?l) ** list(?b) </heap>
+                        <form> TrueFormula </form> </config> ;
+        assume <config> <env> l |-> ?l ;; p |-> ?p ;; x |-> ?x ;; y |-> ?y ;; a |-> ?a ;; b |-> ?b </env>
+                        <heap> list(?l) </heap>
+                        <form> TrueFormula </form> </config> ;
+    }
+    assert <config> <env> l |-> ?l ;; p |-> ?p ;; x |-> ?x ;; y |-> ?y ;; a |-> ?a ;; b |-> ?b </env>
+                    <heap> list(?l) </heap> <form> TrueFormula </form> </config> ;
+  ) .
+endm
+
+rew [| pListQuickSort |] .
