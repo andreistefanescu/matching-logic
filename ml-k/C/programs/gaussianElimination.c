@@ -34,7 +34,7 @@ main()
 
   for (i=0; i<n; i++)
   {
-    printf("%f\n", x[i]);
+    printf("%d\n", (int)((x[i])*10000));
   }
 }
 
