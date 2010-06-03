@@ -1,0 +1,23 @@
+in ../../../match-imp .
+
+mod CLIST-ENQUEUE is inc IMP + MEM-LIST .
+  ops r t a : -> PVar .
+  ops r0 t0 : -> FreeInt .
+  ops ?a ?w ?v ?r : -> ?Int .
+  
+  op pEnqueueCircularList : -> K .
+  eq pEnqueueCircularList = (
+    assume <config> <env> r |-> r0 ;; t |-> t0 ;; a |-> ?a </env>
+           <heap> r0 |-> ?v : node ** (r0 +Int 1) |-> t0 : next ** lseg(t0,r0) </heap> <form> TrueFormula </form> </config> ;
+    a = alloc(node, next) ;
+    *(a + 1) = *(r + 1) ;
+    *(r + 1) = a ;
+    r = *(r + 1) ; 
+    assert <config> <env> r |-> ?r ;; t |-> t0 ;; a |-> ?a </env>
+           <heap> ?r |-> ?v : node ** (?r +Int 1) |-> t0 : next ** lseg(t0,?r) </heap> 
+           <form> TrueFormula </form> </config> ;
+  ) .
+  
+endm
+
+rew [| pEnqueueCircularList |] .

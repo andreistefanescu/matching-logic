@@ -1,0 +1,35 @@
+in ../../../match-imp .
+
+mod CLIST-POP is inc IMP + LIST .
+  ops r t a : -> PVar .
+  ops r0 t0 : -> FreeInt .
+  ops ?a ?w ?v ?t : -> ?Int .
+  op A : -> FreeIntSeq .
+  op ?A : -> ?IntSeq .
+  op I : -> Int++ .
+  
+  op pPopCircularList : -> K .
+  eq pPopCircularList = (
+    assume <config> <env> r |-> r0 ;; t |-> ?t ;; a |-> ?a </env>
+           <heap> r0 |-> ?v : node ** (r0 +Int 1) |-> ?t : next ** lseg(?t,r0)(I :: A) </heap> <form> TrueFormula </form> </config> ;
+    if (r != t)
+    {
+        *(r + 1) = *(t + 1) ;
+        a = *(t + 1) ;
+        free(t) ;
+    }
+    else
+    {
+        free(t);
+    }
+    assert <config> <env> r |-> r0 ;; t |-> ?t ;; a |-> ?a </env>
+           <heap> r0 |-> ?v : node ** (r0 +Int 1) |-> ?a : next ** lseg(?a,r0)(A) </heap> 
+           <form> TrueFormula </form> </config> 
+           <config> <env> r |-> r0 ;; t |-> ?t ;; a |-> ?a </env>
+           <heap> .Heap </heap> 
+           <form> TrueFormula </form> </config> ;
+  ) .
+  
+endm
+
+rew [| pPopCircularList |] .

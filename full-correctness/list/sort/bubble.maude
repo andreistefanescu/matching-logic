@@ -1,0 +1,44 @@
+in ../../../match-imp
+
+mod BUBBLE-SORT is inc IMP + LIST .
+  ops l a b h t e x y change temp : -> PVar .
+  ops ?a ?b ?h ?t ?e ?n ?u ?v ?l ?x ?y ?change ?temp : -> ?Int .
+  op l0 : -> FreeInt .
+  op L : -> FreeIntSeq .
+  ops ?A ?A' ?B ?B' ?C ?L : -> ?IntSeq .
+  
+    op pListBubbleSort : -> K .
+  eq pListBubbleSort = (
+    assume <config> <env> l |-> l0 ;; x |-> ?x ;; y |-> ?y ;; change |-> ?change ;; temp |-> ?temp </env>
+                    <heap> list(l0)(L) </heap> <form> TrueFormula </form> </config> ;
+    if (l != 0) {
+        change = 1 ;
+        invariant <config> <env> l |-> l0 ;; x |-> ?x ;; y |-> ?y ;; change |-> ?change ;; temp |-> ?temp </env>
+                           <heap> list(l0)(?L) </heap> <form> ~(l0 === 0) /\ list2bag(L) === list2bag(?L)
+                               /\ (?change === 0 /\ isSorted(?L) \/ ?change === 1) </form> </config> ;
+        while (change == 1) {
+            change = 0 ;
+            x = l ;
+            y = *(l + 1) ;
+            invariant <config> <env> l |-> l0 ;; x |-> ?x ;; y |-> ?y ;; change |-> ?change ;; temp |-> ?temp </env>
+                               <heap> lseg(l0,?x)(?A) ** ?x |-> ?v : node ** (?x +Int 1) |-> ?y : next ** list(?y)(?B) </heap>
+                               <form> ~(l0 === 0) /\ list2bag(L) === list2bag(?L) /\ ?L === ?A :: ?v :: ?B
+                                   /\ (?change === 0 /\ isSorted(?A :: ?v) \/ ?change === 1) </form> </config> ;
+            while (y != 0) {
+                if (* x > * y) {
+                    change = 1 ;
+                    temp = * x ;
+                    * x = * y ;
+                    * y = temp ;
+                }
+                x = y ;
+                y = *(y + 1) ;
+            }
+        }
+    }
+    assert <config> <env> l |-> l0 ;; x |-> ?x ;; y |-> ?y ;; change |-> ?change ;; temp |-> ?temp </env>
+                    <heap> list(l0)(?L) </heap> <form> list2bag(L) === list2bag(?L) /\ isSorted(?L) </form> </config> ;    
+  ) .
+endm
+
+rew [| pListBubbleSort |] .

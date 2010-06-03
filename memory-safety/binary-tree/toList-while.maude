@@ -1,0 +1,63 @@
+in ../../match-imp
+
+mod TREE-TO-LIST is inc IMP + MEM-TREE-LIST + MEM-LIST .
+  ops a  s t l r root x n : -> PVar .
+  op root0 : -> FreeInt .
+  ops ?n ?x ?a ?s ?t ?l ?r : -> ?Int .
+  ops !TL !TR : -> !IntTree .
+  
+  op pTreeToListWhile : -> K .
+  eq pTreeToListWhile = (
+    assume <config> <env> root |-> root0 ;; a |-> ?a ;; s |-> ?s ;; t |-> ?t ;; l |-> ?l ;; r |-> ?r ;; x |-> ?x ;; n |-> ?n </env>
+                    <heap> tree(root0) </heap> <form> TrueFormula </form> </config> ;
+    a = 0 ;
+    s = 0 ;
+    if (root != 0) {
+        s = alloc(node, next) ;
+        * s = root ;
+        *(s + 1) = 0 ;
+        invariant <config> <env> root |-> root0 ;; a |-> ?a ;; s |-> ?s ;; t |-> ?t ;; l |-> ?l ;; r |-> ?r ;; x |-> ?x ;; n |-> ?n </env>
+                           <heap> tree-list(?s) ** list(?a) </heap>
+                           <form> TrueFormula </form> </config> ;
+        while (s != 0) {
+            x = s ;
+            s = *(s + 1) ;
+            t = * x ;
+            free(x) ;
+
+            l = *(t + 1) ;
+            r = *(t + 2) ;
+            *(t + 1) = 0 ;
+            *(t + 2) = 0 ;
+            
+            if (l != NULL) {
+                x = alloc(node, next) ;
+                * x = l ;
+                *(x + 1) = s ;
+                s = x ;
+            }
+
+            if (r != NULL) {
+                x = alloc(node, next) ;
+                * x = t ;
+                *(x + 1) = s ;
+                s = x ;
+                x = alloc(node, next) ;
+                * x = r ;
+                *(x + 1) = s ;
+                s = x ;
+            } else {
+                n = alloc(node, next) ;
+                * n = * t ;
+                free(t) ;
+                *(n + 1) = a ;
+                a = n ;
+            }
+        }
+    }
+    assume <config> <env> root |-> root0 ;; a |-> ?a ;; s |-> 0 ;; t |-> ?t ;; l |-> ?l ;; r |-> ?r ;; x |-> ?x ;; n |-> ?n </env>
+                    <heap> list(?a) </heap> <form> TrueFormula </form> </config> ;
+  ) .
+endm
+
+rew [| pTreeToListWhile |] .

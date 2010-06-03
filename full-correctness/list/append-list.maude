@@ -1,0 +1,36 @@
+in ../../match-imp
+
+mod LIST-APPEND-LIST is inc IMP + LIST .
+  ops x y i p : -> PVar .
+  op y0 : -> FreeInt .
+  ops ?x ?i ?p ?v : -> ?Int .
+  ops ?A ?B ?C : -> ?IntSeq .
+  ops A B : -> FreeIntSeq .
+  
+  op pListAppendList : -> K .
+  eq pListAppendList = (
+    assume <config> <env> x |-> ?x ;; y |-> y0 ;; i |-> ?i ;; p |-> ?p </env>
+           <heap> list(?x)(A) ** list(y0)(B) </heap> <form> TrueFormula </form> </config> ;
+    if (x == 0) { x = y ;}
+    else
+    {
+        p = x ;
+        i = *(p + 1) ;
+        invariant <config> <env> x |-> ?x ;; y |-> y0 ;; i |-> ?i ;; p |-> ?p </env>
+                  <heap> lseg(?x,?p)(?A) ** ?p |-> ?v : node ** (?p +Int 1) |-> ?i : next ** list(?i)(?B) ** list(y0)(B) </heap> <form> ?A :: ?v :: ?B === A </form> </config> ;
+        while (i != 0)
+        {
+            p = i ;
+            i = *(i + 1) ;
+        }
+        *(p + 1) = y ;
+        ***(assert <config> <env> x |-> ?x ;; y |-> y0 ;; i |-> ?i ;; p |-> ?p </env>
+               <heap> lseg(?x,?p)(?A') ** ?p |-> ?v : node ** (?p +Int 1) |-> y0 : next ** list(y0)(B) </heap> 
+               <form> ?A' :: ?v === A </form> </config> ; )***
+    }
+    assert <config> <env> x |-> ?x ;; y |-> y0 ;; i |-> ?i ;; p |-> ?p </env>
+           <heap> list(?x)(A :: B) </heap> <form> TrueFormula </form> </config> ;
+  ) .
+endm
+
+rew [| pListAppendList |] .

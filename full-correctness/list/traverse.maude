@@ -1,0 +1,26 @@
+in ../../match-imp
+
+mod TRAVERSE-LIST is inc IMP + LIST .
+  ops x l : -> PVar .
+  op l0 : -> FreeInt .
+  ops ?x : -> ?Int .
+  ops ?A ?A' ?X : -> ?IntSeq .
+  ops A : -> FreeIntSeq .
+  
+  op pListTraverse : -> K .
+  eq pListTraverse = (
+    assume <config> <env> x |-> ?x ;; l |-> l0 </env>
+           <heap> list(l0)(A) </heap> <form> TrueFormula </form> </config> ;
+    x = l ;
+        invariant <config> <env> x |-> ?x ;; l |-> l0 </env>
+                  <heap> lseg(l0,?x)(?A) ** list(?x)(?X) </heap> <form> ?A :: ?X === A </form> </config> ;
+        while (x != 0)
+        {
+            x = *(x + 1) ;
+        }
+    assert <config> <env>  x |-> ?x ;; l |-> l0 </env>
+           <heap> list(l0)(A) </heap> <form> TrueFormula </form> </config> ;
+  ) .
+endm
+
+rew [| pListTraverse |] .
