@@ -402,6 +402,10 @@ mod SIZEOF is
 		< k > [evalToType ~> sizeof(HOLE) => sizeofType(T:Base-Type)] ...</ k >
 		[< type > T:Base-Type </ type > => .Bag]
 		: KSentence [metadata "stuctural"] .
+	--- fixme 6.4.4.2 and other
+	mb rule
+		< type > [F:Float => double] </ type >
+		: KSentence [metadata "stuctural"] .
 	mb rule
 		< k > [evalToType ~> sizeof(HOLE) => sizeofType(arrayType(T:Type, N:Nat))] ...</ k >
 		[< type > arrayType(T:Type, N:Nat) </ type > => .Bag]

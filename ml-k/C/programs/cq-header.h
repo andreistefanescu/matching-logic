@@ -18,10 +18,26 @@
      char rfs[8];        /* Return from section            */
    };
 
-long pow2(int n){
-	long retval = 1;
-	for (int i = 0; i < n; i++){
-		retval *= (long)2;
-	}
-	return retval;
+long pow2(long n) {        /* Calculate 2**n by multiplying, not shifting  */
+   long s;
+   s = 1;
+   while(n--) s = s*2;
+   return s;
+}
+
+
+int zerofill(char* x) {
+   int j;
+
+   for (j=0; j<256; j++) *x++ = 0;
+}
+int sumof(char* x) {
+   char *p;
+   int total, j;
+
+   p = x;
+   total = 0;
+
+   for(j=0; j<256; j++) total = total+ *p++;
+   return total;
 }

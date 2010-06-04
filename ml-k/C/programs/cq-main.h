@@ -1,5 +1,5 @@
 
-main(n,args)               /* C REFERENCE MANUAL         */
+int main(n,args)               /* C REFERENCE MANUAL         */
 int n;
 char **args;
 {
