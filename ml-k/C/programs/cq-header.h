@@ -17,3 +17,11 @@
      int crc;            /* Cumulative return code         */
      char rfs[8];        /* Return from section            */
    };
+
+long pow2(int n){
+	long retval = 1;
+	for (int i = 0; i < n; i++){
+		retval *= (long)2;
+	}
+	return retval;
+}
