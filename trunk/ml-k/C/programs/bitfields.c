@@ -18,12 +18,9 @@ struct bfs {
 	unsigned int c2 : 4; // boundary
 	unsigned int d : 8; // boundary
 	unsigned int e : 16; // boundary
-	unsigned int f : 7;
-	unsigned int g;
-	unsigned int h;
-	unsigned int i : 4;
-	unsigned int : 0;
-	unsigned int j;
+	unsigned int f : 6;	// 6
+	// implicit :2 since next is not a bit field
+	unsigned char g;
 };
 struct bfs s;
 struct bfs* p = &s;
@@ -92,15 +89,15 @@ int testOnes(void){
 		puts("BUG: a4");
 	}
 	p->a6 = 1;
-	if (p->a5 != 1){ puts("BUG: a4"); }
-	if (p->a6 != 1){ puts("BUG: a4"); }
-	if (p->a7 != 1){ puts("BUG: a4"); }
+	if (p->a5 != 1){ puts("BUG: a5"); }
+	if (p->a6 != 1){ puts("BUG: a5"); }
+	if (p->a7 != 1){ puts("BUG: a5"); }
 	p->a5 = 0;
 	p->a7 = 0;
 	p->a6 = (unsigned int)15;
-	if (p->a5 != 0){ puts("BUG: a5"); }
-	if (p->a6 != 1){ puts("BUG: a5"); }
-	if (p->a7 != 0){ puts("BUG: a5"); }
+	if (p->a5 != 0){ puts("BUG: a6"); }
+	if (p->a6 != 1){ puts("BUG: a6"); }
+	if (p->a7 != 0){ puts("BUG: a6"); }
 	return 0;
 }
 
@@ -158,9 +155,9 @@ int testTwos(){
 		printf("BUG: b5: %d\n", firstChar);
 	}
 	p->b2 = 3;
-	if (p->b1 != 2){ puts("BUG: b5"); }
-	if (p->b2 != 3){ puts("BUG: b5"); }
-	if (p->b3 != 1){ puts("BUG: b5"); }
+	if (p->b1 != 2){ puts("BUG: b6"); }
+	if (p->b2 != 3){ puts("BUG: b6"); }
+	if (p->b3 != 1){ puts("BUG: b6"); }
 	return 0;
 }
 
@@ -177,17 +174,13 @@ int testEights(void){
 		printf("BUG: d2: %d\n", firstChar);
 	}
 	p->d = 112;
-	if (p->d != 112){ puts("BUG: d2"); }
+	if (p->d != 112){ puts("BUG: d3"); }
 	return 0;
 }
 
 int testSixteens(void){
-	// 70 FB
-	// 75 FB
-	//char* v = ((char*)&(s)) + 4;
 	s.e = (unsigned int)30203;
-	//unsigned int hmm = s.e;
-	//debug(v);
+	
 	if (s.e != (unsigned int)30203){ puts("BUG: e0"); }
 	s.e = (unsigned int)23213;
 	if (s.e != (unsigned int)23213){ puts("BUG: e1"); }
@@ -199,7 +192,30 @@ int testSixteens(void){
 		printf("BUG: e2: %d\n", firstChar);
 	}
 	p->e = 11606;
-	if (p->e != 11606){ puts("BUG: e2"); }
+	if (p->e != 11606){ puts("BUG: e3"); }
+	return 0;
+}
+
+int testPartial(void){
+	s.f = 45;
+	s.g = 145;
+	if (s.f != 45){ puts("BUG: f0"); }
+	if (s.g != 145){ puts("BUG: f0"); }
+	s.g = 75;
+	if (s.f != 45){ puts("BUG: f1"); }
+	if (s.g != 75){ puts("BUG: f1"); }	
+	s.f = 21;
+	if (s.f != 21){ puts("BUG: f2"); }
+	if (s.g != 75){ puts("BUG: f2"); }
+	
+	unsigned char firstChar = *(&(s.g));
+	if (firstChar == 75){
+		puts("ok");
+	} else {
+		printf("BUG: e3: %d\n", firstChar);
+	}
+	p->g = 119;
+	if (p->g != 119){ puts("BUG: f4"); }
 	return 0;
 }
 
@@ -208,5 +224,6 @@ int main(void){
 	testTwos();
 	testEights();
 	testSixteens();
+	testPartial();
 	return 0;
 }
