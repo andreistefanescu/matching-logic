@@ -9,6 +9,17 @@
 
 ---C99 6.7.8:10 If an object has static duration ... if it has pointer type, it is NULL, if it is arithmetic, 0, aggregate, recursively these, union, first member by these
 
+***(
+not handling this type:
+static union {
+  unsigned char buf[MAX_LENGTH];
+  long long align_int;
+  long double align_fp;
+} u1, u2;
+
+("Field").KProperLabel(unsigned-char,,("_`[_`]").KProperLabel("Id"(buf),,("_+_").KProperLabel(("_+_").KProperLabel(("_+_").KProperLabel(("sizeof").KProperLabel(long-long-int),,("_*_").KProperLabel(("tv").KResultLabel(8,,unsigned-long-int),,("sizeof").KProperLabel(long-long-int))),,("sizeof").KProperLabel(long-long-int)),,("tv").KResultLabel(2,,unsigned-long-int)))) 
+***)
+
 --- EP, UF, UT
 --- 33, 42, 33
 --- 62, 31, 15
@@ -21,6 +32,8 @@
 --- 70, 18, 8
 --- redo fields, mem
 --- 69, 19, 8
+--- playing with bitfields, remove some bad tests
+--- 67, 16, 7
 
 
 --- # of expected passes            44527
