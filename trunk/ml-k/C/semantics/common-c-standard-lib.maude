@@ -179,6 +179,11 @@ mod COMMON-C-STANDARD-LIBRARY is
 		< mem >... Loc:Nat |-> piece(N:Nat, 8) ...</ mem >
 		if (N:Nat ==Bool asciiString("%"))
 	: KSentence .
+	mb [lib-printf-%%]: rule
+		< k > [printf-%(Len:Nat, Loc:Nat, L:List{Expression}) => writeToFD(1, N:Nat) ~> printf-aux(sNat(Len:Nat), sNat(Loc:Nat), L:List{Expression})] ...</ k >
+		< mem >... Loc:Nat |-> piece(N:Nat, 8) ...</ mem >
+		if N:Nat ==Bool asciiString("%") 
+	: KSentence .
 	--- fixme ignoring 0 flag for now
 	mb [lib-printf-0]: rule
 		< k > [printf-%(Len:Nat, Loc:Nat, L:List{Expression}) => printf-%(Len:Nat, sNat(Loc:Nat), L:List{Expression})] ...</ k >
