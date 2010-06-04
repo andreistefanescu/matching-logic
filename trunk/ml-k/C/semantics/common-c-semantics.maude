@@ -3,6 +3,7 @@
 --- readunionfrommem not implemented
 --- arithmetic on a void * pointer
 --- argument of function type
+--- arithmetic overflow != conversion overflow
 --- need one past array
 --- 6.7.5.3:11 if, in a parameter declaration, an identifier can be treated either as a typedef name or as a parameter name, it shall be taken as a typedef name
 --- memcpy uninit memory
@@ -1847,7 +1848,6 @@ and ll or LL
 		if notBool(
 			min(T:Type) <=Int I:Int 
 			andBool max(T:Type) >=Int I:Int 
-			andBool hasIntegerType(T':Type)
 		)
 		andBool unsignedIntegerTypes contains T:Type 
 		andBool I:Int <Int min(T:Type)
@@ -1858,7 +1858,6 @@ and ll or LL
 		if notBool(
 			min(T:Type) <=Int I:Int 
 			andBool max(T:Type) >=Int I:Int 
-			andBool hasIntegerType(T':Type)
 		)
 		andBool unsignedIntegerTypes contains T:Type 
 		andBool I:Int >Int max(T:Type)
@@ -1866,6 +1865,35 @@ and ll or LL
 		: KSentence [metadata "structural"] .
 	
 	---c99 6.3.1.3:3 Otherwise, the new type is signed and the value cannot be represented in it; either the result is implementation-defined or an implementation-defined signal is raised.
+	--- choice
+	mb rule
+		< k > [cast(T:Type, tv(I:Int, T':Type)) => cast(T:Type, tv(I:Int +Int (2 ^Nat absInt(numBits(T:Type))), T':Type))] ...</ k >
+		if notBool(
+			min(T:Type) <=Int I:Int 
+			andBool max(T:Type) >=Int I:Int 
+		)
+		andBool I:Int <Int min(T:Type)
+		andBool notBool(unsignedIntegerTypes contains T:Type)
+		andBool hasIntegerType(T:Type)
+		andBool hasIntegerType(T':Type)
+		: KSentence [metadata "structural"] .
+	mb rule
+		< k > [cast(T:Type, tv(I:Int, T':Type)) => cast(T:Type, tv(_-Int_(I:Int, (2 ^Nat absInt(numBits(T:Type)))), T':Type))] ...</ k >
+		if notBool(
+			min(T:Type) <=Int I:Int 
+			andBool max(T:Type) >=Int I:Int 
+		)
+		andBool I:Int >Int max(T:Type)
+		andBool notBool(unsignedIntegerTypes contains T:Type)
+		andBool hasIntegerType(T:Type)
+		andBool hasIntegerType(T':Type)
+		: KSentence [metadata "structural"] .
+	--- mb rule
+		--- [interpret(N:Nat, T:Type) => tv(_-Int_(N:Nat, (2 ^Nat absInt(numBits(T:Type)))), T:Type)]
+		--- if notBool(min(T:Type) <=Int N:Nat andBool max(T:Type) >=Int N:Nat)
+		--- andBool (N:Nat >Int max(T:Type))
+		--- andBool hasIntegerType(T:Type)
+		--- : KSentence [metadata "structural"] .
 	
 	---C99 6.3.1.4:1 When a finite value of real floating type is converted to an integer type other than _Bool, the fractional part is discarded (i.e., the value is truncated toward zero). If the value of the integral part cannot be represented by the integer type, the behavior is undefined.52) The remaindering operation performed when a value of integer type is converted to unsigned type need not be performed when a value of real floating type is converted to unsigned type. Thus, the range of portable real floating values is (-1, Utype_MAX+1).
 	--- fixme

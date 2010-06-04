@@ -49,8 +49,7 @@ struct defs *pd0;
 {
    static char qs26[8] = "s26    ";
    char *ps, *pt;
-   // cme below should be unsigned.  signed overflow is undefined
-   unsigned char c0, c1;
+   char c0, c1;
    float temp, one, delta;
    double tempd, oned;
    static char s[] = "%3d bits in %ss.\n";
