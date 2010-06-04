@@ -8,9 +8,9 @@ struct defs *pd0;
    char c0, c1;
    float temp, one, delta;
    double tempd, oned;
-   static char s[] = "%3d bits in %ss.\n";
+   static char s[] = "VOLATILE: %3d bits in %ss.\n";
    // cme %e to %f
-   static char s2[] = "%f is the least number that can be added to 1. (%s).\n";
+   static char s2[] = "VOLATILE: %f is the least number that can be added to 1. (%s).\n";
 
    ps = qs26;
    pt = pd0->rfs;
