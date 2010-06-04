@@ -41,3 +41,5 @@ int sumof(char* x) {
    for(j=0; j<256; j++) total = total+ *p++;
    return total;
 }
+
+int extvar;

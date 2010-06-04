@@ -406,6 +406,7 @@ mod SIZEOF is
 	mb rule
 		< type > [F:Float => double] </ type >
 		: KSentence [metadata "stuctural"] .
+	--- c99 6.4.5
 	mb rule
 		< type > [S:String => arrayType(char, lengthString(S:String))] </ type >
 		: KSentence [metadata "stuctural"] .
@@ -1211,8 +1212,6 @@ mod COMMON-C-SEMANTICS is
 	mb rule [EmptyStatement ; => .K] : KSentence [metadata "structural"] .
 	
 	--- mb context Deref([HOLE]) := ? : KSentence .
-	mb context Deref([HOLE]) ++ : KSentence .
-	mb context Deref([HOLE]) -- : KSentence .
 	--- fixme problem with strict operator and context?
 	---op assign : K K -> K [metadata "strict 2"] .
 	op assign : K K -> K .
@@ -1359,8 +1358,14 @@ and ll or LL
 		< mem >... Loc:Nat |-> V:Value ...</ mem >
 	: KSentence [metadata "structural"] .
 	
-	mb [make-postinc-ref]: rule < k > [I:Id ++ => Deref(&(I:Id)) ++] ...</ k > : KSentence [metadata "structural"] .
-	mb [make-postdec-ref]: rule < k > [I:Id -- => Deref(&(I:Id)) --] ...</ k > : KSentence [metadata "structural"] .
+	op postOpRef : K KLabel -> K .
+	mb context postOpRef(Deref([HOLE]), ?) : KSentence .
+	---mb context Deref([HOLE]) -- : KSentence .
+	--- mb rule < k > [postOpRef(V:Value, KL:KLabel) => KL:KLabel(V:Value)] ...</ k > : KSentence [metadata "structural"] .
+	--- mb [make-postinc-ref]: rule < k > [E:Expression ++ => Deref(&(E:Expression)) ++] ...</ k > : KSentence [metadata "structural"] .
+	--- mb [make-postdec-ref]: rule < k > [E:Expression -- => Deref(&(E:Expression)) --] ...</ k > : KSentence [metadata "structural"] .
+	 mb [make-postinc-ref]: rule < k > [E:Expression ++ => postOpRef(Deref(&(E:Expression)), '_++)] ...</ k > : KSentence [metadata "structural"] .
+	mb [make-postdec-ref]: rule < k > [E:Expression -- => postOpRef(Deref(&(E:Expression)), '_--)] ...</ k > : KSentence [metadata "structural"] .
 		
 	--- remove empty global
 	mb [remove-global-marker-empty]: rule [Global() => .K] : KSentence [metadata "structural"] .
@@ -2012,7 +2017,7 @@ and ll or LL
 	op postInc : K K Type -> K [metadata "strict(2)"] .
 	op postDec : K K Type -> K [metadata "strict(2)"] .
 	mb [post-increment-start]: rule
-		< k > [Deref(tv(Loc:Nat, pointerType(T:Type))) ++
+		< k > [postOpRef(Deref(tv(Loc:Nat, pointerType(T:Type))), '_++)
 		=> postInc(Loc:Nat, readFromMem(Loc:Nat, T:Type), T:Type)
 		] ...</ k >
 		: KSentence [metadata "structural"] .
@@ -2031,7 +2036,7 @@ and ll or LL
 		: KSentence .
 		
 	mb [post-decrement-start]: rule
-		< k > [Deref(tv(Loc:Nat, pointerType(T:Type))) --
+		< k > [postOpRef(Deref(tv(Loc:Nat, pointerType(T:Type))), '_--)
 		=> postDec(Loc:Nat, readFromMem(Loc:Nat, T:Type), T:Type)
 		] ...</ k >
 		: KSentence [metadata "structural"] .
