@@ -407,6 +407,9 @@ mod SIZEOF is
 		< type > [F:Float => double] </ type >
 		: KSentence [metadata "stuctural"] .
 	mb rule
+		< type > [S:String => arrayType(char, lengthString(S:String))] </ type >
+		: KSentence [metadata "stuctural"] .
+	mb rule
 		< k > [evalToType ~> sizeof(HOLE) => sizeofType(arrayType(T:Type, N:Nat))] ...</ k >
 		[< type > arrayType(T:Type, N:Nat) </ type > => .Bag]
 		: KSentence [metadata "stuctural"] .
