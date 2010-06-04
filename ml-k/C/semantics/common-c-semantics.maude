@@ -1560,12 +1560,10 @@ and ll or LL
 		< k > [putInMem(pair(Base:Nat, Offset:Nat), tv(N:Int, T:Type), T:Type, tv(sNat(Len:Nat), J:Type)) 
 		=> putBitInMem(pair(Base:Nat, Offset:Nat), ((N:Int %Int 2) +Int 2) %Int 2) ~> putInMem(pair(Base:Nat, sNat(Offset:Nat)), tv(N:Int >>Int 1, T:Type), T:Type, tv(Len:Nat, J:Type))] ...</ k >
 		if (Offset:Nat <Nat 8)
-		---andBool Len:Nat =/=Bool 15
 		: KSentence [metadata "structural"] .
 	mb rule
 		< k > [putInMem(pair(Base:Nat, 8), tv(N:Int, T:Type), T:Type, tv(sNat(Len:Nat), J:Type)) 
 		=> putInMem(pair(sNat(Base:Nat), 0), tv(N:Int, T:Type), T:Type, tv(sNat(Len:Nat), J:Type))] ...</ k >
-		---andBool Len:Nat =/=Bool 15
 		: KSentence [metadata "structural"] .
 		
 	mb rule
