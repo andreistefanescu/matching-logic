@@ -9,7 +9,7 @@ mod COMMON-C-STANDARD-LIBRARY is
 		< k > [debug => builtin(debug)] ...</ k >
 	: KSentence .
 	mb [debug]: rule
-		< k > [Apply(builtin(debug), .List{Expression}) => skipval] ...</ k >
+		< k > [Apply(builtin(debug), ?) => skipval] ...</ k >
 	: KSentence .
 	
 	--------------------------------------------

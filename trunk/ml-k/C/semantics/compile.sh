@@ -79,8 +79,14 @@ set -o errexit
 if [ ! "$compileOnlyFlag" ]; then
 	echo "load $myDirectory/c-total" > out.tmp
 	echo "load program-$baseName-compiled" >> out.tmp
-	exec="echo rew in C-program-$baseName : eval\\(\\\"program-$baseName\\\"\\(.List{K}\\), \\(\`for i in \$0 \"\$@\"; do echo \"\\\"String\\\" \\\"\$i\\\"(.List{K}),,\" ; done\` .List{K}\\), \\\"\$stdin\\\"\\) . > /tmp/fsl-tmp-runner-\$\$.maude; echo q >> /tmp/fsl-tmp-runner-\$\$.maude ; maude -ansi-color -no-wrap \$0 /tmp/fsl-tmp-runner-\$\$.maude"
-	echo "--- &> /dev/null; if [ -t 0 ]; then stdin=\"\"; else stdin=\$(cat); fi; if [ \$DEBUG ]; then $exec; else $exec | perl /home/grosu/celliso2/matching-logic/trunk/ml-k/C/dist/wrapper.pl; fi ; rm -f /tmp/fsl-tmp-runner-\$\$.maude; exit \$?" > a.tmp
+	runner='/tmp/fsl-tmp-runner-$$.maude'
+	mStart="echo > $runner"
+	exec="echo rew in C-program-$baseName : eval\\(\\\"program-$baseName\\\"\\(.List{K}\\), \\(\`for i in \$0 \"\$@\"; do echo \"\\\"String\\\" \\\"\$i\\\"(.List{K}),,\" ; done\` .List{K}\\), \\\"\$stdin\\\"\\) . >> $runner"
+	mDebug="echo break select debug . >> $runner; echo set break on . >> $runner"
+	maude="maude -ansi-color -no-wrap \$0 $runner"
+	debug="$mStart; $mDebug; $exec"
+	run="$mStart; $exec; echo q >> $runner"
+	echo "--- &> /dev/null; if [ -t 0 ]; then stdin=\"\"; else stdin=\$(cat); fi; if [ \$DEBUG ]; then $debug; $maude; else $run; $maude | perl /home/grosu/celliso2/matching-logic/trunk/ml-k/C/dist/wrapper.pl; fi ;  exit \$?" > a.tmp
 	cat out.tmp | perl $myDirectory/slurp.pl >> a.tmp
 	if [ ! "$dumpFlag" ]; then
 		rm -f program-$baseName-compiled.maude
