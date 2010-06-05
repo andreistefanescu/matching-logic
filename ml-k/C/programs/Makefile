@@ -5,7 +5,7 @@ PARSER ?= ../dist/cparser
 
 DONT_RUN = goto resizeArray testStdarg testPrintf testStructInitializer \
 	twoFile1 twoFile2 \
-	fix-fft getchar sumn bitfields2
+	fix-fft getchar sumn bitfields2 cq
 FAST_TESTS = quine2
 CURRENT_TESTS = hexNums
 
