@@ -42,6 +42,8 @@ open Cil
 let replace input output =
     Str.global_replace (Str.regexp_string input) output
 
+let noscores s = 
+	(replace "_" "u" s)
 
 class maudeVisitor = object (self) inherit nopCilVisitor
 	val mutable identifierList : string list = []
@@ -52,40 +54,33 @@ class maudeVisitor = object (self) inherit nopCilVisitor
 	
 	method vvdec (v:varinfo) = begin
 		(*print_string (v.vname ^ "\n");*)
-		identifierList <- (replace "_" "u" v.vname) :: identifierList;
+		identifierList <- (noscores v.vname) :: identifierList;
 		DoChildren
 	end
 
 	method vvrbl (v:varinfo) = begin
-		identifierList <- (replace "_" "u" v.vname) :: identifierList;
+		identifierList <- (noscores v.vname) :: identifierList;
 		DoChildren
 	end
 	
 	method vglob (g:global) = begin
 		( match g with 
-			(* | GFun(fundec, l) -> begin
-				let formalVisit = fun fi -> 
-					print_string (fi.vname ^ "\n");
-					identifierList <- (replace "_" "u" fi.vname) :: identifierList
-				in List.iter formalVisit fundec.sformals;
-			end *)
 			| GEnumTag (enum, _) -> 
-				identifierList <- (replace "_" "u" enum.ename) :: identifierList ;
+				identifierList <- (noscores enum.ename) :: identifierList ;
 		      (* Do the values and attributes of the enumerated items *)
 		      let itemVisit (name, exp, loc) = 
-				identifierList <- (replace "_" "u" name) :: identifierList in
+				identifierList <- (noscores name) :: identifierList in
 		      List.iter itemVisit enum.eitems;
-			| GType(typeinfo, location) -> typedefList <- (replace "_" "u" typeinfo.tname) :: typedefList
+			| GType(typeinfo, location) -> typedefList <- (noscores typeinfo.tname) :: typedefList
 			| GVarDecl(varinfo, location) -> 
-				identifierList <- (replace "_" "u" varinfo.vname) :: identifierList
+				identifierList <- (noscores varinfo.vname) :: identifierList
 			| GCompTag (comp, l) -> begin
-				identifierList <- (replace "_" "u" comp.cname) :: identifierList;
+				identifierList <- (noscores comp.cname) :: identifierList;
 				let fieldVisit = fun fi -> 
 					(* print_string (fi.fname ^ "\n"); *)
-					identifierList <- (replace "_" "u" fi.fname) :: identifierList
+					identifierList <- (noscores fi.fname) :: identifierList
 			      in
 			      List.iter fieldVisit comp.cfields;
-			      (*comp.cattr <- visitCilAttributes vis comp.cattr;*)
 			end
 			
 			| _ -> ()
@@ -93,25 +88,16 @@ class maudeVisitor = object (self) inherit nopCilVisitor
 		DoChildren
 	end
 	
-	
 	method vstmt (s: stmt) : stmt visitAction = 
 		let labelVisit = fun fi -> match fi with 
-			| Label (s, _, true) -> identifierList <- (replace "_" "u" s) :: identifierList
-			| Label (s, _, false) -> identifierList <- (replace "_" "u" s) :: identifierList	
+			| Label (s, _, true) -> identifierList <- (noscores s) :: identifierList
+			| Label (s, _, false) -> identifierList <- (noscores s) :: identifierList	
 			| _ -> ()
 		in List.iter labelVisit s.labels;
 		DoChildren
 		
-	
-	(* method vattr: attribute -> attribute list visitAction  *)
-	(* method vattr (Attr (s, params)) = begin
-		identifierList <- (replace "_" "u" s) :: identifierList;
-		print_string (s ^ "\n");
-		DoChildren
-	end *)
-	
 	method vinit (forg: varinfo) (off: offset) (i:init) = begin
-		identifierList <- (replace "_" "u" forg.vname) :: identifierList;
+		identifierList <- (noscores forg.vname) :: identifierList;
 		DoChildren
 	end
 	
@@ -122,22 +108,12 @@ class maudeVisitor = object (self) inherit nopCilVisitor
 					match fi with
 					| (aname, atype, aattr) -> 
 						if (String.length(aname) != 0) then (
-							identifierList <- (replace "_" "u" aname) :: identifierList;
+							identifierList <- (noscores aname) :: identifierList;
 						)
 			      in match args with
 					| Some xs -> List.iter argVisit xs
 					| None -> () ;
 			end
-				 (* (match args with
-				| Some ((aname, atype, aattr)::xs) -> 
-					if (String.length(aname) != 0) then (
-						identifierList <- (replace "_" "u" aname) :: identifierList;
-					) else (
-					)
-				| _ -> () ; 
-				)*)
-			(* | TNamed (typeinfo, attributes) -> *)
-			(* typedefList <- (replace "_" "u" typeinfo.tname) :: typedefList (*typeinfo.ttype*) *)
 			| _ -> ()
 		) ;
 		DoChildren

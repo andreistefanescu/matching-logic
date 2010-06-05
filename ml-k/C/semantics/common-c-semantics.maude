@@ -203,6 +203,25 @@ mod C-SETTINGS is
 	eq sizeofType(T:Base-Type) = tv(numBytes(T:Base-Type), cfg:sizeut) .
 	eq sizeofType(pointerType(?)) = tv(numBytes(unsigned-long-int), cfg:sizeut) .
 
+	--- need to be careful about simplifying these into one rule because there may be variables with the same name as a typedef?
+	--- fixme typedef should take precedence over variable
+	mb rule 
+		< k > [X:Id => T:Type] ...</ k >
+		< types >... typedefName(X:Id) |-> T:Type ...</ types > 
+		: KSentence [metadata "structural"] .
+	mb rule 
+		< k > [struct(X:Id) => T:Type] ...</ k > 
+		< types >... struct(X:Id) |-> T:Type ...</ types > 
+		: KSentence [metadata "structural"] .
+	mb rule 
+		< k > [union(X:Id) => T:Type] ...</ k > 
+		< types >... union(X:Id) |-> T:Type ...</ types > 
+		: KSentence [metadata "structural"] .
+	mb rule 
+		< k > [enum(X:Id) => T:Type] ...</ k > 
+		< types >... enum(X:Id) |-> T:Type ...</ types > 
+		: KSentence [metadata "structural"] .
+	
 	--- — number of bits for smallest object that is not a bit-field (byte)
 	--- CHAR_BIT 8
 	--- — minimum value for an object of type signed char
@@ -447,6 +466,10 @@ mod SIZEOF is
 	mb rule
 		< type > [E:Expression => T:Type] ...</ type >
 		< types >... E:Expression |-> T:Type ...</ types >
+		: KSentence [metadata "stuctural"] .
+	mb rule
+		< type > [X:Id => T:Type] ...</ type >
+		< types >... typedefName(X:Id) |-> T:Type ...</ types >
 		: KSentence [metadata "stuctural"] .
 	mb rule
 		< type > [tv(?, T:Type) => T:Type] ...</ type >
@@ -814,9 +837,9 @@ mod COMMON-PARAMETER-BINDING is
 			
 	--- fixme can't this be done by heating bind?
 	mb rule
-		< k > [bind(L:List{KResult}, ('Parameter-Declaration(T:Typedef-Name,, D:Declarator),, P:List{K}))
+		< k > [bind(L:List{KResult}, ('Parameter-Declaration(X:Id,, D:Declarator),, P:List{K}))
 			=> bind(L:List{KResult}, ('Parameter-Declaration(T':Type,, D:Declarator),, P:List{K}))] ...</ k >
-		< typedefs >... T:Typedef-Name |-> T':Type ...</ typedefs >
+		< typedefs >... typedefName(X:Id) |-> T':Type ...</ typedefs >
 		: KSentence [metadata "structural"] .
 	mb rule
 		< k > [bind(L:List{KResult}, ('Parameter-Declaration(struct(X:Id),, D:Declarator),, P:List{K}))
@@ -893,15 +916,22 @@ mod COMMON-GLOBAL-DECLARATION is
 		=> Declaration(struct(S:Id), X:Id) = structInitializer(X:Id, getList{K}(L:List{Expression}))] : KSentence [metadata "structural"] .
 	
 	mb rule
-		< k > ['Global('Declaration(TD:Typedef-Name,, D:Declarator))
+		< k > ['Global('Declaration(X:Id,, D:Declarator))
 			=> 'Global('Declaration(T:Type,, D:Declarator))] ...</ k >
-		< typedefs >... TD:Typedef-Name |-> T:Type ...</ typedefs >
+		< typedefs >... typedefName(X:Id) |-> T:Type ...</ typedefs >
 		: KSentence [metadata "structural"] .
 	
 	mb [global-variable-declaration-init]: rule
-		< k > ['_=_('Declaration(T:Type,, X:Id),, E:Expression) => 'Global('Declaration(T:Type,, X:Id)) ~> Deref(&(X:Id)) := E:Expression ;] ...</ k >
+		< k > ['Global('_=_('Declaration(T:Type,, X:Id),, E:Expression)) => 'Global('Declaration(T:Type,, X:Id)) ~> Deref(&(X:Id)) := E:Expression ;] ...</ k >
 		: KSentence .
-		
+	--- mb [global-variable-declaration-init]: rule
+		--- < k > [('_=_('Declaration(T:Type,, X:Id),, E:Expression)) => 'Global('Declaration(T:Type,, X:Id)) ~> Deref(&(X:Id)) := E:Expression ;] ...</ k >
+		--- : KSentence .
+	
+	mb [function-global]: rule 
+		< k > ['Global('_`{_`}('Declaration(T:TogetherList,, D:Declarator),, B:TogetherList)) => '_`{_`}('Declaration(T:TogetherList,, D:Declarator),, B:TogetherList)] ...</ k >
+		: KSentence [metadata "structural"] .
+	
 	mb [function-definition]: rule 
 		< k > ['_`{_`}('Declaration(T:Type,, X:Id),, B:TogetherList) => .K] ...</ k >
 		< env >... [.Map => X:Id |-> Loc:Nat] ...</ env >
@@ -912,8 +942,8 @@ mod COMMON-GLOBAL-DECLARATION is
 		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
 		: KSentence .
 	mb rule 
-		< k > ['_`{_`}('Declaration(TD:Typedef-Name,, D:Declarator),, B:TogetherList) => '_`{_`}('Declaration(T:Type,, D:Declarator),, B:TogetherList)] ...</ k >
-		< typedefs >... TD:Typedef-Name |-> T:Type ...</ typedefs >
+		< k > ['_`{_`}('Declaration(X:Id,, D:Declarator),, B:TogetherList) => '_`{_`}('Declaration(T:Type,, D:Declarator),, B:TogetherList)] ...</ k >
+		< typedefs >... typedefName(X:Id) |-> T:Type ...</ typedefs >
 		: KSentence [metadata "structural"] .
 		
 	mb [function-prototype]: rule 
@@ -926,7 +956,7 @@ mod COMMON-GLOBAL-DECLARATION is
 	--- fixme this isn't how things are, but it seems to work out
 	---C99 6.7.2.2:3 The identifiers in an enumerator list are declared as constants that have type int and may appear wherever such are permitted
 	mb rule
-		< k > [Global(enum(X:Id, ((X':Id := E:Expression) .,. L:List{Expression}))) => '_=_('Declaration(int,, X':Id),, E:Expression) ~> Global(enum(X:Id, L:List{Expression}))] ...</ k >
+		< k > [Global(enum(X:Id, ((X':Id := E:Expression) .,. L:List{Expression}))) => 'Global('_=_('Declaration(int,, X':Id),, E:Expression)) ~> Global(enum(X:Id, L:List{Expression}))] ...</ k >
 		: KSentence [metadata "structural"] .
 	mb rule
 		< k > [Global(enum(X:Id, .List{Expression})) => .K] ...</ k >
@@ -946,7 +976,7 @@ mod COMMON-GLOBAL-DECLARATION is
 		
 	op initArray : List{K} Nat Type -> K .
 	mb [global-array-declaration-init]: rule
-		< k > ['_=`{_`}('Declaration(arrayType(T:Type, N:Nat),, X:Id),, L:List{Expression}) => '_;(allocate(sizeofType(arrayType(T:Type, N:Nat)))) ~> initArray(getList{K}(L:List{Expression}), Loc:Nat, T:Type)] ...</ k >
+		< k > ['Global('_=`{_`}('Declaration(arrayType(T:Type, N:Nat),, X:Id),, L:List{Expression})) => '_;(allocate(sizeofType(arrayType(T:Type, N:Nat)))) ~> initArray(getList{K}(L:List{Expression}), Loc:Nat, T:Type)] ...</ k >
 		< env >... [.Map => X:Id |-> Loc:Nat] ...</ env >
 		< genv >... [.Map => X:Id |-> Loc:Nat] ...</ genv >
 		< nextLoc > Loc:Nat </ nextLoc >
