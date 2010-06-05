@@ -171,3 +171,17 @@ setev(){                  /* Sets an external variable. Used  */
    extern int extvar;     /* by s4, and should be compiled    */
    extvar = 1066;         /* separately from s4.              */
 }
+
+
+McCarthy(x)
+int x;
+{
+   if(x>100) return x-10;
+   else return McCarthy( McCarthy(x+11));
+}
+clobber(x,y)
+int x, *y;
+{
+   x = 3;
+   *y = 2;
+}
