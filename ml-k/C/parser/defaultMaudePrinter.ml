@@ -198,7 +198,8 @@ let d_const () c =
 
   (*| CChr(c) -> text ("'" ^ escape_char c ^ "'") *)
   | CChr(c) -> text (string_of_int (int_of_char c))
-  | CReal(_, _, Some s) -> text s
+  | CReal(_, _, Some s) -> 
+	if (strcontains s "f") then (text ("@F(" ^ (replace "f" "" s) ^ ")")) else (text s) 
   | CReal(f, fsize, None) -> 
       (match fsize with
          FFloat -> text "@F"
@@ -939,7 +940,7 @@ class virtual defaultMaudePrinterClass = object (self)
   method pExp () (e: exp) : doc = 
     paren(
     match e with
-      Const(c) -> d_const () c
+      Const(c) -> (d_const () c)
     | Lval(l) -> self#pLval () l
     | UnOp(u,e1,_) -> 
         (d_unop () u) ++ chr ' ' ++ (self#pExp () e1)
