@@ -199,7 +199,11 @@ let d_const () c =
   (*| CChr(c) -> text ("'" ^ escape_char c ^ "'") *)
   | CChr(c) -> text (string_of_int (int_of_char c))
   | CReal(_, _, Some s) -> 
-	if (strcontains s "f") then (text ("@F(" ^ (replace "f" "" s) ^ ")")) else (text s) 
+	if (strcontains s "f") then (
+		text ("@F(" ^ (replace "f" "" s) ^ ")")
+	) else if (strcontains s "l") then (
+		text ("@L(" ^ (replace "l" "" s) ^ ")")
+	) else (text s)
   | CReal(f, fsize, None) -> 
       (match fsize with
          FFloat -> text "@F"
