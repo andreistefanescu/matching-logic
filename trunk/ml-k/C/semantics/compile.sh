@@ -25,10 +25,8 @@ function getoptsFunc {
 			;;
 		w)	warnFlag="-w"
 			;;
-		?)	if [ ! -f $inputFile ]; then
-				printf "$usage" $(basename $0) >&2
-				exit 2
-			fi
+		?)	printf "$usage" $(basename $0) >&2
+			exit 2
 			;;
 	  esac
 	done
@@ -40,8 +38,13 @@ if [ ! "$1" ]; then
 	printf "$usage" $(basename $0) >&2
 	exit 2
 fi
+if [ ! -f $1 ]; then
+	printf "Input file %s does not exist\n" $1
+	exit 1
+fi
 
 inputFile=`readlink -f $1`
+shift 1
 inputDirectory=`dirname $inputFile`
 baseName=`basename $inputFile .c`
 
@@ -54,11 +57,7 @@ if [ ! "$oflag" ]; then
 fi
 
 #printf "Compiling %s to %s\n" $inputFile $oval
-if [ ! -f $inputFile ]; then
-	printf "Input file %s does not exist\n" $inputFile
-	exit 1
-fi
-shift 1
+
 
 getoptsFunc "$@"
 shift $(($OPTIND - 1))
