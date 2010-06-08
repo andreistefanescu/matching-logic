@@ -25,8 +25,10 @@ function getoptsFunc {
 			;;
 		w)	warnFlag="-w"
 			;;
-		?)	printf "$usage" $(basename $0) >&2
-			exit 2
+		?)	if [ ! -f "$inputFile" ]; then
+				printf "$usage" $(basename $0) >&2
+				exit 2
+			fi
 			;;
 	  esac
 	done
@@ -38,12 +40,15 @@ if [ ! "$1" ]; then
 	printf "$usage" $(basename $0) >&2
 	exit 2
 fi
-if [ ! -f $1 ]; then
+
+set +o errexit
+inputFile=`readlink -f $1`
+if [ "$?" -ne 0 ]; then
 	printf "Input file %s does not exist\n" $1
 	exit 1
 fi
+set -o errexit
 
-inputFile=`readlink -f $1`
 shift 1
 inputDirectory=`dirname $inputFile`
 baseName=`basename $inputFile .c`
