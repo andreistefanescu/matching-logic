@@ -112,7 +112,7 @@ mod COMMON-SEMANTIC-SYNTAX is
 	subsort Value < KResult .
 	subsort Type < KResult .
 	subsort Base-Type < Type .
-	subsort TogetherList < Expression .
+	subsort SeqList < Expression .
 	op sizeof : Type -> Expression .
 	op HOLE : -> Expression .
 	
@@ -706,6 +706,9 @@ mod TYPES is
 	mb rule
 		[register => .K]
 		: KSentence [metadata "structural"] .
+	mb rule
+		[inline => .K]
+		: KSentence [metadata "structural"] .
 	
 	op arithConversion : K K -> K [metadata "strict"] .
 	op arithConversion-int : K K -> K [metadata "strict"] .
@@ -929,20 +932,20 @@ mod COMMON-GLOBAL-DECLARATION is
 		--- : KSentence .
 	
 	mb [function-global]: rule 
-		< k > ['Global('_`{_`}('Declaration(T:TogetherList,, D:Declarator),, B:TogetherList)) => '_`{_`}('Declaration(T:TogetherList,, D:Declarator),, B:TogetherList)] ...</ k >
+		< k > ['Global('_`{_`}('Declaration(T:SeqList,, D:Declarator),, B:SeqList)) => '_`{_`}('Declaration(T:SeqList,, D:Declarator),, B:SeqList)] ...</ k >
 		: KSentence [metadata "structural"] .
 	
 	mb [function-definition]: rule 
-		< k > ['_`{_`}('Declaration(T:Type,, X:Id),, B:TogetherList) => .K] ...</ k >
+		< k > ['_`{_`}('Declaration(T:Type,, X:Id),, B:SeqList) => .K] ...</ k >
 		< env >... [.Map => X:Id |-> Loc:Nat] ...</ env >
 		< genv >... [.Map => X:Id |-> Loc:Nat] ...</ genv >
-		< mem >... [.Map => Loc:Nat |-> Closure(X:Id, T:Type, B:TogetherList)] </ mem >
+		< mem >... [.Map => Loc:Nat |-> Closure(X:Id, T:Type, B:SeqList)] </ mem >
 		< types >... [.Map => X:Id |-> T:Type] ...</ types >
 		< typedefs >... [.Map => X:Id |-> T:Type] ...</ typedefs >
 		< nextLoc > [Loc:Nat => sNat(Loc:Nat)] </ nextLoc >
 		: KSentence .
 	mb rule 
-		< k > ['_`{_`}('Declaration(X:Id,, D:Declarator),, B:TogetherList) => '_`{_`}('Declaration(T:Type,, D:Declarator),, B:TogetherList)] ...</ k >
+		< k > ['_`{_`}('Declaration(X:Id,, D:Declarator),, B:SeqList) => '_`{_`}('Declaration(T:Type,, D:Declarator),, B:SeqList)] ...</ k >
 		< typedefs >... typedefName(X:Id) |-> T:Type ...</ typedefs >
 		: KSentence [metadata "structural"] .
 		
@@ -950,7 +953,7 @@ mod COMMON-GLOBAL-DECLARATION is
 		< k > ['Global('Declaration(functionType(T:Type, L:List{K}),, I:Id)) => .K] ...</ k >
 		: KSentence [metadata "structural"] .
 	mb rule
-		< k > [Global(Typedef(T:TogetherList, X:Declarator)) => Typedef(T:TogetherList, X:Declarator)] ...</ k >
+		< k > [Global(Typedef(T:SeqList, X:Declarator)) => Typedef(T:SeqList, X:Declarator)] ...</ k >
 		: KSentence [metadata "structural"] .
 		
 	--- fixme this isn't how things are, but it seems to work out
@@ -1004,7 +1007,7 @@ mod COMMON-GLOBAL-DECLARATION is
 	op struct-aux : Id K List{KResult} -> K .
 	op union-aux : Id K List{KResult} -> K .
 	mb rule 
-		< k > [Global(struct(X:Id, DS:TogetherList) ;) => struct-aux(X:Id, DS:TogetherList, .List{K}) ~> addGlobalTypes(X:Id)] ...</ k >
+		< k > [Global(struct(X:Id, DS:SeqList) ;) => struct-aux(X:Id, DS:SeqList, .List{K}) ~> addGlobalTypes(X:Id)] ...</ k >
 		< types >... [.Map => struct(X:Id) |-> structType(X:Id)] ...</ types >
 		< typedefs >... [.Map => struct(X:Id) |-> structType(X:Id)] ...</ typedefs >
 		: KSentence [metadata "structural"] .
@@ -1014,15 +1017,15 @@ mod COMMON-GLOBAL-DECLARATION is
 		< typedefs >... [.Map => struct(X:Id) |-> structType(X:Id)] ...</ typedefs >
 		: KSentence [metadata "structural"] .
 	mb rule 
-		< k > [Global(union(X:Id, DS:TogetherList) ;) => union-aux(X:Id, DS:TogetherList, .List{K}) ~> addGlobalTypes(X:Id)] ...</ k >
+		< k > [Global(union(X:Id, DS:SeqList) ;) => union-aux(X:Id, DS:SeqList, .List{K}) ~> addGlobalTypes(X:Id)] ...</ k >
 		< types >... [.Map => union(X:Id) |-> unionType(X:Id)] ...</ types >
 		< typedefs >... [.Map => union(X:Id) |-> unionType(X:Id)] ...</ typedefs >
 		: KSentence [metadata "structural"] .
 	mb rule 
-		< k > [struct-aux(X:Id, (Field(T:TogetherList, D:Declarator) ~> K:K), L:List{KResult}) => Field(T:TogetherList, D:Declarator) ~> struct-aux(X:Id, K:K, L:List{KResult})] ...</ k >
+		< k > [struct-aux(X:Id, (Field(T:SeqList, D:Declarator) ~> K:K), L:List{KResult}) => Field(T:SeqList, D:Declarator) ~> struct-aux(X:Id, K:K, L:List{KResult})] ...</ k >
 		: KSentence [metadata "structural"] .
 	mb rule 
-		< k > [union-aux(X:Id, (Field(T:TogetherList, D:Declarator) ~> K:K), L:List{KResult}) => Field(T:TogetherList, D:Declarator) ~> union-aux(X:Id, K:K, L:List{KResult})] ...</ k >
+		< k > [union-aux(X:Id, (Field(T:SeqList, D:Declarator) ~> K:K), L:List{KResult}) => Field(T:SeqList, D:Declarator) ~> union-aux(X:Id, K:K, L:List{KResult})] ...</ k >
 		: KSentence [metadata "structural"] .
 	mb rule 
 		< k > [typedField(T:Type, X:Id) ~> struct-aux(X':Id, K:K, L:List{KResult}) => struct-aux(X':Id, K:K, (L:List{KResult},, typedField(T:Type, X:Id)))] ...</ k >
@@ -1360,7 +1363,7 @@ and ll or LL
 	mb [skip-label]: rule < k > [L:Id : S:Statement => S:Statement] ...</ k > : KSentence [metadata "structural"] .
 	
 	--- dissolve blocks
-	mb [dissolve-block]: rule < k > [Block(B:TogetherList) => B:TogetherList] ...</ k > : KSentence [metadata "structural"] .
+	mb [dissolve-block]: rule < k > [Block(B:SeqList) => B:SeqList] ...</ k > : KSentence [metadata "structural"] .
 
 	--- dissolve expression statements that are finished evaluating
 	mb [value-statement]: rule < k > [V:Value ; => .K] ...</ k > : KSentence .
@@ -1858,7 +1861,7 @@ and ll or LL
 	eq integerTypes = Set(char,, signed-char,, unsigned-char,, short-int,, int,, long-int,, long-long-int,, unsigned-short-int,, unsigned-int,, unsigned-long-int,, unsigned-long-long-int) .
 	eq unsignedIntegerTypes = Set(unsigned-char,, unsigned-short-int,, unsigned-int,, unsigned-long-int,, unsigned-long-long-int) .
 	
-	mb rule [Cast(T:TogetherList, E:Expression) => cast(T:TogetherList, E:Expression)] : KSentence [metadata "structural rule"] .
+	mb rule [Cast(T:SeqList, E:Expression) => cast(T:SeqList, E:Expression)] : KSentence [metadata "structural rule"] .
 	
 	mb rule
 		< k > [cast(T:Type, tv(B:BaseValue, T:Type)) => tv(B:BaseValue, T:Type)] ...</ k > 

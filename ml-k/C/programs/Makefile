@@ -3,11 +3,15 @@ GCC ?= gcc -lm -Wall -Wextra -Wmissing-prototypes -pedantic -x c -std=c99
 #-Werror 
 PARSER ?= ../dist/cparser
 
-DONT_RUN = goto resizeArray testStdarg testPrintf testStructInitializer \
+DONT_WORK = goto resizeArray testStdarg testPrintf testStructInitializer \
 	twoFile1 twoFile2 \
-	fix-fft getchar sumn bitfields2 cq
+	getchar sumn bitfields2 cq 
+SLOW_TESTS = cq-11-s714 fix-fft quine1 mersenne
 FAST_TESTS = quine2
 CURRENT_TESTS = hexNums
+
+
+DONT_RUN = $(DONT_WORK) $(SLOW_TESTS)
 
 # gcc -c twoFile1.c 
 # gcc -c twoFile2.c 

@@ -224,9 +224,9 @@ mod COMMON-C-SYNTAX is
 	--- ---- A.2.2 Declarations
 	--- --- 6.7
 	sort Declaration .
-	op Declaration : TogetherList -> Declaration [metadata "strict(1)"] .
-	op Declaration : TogetherList Init-Declarator-List -> Declaration [metadata "strict(1)"] .
-	op Typedef : TogetherList Declarator -> Declaration [metadata "strict(1)"] .
+	op Declaration : SeqList -> Declaration [metadata "strict(1)"] .
+	op Declaration : SeqList Init-Declarator-List -> Declaration [metadata "strict(1)"] .
+	op Typedef : SeqList Declarator -> Declaration [metadata "strict(1)"] .
 	
 	sort Init-Declarator-List .
 	subsort Init-Declarator < Init-Declarator-List .
@@ -238,7 +238,7 @@ mod COMMON-C-SYNTAX is
 
 	---subsort Type-Specifier Type-Qualifier Function-Specifier < Declaration-Specifiers .
 	---subsort Storage-Class-Specifier Type-Specifier < Declaration-Specifiers .
-	subsort Storage-Class-Specifier Type-Specifier < TogetherList .
+	subsort Storage-Class-Specifier Type-Specifier < SeqList .
 	---op __ : Storage-Class-Specifier Declaration-Specifiers -> Declaration-Specifiers [ditto] .
 	---op __ : Type-Specifier Declaration-Specifiers -> Declaration-Specifiers [ditto] .
 	--- --- TODO op __ : Type-Qualifier Declaration-Specifiers -> Declaration-Specifiers .
@@ -259,6 +259,7 @@ mod COMMON-C-SYNTAX is
 	--- --- 6.7.1
 	sort Storage-Class-Specifier .
 	ops typedef extern static auto register : -> Storage-Class-Specifier .
+	op inline : -> Storage-Class-Specifier . --- nonstandard
 	
 	---- typedef char c
 	
@@ -306,12 +307,12 @@ mod COMMON-C-SYNTAX is
 	---- op Struct-Declaration : -> 
 	--- --- TODO op __; : Specifier-Qualifier-List Struct-Declarator-List -> Struct-Declarator .
 	--- --- TODO
-	op Field : TogetherList Declarator -> Struct-Declaration [metadata "strict(1)"].
+	op Field : SeqList Declarator -> Struct-Declaration [metadata "strict(1)"].
 	subsort Struct-Declaration < SeqList .
 	
 	---sort Specifier-Qualifier-List .
 	---subsort Type-Specifier Type-Qualifier < Specifier-Qualifier-List .
-	subsort Type-Specifier < TogetherList .
+	subsort Type-Specifier < SeqList .
 	---op __ : Type-Specifier Specifier-Qualifier-List -> Specifier-Qualifier-List [ditto] .
 	--- op __ : Type-Specifier Specifier-Qualifier-List -> Specifier-Qualifier-List [renameTo Specifier-Qualifier-List] .
 	--- op __ : Type-Qualifier Specifier-Qualifier-List -> Specifier-Qualifier-List [renameTo Specifier-Qualifier-List] .
@@ -425,12 +426,12 @@ mod COMMON-C-SYNTAX is
 	--- --- TODO op hackpd_hackpd : List{Parameter-Declaration} -> List{Parameter-Declaration} .
 	
 	sort Parameter-Declaration .
-	op Pointer : TogetherList -> TogetherList .
+	op Pointer : SeqList -> SeqList .
 	op ... : -> Parameter-Declaration .
 	
 	---subsort Declaration-Specifiers < Parameter-Declaration .
-	op Parameter-Declaration : TogetherList -> Parameter-Declaration .
-	op Parameter-Declaration : TogetherList Declarator -> Parameter-Declaration .
+	op Parameter-Declaration : SeqList -> Parameter-Declaration .
+	op Parameter-Declaration : SeqList Declarator -> Parameter-Declaration .
 	--- ---op __ : Declaration-Specifiers Abstract-Declarator -> Parameter-Declaration .
 	--- --- TODO
 	
@@ -441,11 +442,11 @@ mod COMMON-C-SYNTAX is
 	
 	--- --- 6.7.6
 	sort Type-Name .
-	subsort TogetherList < Type-Name .
+	subsort SeqList < Type-Name .
 	---op __ : Specifier-Qualifier-List Declarator -> Type-Name [ditto] .
-	sort TogetherList .
-	op __ : TogetherList TogetherList -> TogetherList [prec 85] .
-	subsort Declarator < TogetherList .
+	sort SeqList .
+	op __ : SeqList SeqList -> SeqList [prec 85] .
+	subsort Declarator < SeqList .
 	--- --- TODO op __ : Specifier-Qualifier-List Abstract-Declarator -> Type-Name .
 	
 	--- --- Note: Collapsed Abstract-Declarator with Direct-Abstract-Declarator
@@ -558,15 +559,15 @@ mod COMMON-C-SYNTAX is
 	subsort SeqList < Program .
 
 	---sort Common-Ancestor-Sequencing .
-	---subsort Translation-Unit < TogetherList .
+	---subsort Translation-Unit < SeqList .
 	
 	---op _;_ : Declaration Translation-Unit -> Translation-Unit [ditto] .
 	---op _;_ : Declaration Translation-Unit -> Translation-Unit [ditto] .
 	---op __ : Translation-Unit Translation-Unit -> Translation-Unit [ditto] . ---[prec 90 gather(E e)] .
-	---subsort External-Declaration < TogetherList .
-	sort SeqList .
-	subsort TogetherList < SeqList . 
-	op __ : SeqList SeqList -> SeqList [ditto] .
+	---subsort External-Declaration < SeqList .
+	---sort SeqList .
+	---subsort SeqList < SeqList . 
+	---op __ : SeqList SeqList -> SeqList [ditto] .
 	---op Translation-Unit : Translation-Unit External-Declaration -> Translation-Unit .
 	---op Translation-Unit : External-Declaration -> Translation-Unit .
 

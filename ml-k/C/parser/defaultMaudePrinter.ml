@@ -52,7 +52,10 @@ let sp : Pretty.doc = (text " ")
 let paren (d:Pretty.doc) : Pretty.doc = "(" ^+ d +^ ")"
 let giveType (d1:Pretty.doc) (d2:string) : Pretty.doc = paren(d1) ++ (text d2)
 let wrap (d1:Pretty.doc) (d2:string) : Pretty.doc = d2 ^+ paren(d1)
-
+let wrapifne (d1:Pretty.doc) (d2:string) = 
+	if (d1 = nil) then nil else wrap d1 d2
+let parenifne (d1:Pretty.doc) = 
+	if (d1 = nil) then nil else paren d1
 (* Get the full name of a comp *)
 let compFullName comp = 
   (if comp.cstruct then "struct " else "union ") ^ "(" ^ comp.cname ^ ")"
@@ -297,8 +300,8 @@ class virtual defaultMaudePrinterClass = object (self)
     let stom, rest = separateStorageModifiers v.vattr in
     (* First the storage modifiers *)
 	(if (strcontains v.vname "fslAnnotation") then nil else (
-    text (if v.vinline then "__inline " else "")
-      ++ d_storage () v.vstorage
+     (*(if v.vinline then text "inline " else nil)*)nil
+      ++ parenifne(d_storage () v.vstorage)
       ++ (self#pAttrs () stom)
       ++ (self#pType (Some (self#pVar v)) () v.vtype)
       ++ text " "
@@ -634,7 +637,12 @@ class virtual defaultMaudePrinterClass = object (self)
           ++ (match dest with
             None -> nil
           | Some lv -> 
-              self#pLval () lv ++ text " := " ++
+              self#pLval () lv ++ text " := ")
+			++  
+			let maybeCast = (
+				match dest with
+				None -> nil
+				| Some lv -> 
                 (* Maybe we need to print a cast *)
                 (let destt = typeOfLval lv in
                 match unrollType (typeOf e) with
@@ -642,10 +650,9 @@ class virtual defaultMaudePrinterClass = object (self)
                       when not (Util.equals (typeSig rt)
                                             (typeSig destt)) ->
                     text "(" ++ self#pType None () destt ++ text ")"
-                | _ -> nil))
+                | _ -> nil)) in
           (* Now the function name *)
-		  ++
-		  let f = 
+		  let pref = 
 		  (text "Apply(" ++ 
 			(let ed = self#pExp () e in
               match e with 
@@ -658,7 +665,9 @@ class virtual defaultMaudePrinterClass = object (self)
              ++ if (List.length args = 0) then text ".List{Expression}" else (docList ~sep:(text " .,. " ++ break) (self#pExp ()) () args)
              ++ unalign)
 		++ text ")"
-        ++ text (")" ^ (self#getPrintInstrTerminator ())))
+        ++ text (")"))
+		in let f = 
+			((if (maybeCast != nil) then ((text "Cast(") ++ maybeCast ++ (text ", ") ++ pref ++ (text ")")) else pref) ++ text (self#getPrintInstrTerminator ()) )
 		in
 		  let myv = (
 			match e with 

@@ -55,7 +55,7 @@ mod COMMON-C-CONFIGURATION is
 	subsort Parameter-Declaration < K .
 	subsort Parameter-Type-List < K .
 	subsort Selection-Statement < K .
-	subsort TogetherList < K .
+	---subsort TogetherList < K .
 	subsort SeqList < K .
 	subsort String-Literal < K .
 	subsort String < K .
