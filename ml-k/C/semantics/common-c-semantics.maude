@@ -6,7 +6,6 @@
 --- arithmetic overflow != conversion overflow
 --- need one past array
 --- 6.7.5.3:11 if, in a parameter declaration, an identifier can be treated either as a typedef name or as a parameter name, it shall be taken as a typedef name
---- memcpy uninit memory
 
 ---C99 6.7.8:10 If an object has static duration ... if it has pointer type, it is NULL, if it is arithmetic, 0, aggregate, recursively these, union, first member by these
 
@@ -20,31 +19,6 @@ static union {
 
 ("Field").KProperLabel(unsigned-char,,("_`[_`]").KProperLabel("Id"(buf),,("_+_").KProperLabel(("_+_").KProperLabel(("_+_").KProperLabel(("sizeof").KProperLabel(long-long-int),,("_*_").KProperLabel(("tv").KResultLabel(8,,unsigned-long-int),,("sizeof").KProperLabel(long-long-int))),,("sizeof").KProperLabel(long-long-int)),,("tv").KResultLabel(2,,unsigned-long-int)))) 
 ***)
-
---- EP, UF, UT
---- 33, 42, 33
---- 62, 31, 15
---- 63, 28, 13
---- 60, 29, 15
---- ptrdiff is int
---- 65, 26, 13
---- 68, 22, 8
---- 69, 21, 8
---- 70, 18, 8
---- redo fields, mem
---- 69, 19, 8
---- playing with bitfields, remove some bad tests
---- 67, 16, 7
-
-
---- # of expected passes            44527
---- # of unexpected failures        7081
---- # of unexpected successes       6
---- # of expected failures          183
---- # of unresolved testcases       241
---- # of unsupported tests          1285
---- /usr/bin/gcc  version 4.1.2 20080704 (Red Hat 4.1.2-48)
-
 
 set print attribute on .
 mod INCOMING-MODULES is
@@ -535,26 +509,26 @@ mod SIZEOF is
 	
 	mb [calcStructSize]: rule
 		< k > [calcStructSize(L:List{KResult}) => necessaryBytes(calcStructSize-aux(L:List{KResult}, 0))] ...</ k >
-		: KSentence .
+		: KSentence [metadata "structural"] .
 	mb [calcUnionSize]: rule
 		< k > [calcUnionSize(L:List{KResult}) => necessaryBytes(calcUnionSize-aux(L:List{KResult}, 0))] ...</ k >
-		: KSentence .
+		: KSentence [metadata "structural"] .
 	
 	mb [calcStructSize]: rule
 		< k > [calcStructSize-aux((typedField(T:Type, X:Id),, L:List{KResult}), R:Rat) 
 			=> sizeofType(T:Type) ~> calcStructSize-aux(L:List{KResult}, R:Rat)] ...</ k >
 		if T:Type isa 'bitfieldType
-		: KSentence .
+		: KSentence [metadata "structural"] .
 	mb [calcStructSize]: rule
 		< k > [calcStructSize-aux((typedField(T:Type, X:Id),, L:List{KResult}), R:Rat)
 			=> sizeofType(T:Type) ~> calcStructSize-aux(L:List{KResult}, truncRat(R:Rat +Rat (7 /Rat 8)))] ...</ k >
 		if notBool(T:Type isa 'bitfieldType)
-		: KSentence .
+		: KSentence [metadata "structural"] .
 		
 	mb [calcUnionSize]: rule
 		< k > [calcUnionSize-aux((typedField(T:Type, X:Id),, L:List{KResult}), R:Rat) 
 			=> sizeofType(T:Type) ~> calcUnionSize-aux(L:List{KResult}, R:Rat)] ...</ k >
-		: KSentence .
+		: KSentence [metadata "structural"] .
 	
 	op _isa _ : K KLabel -> Bool .
 	eq KL:KLabel(?) isa KL:KLabel = true .
@@ -563,18 +537,18 @@ mod SIZEOF is
 	mb [calcStructSize-cool]: rule
 		< k > [tv(R':Rat, ?) ~> calcStructSize-aux(L:List{KResult}, R:Rat) 
 			=> calcStructSize-aux(L:List{KResult}, R:Rat +Rat R':Rat)] ...</ k >
-		: KSentence .
+		: KSentence [metadata "structural"] .
 	mb [calcUnionSize-cool]: rule
 		< k > [tv(R':Rat, ?) ~> calcUnionSize-aux(L:List{KResult}, R:Rat) 
 			=> calcUnionSize-aux(L:List{KResult}, maxRat(R:Rat, R':Rat))] ...</ k >
-		: KSentence .
+		: KSentence [metadata "structural"] .
 		
 	mb [calcStructSize-done]: rule
-		[calcStructSize-aux(.List{K}, R:Rat) => tv(R:Rat, cfg:sizeut)]
-		: KSentence .
+		< k > [calcStructSize-aux(.List{K}, R:Rat) => tv(R:Rat, cfg:sizeut)] ...</ k > 
+		: KSentence [metadata "structural"] .
 	mb [calcUnionSize-done]: rule
-		[calcUnionSize-aux(.List{K}, R:Rat) => tv(R:Rat, cfg:sizeut)]
-		: KSentence .
+		< k > [calcUnionSize-aux(.List{K}, R:Rat) => tv(R:Rat, cfg:sizeut)] ...</ k > 
+		: KSentence [metadata "structural"] .
 endm
 
 mod TYPES is
