@@ -6,7 +6,7 @@ all: test
 default: 
 
 test: default
-	runtest --tool=gcc gcc.8th/8th.exp --tool_exec "kcc -d"
+	runtest --tool=gcc gcc.8th/8th.exp --tool_exec "kcc"
 
 test-gcc: default
 	runtest --tool=gcc gcc.8th/8th.exp --tool_exec "gcc --std=c99"
