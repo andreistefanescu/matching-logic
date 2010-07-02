@@ -1,0 +1,46 @@
+in ../../match-imp
+
+mod TEST is inc IMP + QUEUE .
+
+  ops dest src n : -> PVar .
+  ops dest0 src0 : -> FreeInt .
+  ops ?n ?e : -> ?Int .
+  ops A B : -> FreeIntSeq .
+  ops ?A ?B : -> ?IntSeq .
+  
+  op pQueueTransferOwner : -> K .
+  eq pQueueTransferOwner = (
+    assume <config> <env> dest |-> dest0 ;; src |-> src0 ;; n |-> ?n </env>
+                    <heap> queue(dest0)(A) ** queue(src0)(B) </heap> <form> TrueFormula </form> </config> ;
+    if (src != 0) {
+        if (dest != 0) {
+            if (* src != 0) {
+                n = * src ;
+                if (* src == *(src + 1)) {
+                    * src = 0 ;
+                    *(src + 1) = 0 ;
+                    --- little extra help to unfold the queue heap pattern
+                    derive(?Int(1)) ;
+                }
+                else {
+                    * src = *(n + 1) ;
+                }
+
+                if (* dest != 0) {
+                    *(*(dest + 1) + 1) = n ;
+                }
+                else {
+                    * dest = n ;
+                }
+                *(dest + 1) = n ;
+            }
+        }
+    }
+    assert <config> <env> dest |-> dest0 ;; src |-> src0 ;; n |-> ?n </env>
+                    <heap> queue(dest0)(A :: ?e) ** queue(src0)(?B) </heap> <form> (B === ?e :: ?B) </form> </config>
+           <config> <env> dest |-> dest0 ;; src |-> src0 ;; n |-> ?n </env>
+                    <heap> queue(dest0)(A) ** queue(src0)(B) </heap> <form> (dest0 === 0) \/ (src0 === 0) \/ (B === epsilon) </form> </config> ;
+  ) .
+endm
+
+rew [| pQueueTransferOwner |] .

@@ -1,0 +1,26 @@
+in ../../match-imp
+
+mod TEST is inc IMP + MEM-LIST .
+  ops x l : -> PVar .
+  ops ?x ?l : -> ?Int .
+  op l0 : -> FreeInt .
+  
+  op pListDealloc : -> K .
+  eq pListDealloc = (
+    assume <config> <env> x |-> ?x ;; l |-> l0 </env>
+                    <heap> list(l0) </heap> <form> TrueFormula </form> </config> ;
+    invariant <config> <env> x |-> ?x ;; l |-> ?l </env>
+                    <heap> list(?l) </heap> <form> TrueFormula </form> </config> ;
+    while (l != 0)
+    {
+        x = l ;
+        l = * (l + 1) ;
+        free(x);
+    }
+    
+    assert <config> <env> x |-> ?x ;; l |-> ?l </env>
+                    <heap> .Heap </heap> <form> TrueFormula </form> </config> ;
+  ) .
+endm
+
+rew [| pListDealloc |] .

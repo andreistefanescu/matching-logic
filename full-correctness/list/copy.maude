@@ -1,0 +1,38 @@
+in ../../match-imp
+
+mod TEST is inc IMP + LIST .
+  ops M N : -> Nat .      ops !E !E1 !E2 : -> !Env .      ops !H !H1 !H2 : -> !Heap .     op H : -> FreeHeap .
+  ops a b c x y w : -> PVar .
+  ops ?a ?b ?v ?x ?y ?w : -> ?Int .
+  op a0 : -> FreeInt .
+  ops ?A ?B ?X ?A' : -> ?IntSeq .
+  op A : -> FreeIntSeq .
+  
+  op pListCopy : -> K .
+  eq pListCopy = (
+    assume <config> <env> a |-> a0 ;; b |-> ?b ;; w |-> ?w ;; x |-> ?x ;; y |-> ?y </env>
+        <heap> list(a0)(A) </heap> <form> ~(A === epsilon) /\ ~(a0 === 0) </form> </config> ; 
+        b = alloc(node, next) ;
+        *(b + 1) = 0 ;
+        * b = * a ;
+        w = b ;
+        x = *(a + 1) ;
+        invariant <config> <env> a |-> a0 ;; b |-> ?b ;; w |-> ?w ;; x |-> ?x ;; y |-> ?y </env>
+                <heap> lseg(a0,?x)(?A) ** list(?x)(?X) ** lseg(?b,?w)(?B) ** ?w |-> ?v : node ** (?w +Int 1) |-> 0 : next </heap> 
+                <form> (?A :: ?X === A) /\ (?A === ?B :: ?v ) </form> </config> ;
+        while (x != 0)
+        {
+            y = alloc(node, next) ;
+            *(y + 1) = 0 ;
+            * y = * x ;
+            *(w + 1) = y ;
+            w = y ;
+            x = *(x + 1) ;
+        } 
+    assert <config> <env> a |-> a0 ;; b |-> ?b ;; w |-> ?w ;; x |-> ?x ;; y |-> ?y </env>
+        <heap> list(a0)(A) ** list(?b)(?B) </heap> <form> (?B === A) </form> </config> ;
+  ) .
+  
+endm
+
+rew [| pListCopy |] .

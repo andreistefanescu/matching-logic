@@ -1,0 +1,29 @@
+in ../../match-imp
+
+mod TEST is inc IMP + MEM-LIST .
+  ops p x y : -> PVar .
+  ops ?p ?x ?y : -> ?Int .
+  
+  op pListReverse : -> K .
+  eq pListReverse = (
+    assume <config> <env> p |-> ?p ;; x |-> ?x ;; y |-> ?y </env>
+                    <heap> list(?p) </heap> <form> TrueFormula </form> </config> ;
+    if (p != 0) {
+        x = *(p + 1) ;
+        *(p + 1) = 0 ;
+        invariant <config> <env> p |-> ?p ;; x |-> ?x ;; y |-> ?y </env>
+                           <heap> list(?p) ** list(?x) </heap> <form> TrueFormula </form> </config> ;
+        while(x != 0) {
+            y = *(x + 1) ;
+            *(x + 1) = p ;
+            p = x ;
+            x = y ;
+        }
+    }
+    assert <config> <env> p |-> ?p ;; x |-> ?x ;; y |-> ?y </env>
+                    <heap> list(?p) </heap> <form> TrueFormula </form> </config> ;
+) .
+
+endm
+
+rew [| pListReverse |] .

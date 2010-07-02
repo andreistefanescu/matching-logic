@@ -1,0 +1,82 @@
+in ../../../match-imp
+
+mod TEST is inc IMP + MEM-QUEUE .
+  ops l a b h t e x i n : -> PVar .
+  ops ?a ?b ?h ?t ?e ?n ?u ?v ?l ?x ?i : -> ?Int .
+  ops n0 l0 : -> FreeInt .
+  
+  op pListLengthMergeSort : -> K .
+  eq pListLengthMergeSort = (
+    assume <config> <env> x |-> ?x ;; i |-> ?i ;; n |-> n0 ;; a |-> ?a ;; b |-> ?b ;; h |-> ?h ;; t |-> ?t ;; e |-> ?e </env>
+                    <heap> list(?h) </heap> <form> TrueFormula </form> </config> ;
+    if (n > 1) {
+        --- split the list in two
+        x = h ;
+        i = 0 ;
+        invariant <config> <env> x |-> ?x ;; i |-> ?i ;; n |-> n0 ;; a |-> ?a ;; b |-> ?b ;; h |-> ?h ;; t |-> ?t ;; e |-> ?e </env>
+                           <heap> lseg(?h,?x) ** list(?x) </heap>
+                           <form> @(n0 >Int 1) /\ @(?i >=Int 0) /\ @(n0 >Int ?i +Int ?i +Int 1) </form> </config> ;
+        while (n - 2 > i + i) {
+            x = *(x + 1) ;
+            i = i + 1 ;
+        }***(
+        t = x ;
+        x = *(t + 1) ;
+        *(t + 1) = 0 ;
+
+        --- sort the first half
+        assert <config> <env> x |-> ?x ;; i |-> ?i ;; n |-> n0 ;; a |-> ?a ;; b |-> ?b ;; h |-> ?h ;; t |-> ?t ;; e |-> ?e </env>
+                        <heap> list(?h) ** list(?x) </heap> <form> @(n0 >Int 1) </form> </config> ;
+        assume <config> <env> x |-> ?x ;; i |-> ?i ;; n |-> n0 ;; a |-> ?a ;; b |-> ?b ;; h |-> ?h ;; t |-> ?t ;; e |-> ?e </env>
+                        <heap> list(?a) ** list(?x) </heap> <form> @(n0 >Int 1) </form> </config> ;
+
+        --- sort the second half
+        assert <config> <env> x |-> ?x ;; i |-> ?i ;; n |-> n0 ;; a |-> ?a ;; b |-> ?b ;; h |-> ?h ;; t |-> ?t ;; e |-> ?e </env>
+                        <heap> list(?a) ** list(?x) </heap>
+                        <form> @(n0 >Int 1) </form> </config> ;
+
+        assume <config> <env> x |-> ?x ;; i |-> ?i ;; n |-> n0 ;; a |-> ?a ;; b |-> ?b ;; h |-> ?h ;; t |-> ?t ;; e |-> ?e </env>
+                        <heap> list(?a) ** list(?b) </heap>
+                        <form> @(n0 >Int 1) </form> </config> ;
+
+        --- merge the two halves
+        h = 0 ;
+        t = 0 ;
+        --- little extra help to unfold the queue heap pattern
+        * a = * a ;
+        * b = * b ;
+        invariant <config> <env> x |-> ?x ;; i |-> ?i ;; n |-> n0 ;; a |-> ?a ;; b |-> ?b ;; h |-> ?h ;; t |-> ?t ;; e |-> ?e </env>
+                           <heap> queue(?h,?t) ** list(?a) ** list(?b) </heap>
+                           <form> ((~(?a === 0) /\ ~(?b === 0)) \/ (~(?h === 0) /\ ~(?t === 0))) </form> </config> ;
+        while (a != 0 && b != 0) {
+            if (* b > * a) {
+                e = a ;
+                a = *(a + 1) ;
+            }
+            else {
+                e = b ;
+                b = *(b + 1) ;
+            }
+
+            if (h != 0) {
+                *(t + 1) = e ;
+            }
+            else {
+                h = e ;
+            }
+            t = e ;
+        }
+
+        if (a != 0) {
+            *(t + 1) = a ;
+        }
+        else {
+            *(t + 1) = b ;
+        }  )***
+    }
+    assert <config> <env> x |-> ?x ;; i |-> ?i ;; n |-> n0 ;; a |-> ?a ;; b |-> ?b ;; h |-> ?h ;; t |-> ?t ;; e |-> ?e </env>
+                    <heap> list(?h) </heap> <form> TrueFormula </form> </config> ;
+  ) .
+endm
+
+rew [| pListLengthMergeSort |] .

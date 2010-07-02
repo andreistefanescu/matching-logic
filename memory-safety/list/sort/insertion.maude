@@ -1,0 +1,49 @@
+in ../../../match-imp
+
+mod TEST is inc IMP + MEM-LIST .
+  ops l x y e : -> PVar .
+  ops ?l ?x ?y ?e ?u ?v ?n : -> ?Int .
+  op l0 : -> FreeInt .
+  op L : -> FreeIntSeq .
+  
+  op pListInsertionSort : -> K .
+  eq pListInsertionSort = (
+    assume <config> <env> l |-> ?l ;; x |-> ?x ;; y |-> ?y ;; e |-> ?e </env>
+                    <heap> list(?l) </heap> <form> TrueFormula </form> </config> ;
+    x = l ;
+    l = NULL ;
+    invariant <config> <env> l |-> ?l ;; x |-> ?x ;; y |-> ?y ;; e |-> ?e </env>
+                       <heap> list(?l) ** list(?x) </heap>
+                       <form> TrueFormula </form> </config> ;    
+    while (x != 0) {
+        e = x ;
+        x = *(x + 1) ;
+        if (l != NULL) {
+            if (* e > * l) {
+                y = l ;
+                invariant <config> <env> l |-> ?l ;; x |-> ?x ;; y |-> ?y ;; e |-> ?e </env>
+                          <heap> lseg(?l,?y) ** ?y |-> ?u : node ** (?y +Int 1) |-> ?n : next ** list(?n) ** ?e |-> ?v : node ** (?e +Int 1) |-> ?x : next ** list(?x) </heap>
+                          <form> TrueFormula </form> </config> ;
+                while (*(y + 1) != NULL && * e > *(*(y + 1))) {
+                    y = *(y + 1) ;
+                }
+                *(e + 1) = *(y + 1) ;
+                *(y + 1) = e ;
+            }
+            else {
+                *(e + 1) = l ;
+                l = e ;
+            }
+        }
+        else {
+            *(e + 1) = NULL ;
+            l = e ;
+        }
+    
+    }
+    assert <config> <env> l |-> ?l ;; x |-> ?x ;; y |-> ?y ;; e |-> ?e </env>
+                    <heap> list(?l) </heap> <form> TrueFormula </form> </config> ;    
+  ) .
+endm
+
+rew [| pListInsertionSort |] .
