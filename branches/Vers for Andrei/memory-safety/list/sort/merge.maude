@@ -1,0 +1,93 @@
+in ../../../match-imp
+
+mod TEST is inc IMP + MEM-QUEUE .
+  ops l a b h t e : -> PVar .
+  ops ?a ?b ?h ?t ?e ?n ?u ?v ?l : -> ?Int .
+  op l0 : -> FreeInt .
+  
+
+  op pListMergeSort : -> K .
+  eq pListMergeSort = (
+    assume <config> <env> l |-> l0 ;; a |-> ?a ;; b |-> ?b ;; h |-> ?h ;; t |-> ?t ;; e |-> ?e </env>
+                    <heap> list(l0) </heap> <form> TrueFormula </form> </config> ;
+    if (l != NULL && *(l + 1)) {
+        --- split the list in two
+        a = NULL ;
+        b = NULL ;
+        *(*(l + 1)) = *(*(l + 1)) ;
+        invariant <config> <env> l |-> l0 ;; a |-> 0 ;; b |-> 0 ;; h |-> ?h ;; t |-> ?t ;; e |-> ?e </env>
+                           <heap> l0 |-> ?v : node ** (l0 +Int 1) |-> ?n : next ** ?n |-> ?u : node ** (?n +Int 1) |-> ?l : next ** list(?l) </heap>
+                           <form> ~(l0 === 0) /\ ~(?n === 0) </form> </config>
+                  <config> <env> l |-> ?l ;; a |-> ?a ;; b |-> ?b ;; h |-> ?h ;; t |-> ?t ;; e |-> ?e </env>
+                           <heap> list(?a) ** list(?b) ** list(?l) </heap>
+                           <form> ~(?a === 0) /\ ~(?b === 0) </form> </config> ;
+        while (l != NULL) {
+            e = l ;
+            l = * (e + 1)
+            * (e + 1) = a ;
+            a = e ;
+            if (l != NULL) {
+                e = l ;
+                l = * (e + 1)
+                * (e + 1) = b ;
+                b = e ;
+            }
+            
+        }
+
+        --- sort the first half
+        assert <config> <env> l |-> ?l ;; a |-> ?a ;; b |-> ?b ;; h |-> ?h ;; t |-> ?t ;; e |-> ?e </env>
+                    <heap> list(?a) ** list(?b) </heap>
+                    <form> ~(?a === 0) /\ ~(?b === 0) </form> </config> ;
+        assume <config> <env> l |-> ?l ;; a |-> ?a ;; b |-> ?b ;; h |-> ?h ;; t |-> ?t ;; e |-> ?e </env>
+                        <heap> list(?a) ** list(?b) </heap> <form> ~(?a === 0) /\ ~(?b === 0) </form> </config> ;
+
+        --- sort the second half
+        assert <config> <env> l |-> ?l ;; a |-> ?a ;; b |-> ?b ;; h |-> ?h ;; t |-> ?t ;; e |-> ?e </env>
+                        <heap> list(?a) ** list(?b) </heap> <form> ~(?a === 0) /\ ~(?b === 0) </form> </config> ;
+        assume <config> <env> l |-> ?l ;; a |-> ?a ;; b |-> ?b ;; h |-> ?h ;; t |-> ?t ;; e |-> ?e </env>
+                        <heap> list(?a) ** list(?b) </heap> <form> ~(?a === 0) /\ ~(?b === 0) </form> </config> ;
+
+        --- merge the two halves
+        h = 0 ;
+        t = 0 ;
+        --- little extra help to unfold the queue heap pattern
+        * a = * a ;
+        * b = * b ;
+        invariant <config> <env> l |-> ?l ;; a |-> ?a ;; b |-> ?b ;; h |-> ?h ;; t |-> ?t ;; e |-> ?e </env>
+                           <heap> queue(?h,?t) ** list(?a) ** list(?b) </heap>
+                           <form> ((~(?a === 0) /\ ~(?b === 0)) \/ (~(?h === 0) /\ ~(?t === 0))) </form> </config> ;
+        while (a != 0 && b != 0) {
+            if (* b > * a) {
+                e = a ;
+                a = *(a + 1) ;
+            }
+            else {
+                e = b ;
+                b = *(b + 1) ;
+            }
+
+            if (h != 0) {
+                *(t + 1) = e ;
+            }
+            else {
+                h = e ;
+            }
+            t = e ;
+        }
+
+        if (a != 0) {
+            *(t + 1) = a ;
+        }
+        else {
+            *(t + 1) = b ;
+        }
+
+        l = h ;
+    }
+    assert <config> <env> l |-> ?l ;; a |-> ?a ;; b |-> ?b ;; h |-> ?h ;; t |-> ?t ;; e |-> ?e </env>
+                    <heap> list(?l) </heap> <form> TrueFormula </form> </config> ;
+  ) .
+endm
+
+rew [| pListMergeSort |] .

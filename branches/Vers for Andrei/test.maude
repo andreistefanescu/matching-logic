@@ -1,0 +1,137 @@
+in match-imp
+
+mod TEST is inc IMP + QUEUE .
+  ops M N : -> Nat .      ops !E !E1 !E2 : -> !Env .      ops !H !H1 !H2 : -> !Heap .     op H : -> FreeHeap .
+  ops a b c d e f g h i j k l m n o p q r s t u v x y z w src dest root temp change : -> PVar .
+  ops ?a ?b ?c ?d ?e ?f ?g ?h ?i ?j ?k ?l ?m ?n ?o ?p ?q ?r ?s ?t ?u ?v ?x ?y ?z ?w : -> ?Int .
+  ops ?temp ?change : -> ?Int .
+  ops !a !b !c !d !e !f !g !h !i !j !k !l !m !n !o !p !q !r !s !t !u !v !x !y !z !w : -> !Int .
+  ops a0 b0 c0 d0 e0 f0 g0 h0 i0 j0 k0 l0 m0 n0 o0 p0 q0 r0 s0 t0 u0 v0 x0 y0 z0 w0 : -> FreeInt .
+  ops src0 dest0 root0 : -> FreeInt .     ops ?A ?B ?A' ?B' ?C ?C' ?L ?X : -> ?IntSeq .     ops A B B' C C' L : -> FreeIntSeq .
+  ops ?T ?TL ?TR : -> ?IntTree .      ops !T !TL !TR : -> !IntTree .      op T : -> FreeIntTree .     op ?TS : -> ?IntTreeSeq .
+  op LMO : -> List{MathObj++} . op MO : -> MathObj++ .
+  ops reverse sum : -> Name .
+
+  op pTest1 : -> K .
+  eq pTest1 = (
+    //unprocessed
+    pre <config> <env> n |-> n0 ;; s |-> ?s </env> <heap> .Heap </heap> <form> @(n0 >=Int 0) </form> </config> 
+    sum(n | s)
+    {
+    s = 0 ;
+    invariant <config> <env> n |-> ?n ;; s |-> (((n0 +Int (-Int ?n)) *Int (n0 +Int ?n +Int 1)) /Int 2) </env>
+                          <heap> .Heap </heap> <form> @(?n >=Int 0) /\ @(n0 >=Int 0) </form> </config> ;
+        while (n > 0) {
+            s = s + n ;
+            n = n - 1 ;
+        }
+    }
+    post <config> <env> n |-> 0 ;; s |-> ((n0 *Int (n0 +Int 1)) /Int 2) </env> <heap> .Heap </heap> <form> @(n0 >=Int 0) </form> </config> 
+    
+    assume <config> <env> m |-> n0 ;; j |-> 0 </env> <heap> .Heap </heap> <form> @(n0 >=Int 0) </form> </config> ;
+    sum(m | j) ;
+    assert <config> <env> m |-> ?n ;; j |-> ?s </env> <heap> .Heap </heap> <form> @(n0 >=Int 0) </form> </config> ;
+    
+    pre <config> <env> p |-> ?p ;; x |-> ?x ;; y |-> ?y </env> <heap> list(?p)(A) </heap> <form> TrueFormula </form> </config>          
+      reverse(p)
+      {
+      if (p != 0) {
+        x = *(p + 1) ;
+        *(p + 1) = 0 ;
+        invariant <config> <env> p |-> ?p ;; x |-> ?x ;; y |-> ?y </env>
+                           <heap> list(?p)(?B) ** list(?x)(?C) </heap> <form> rev(A) === rev(?C) :: ?B /\ ~(?p === 0)</form> </config> ;
+        while(x != 0) {
+            y = *(x + 1) ;
+            *(x + 1) = p ;
+            p = x ;
+            x = y ;
+            }
+        }
+      }
+      post <config> <env> p |-> ?p ;; x |-> ?x ;; y |-> ?y </env> <heap> list(?p)(?A) </heap> <form> ?A === rev(A) </form> </config>
+  ) .
+  
+endm
+
+set print attribute on .
+
+rew [| pTest1 |] .
+--- rew [| pTest2 |] .
+--- red rename(n | s ; n | s , <config> <env> n |-> n0 ;; s |-> ?s </env> <heap> .Heap </heap> <form> @ (n0 >=Int 0) </form> </config> ) .
+
+eof
+
+red preprocess(//unprocessed
+    pre <config> <env> n |-> n0 ;; s |-> ?s </env> <heap> .Heap </heap> <form> @(n0 >=Int 0) </form> </config> 
+    sum(n | s)
+    {
+    s = 0 ;
+    invariant <config> <env> n |-> ?n ;; s |-> (((n0 +Int (-Int ?n)) *Int (n0 +Int ?n +Int 1)) /Int 2) </env>
+                          <heap> .Heap </heap> <form> @(?n >=Int 0) /\ @(n0 >=Int 0) </form> </config> ;
+        while (n > 0) {
+            s = s + n ;
+            n = n - 1 ;
+        }
+    }
+    post <config> <env> n |-> 0 ;; s |-> ((n0 *Int (n0 +Int 1)) /Int 2) </env> <heap> .Heap </heap> <form> @(n0 >=Int 0) </form> </config> 
+    
+    assume <config> <env> m |-> n0 ;; j |-> 0 </env> <heap> .Heap </heap> <form> @(n0 >=Int 0) </form> </config> ;
+    sum(m | j) ;
+    assert <config> <env> m |-> ?n ;; j |-> ?s </env> <heap> .Heap </heap> <form> @(n0 >=Int 0) </form> </config> ;
+    
+    pre <config> <env> p |-> ?p ;; x |-> ?x ;; y |-> ?y </env> <heap> list(?p)(A) </heap> <form> TrueFormula </form> </config>          
+      reverse(p)
+      {
+      if (p != 0) {
+        x = *(p + 1) ;
+        *(p + 1) = 0 ;
+        invariant <config> <env> p |-> ?p ;; x |-> ?x ;; y |-> ?y </env>
+                           <heap> list(?p)(?B) ** list(?x)(?C) </heap> <form> rev(A) === rev(?C) :: ?B /\ ~(?p === 0)</form> </config> ;
+        while(x != 0) {
+            y = *(x + 1) ;
+            *(x + 1) = p ;
+            p = x ;
+            x = y ;
+            }
+        }
+      }
+      post <config> <env> p |-> ?p ;; x |-> ?x ;; y |-> ?y </env> <heap> list(?p)(?A) </heap> <form> ?A === rev(A) </form> </config> ) .
+
+eof
+
+search
+    <config>
+    </config>
+===>
+    <config>
+    </config>
+--- =>* <form> F:Formula </form> <menv> MatchEnv:MatchEnv </menv> .
+=>* S:Set{ConfigItem} .
+
+  op pTest2 : -> K .
+  eq pTest2 = (
+      pre <config> <env> p |-> ?p ;; x |-> ?x ;; y |-> ?y </env> <heap> list(?p)(A) </heap> <form> TrueFormula </form> </config>          
+      reverse(p)
+      {
+      if (p != 0) {
+        x = *(p + 1) ;
+        *(p + 1) = 0 ;
+        invariant <config> <env> p |-> ?p ;; x |-> ?x ;; y |-> ?y </env>
+                           <heap> list(?p)(?B) ** list(?x)(?C) </heap> <form> rev(A) === rev(?C) :: ?B /\ ~(?p === 0)</form> </config> ;
+        while(x != 0) {
+            y = *(x + 1) ;
+            *(x + 1) = p ;
+            p = x ;
+            x = y ;
+            }
+        }
+      }
+      post <config> <env> p |-> ?p ;; x |-> ?x ;; y |-> ?y </env> <heap> list(?p)(?A) </heap> <form> ?A === rev(A) </form> </config> 
+      
+      assume <config> <env> h |-> ?p ;; x |-> ?x ;; y |-> ?y </env> <heap> list(?p)(B) </heap> <form> B === A </form> </config> ;
+      reverse(h) ;
+      assert <config> <env> h |-> ?p ;; x |-> ?x ;; y |-> ?y </env> <heap> list(?p)(?B') </heap> <form> ?B' === rev(B) </form> </config> ;
+      assume <config> <env> h |-> ?p ;; x |-> ?x ;; y |-> ?y </env> <heap> list(?p)(C) </heap> <form> A === C </form> </config> ;
+      reverse(h) ;
+      assert <config> <env> h |-> ?p ;; x |-> ?x ;; y |-> ?y </env> <heap> list(?p)(?C') </heap> <form> ?C' === rev(rev(B)) </form> </config> ;
+  ) .

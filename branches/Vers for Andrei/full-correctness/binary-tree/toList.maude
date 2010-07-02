@@ -1,0 +1,51 @@
+in ../../match-imp
+
+mod TEST is inc IMP .
+  ops root x n : -> PVar .
+  op root0 : -> FreeInt .
+  ops ?n ?x : -> ?Int .
+  ops !v !l !r : -> !Int .
+  ops !E1 !E2 : -> !Env .
+  ops !H1 !H2 : -> !Heap .
+  ops !TL !TR : -> !IntTree .
+  op T : -> FreeIntTree .
+  op ?T : -> ?IntTree .
+  op A : -> FreeInt .
+  
+  op pTreeToList : -> K .
+  eq pTreeToList = (
+    assume <config> <env> root |-> root0 ;; x |-> ?x ;; n |-> ?n </env>
+                    <heap> tree(root0)(T) ** list(?x)(A) </heap> <form> TrueFormula </form> </config> ;
+    if (root != 0) {
+        n = alloc(node,next) ;
+        * n = * root ;
+        --- x = treeToList(root->right, x);
+        assert <config> <env> root |-> root0 ;; x |-> ?x ;; !E1 </env>
+                        <heap> root0 |-> !v : node ** (root0 +Int 1) |-> !l : left ** (root0 +Int 2) |-> !r : right
+                            ** tree(!r)(!TR) ** list(?x)(A) ** !H1 </heap>
+                        <form> TrueFormula </form> </config> ;
+        assume <config> <env> root |-> root0 ;; x |-> ?x ;; !E1 </env>
+                        <heap> root0 |-> !v : node ** (root0 +Int 1) |-> !l : left ** (root0 +Int 2) |-> !r : right
+                            ** list(?x)(tree2list(!TR) :: A) ** !H1 </heap>
+                        <form> TrueFormula </form> </config> ;
+        *(n + 1) = x ;
+        x = n ;
+        --- x = treeToList(t -> left, x)
+        assert <config> <env> root |-> root0 ;; x |-> ?x ;; !E2 </env>
+                        <heap> root0 |-> !v : node ** (root0 +Int 1) |-> !l : left ** (root0 +Int 2) |-> !r : right
+                            ** tree(!l)(!TL) ** list(?x)(!v :: tree2list(!TR) :: A) </heap>
+                        <form> TrueFormula </form> </config> ;
+        watch ;
+        assume <config> <env> root |-> root0 ;; x |-> ?x ;; !E2 </env>
+                        <heap> root0 |-> !v : node ** (root0 +Int 1) |-> !l : left ** (root0 +Int 2) |-> !r : right
+                            ** list(?x)(tree2list(!TL) :: !v :: tree2list(!TR) :: A) </heap>
+                        <form> TrueFormula </form> </config> ;
+        free(root) ;
+    }
+    assert <config> <env> root |-> root0 ;; x |-> ?x ;; n |-> ?n </env>
+                    <heap> list(?x)(tree2list(T) :: A) </heap> <form> TrueFormula </form> </config> ;
+  ) .
+
+endm
+
+rew [| pTreeToList |] .

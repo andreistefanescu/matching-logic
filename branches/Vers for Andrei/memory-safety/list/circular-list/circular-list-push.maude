@@ -1,0 +1,24 @@
+in ../../../match-imp .
+
+mod TEST is inc IMP + MEM-LIST .
+  ops r t a : -> PVar .
+  ops r0 t0 : -> FreeInt .
+  ops ?a ?w ?v : -> ?Int .
+  op A : -> FreeIntSeq .
+  op ?A : -> ?IntSeq .
+  
+  op pPushCircularList : -> K .
+  eq pPushCircularList = (
+    assume <config> <env> r |-> r0 ;; t |-> t0 ;; a |-> ?a </env>
+           <heap> r0 |-> ?v : node ** (r0 +Int 1) |-> t0 : next ** lseg(t0,r0) </heap> <form> TrueFormula </form> </config> ;
+    a = alloc(node, next) ;
+    *(a + 1) = *(r + 1) ;
+    *(r + 1) = a ;
+    assert <config> <env> r |-> r0 ;; t |-> t0 ;; a |-> ?a </env>
+           <heap> r0 |-> ?v : node ** (r0 +Int 1) |-> ?a : next ** ?a |-> ?w : node ** (?a +Int 1) |-> t0 : next ** lseg(t0,r0) </heap> 
+           <form> TrueFormula </form> </config> ;
+  ) .
+  
+endm
+
+rew [| pPushCircularList |] .

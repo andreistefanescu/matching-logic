@@ -1,0 +1,24 @@
+in ../../match-imp
+
+mod TEST is inc IMP + MEM-LIST .
+  ops x l : -> PVar .
+  op l0 : -> FreeInt .
+  ops ?x : -> ?Int .
+  
+  op pListTraverse : -> K .
+  eq pListTraverse = (
+    assume <config> <env> x |-> ?x ;; l |-> l0 </env>
+           <heap> list(l0) </heap> <form> TrueFormula </form> </config> ;
+    x = l ;
+        invariant <config> <env> x |-> ?x ;; l |-> l0 </env>
+                  <heap> lseg(l0,?x) ** list(?x) </heap> <form> TrueFormula </form> </config> ;
+        while (x != 0)
+        {
+            x = *(x + 1) ;
+        }
+    assert <config> <env>  x |-> ?x ;; l |-> l0 </env>
+           <heap> list(l0) </heap> <form> TrueFormula </form> </config> ;
+  ) .
+endm
+
+rew [| pListTraverse |] .

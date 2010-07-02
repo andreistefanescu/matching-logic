@@ -1,0 +1,57 @@
+in ../../match-imp
+
+mod TEST is inc IMP + MEM-LIST .
+  ops a x y z : -> PVar .
+  ops ?a ?v ?x ?y ?w ?z : -> ?Int .
+  ops a0 x0 : -> FreeInt .
+  
+  op pFilter : -> K .
+  eq pFilter = (
+    assume <config> <env> x |-> x0 ;; y |-> a0 ;; z |-> ?z ;; a |-> a0 </env>
+                    <heap> list(a0) </heap> <form> TrueFormula </form> </config> ;
+    if (a == 0)
+    {    }
+    else
+    {
+    y = a ;
+    z = 0 ;
+    
+    invariant <config> <env> x |-> x0 ;; y |-> ?a ;; z |-> 0 ;; a |-> ?a </env>
+                       <heap> list(?a) </heap>
+                       <form> TrueFormula </form> </config> 
+               <config> <env> x |-> x0 ;; y |-> ?y ;; z |-> ?z ;; a |-> ?a </env>
+                        <heap> lseg(?a,?z) ** ?z |-> ?v : node ** (?z +Int 1) |-> ?y : next ** list(?y) </heap>
+                        <form> ~(?z === 0) </form> </config> ;
+      while(y != 0) 
+      {
+        if (*(y) == x)
+        {
+            if(z == 0)
+                {
+                    a = *(y + 1) ;
+                    free(y) ;
+                    y = a ;
+                }
+            else 
+                {
+                    *(z + 1) = *(y + 1) ;
+                    free(y) ;
+                    y = *(z + 1) ;
+                }
+        }
+        else
+            {
+                z = y ;
+                y = *(y + 1) ;
+            }
+      }
+    }
+    assert <config> <env> x |-> x0 ;; y |-> ?y ;; z |-> ?z ;; a |-> ?a </env>
+        <heap> list(?a) </heap> <form> TrueFormula </form> </config> 
+        <config> <env> x |-> x0 ;; y |-> ?y ;; z |-> ?z ;; a |-> ?a </env>
+        <heap> .Heap </heap> <form> TrueFormula </form> </config> ;
+  ) .
+  
+endm
+
+rew [| pFilter |] .

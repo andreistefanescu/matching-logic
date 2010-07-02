@@ -1,0 +1,52 @@
+in ../../../match-imp
+
+mod TEST is inc IMP + LIST .
+  ops l a b h t e x y : -> PVar .
+  ops ?a ?b ?h ?t ?e ?n ?u ?v ?l ?x ?y : -> ?Int .
+  op l0 : -> FreeInt .
+  op L : -> FreeIntSeq .
+  ops ?A ?A' ?B ?B' ?C ?L ?X : -> ?IntSeq .
+  
+  op pListInsertionSort : -> K .
+  eq pListInsertionSort = (
+    assume <config> <env> l |-> ?l ;; x |-> ?x ;; y |-> ?y ;; e |-> ?e </env>
+                    <heap> list(?l)(L) </heap> <form> TrueFormula </form> </config> ;
+    x = l ;
+    l = NULL ;
+    invariant <config> <env> l |-> ?l ;; x |-> ?x ;; y |-> ?y ;; e |-> ?e </env>
+                       <heap> list(?l)(?L) ** list(?x)(?X) </heap>
+                       <form> list2bag(L) === list2bag(?L) &' list2bag(?X) /\ isSorted(?L) </form> </config> ;    
+    while (x != 0) {
+        e = x ;
+        x = *(x + 1) ;
+        if (l != NULL) {
+            if (* e > * l) {
+                y = l ;
+                invariant <config> <env> l |-> ?l ;; x |-> ?x ;; y |-> ?y ;; e |-> ?e </env>
+                          <heap> lseg(?l,?y)(?A) ** ?y |-> ?u : node ** (?y +Int 1) |-> ?n : next ** list(?n)(?B)
+                              ** ?e |-> ?v : node ** (?e +Int 1) |-> ?x : next ** list(?x)(?X) </heap>
+                          <form> list2bag(L) === list2bag(?L) &' list2bag(?v :: ?X) /\ isSorted(?L)
+                              /\ ?L === ?A :: ?u :: ?B /\ @(max(list2bag(?A) &' ?u) <Int ?v) </form> </config> ;
+                while (*(y + 1) != NULL && * e > *(*(y + 1))) {
+                    y = *(y + 1) ;
+                }
+                *(e + 1) = *(y + 1) ;
+                *(y + 1) = e ;
+            }
+            else {
+                *(e + 1) = l ;
+                l = e ;
+            }
+        }
+        else {
+            *(e + 1) = NULL ;
+            l = e ;
+        }
+    
+    }
+    assert <config> <env> l |-> ?l ;; x |-> ?x ;; y |-> ?y ;; e |-> ?e </env>
+                    <heap> list(?l)(?L) </heap> <form> list2bag(L) === list2bag(?L) /\ isSorted(?L) </form> </config> ;    
+  ) .
+endm
+
+rew [| pListInsertionSort |] .

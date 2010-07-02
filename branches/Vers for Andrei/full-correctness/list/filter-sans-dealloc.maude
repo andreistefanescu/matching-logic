@@ -1,0 +1,54 @@
+in ../../match-imp
+
+mod TEST is inc IMP + LIST .
+  ops M N : -> Nat .      ops !E !E1 !E2 : -> !Env .      ops !H !H1 !H2 : -> !Heap .     op H : -> FreeHeap .
+  ops b l x y z w : -> PVar .
+  ops ?a ?b ?v ?x ?y ?w ?z : -> ?Int .
+  ops a0 x0 : -> FreeInt .
+  ops ?A ?B ?X ?A' ?B' : -> ?IntSeq .
+  op A : -> FreeIntSeq .
+  
+  op pFilter : -> K .
+  eq pFilter = (
+    assume <config> <env> x |-> x0 ;; y |-> ?y ;; z |-> 0 ;; l |-> a0 ;; b |-> 0 </env>
+                    <heap> list(a0)(A) </heap> <form> TrueFormula </form> </config> ;
+    y = l ;    z = 0 ;    b = 0 ;
+    
+    invariant <config> <env> x |-> x0 ;; y |-> ?a ;; z |-> 0 ;; l |-> ?a ;; b |-> ?b </env>
+                       <heap> list(?a)(?A) ** list(?b)(?B) </heap>
+                       <form> list2bag(?B :: ?A) === list2bag(A) /\ hasOnly(?B,x0) </form> </config> 
+               <config> <env> x |-> x0 ;; y |-> ?y ;; z |-> ?z ;; l |-> ?a ;; b |-> ?b </env>
+                        <heap> lseg(?a,?z)(?A) ** ?z |-> ?v : node ** (?z +Int 1) |-> ?y : next ** list(?y)(?X) ** list(?b)(?B) </heap>
+                        <form> list2bag(?A :: ?v :: ?X :: ?B) === list2bag(A) /\ ~(?z === 0) /\ isFiltered(?A  ,x0) /\ ~(?v === x0) /\ hasOnly(?B,x0) </form> </config> ;
+      while(y != 0) 
+      {
+        if (*(y) == x)
+        {
+            if(z == 0)
+                {
+                    l = *(l + 1) ;
+                    *(y + 1) = b ;
+                    b = y ;
+                    y = l ;
+                }
+            else 
+                {
+                    *(z + 1) = *(y + 1) ;
+                    *(y + 1) = b ;
+                    b = y ;
+                    y = *(z + 1) ;
+                }
+        }
+        else
+            {
+                z = y ;
+                y = *(y + 1) ;
+            }
+      }
+    assert <config> <env> x |-> x0 ;; y |-> ?y ;; z |-> ?z ;; l |-> ?a ;; b |-> ?b </env>
+        <heap> list(?a)(?A') ** list(?b)(?B')</heap> <form> list2bag(?A' :: ?B') === list2bag(A) /\ isFiltered(?A', x0) /\ hasOnly(?B',x0) </form> </config> ;
+  ) .
+  
+endm
+
+rew [| pFilter |] .

@@ -1,0 +1,27 @@
+in  ../../match-imp
+
+mod TEST is inc IMP + MEM-LIST .
+  ops a x l  : -> PVar .
+  op a0 : -> FreeInt .
+  ops ?x ?l : -> ?Int .
+
+  op pListLength : -> K .
+  eq pListLength = (
+    assume <config> <env> a |-> a0 ;; x |-> ?x ;; l |-> ?l </env>
+                    <heap> list(a0) </heap> <form> TrueFormula </form> </config> ;
+    x = a ;
+    l = 0 ;
+    invariant <config> <env> a |-> a0 ;; x |-> ?x ;; l |-> ?l </env>
+                       <heap> lseg(a0,?x) ** list(?x) </heap>
+                       <form> TrueFormula </form> </config> ;
+    while (x != 0) {
+        x = *(x + 1) ;
+        l = l + 1 ;
+    }
+    assert <config> <env> a |-> a0 ;; x |-> ?x ;; l |-> ?l </env>
+                    <heap> list(a0) </heap> <form> TrueFormula </form> </config> ;
+  ) .
+
+endm
+
+rew [| pListLength |] .

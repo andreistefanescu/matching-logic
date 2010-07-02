@@ -1,0 +1,91 @@
+in ../../../match-imp
+
+mod TEST is inc IMP + QUEUE .
+  ops l a b h t e x i n : -> PVar .
+  op n0 : -> FreeInt .
+  ops ?a ?b ?h ?t ?e ?n ?u ?v ?l ?x ?i : -> ?Int .
+  op l0 : -> FreeInt .
+  op L : -> FreeIntSeq .
+  ops ?A ?A' ?B ?B' ?C ?L : -> ?IntSeq .
+  
+  op pListLengthMergeSort : -> K .
+  eq pListLengthMergeSort = (
+    assume <config> <env> x |-> ?x ;; i |-> ?i ;; n |-> n0 ;; a |-> ?a ;; b |-> ?b ;; h |-> ?h ;; t |-> ?t ;; e |-> ?e </env>
+                    <heap> list(?h)(L) </heap> <form> n0 === len(L) </form> </config> ;
+    if (n > 1) {
+        --- split the list in two
+        x = h ;
+        i = 0 ;
+        invariant <config> <env> x |-> ?x ;; i |-> ?i ;; n |-> n0 ;; a |-> ?a ;; b |-> ?b ;; h |-> ?h ;; t |-> ?t ;; e |-> ?e </env>
+                           <heap> lseg(?h,?x)(?A) ** list(?x)(?B) </heap>
+                           <form> n0 === len(L) /\ @(n0 >Int 1) /\ L === ?A :: ?B /\ ?i === len(?A) /\ @(?i >=Int 0) /\ @(n0 >Int ?i +Int ?i) </form> </config> ;
+        while (n - 2 > i + i) {
+            x = *(x + 1) ;
+            i = i + 1 ;
+        }
+        t = x ;
+        x = *(t + 1) ;
+        *(t + 1) = 0 ;
+
+        --- sort the first half
+        assert <config> <env> x |-> ?x ;; i |-> ?i ;; n |-> n0 ;; a |-> ?a ;; b |-> ?b ;; h |-> ?h ;; t |-> ?t ;; e |-> ?e </env>
+                        <heap> list(?h)(?A) ** list(?x)(?B) </heap> <form> n0 === len(L) /\ @(n0 >Int 1) /\ L === ?A :: ?B /\ ?i +Int 1 === len(?A) </form> </config> ;
+        assume <config> <env> x |-> ?x ;; i |-> ?i ;; n |-> n0 ;; a |-> ?a ;; b |-> ?b ;; h |-> ?h ;; t |-> ?t ;; e |-> ?e </env>
+                        <heap> list(?a)(?A') ** list(?x)(?B) </heap> <form> n0 === len(L) /\ @(n0 >Int 1) /\ L === ?A :: ?B /\ ?i +Int 1 === len(?A)
+                            /\ list2bag(?A) === list2bag(?A') /\ isSorted(?A') </form> </config> ;
+
+        --- sort the second half
+        assert <config> <env> x |-> ?x ;; i |-> ?i ;; n |-> n0 ;; a |-> ?a ;; b |-> ?b ;; h |-> ?h ;; t |-> ?t ;; e |-> ?e </env>
+                        <heap> list(?a)(?A') ** list(?x)(?B) </heap>
+                        <form> n0 === len(L) /\ @(n0 >Int 1) /\ L === ?A :: ?B /\ ?i +Int 1 === len(?A) /\ n0 +Int (-Int (?i +Int 1)) === len(?B)
+                            /\ list2bag(?A) === list2bag(?A') /\ isSorted(?A') </form> </config> ;
+
+        assume <config> <env> x |-> ?x ;; i |-> ?i ;; n |-> n0 ;; a |-> ?a ;; b |-> ?b ;; h |-> ?h ;; t |-> ?t ;; e |-> ?e </env>
+                        <heap> list(?a)(?A') ** list(?b)(?B') </heap>
+                        <form> n0 === len(L) /\ @(n0 >Int 1) /\ L === ?A :: ?B /\ ?i +Int 1 === len(?A) /\ n0 +Int (-Int (?i +Int 1)) === len(?B)
+                            /\ list2bag(?A) === list2bag(?A') /\ isSorted(?A') /\ list2bag(?B) === list2bag(?B') /\ isSorted(?B') </form> </config> ;
+
+        --- merge the two halves
+        h = 0 ;
+        t = 0 ;
+        --- little extra help to unfold the queue heap pattern
+        * a = * a ;
+        * b = * b ;
+        invariant <config> <env> x |-> ?x ;; i |-> ?i ;; n |-> n0 ;; a |-> ?a ;; b |-> ?b ;; h |-> ?h ;; t |-> ?t ;; e |-> ?e </env>
+                           <heap> queue(?h,?t)(?C) ** list(?a)(?A) ** list(?b)(?B) </heap>
+                           <form> ((~(?a === 0) /\ ~(?b === 0)) \/ (~(?h === 0) /\ ~(?t === 0)))
+                               /\ list2bag(L) === list2bag(?A) &' list2bag(?B) &' list2bag(?C)
+                               /\ @(min(list2bag(?A)) >=Int max(list2bag(?C))) /\ @(min(list2bag(?B)) >=Int max(list2bag(?C)))
+                               /\ isSorted(?A) /\ isSorted(?B) /\ isSorted(?C) </form> </config> ;
+        while (a != 0 && b != 0) {
+            if (* b > * a) {
+                e = a ;
+                a = *(a + 1) ;
+            }
+            else {
+                e = b ;
+                b = *(b + 1) ;
+            }
+
+            if (h != 0) {
+                *(t + 1) = e ;
+            }
+            else {
+                h = e ;
+            }
+            t = e ;
+        }
+
+        if (a != 0) {
+            *(t + 1) = a ;
+        }
+        else {
+            *(t + 1) = b ;
+        }
+    }
+    assert <config> <env> x |-> ?x ;; i |-> ?i ;; n |-> n0 ;; a |-> ?a ;; b |-> ?b ;; h |-> ?h ;; t |-> ?t ;; e |-> ?e </env>
+                    <heap> list(?h)(?L) </heap> <form> list2bag(L) === list2bag(?L) /\ isSorted(?L) </form> </config> ;
+  ) .
+endm
+
+rew [| pListLengthMergeSort |] .

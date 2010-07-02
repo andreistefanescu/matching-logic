@@ -1,0 +1,82 @@
+in ../../../match-imp
+
+mod TEST is inc IMP + LIST .
+  ops l a b h t e p x y : -> PVar .
+  ops ?a ?b ?h ?t ?e ?p ?x ?y ?n ?u ?v ?l : -> ?Int .
+  op l0 : -> FreeInt .
+  op L : -> FreeIntSeq .
+  ops ?A ?A' ?B ?B' ?C ?L : -> ?IntSeq .
+  
+    op pListQuickSort : -> K .
+  eq pListQuickSort = (
+    assume <config> <env> l |-> ?l ;; p |-> ?p ;; x |-> ?x ;; y |-> ?y ;; a |-> ?a ;; b |-> ?b </env>
+                    <heap> list(?l)(L) </heap> <form> TrueFormula </form> </config> ;
+    if (l != 0) {
+        p = l ;
+        x = *(l + 1) ;
+        *(p + 1) = 0 ;
+        a = 0 ;
+        b = 0 ;
+        invariant <config> <env> l |-> ?l ;; p |-> ?p ;; x |-> ?x ;; y |-> ?y ;; a |-> ?a ;; b |-> ?b </env>
+                           <heap> ?p |-> ?v : node ** (?p +Int 1) |-> 0 : next ** list(?a)(?A) ** list(?b)(?B) ** list(?x)(?C) </heap>
+                           <form> list2bag(L) === ?v &' list2bag(?A) &' list2bag(?B) &' list2bag(?C)
+                               /\ @(?v >=Int max(list2bag(?A))) /\ @(min(list2bag(?B)) >=Int ?v) </form> </config> ;
+        while(x != 0) {
+            y = x ;
+            x = *(x + 1) ;
+            if (* y > * p) {
+                *(y + 1) = b ;
+                b = y ;
+            }
+            else {
+                *(y + 1) = a ;
+                a = y ;
+            }
+        }
+
+        --- a = quicksort(a);
+        assert <config> <env> l |-> ?l ;; p |-> ?p ;; x |-> ?x ;; y |-> ?y ;; a |-> ?a ;; b |-> ?b </env>
+                        <heap> ?p |-> ?v : node ** (?p +Int 1) |-> 0 : next ** list(?a)(?A) ** list(?b)(?B) </heap>
+                        <form> list2bag(L) === ?v &' list2bag(?A) &' list2bag(?B)
+                            /\ @(?v >=Int max(list2bag(?A))) /\ @(min(list2bag(?B)) >=Int ?v) </form> </config> ;
+        assume <config> <env> l |-> ?l ;; p |-> ?p ;; x |-> ?x ;; y |-> ?y ;; a |-> ?a ;; b |-> ?b </env>
+                        <heap> ?p |-> ?v : node ** (?p +Int 1) |-> 0 : next ** list(?a)(?A') ** list(?b)(?B) </heap>
+                        <form> list2bag(L) === ?v &' list2bag(?A) &' list2bag(?B) /\ list2bag(?A) === list2bag(?A')
+                            /\ @(?v >=Int max(list2bag(?A))) /\ @(min(list2bag(?B)) >=Int ?v) /\ isSorted(?A') </form> </config> ;
+
+        --- b = quicksort(b);
+        assert <config> <env> l |-> ?l ;; p |-> ?p ;; x |-> ?x ;; y |-> ?y ;; a |-> ?a ;; b |-> ?b </env>
+                        <heap> ?p |-> ?v : node ** (?p +Int 1) |-> 0 : next ** list(?a)(?A') ** list(?b)(?B) </heap>
+                        <form> list2bag(L) === ?v &' list2bag(?A) &' list2bag(?B) /\ list2bag(?A) === list2bag(?A')
+                            /\ @(?v >=Int max(list2bag(?A))) /\ @(min(list2bag(?B)) >=Int ?v) /\ isSorted(?A') </form> </config> ;
+        assume <config> <env> l |-> ?l ;; p |-> ?p ;; x |-> ?x ;; y |-> ?y ;; a |-> ?a ;; b |-> ?b </env>
+                        <heap> ?p |-> ?v : node ** (?p +Int 1) |-> 0 : next ** list(?a)(?A') ** list(?b)(?B') </heap>
+                        <form> list2bag(L) === ?v &' list2bag(?A) &' list2bag(?B) /\ list2bag(?A) === list2bag(?A') /\ list2bag(?B) === list2bag(?B')
+                            /\ @(?v >=Int max(list2bag(?A))) /\ @(min(list2bag(?B)) >=Int ?v) /\ isSorted(?A') /\ isSorted(?B') </form> </config> ;
+
+        --- l = append(a, p);
+        assert <config> <env> l |-> ?l ;; p |-> ?p ;; x |-> ?x ;; y |-> ?y ;; a |-> ?a ;; b |-> ?b </env>
+                        <heap> list(?p)(?v) ** list(?a)(?A') ** list(?b)(?B') </heap>
+                        <form> list2bag(L) === ?v &' list2bag(?A) &' list2bag(?B) /\ list2bag(?A) === list2bag(?A') /\ list2bag(?B) === list2bag(?B')
+                            /\ @(?v >=Int max(list2bag(?A))) /\ @(min(list2bag(?B)) >=Int ?v) /\ isSorted(?A') /\ isSorted(?B') </form> </config> ;
+        assume <config> <env> l |-> ?l ;; p |-> ?p ;; x |-> ?x ;; y |-> ?y ;; a |-> ?a ;; b |-> ?b </env>
+                        <heap> list(?l)(?A' :: ?v) ** list(?b)(?B') </heap>
+                        <form> list2bag(L) === ?v &' list2bag(?A) &' list2bag(?B) /\ list2bag(?A) === list2bag(?A') /\ list2bag(?B) === list2bag(?B')
+                            /\ @(?v >=Int max(list2bag(?A))) /\ @(min(list2bag(?B)) >=Int ?v) /\ isSorted(?A') /\ isSorted(?B') </form> </config> ;
+
+        --- l = append(l, b);
+        assert <config> <env> l |-> ?l ;; p |-> ?p ;; x |-> ?x ;; y |-> ?y ;; a |-> ?a ;; b |-> ?b </env>
+                        <heap> list(?l)(?A' :: ?v) ** list(?b)(?B') </heap>
+                        <form> list2bag(L) === ?v &' list2bag(?A) &' list2bag(?B) /\ list2bag(?A) === list2bag(?A') /\ list2bag(?B) === list2bag(?B')
+                            /\ @(?v >=Int max(list2bag(?A))) /\ @(min(list2bag(?B)) >=Int ?v) /\ isSorted(?A') /\ isSorted(?B') </form> </config> ;
+        assume <config> <env> l |-> ?l ;; p |-> ?p ;; x |-> ?x ;; y |-> ?y ;; a |-> ?a ;; b |-> ?b </env>
+                        <heap> list(?l)(?A' :: ?v :: ?B') </heap>
+                        <form> list2bag(L) === ?v &' list2bag(?A) &' list2bag(?B) /\ list2bag(?A) === list2bag(?A') /\ list2bag(?B) === list2bag(?B')
+                            /\ @(?v >=Int max(list2bag(?A))) /\ @(min(list2bag(?B)) >=Int ?v) /\ isSorted(?A') /\ isSorted(?B') </form> </config> ;
+    }
+    assert <config> <env> l |-> ?l ;; p |-> ?p ;; x |-> ?x ;; y |-> ?y ;; a |-> ?a ;; b |-> ?b </env>
+                    <heap> list(?l)(?L) </heap> <form> list2bag(L) === list2bag(?L) /\ isSorted(?L) </form> </config> ;
+  ) .
+endm
+
+rew [| pListQuickSort |] .
