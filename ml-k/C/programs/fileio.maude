@@ -1,7 +1,0 @@
-load TCPSupport
-
-mod FILEIO is
-	including TCP-INTERFACE .
-	
-	
-endm
