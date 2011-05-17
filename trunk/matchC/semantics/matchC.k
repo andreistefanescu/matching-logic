@@ -1,4 +1,3 @@
-load ../lib/ml-prelude.maude
 load matchC-syntax
 load matchC-semantics
 load ../lib/fol
