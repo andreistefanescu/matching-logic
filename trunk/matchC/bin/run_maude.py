@@ -24,13 +24,12 @@ def default_filter(line):
     return
 
 
-def run(args, path=None, filter=default_filter, epilog=''):
+def run(cmd='maude', cmd_args=[], path=None, filter=default_filter, epilog=''):
     if path != None:
-
-        cmd = [os.path.abspath(os.path.join(path, 'maude'))]
+        args = [os.path.abspath(os.path.join(path, cmd))]
     else:
-        cmd = ['bin/maude2.6/maude']
-    cmd += args
+        args = [cmd]
+    args += cmd_args
 
     print("Loading Maude .......", end=' ')
     start = time.time()
@@ -40,12 +39,12 @@ def run(args, path=None, filter=default_filter, epilog=''):
         try:
             import pty
             (master, slave) = pty.openpty()
+            maude = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=slave)
             maude_out = os.fdopen(master, 'r')
-            maude = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=slave)
         except OSError:
             maude = None 
     if maude == None:
-        maude = subprocess.Popen(cmd, stdin=subprocess.PIPE,
+        maude = subprocess.Popen(args, stdin=subprocess.PIPE,
                                  stdout=subprocess.PIPE)
         maude_out = maude.stdout
     maude.stdin.close()

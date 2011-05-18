@@ -24,6 +24,12 @@ install: build
 	sed -i -e 's/^load .*$$//' $(RELEASE_COMPILED_FILE)
 	cp $(VIEWER_JAR) $(LIB_DIR)
 
+dist: build
+	rm -rf dist
+	mkdir dist
+	svn export bin dist/bin
+	svn export lib dist/lib
+
 clean:
 	$(MAKE) -C $(PARSER_DIR) clean
 	$(MAKE) -C $(SEMANTICS_DIR) clean

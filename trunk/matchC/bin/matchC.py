@@ -2,8 +2,9 @@
 
 import argparse
 import os
-import sys
+import platform
 import subprocess
+import sys
 import tempfile
 import time
 
@@ -66,12 +67,23 @@ def compile(in_filename, out_filename):
 
 
 def verify(prog_filename, log=None):
+    cmd = None
+    if platform.system() == 'Linux':
+        if platform.machine() == 'i686':
+            cmd = 'maude.linux'
+        elif platform.machine() == 'x86_64':
+            cmd = 'maude.linux64'
+    elif platform.system() == 'Darwin':
+        cmd = 'maude.intelDarwin'
+
     args = ['-no-prelude', '-no-banner', '-no-wrap', '-no-ansi-color']
     if log != None:
         args += ['-xml-log=' + log]
     args += [prog_filename]
+
     retcode = run_maude.run(
-                  args,
+                  cmd=cmd,
+                  cmd_args=args,
                   path=maude_dir,
                   filter=output_filter,
                   epilog='DONE!')
