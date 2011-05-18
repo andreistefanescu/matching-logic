@@ -1,12 +1,14 @@
-ML_ROOT_DIR = .
+ML_ROOT_DIR=.
 
-PARSER_DIR = $(ML_ROOT_DIR)/parser
-PARSER_JAR = $(PARSER_DIR)/matchCparser.jar
-SEMANTICS_DIR = $(ML_ROOT_DIR)/semantics
-SEMANTICS_COMPILED = $(SEMANTICS_DIR)/matchC-compiled.maude
-VIEWER_DIR = $(ML_ROOT_DIR)/viewer
-VIEWER_JAR = $(VIEWER_DIR)/matchCviewer.jar
-LIB_DIR = $(ML_ROOT_DIR)/lib
+LIB_DIR=$(ML_ROOT_DIR)/lib
+PARSER_DIR=$(ML_ROOT_DIR)/parser
+PARSER_JAR=$(PARSER_DIR)/matchCparser.jar
+COMPILED_FILE=matchC-compiled.maude
+SEMANTICS_DIR=$(ML_ROOT_DIR)/semantics
+SEMANTICS_COMPILED_FILE=$(SEMANTICS_DIR)/$(COMPILED_FILE)
+RELEASE_COMPILED_FILE=$(LIB_DIR)/$(COMPILED_FILE)
+VIEWER_DIR=$(ML_ROOT_DIR)/viewer
+VIEWER_JAR=$(VIEWER_DIR)/matchCviewer.jar
 
 
 all: install
@@ -18,7 +20,8 @@ build:
 
 install: build
 	cp $(PARSER_JAR) $(LIB_DIR)
-	cp $(SEMANTICS_COMPILED) $(LIB_DIR)
+	cp $(SEMANTICS_COMPILED_FILE) $(LIB_DIR)
+	sed -i -e 's/^load .*$$//' $(RELEASE_COMPILED_FILE)
 	cp $(VIEWER_JAR) $(LIB_DIR)
 
 clean:
