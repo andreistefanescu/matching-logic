@@ -1,8 +1,3 @@
-load ../../../work/trunk/core/maude/lib/k-prelude.maude
-load /Users/andreiarusoaie/matching-logic/matchC/lib/theories/core-theory.maude
-load /Users/andreiarusoaie/matching-logic/matchC/lib/theories/integer-theory.maude
-
-
 mod SUBST-BUILTIN-MODULE is inc MATHEMATICAL-OBJECT-BUILTIN-MODULE + K-PROPER .
   sort SubstItem NeSubst Subst .
   subsorts SubstItem < NeSubst < Subst .
