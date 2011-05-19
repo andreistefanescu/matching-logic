@@ -20,3 +20,5 @@ mod ML-BUILTIN-MODULE is
 endm
 " >lib/ml-prelude.maude
 
+sed -i -e "s|^K_BASE=.*$|K_BASE=${K_BASE}|" Makefile
+
