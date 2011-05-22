@@ -10,9 +10,9 @@ struct listNode {
 
 void readWrite(int n)
 {
-  int t;
-
   while (n) {
+    int t;
+
     scanf("%d", &t);
     printf("%d ", t);
     n -= 1;
@@ -24,11 +24,12 @@ void readWriteBuffer(int n)
 {
   int i;
   struct listNode *x;
-  struct listNode *y;
 
   i = 0;
   x = 0;
   while (i < n) {
+    struct listNode *y;
+
     y = x;
     x = (struct listNode*) malloc(sizeof(struct listNode));
     scanf("%d", &(x->val));
@@ -37,6 +38,8 @@ void readWriteBuffer(int n)
   }
 
   while (x) {
+    struct listNode *y;
+
     y = x->next;
     printf("%d ",x->val);
     free(x);
@@ -61,4 +64,3 @@ int main()
 
   return 0;
 }
-
