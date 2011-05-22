@@ -23,20 +23,20 @@ http://www.python.org/download/
 INSTALLING MATHCH
 =================
 
-To install, unpack the archive in the instalation directory. To run matchC, type
-in a terminal:
+To install, unpack the archive in the installation directory. To run matchC,
+type in a terminal:
 
-<path_to_instalation_directory>/matchC/bin/matchC [c_source_file]
+<path_to_installation_directory>/matchC/bin/matchC [c_source_file]
 
-It is recomanded to add <path_to_instalation_directory>/matchC/bin to the PATH,
+It is recommanded to add <path_to_instalation_directory>/matchC/bin to the PATH,
 but not required.
 
 
 EXAMPLES
 ========
 
-The distribution includes an example suite, in th directory demo:
-- 0-undeined:         c program attempting to print an uninitialised field
+The distribution includes an example suite, in the directory demo:
+- 0-undefined:         c program attempting to print an uninitialized field
 - 1-sum:              c program computing the sum of the first n natural
                       numbers
 - 2-io:               c program containing functions that read from stdin and
@@ -47,5 +47,5 @@ The distribution includes an example suite, in th directory demo:
                       order
 
 The exemples have up to three versions: an unannotated version, a partially
-annotated verions and a fully annotated version.
+annotated version and a fully annotated version.
 
