@@ -10,17 +10,17 @@ The MatchC program verifier is available for the following platforms:
 DEPENDENCIES
 ============
 
-MatchC requires Java Runtime Environment (JRE), version 1.6. JRE is installed on
-most platforms. It can be downloaded from:
+1) MatchC requires Java Runtime Environment (JRE), version 1.6.
+JRE is installed on most platforms. It can be downloaded from:
 
 http://www.oracle.com/technetwork/java/javase/downloads/index.html
 
-MatchC requires Python, version 3.2 or higher. Python can be downloaded from:
+2) MatchC requires Python, version 3.2 or higher:
 
 http://www.python.org/download/
 
 
-INSTALLING MATHCH
+INSTALLING MATCHC
 =================
 
 To install, unpack the archive in the installation directory. To run matchC,
@@ -36,16 +36,12 @@ EXAMPLES
 ========
 
 The distribution includes an example suite, in the directory demo:
-- 0-undefined:         c program attempting to print an uninitialized field
-- 1-sum:              c program computing the sum of the first n natural
-                      numbers
-- 2-io:               c program containing functions that read from stdin and
-                      write to stdout
-- 3-list:             c program containing various list manipulating functions
-- 4-binary-tree:      c program containing tree manipulating functions
-- 5-stack-inspection: c program requiring functions to be called in a specific
-                      order
+- 0-undefined:        attempts to print an uninitialized field
+- 1-sum:              computes the sum of the first n natural numbers
+- 2-io:               functions that read from stdin and write to stdout
+- 3-list:             various list manipulating functions
+- 4-binary-tree:      tree manipulating functions
+- 5-stack-inspection: functions that need to be called in a specific order
 
-The exemples have up to three versions: an unannotated version, a partially
-annotated version and a fully annotated version.
-
+The exemples have up to three versions: an unannotated version (1),
+a partially annotated version (2), and a fully annotated version (3).
