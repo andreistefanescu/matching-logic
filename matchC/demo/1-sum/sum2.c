@@ -27,3 +27,4 @@ int main()
   //@ assert <out> [55] </out>
   return 0;
 }
+
