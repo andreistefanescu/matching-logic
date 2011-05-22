@@ -1,4 +1,5 @@
-
+MATCHC
+======
 
 The MatchC program verifier is available for the following platforms:
 - 32-bit Linux
@@ -34,4 +35,17 @@ but not required.
 EXAMPLES
 ========
 
-The distribution includes a 
+The distribution includes an example suite, in th directory demo:
+- 0-undeined:         c program attempting to print an uninitialised field
+- 1-sum:              c program computing the sum of the first n natural
+                      numbers
+- 2-io:               c program containing functions that read from stdin and
+                      write to stdout
+- 3-list:             c program containing various list manipulating functions
+- 4-binary-tree:      c program containing tree manipulating functions
+- 5-stack-inspection: c program requiring functions to be called in a specific
+                      order
+
+The exemples have up to three versions: an unannotated version, a partially
+annotated verions and a fully annotated version.
+

@@ -32,20 +32,21 @@ install: build
 dist: build
 	rm -rf $(MATCHC_DIST_DIR)
 	mkdir -p $(MATCHC_DIST_DIR)
+	cp LICENSE $(MATCHC_DIST_DIR)
+	cp README $(MATCHC_DIST_DIR)
 	svn export bin $(MATCHC_DIST_DIR)/bin
 	svn export lib $(MATCHC_DIST_DIR)/lib
+	svn export demo $(MATCHC_DIST_DIR)/demo
+	mv $(MATCHC_DIST_DIR)/bin/matchC.py $(MATCHC_DIST_DIR)/bin/matchC
 	rm -rf $(MATCHC_DIST_DIR)/bin/__pycache__
 	rm -rf $(MATCHC_DIST_DIR)/bin/primitive_style.yml
-	rm -rf fol.k
+	rm -rf $(MATCHC_DIST_DIR)/lib/fol.k
 	cp $(K_MAUDE_LIB)/k-prelude.maude $(K_MAUDE_LIB)/pl-builtins.maude \
           $(MATCHC_DIST_DIR)/lib
 	cp lib/ml-prelude.maude $(MATCHC_DIST_DIR)/lib
-	sed -i -e '1s/^.*$$/load k-prelude.maude/' \
+	sed -i -e '1s/^load.*k-prelude.maude$$/load k-prelude.maude/' \
           $(MATCHC_DIST_DIR)/lib/ml-prelude.maude
-	svn export demo $(DIST_DIR)/demo
-	cd $(DIST_DIR)
-	tar cvfz matchC.tar.gz matchC
-	cd $(ML_ROOT_DIR)
+	tar cvfz $(DIST_DIR)/matchC.tar.gz $(MATCHC_DIST_DIR)
 
 clean:
 	$(MAKE) -C $(PARSER_DIR) clean
