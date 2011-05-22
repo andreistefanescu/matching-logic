@@ -4,8 +4,8 @@ LIB_DIR=$(ML_ROOT_DIR)/lib
 PARSER_DIR=$(ML_ROOT_DIR)/parser
 SEMANTICS_DIR=$(ML_ROOT_DIR)/semantics
 VIEWER_DIR=$(ML_ROOT_DIR)/viewer
-DIST_ROOT_DIR=$(ML_ROOT_DIR)/dist/
-DIST_DIR=$(DIST_ROOT_DIR)/matchC
+DIST_DIR=$(ML_ROOT_DIR)/dist/
+MATCHC_DIST_DIR=$(DIST_DIR)/matchC
 
 PARSER_JAR=$(PARSER_DIR)/matchCparser.jar
 COMPILED_FILE=matchC-compiled.maude
@@ -30,18 +30,20 @@ install: build
 	cp $(VIEWER_JAR) $(LIB_DIR)
 
 dist: build
-	rm -rf $(DIST_DIR)
-	mkdir -p $(DIST_DIR)
-	svn export bin $(DIST_DIR)/bin
-	svn export lib $(DIST_DIR)/lib
-	rm -rf $(DIST_DIR)/lib/__pycache__
+	rm -rf $(MATCHC_DIST_DIR)
+	mkdir -p $(MATCHC_DIST_DIR)
+	svn export bin $(MATCHC_DIST_DIR)/bin
+	svn export lib $(MATCHC_DIST_DIR)/lib
+	rm -rf $(MATCHC_DIST_DIR)/bin/__pycache__
+	rm -rf $(MATCHC_DIST_DIR)/bin/primitive_style.yml
+	rm -rf fol.k
 	cp $(K_MAUDE_LIB)/k-prelude.maude $(K_MAUDE_LIB)/pl-builtins.maude \
-          $(DIST_DIR)/lib
-	cp lib/ml-prelude.maude $(DIST_DIR)/lib
+          $(MATCHC_DIST_DIR)/lib
+	cp lib/ml-prelude.maude $(MATCHC_DIST_DIR)/lib
 	sed -i -e '1s/^.*$$/load k-prelude.maude/' \
-          $(DIST_DIR)/lib/ml-prelude.maude
+          $(MATCHC_DIST_DIR)/lib/ml-prelude.maude
 	svn export demo $(DIST_DIR)/demo
-	cd $(DIST_ROOT_DIR)
+	cd $(DIST_DIR)
 	tar cvfz matchC.tar.gz matchC
 	cd $(ML_ROOT_DIR)
 

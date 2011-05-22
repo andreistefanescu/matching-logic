@@ -1,0 +1,37 @@
+
+
+The MatchC program verifier is available for the following platforms:
+- 32-bit Linux
+- 64-bit Linux
+- MAC OS X 10.5 or higher
+
+
+DEPENDENCIES
+============
+
+MatchC requires Java Runtime Environment (JRE), version 1.6. JRE is installed on
+most platforms. It can be downloaded from:
+
+http://www.oracle.com/technetwork/java/javase/downloads/index.html
+
+MatchC requires Python, version 3.2 or higher. Python can be downloaded from:
+
+http://www.python.org/download/
+
+
+INSTALLING MATHCH
+=================
+
+To install, unpack the archive in the instalation directory. To run matchC, type
+in a terminal:
+
+<path_to_instalation_directory>/matchC/bin/matchC [c_source_file]
+
+It is recomanded to add <path_to_instalation_directory>/matchC/bin to the PATH,
+but not required.
+
+
+EXAMPLES
+========
+
+The distribution includes a 
