@@ -11,11 +11,12 @@ void trusted(int n)
     if n >= 10 \/ in(hd(ids(S)), {main, trusted}) */
 {
   printf("%d ", n);
-  //untrusted(n);
+  // untrusted(n);
   any(n);
   if (n)
     trusted(n - 1);
 }
+
 
 void untrusted(int n)
 /*@ rule <k> $ => return; </k> <stack> S </stack> <out_> epsilon => A </out>
@@ -26,12 +27,13 @@ void untrusted(int n)
     any(n - 1);
 }
 
+
 void any(int n)
 {
   // untrusted(n);
   if(n > 10)
-    // possible security violated if n < 10
-    trusted(n - 1);  
+    // security policy possibly (when any is called) violated if n <= 10
+    trusted(n - 1);
 }
 
 

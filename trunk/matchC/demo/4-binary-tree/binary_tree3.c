@@ -30,7 +30,7 @@ struct listNode *toListRecursive(struct treeNode *t, struct listNode *l)
     return l;
 
   ln = (struct listNode *) malloc(sizeof(struct listNode));
-  ln->val = t->val; 
+  ln->val = t->val;
   ln->next = toListRecursive(t->right, l);
   l = toListRecursive(t->left, ln);
   free(t);
@@ -40,8 +40,8 @@ struct listNode *toListRecursive(struct treeNode *t, struct listNode *l)
 
 
 struct listNode *toListIterative(struct treeNode *t)
-/*@ rule <k> $ => return ?l; </k>
-         <heap_> tree(t)(T) => list(?l)(tree2list(T)) <_/heap> */
+/*@ rule <k> $ => return l1; </k>
+         <heap_> tree(t)(T) => list(l1)(tree2list(T)) <_/heap> */
 {
   struct listNode *l;
   struct stackNode *s;
@@ -155,18 +155,18 @@ int main()
   struct listNode* l;
 
   t = create();
-  //@ assert <heap> tree(t)(!T1) </heap>
+  //@ assert <heap> tree(t)(T1) </heap>
   l = toListRecursive(t, 0);
-  //@ assert <heap> list(l)(tree2list(!T1)) </heap>
+  //@ assert <heap> list(l)(tree2list(T1)) </heap>
   printf("l: ");
   print(l);
   destroy(l);
   //@ assert <heap> . </heap>
 
   t = create();
-  //@ assert <heap> tree(t)(!T2) </heap>
+  //@ assert <heap> tree(t)(T2) </heap>
   l = toListIterative(t);
-  //@ assert <heap> list(l)(tree2list(!T2)) </heap>
+  //@ assert <heap> list(l)(tree2list(T2)) </heap>
   printf("l: ");
   print(l);
   destroy(l);
