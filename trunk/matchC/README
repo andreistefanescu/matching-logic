@@ -128,6 +128,20 @@ in the demo directory: lists, list segments, binary trees, and lists of
 trees.  These patterns are currently hardwired; we will soon provide a
 language so that users can define their own patterns.
 
+- It only proves partial correctness, that it, it does not prove that
+programs terminate.  Moreover, since matching logic builds upon an
+executable semantics of the programming language, one should make sure
+that the functions or loops which are not formally annotated with their
+specifications terminate.  Otherwise, since these are simply executed
+(within the language semantics), the verification process will not
+terminate.
+
+- matchC uses an off-the-shelf SMT solver to discard the proof obligations
+that cannot be discarded by rewriting.  In our experience, if the
+SMT solver does not return in 5 seconds then there is a high chance it
+will not return at all.  Thus, matchC currently returns a "verification
+failed" message if the SMT solver spends more than 5 seconds on any task.
+
 
 CONTACT
 =======

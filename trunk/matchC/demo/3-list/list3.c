@@ -80,7 +80,7 @@ struct listNode* create(int n)
 }
 
 void destroy(struct listNode* x)
-//@ rule <k> $ => return; </k><heap_> list(x)(A) => . <_/heap>
+//@ rule <k> $ => return; </k> <heap_> list(x)(A) => . <_/heap>
 {
   //@ inv <heap_> list(x)(?A) <_/heap>
   while(x)
@@ -124,11 +124,11 @@ int main()
   x = create(5);
   printf("x: ");
   print(x);
-  //@ assert <heap> list(x)(A1) </heap>
+  //@ assert <heap> list(x)(A1) </heap> <out> A1 </out>
   x = reverse(x);
   printf("reverse(x): ");
   print(x);
-  //@ assert <heap> list(x)(rev(A1)) </heap>
+  //@ assert <heap> list(x)(rev(A1)) </heap> <out> A1 @ rev(A1) </out>
   destroy(x);
 
   x = create(3);
