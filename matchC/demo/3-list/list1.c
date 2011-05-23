@@ -11,27 +11,30 @@ struct listNode {
 struct listNode* reverse(struct listNode *x)
 {
   struct listNode *p;
-  struct listNode *y;
+
   p = 0 ;
   while(x) {
+    struct listNode *y;
+
     y = x->next;
     x->next = p;
     p = x;
     x = y;
   }
+
   return p;
 }
 
-struct listNode* append(struct listNode *x, struct listNode *y)  
+struct listNode* append(struct listNode *x, struct listNode *y)
 {
   struct listNode *p;
   if (x == 0)
-   return y;
+    return y;
 
   p = x;
   while (p->next)
     p = p->next;
-  p->next = y ;
+  p->next = y;
 
   return x;
 }
@@ -68,9 +71,10 @@ struct listNode* create(int n)
 
 void destroy(struct listNode* x)
 {
-  struct listNode *y;
   while(x)
   {
+    struct listNode *y;
+
     y = x->next;
     free(x);
     x = y;
@@ -95,6 +99,9 @@ int main()
   struct listNode *y;
 
   x = create(5);
+  x = reverse(x);
+  destroy(x);
+  x = create(5);
   printf("x: ");
   print(x);
   x = reverse(x);
@@ -103,10 +110,14 @@ int main()
   destroy(x);
 
   x = create(3);
+  y = create(3);
+  x = append(x, y);
+  destroy(x);
+  x = create(3);
   printf("x: ");
   print(x);
   y = create(3);
-  printf("y: "); 
+  printf("y: ");
   print(y);
   x = append(x, y);
   printf("append(x, y): ");
@@ -115,4 +126,7 @@ int main()
 
   return 0;
 }
+
+
+//@ var A, B, C : Seq
 

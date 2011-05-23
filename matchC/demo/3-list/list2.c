@@ -11,10 +11,11 @@ struct listNode {
 struct listNode* reverse(struct listNode *x)
 {
   struct listNode *p;
-  struct listNode *y;
 
   p = 0 ;
   while(x) {
+    struct listNode *y;
+
     y = x->next;
     x->next = p;
     p = x;
@@ -24,12 +25,11 @@ struct listNode* reverse(struct listNode *x)
   return p;
 }
 
-struct listNode* append(struct listNode *x, struct listNode *y)  
+struct listNode* append(struct listNode *x, struct listNode *y)
 {
   struct listNode *p;
-
   if (x == 0)
-   return y;
+    return y;
 
   p = x;
   while (p->next)
@@ -46,7 +46,7 @@ int length(struct listNode* x)
   l = 0;
   while (x) {
     l += 1;
-    x = x->next;
+    x = x->next ;
   }
 
   return l;
@@ -57,7 +57,6 @@ struct listNode* create(int n)
 {
   struct listNode *x;
   struct listNode *y;
-
   x = 0;
   while (n)
   {
@@ -67,16 +66,15 @@ struct listNode* create(int n)
     x->next = y;
     n -= 1;
   }
-
   return x;
 }
 
 void destroy(struct listNode* x)
 {
-  struct listNode *y;
-
   while(x)
   {
+    struct listNode *y;
+
     y = x->next;
     free(x);
     x = y;
@@ -103,45 +101,45 @@ int main()
   x = create(5);
   //@ assert <heap> list(x)([1, 2, 3, 4, 5]) </heap>
   x = reverse(x);
-  //@ assert <heap> list(x)([5, 4, 3, 2, 1]) </heap> 
+  //@ assert <heap> list(x)([5, 4, 3, 2, 1]) </heap>
   destroy(x);
-  //@ assert <heap> . </heap> 
+  //@ assert <heap> . </heap>
   x = create(5);
   printf("x: ");
   print(x);
-  //@ assert <heap> list(x)(!A) </heap> <out> !A </out>
+  //@ assert <heap> list(x)(A1) </heap> <out> A1 </out>
   x = reverse(x);
   printf("reverse(x): ");
   print(x);
-  //@ assert <heap> list(x)(rev(!A)) </heap> <out> !A @ rev (!A) </out>
+  //@ assert <heap> list(x)(rev(A1)) </heap> <out> A1 @ rev(A1) </out>
   destroy(x);
 
   x = create(3);
-  //@ assert <heap> list(x)([1, 2, 3]) </heap> 
+  //@ assert <heap> list(x)([1, 2, 3]) </heap>
   y = create(3);
-  //@ assert <heap> list(x)([1, 2, 3]), list(y)([1, 2, 3]) </heap> 
+  //@ assert <heap> list(x)([1, 2, 3]), list(y)([1, 2, 3]) </heap>
   x = append(x, y);
-  //@ assert <heap> list(x)([1, 2, 3, 1, 2, 3]) </heap> 
+  //@ assert <heap> list(x)([1, 2, 3, 1, 2, 3]) </heap>
   destroy(x);
-  //@ assert <heap> . </heap> 
+  //@ assert <heap> . </heap>
   x = create(3);
   printf("x: ");
   print(x);
-  //@ assert <heap> list(x)(!A1) </heap> 
+  //@ assert <heap> list(x)(A2) </heap>
   y = create(3);
-  printf("y: "); 
+  printf("y: ");
   print(y);
-  //@ assert <heap> list(x)(!A1), list(y)(!A2) </heap> 
+  //@ assert <heap> list(x)(A2), list(y)(A3) </heap>
   x = append(x, y);
   printf("append(x, y): ");
   print(x);
-  //@ assert <heap> list(x)(!A1 @ !A2) </heap> 
+  //@ assert <heap> list(x)(A2 @ A3) </heap>
   destroy(x);
-  //@ assert <heap> . </heap> 
-  
+  //@ assert <heap> . </heap>
+
   return 0;
 }
 
 
-//@ var A : Seq
+//@ var A, B, C : Seq
 
