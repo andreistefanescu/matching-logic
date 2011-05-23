@@ -27,7 +27,7 @@ struct listNode *toListRecursive(struct treeNode *t, struct listNode *l)
     return l;
 
   ln = (struct listNode *) malloc(sizeof(struct listNode));
-  ln->val = t->val; 
+  ln->val = t->val;
   ln->next = toListRecursive(t->right, l);
   l = toListRecursive(t->left, ln);
   free(t);
@@ -39,10 +39,7 @@ struct listNode *toListRecursive(struct treeNode *t, struct listNode *l)
 struct listNode *toListIterative(struct treeNode *t)
 {
   struct listNode *l;
-  struct listNode *ln;
-  struct treeNode *tn;
   struct stackNode *s;
-  struct stackNode *sn;
 
   if (t == 0)
     return 0;
@@ -52,6 +49,10 @@ struct listNode *toListIterative(struct treeNode *t)
   s->val = t;
   s->next = 0;
   while (s != 0) {
+    struct treeNode *tn;
+    struct listNode *ln;
+    struct stackNode *sn;
+
     sn = s;
     s = s->next ;
     tn = sn->val;
@@ -120,6 +121,7 @@ struct treeNode *create()
 void destroy(struct listNode* x)
 {
   struct listNode *y;
+
   while(x)
   {
     y = x->next;
@@ -151,7 +153,6 @@ int main()
   print(l);
   destroy(l);
 
-
   t = create();
   l = toListIterative(t);
   printf("l: ");
@@ -160,4 +161,3 @@ int main()
 
   return 0;
 }
-

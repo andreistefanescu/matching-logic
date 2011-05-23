@@ -109,7 +109,7 @@ some known limitations:
 - It works with a semantically extended fragment of C, which we call
 KernelC.  That is, KernelC takes a subset of C programs as input, but it
 gives them a slightly different semantics than C.  For example, it works
-with arbitrarily large integer numbers and assumes undounded memory
+with arbitrarily large integer numbers and assumes unbounded memory
 (malloc always succeeds in KernelC).  The supported syntactic fragment
 of C is pretty much what the programs in the demo directory show.  In a
 separate project we are currently defining the most complete semantics of
