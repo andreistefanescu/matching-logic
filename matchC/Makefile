@@ -29,7 +29,7 @@ install: build
 	sed -i -e 's/^load .*$$//' $(RELEASE_COMPILED_FILE)
 	cp $(VIEWER_JAR) $(LIB_DIR)
 
-dist: build
+dist: install
 	rm -rf $(MATCHC_DIST_DIR)
 	mkdir -p $(MATCHC_DIST_DIR)
 	cp LICENSE $(MATCHC_DIST_DIR)

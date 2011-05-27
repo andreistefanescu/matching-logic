@@ -43,7 +43,7 @@ The distribution includes an example suite, in the directory demo:
 - 4-binary-tree:      tree manipulating functions
 - 5-stack-inspection: functions that need to be called in a specific order
 
-The exemples have up to three versions: an unannotated version (1),
+The examples have up to three versions: an unannotated version (1),
 a partially annotated version (2), and a fully annotated version (3).
 
 It is highly recommended that you execute these programs through
@@ -53,12 +53,12 @@ It is highly recommended that you execute these programs through
 HOW IT WORKS
 ============
 
-You can thing of matchC as a replacement for gcc which is capable of
-analyzing C programs directly within their semantics.  More precisely,
+You can think of matchC as a replacement for gcc which is capable of
+analyzing C programs directly within their semantics. More precisely,
 if the C program pgm.c has no annotations, then "matchC pgm.c" is a
-replacement for "gcc pgm.c ; a.out ; rm a.out".  However, unlike gcc
-which takes lots of semantic liberties, matchC obeys C's semantics
-(NB: see the section LIMITATIONS below).  In case matchC finds no
+replacement for "gcc pgm.c ; a.out ; rm a.out". However, unlike gcc
+which takes lots of semantic freedom, matchC obeys C's semantics
+(NB: see the section LIMITATIONS below). In case matchC finds no
 problem with the input C program, it outputs a message of the form:
 
 Compiling program ... DONE! [0.208s]
@@ -67,13 +67,13 @@ Verifying program ... DONE! [0.009s]
 Verification succeeded! [763 rewrites, 1 feasible and 0 infeasible paths]
 Output: 55
 
-For most simple programs, compiling the program and loading Maude takes
-most of the time.  matchC currently only keeps the integer numbers in its
-output.  The number of rewrites roughly corresponds to the number of
-semantic steps applied during the verification process.  The number of
+For most simple programs, compiling the program and loading Maude take
+most of the time. matchC currently only keeps the integer numbers in its
+output. The number of rewrites roughly corresponds to the number of
+semantic steps applied during the verification process. The number of
 feasible paths corresponds to how many program paths were explored all
 the way to their end, and the number of infeasible paths is that of
-paths which were discarded as infeasible.  These numbers are only
+paths which were discarded as infeasible. These numbers are only
 meaningful when the program has formal annotations (assertions);
 otherwise they will always be 1 and 0, respectively.
 
@@ -89,11 +89,11 @@ Generating error .... DONE! [0.156s]
 Check undefined1.kml for the complete output.
 
 There are 0 feasible paths, because matchC did not succeed to finish the
-execution of the program using the C semantics.  The mentioned error file,
+execution of the program using the C semantics. The mentioned error file,
 undefined1.kml in this case, contains the configuration in which the
-program got stuck when executed semantically.  You should search for the
+program got stuck when executed semantically. You should search for the
 <k> ... </k> cell and look at the first item in it (items are separated by
-~>); that should give enough hints of what was going wrong.  If that item
+~>); that should give enough hints of what was going wrong. If that item
 is an assertion, then you should check why the asserted pattern does not
 match the enclosing configuration.
 
@@ -102,44 +102,44 @@ LIMITATIONS
 ===========
 
 This is a proof-of-concept academic project, aimed at showing that matching
-logic can be an appealing alternative to Hoare logic.  Thus, the system
-most likely has lots of problems, most of them unknown to us.  Here are
+logic can be an appealing alternative to Hoare logic. Thus, the system
+most likely has lots of problems, most of them unknown to us. Here are
 some known limitations:
 
 - It works with a semantically extended fragment of C, which we call
-KernelC.  That is, KernelC takes a subset of C programs as input, but it
-gives them a slightly different semantics than C.  For example, it works
+KernelC. That is, KernelC takes a subset of C programs as input, but it
+gives them a slightly different semantics than C. For example, it works
 with arbitrarily large integer numbers and assumes unbounded memory
-(malloc always succeeds in KernelC).  The supported syntactic fragment
-of C is pretty much what the programs in the demo directory show.  In a
+(malloc always succeeds in KernelC). The supported syntactic fragment
+of C is pretty much what the programs in the demo directory show. In a
 separate project we are currently defining the most complete semantics of
-C.  Once that is complete, it will replace the experimental KernelC
+C. Once that is complete, it will replace the experimental KernelC
 semantics currently supported by matchC.
 
-- It does a poor job at parsing C.  Thus, you should always compile your
+- It does a poor job at parsing C. Thus, you should always compile your
 program with gcc and pass it to matchC only when gcc reports no parsing
-errors.  This, unfortunately, only solves the parsing problems within
-the C code and not those in the matching logic annotations.  To avoid
+errors. This, unfortunately, only solves the parsing problems within
+the C code and not those in the matching logic annotations. To avoid
 errors due to poor parsing, please avoid using program variables in
-rules associated to functions/
+rules associated to functions.
 
 - It only supports a few patterns, namely those mentioned in the examples
 in the demo directory: lists, list segments, binary trees, and lists of
-trees.  These patterns are currently hardwired; we will soon provide a
+trees. These patterns are currently hardwired; we will soon provide a
 language so that users can define their own patterns.
 
 - It only proves partial correctness, that it, it does not prove that
-programs terminate.  Moreover, since matching logic builds upon an
+programs terminate. Moreover, since matching logic builds upon an
 executable semantics of the programming language, one should make sure
 that the functions or loops which are not formally annotated with their
-specifications terminate.  Otherwise, since these are simply executed
+specifications terminate. Otherwise, since these are simply executed
 (within the language semantics), the verification process will not
 terminate.
 
 - matchC uses an off-the-shelf SMT solver to discard the proof obligations
-that cannot be discarded by rewriting.  In our experience, if the
+that cannot be discarded by rewriting. In our experience, if the
 SMT solver does not return in 5 seconds then there is a high chance it
-will not return at all.  Thus, matchC currently returns a "verification
+will not return at all. Thus, matchC currently returns a "verification
 failed" message if the SMT solver spends more than 5 seconds on any task.
 
 
