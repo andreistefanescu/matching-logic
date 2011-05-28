@@ -11,7 +11,7 @@ void trusted(int n)
     if n >= 10 \/ in(hd(ids(S)), {main, trusted}) */
 {
   printf("%d ", n);
-  // untrusted(n);
+  untrusted(n);
   any(n);
   if (n)
     trusted(n - 1);
