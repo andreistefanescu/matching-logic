@@ -104,8 +104,8 @@ mod MATHEMATICAL-SEQUENCE-BUILTIN-MODULE is
   eq hd([Obj]) = Obj .
 
   eq in(Obj, NeA1 @ NeA2) = in(Obj, NeA1) \/ in(Obj, NeA2) .
-  eq in([Obj1] , Obj2) = (Obj1 === Obj2) .
-  eq in(epsilon , Obj) = FalseFormula .
+  eq in(Obj1, [Obj2]) = (Obj1 === Obj2) .
+  eq in(Obj, epsilon) = FalseFormula .
 
   eq contain(NeA1 @ NeA2 , I) = contain(NeA1 , I) \/ contain(NeA2 , I) .
   eq contain([J] , I) = (I === J) .
