@@ -4,7 +4,7 @@ LIB_DIR=$(ML_ROOT_DIR)/lib
 PARSER_DIR=$(ML_ROOT_DIR)/parser
 SEMANTICS_DIR=$(ML_ROOT_DIR)/semantics
 VIEWER_DIR=$(ML_ROOT_DIR)/viewer
-DIST_DIR=$(ML_ROOT_DIR)/dist/
+DIST_DIR=$(ML_ROOT_DIR)/dist
 MATCHC_DIST_DIR=$(DIST_DIR)/matchC
 
 PARSER_JAR=$(PARSER_DIR)/matchCparser.jar
@@ -42,7 +42,7 @@ dist: install
 	rm -rf $(MATCHC_DIST_DIR)/bin/primitive_style.yml
 	rm -rf $(MATCHC_DIST_DIR)/lib/fol.k
 	cp $(K_MAUDE_LIB)/k-prelude.maude $(K_MAUDE_LIB)/pl-builtins.maude \
-          $(MATCHC_DIST_DIR)/lib
+          $(K_MAUDE_LIB)/socket.maude $(MATCHC_DIST_DIR)/lib
 	cp lib/ml-prelude.maude $(MATCHC_DIST_DIR)/lib
 	sed -i -e '1s/^load.*k-prelude.maude$$/load k-prelude.maude/' \
           $(MATCHC_DIST_DIR)/lib/ml-prelude.maude
