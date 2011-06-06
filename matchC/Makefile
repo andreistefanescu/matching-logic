@@ -46,7 +46,7 @@ dist: install
 	cp lib/ml-prelude.maude $(MATCHC_DIST_DIR)/lib
 	sed -i -e '1s/^load.*k-prelude.maude$$/load k-prelude.maude/' \
           $(MATCHC_DIST_DIR)/lib/ml-prelude.maude
-	tar cvfz $(DIST_DIR)/matchC.tar.gz $(MATCHC_DIST_DIR)
+	bash -c 'cd $(DIST_DIR); tar cvfz matchC.tar.gz matchC'
 
 clean:
 	$(MAKE) -C $(PARSER_DIR) clean
