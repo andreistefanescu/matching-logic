@@ -13,7 +13,7 @@ SEMANTICS_COMPILED_FILE=$(SEMANTICS_DIR)/$(COMPILED_FILE)
 RELEASE_COMPILED_FILE=$(LIB_DIR)/$(COMPILED_FILE)
 VIEWER_JAR=$(VIEWER_DIR)/matchCviewer.jar
 
-K_BASE=/home/grosu/grosu/k-framework
+K_BASE=/Users/andrei/k-release
 K_MAUDE_LIB=$(K_BASE)/core/maude/lib
 
 all: install

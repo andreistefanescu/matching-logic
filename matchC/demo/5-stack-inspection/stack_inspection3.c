@@ -20,7 +20,7 @@ void trusted(int n)
 
 void untrusted(int n)
 /*@ rule <k> $ => return; </k> <stack> S </stack> <out_> epsilon => A </out>
-    if in(trusted, ids(S)) /\ n = n */
+    if in(trusted, ids(S)) */
 {
   printf("%d ", -n);
   if (n)

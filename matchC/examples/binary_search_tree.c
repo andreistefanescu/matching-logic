@@ -45,18 +45,23 @@ struct treeNode *insertIterative(struct treeNode *root, int v)
 
   p = 0;
   t = root;
-  while (t != 0) {
-    p = t;
-    if (v < t->val)
-      t = t->left;
-    else
-      t = t->right;
-  }
 
-  if (v < p->val)
-    p->left = newNode(v);
-  else
-    p->right = newNode(v);
+  /*@ rule <heap_> tree(t)(T) => tree(old(t))(?T) <_/heap>
+      if isBst(T) /\ isBst(?T) /\ tree2mset(?T) = tree2mset(T) U {v} */
+  {
+    while (t != 0) {
+      p = t;
+      if (v < t->val)
+        t = t->left;
+      else
+        t = t->right;
+    }
+
+    if (v < p->val)
+      p->left = newNode(v);
+    else
+      p->right = newNode(v);
+  }
 
   return root;
 }

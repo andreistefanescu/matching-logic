@@ -67,6 +67,7 @@ public class Table {
     labelToCell = new HashMap<String, Cell>();
 
   public static final Set<String> kernelCIdentifiers = new HashSet<String>();
+  public static final Set<String> kernelCParameters = new HashSet<String>();
   public static final Set<String> kernelCVariables = new HashSet<String>();
   public static final Set<String> annotIdentifiers = new HashSet<String>();
   public static final Set<String> annotLeftIdentifiers = new HashSet<String>();

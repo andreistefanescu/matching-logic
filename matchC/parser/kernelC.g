@@ -35,7 +35,6 @@ tokens {
   RETURN = 'return';
   BLOCK;
   VOID_EXP;
-  ANNOT;
 
   ASSIGN = '=';
   OR_ASSIGN = '|=';
@@ -85,10 +84,13 @@ tokens {
   CALL;
   POST_INC;
   POST_DEC;
+  NULL_LITERAL = 'NULL';
 
   TV;
   ID;
   UNIT_EXP;
+
+  ANNOTATION;
 }
 
 
@@ -105,18 +107,17 @@ translation_unit
   ;
 
 definition_declaration
-  : ( type IDENTIFIER '(' parameter_list ')' (ANNOTATION)? '{' )=>
+  : ( type IDENTIFIER '(' parameter_list ')' (annotation)? '{' )=>
     function_definition
   | declaration
-  | ANNOTATION
+  | annotation
   ;
 
 function_definition
-  : type IDENTIFIER
-    '(' parameter_list ')'
-    ( ANNOTATION compound_statement
+  : type IDENTIFIER '(' parameter_list ')' { }
+    ( annotation compound_statement
       -> ^(ANNOT_FUN_DEF type IDENTIFIER parameter_list
-           ANNOTATION compound_statement
+           annotation compound_statement
          )
     | compound_statement
       -> ^(FUN_DEF type IDENTIFIER parameter_list compound_statement)
@@ -132,8 +133,8 @@ declaration
 function_declaration
   : type IDENTIFIER
     '(' parameter_list ')'
-    ( ANNOTATION SEP
-      -> ^(ANNOT_FUN_DECL type IDENTIFIER parameter_list ANNOTATION)
+    ( annotation SEP
+      -> ^(ANNOT_FUN_DECL type IDENTIFIER parameter_list annotation)
     | SEP -> ^(FUN_DECL type IDENTIFIER parameter_list)
     )
   ;
@@ -155,9 +156,9 @@ variable_declaration
   ;
 
 parameter_list
-  : parameter (',' parameter)* 
+  : { Table.kernelCParameters.clear(); } parameter (',' parameter)* 
     -> ^(LIST parameter+)
-  | -> LIST
+  | { Table.kernelCParameters.clear(); } -> LIST
   ;
 
 parameter
@@ -196,7 +197,7 @@ statement
   | RETURN expression SEP -> ^(RETURN expression)
   | RETURN SEP -> ^(RETURN VOID_EXP)
   | compound_statement
-  | ANNOTATION
+  | annotation
   ;
 
 compound_statement
@@ -347,6 +348,7 @@ primary_expression
 
 constant
   : arithmetic_constant
+  | NULL_LITERAL -> DECIMAL_LITERAL["0"]
   //| CHARACTER_LITERAL
   | STRING_LITERAL
   //| FLOATING_POINT_LITERAL
@@ -356,6 +358,11 @@ arithmetic_constant
   : DECIMAL_LITERAL
   | OCTAL_LITERAL
   | HEX_LITERAL
+  ;
+
+
+annotation
+  : ANNOTATION -> ANNOTATION[AnnotPreK.annotToMaudeString($ANNOTATION.text)]
   ;
 
 
