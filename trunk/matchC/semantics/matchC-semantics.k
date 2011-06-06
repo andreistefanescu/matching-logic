@@ -4,7 +4,7 @@ load kernelC-semantics
 kmod MATCHC-SEMANTICS is including MATCHC-SYNTAX + KERNELC-SEMANTICS
   kvar N Counter : Nat
   kvar I : Int++
-  kvar VarRoot : String
+  kvar VarRoot IdString Suffix : String
   kvar Phi PrePhi PostPhi Phi1 Phi2 : Formula
   kvar NtPhi : NtFormula
   kvar Subst Subst1 Subst2 : Subst
@@ -20,6 +20,7 @@ kmod MATCHC-SEMANTICS is including MATCHC-SYNTAX + KERNELC-SEMANTICS
   kvar PreCfg PostCfg CfgItems CfgItems1 CfgItems2 TaskItems : Bag 
   kvar Pattern Pattern1 Pattern2 : Pattern
   kvar Env TEnv StructMap FunMap : Map
+  kvar NeMap : NeMap
   kvar Stack : List
   kvar checkSet Set : Set
 
@@ -106,7 +107,7 @@ Function entry
         <struct> StructMap </struct>
         <fun>
           T F(ParamList) [[@ cfg PreCfg -> PostCfg req PrePhi ens PostPhi]]
-            |-> S
+          |-> S
           FunMap
         </fun>
       <_/task>
@@ -120,13 +121,13 @@ Function entry
           <struct> StructMap </struct>
           <fun>
             T F(ParamList) [[@ cfg PreCfg -> PostCfg req PrePhi ens PostPhi]]
-              |-> S
+            |-> S
             FunMap
           </fun>
           <k>
             declParams(ParamList)
             ~> @ assume (PreCfg /\ PrePhi)
-            ~> substKLabel(S, 'return_, 'returnAssert_)
+            ~> 'block`(_`)(substKLabel(S, 'return_, 'returnAssert_))
             ~> assertLabel
             ~> @ assert (PostCfg /\ PostPhi)
             ~> disolveTask
@@ -154,7 +155,7 @@ Function entry
           <fun> T F(ParamList) |-> S FunMap </fun>
           <k>
             declParams(ParamList)
-            ~> substKLabel(S, 'return_, 'returnAssert_)
+            ~> 'block`(_`)(substKLabel(S, 'return_, 'returnAssert_))
             ~> assertLabel
           </k>
           <fname> F </fname>
@@ -191,6 +192,8 @@ Function definition/declaration
         .Map
       =>
         T F(ParamList)
+        [[@ cfg PreCfg -> PostCfg req PrePhi ens PostPhi]]
+        /*
         [[@ cfg applyDefaultSubst(
                   PreCfg,
                   defaultMapItem("env") <- defaultFreeEnv(paramSet(ParamList))
@@ -201,6 +204,7 @@ Function definition/declaration
                   defaultMapItem("env") <- defaultEnv(paramSet(ParamList))
                 )
             req PrePhi ens PostPhi]]
+        */
         |-> .K
     <_/fun>
   [structural]
@@ -212,6 +216,8 @@ Function definition/declaration
         .Map
       =>
         T F(ParamList)
+        [[@ cfg PreCfg -> PostCfg req PrePhi ens PostPhi]]
+        /*
         [[@ cfg applyDefaultSubst(
                   PreCfg,
                   defaultMapItem("env") <- defaultFreeEnv(paramSet(ParamList))
@@ -223,6 +229,7 @@ Function definition/declaration
                 //  defaultMapItem("env") <- defaultEnv(paramSet(ParamList))
                 //)
             req PrePhi ens PostPhi]]
+        */
         |-> (S ~> return tv(void, unit))
     <_/fun>
     <check_> .Set => SetItem(checkContract(F)) <_/check>
@@ -249,8 +256,11 @@ Function definition/declaration
 Return & Assert
 ***)
   rule
-    <k> returnAssert tv(_, V) ~> _ ~> assertLabel => .K <_/k>
-    ---<form> Phi => returns V /\ Phi </form>
+    <k>
+        returnAssert tv(_, V) ~> _ ~> restoreEnv(Set) ~> assertLabel
+      =>
+        restoreEnv(Set)
+    <_/k>
     <env_> .Map => id("__return__") |-> V <_/form>
 
 
@@ -378,8 +388,7 @@ assumed patterns
                 (defaultMapItem("struct") <- StructMap) ;;
                 (defaultMapItem("fun") <- FunMap) ;;
                 ---(defaultKItem("k") <- K) ;;
-                (defaultMapItem("FreeEnv") <- defaultFreeEnv(keys(TEnv))) ;;
-                (defaultMapItem("env") <- defaultEnv(keys(TEnv))) ;;
+                (defaultSetItem("var") <- keys(TEnv)) ;;
                 (defaultKItem("fname") <- FName) ;;
                 (defaultMapItem("tenv") <- TEnv) ;;
                 (defaultKItem("counter") <- sNat N)
@@ -460,11 +469,10 @@ asserted patterns
               //(defaultMapItem("struct") <- StructMap) ;;
               //(defaultMapItem("fun") <- FunMap) ;;
               //(defaultKItem("k") <- K) ;;
-              (defaultMapItem("FreeEnv") <- defaultFreeEnv(keys(TEnv))) ;;
-              (defaultMapItem("env") <- defaultEnv(keys(TEnv)))
+              (defaultSetItem("var") <- keys(TEnv))
               //(defaultKItem("fname") <- FName) ;;
               //(defaultMapItem("tenv") <- TEnv) ;;
-              //(defaultKItem("counter") <- Counter) 
+              //(defaultKItem("counter") <- sNat N)
             ),
             Subst
           )
@@ -478,7 +486,7 @@ asserted patterns
     <env> Env </env>
     <fname> FName </fname>
     <tenv> TEnv </tenv>
-    <counter> Counter </counter>
+    <counter> N => sNat N </counter>
     <subst> Subst </subst>
   [structural print ">>>"]
   rule
@@ -534,15 +542,33 @@ Helpers
   [structural]
   rule paramSet(.List{KernelC}) => .Set [structural]
 
-  syntax Map ::= defaultEnv ( Set )
-  rule defaultEnv(SetItem(X) Set) => X |-> ?var(X) defaultEnv(Set) [structural]
-  rule defaultEnv(.Set) => .Map [ structural]
-
-  syntax Map ::= defaultFreeEnv ( Set )
+  syntax Map ::= make!Env ( Map , Set , String )
   rule
-    defaultFreeEnv(SetItem(X) Set) => X |-> FreeVar(X) defaultFreeEnv(Set)
+      make!Env(NeMap, Set, Suffix)
+    =>
+      NeMap make!Env(.Map, Set -Set keys(NeMap), Suffix)
+  if Set =/=Bool defaultSetItem("var") [structural]
+  rule
+      make!Env(.Map, SetItem(id(IdString)) Set, Suffix)
+    =>
+      id(IdString) |-> !var(id(IdString +String "_" +String Suffix))
+      make!Env(.Map, Set, Suffix)
   [structural]
-  rule defaultFreeEnv(.Set) => .Map [ structural]
+  rule make!Env(.Map, .Set, _) => .Map [ structural]
+
+  syntax Map ::= makeFreeEnv ( Map , Set , String )
+  rule
+      makeFreeEnv(NeMap, Set, Suffix)
+    =>
+      NeMap makeFreeEnv(.Map, Set -Set keys(NeMap), Suffix)
+  if Set =/=Bool defaultSetItem("var") [structural]
+  rule
+      makeFreeEnv(.Map, SetItem(id(IdString)) Set, Suffix)
+    =>
+      id(IdString) |-> FreeVar(id(IdString +String "_" +String Suffix))
+      makeFreeEnv(.Map, Set, Suffix)
+  [structural]
+  rule makeFreeEnv(.Map, .Set, _) => .Map [ structural]
 
   rule
     <k> cleanFrameSubst(VarRoot) => .K <_/k>

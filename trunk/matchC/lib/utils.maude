@@ -85,10 +85,14 @@ inc MATCHC
    = if substrString(string(Q), 0, 4) ==Bool "Free" orBool Q ==Bool 'skolem then
        'co-skolem[NT : Q[QTList]]
      else
-       if Q =/=Bool 'co-skolem then
-         Q[co-skolemTerm(NT, QTList)]
+       if Q ==Bool 'makeFreeEnv`(_`,_`,_`) then
+         'make!Env`(_`,_`,_`)[co-skolemTerm(NT, QTList)]
        else
-         Q[QTList]
+         if Q =/=Bool 'co-skolem then
+           Q[co-skolemTerm(NT, QTList)]
+         else
+           Q[QTList]
+         fi
        fi
      fi .
  
@@ -162,6 +166,7 @@ inc MATCHC
   var Pattern Pattern1 Pattern2 : Pattern .
   var CellLabel : CellLabel .
   var K : K .
+  var S : String .
   var List : List .
   var Bag : Bag .
   var Map : Map .
@@ -178,6 +183,12 @@ inc MATCHC
   eq applyDefaultSubst(< CellLabel > Map1 Map </ CellLabel > Bag,
                        (Map1 <- Map2) ;; Subst)
    = < CellLabel > Map2 Map </ CellLabel > applyDefaultSubst(Bag, Subst) .
+  eq applyDefaultSubst(< env > make!Env(Map, Set1, S) </ env > Bag,
+                       (Set1 <- Set2) ;; Subst)
+   = < env > make!Env(Map, Set2, S) </ env > applyDefaultSubst(Bag, Subst) .
+  eq applyDefaultSubst(< env > makeFreeEnv(Map, Set1, S) </ env > Bag,
+                       (Set1 <- Set2) ;; Subst)
+   = < env > makeFreeEnv(Map, Set2, S) </ env > applyDefaultSubst(Bag, Subst) .
   eq applyDefaultSubst(< CellLabel > K1 </ CellLabel > Bag, (K1 <- K2) ;; Subst)
    = < CellLabel > K2 </ CellLabel > applyDefaultSubst(Bag, Subst) .
   eq applyDefaultSubst(< CellLabel > Bag1 </ CellLabel > Bag2, Subst)

@@ -61,6 +61,7 @@ mod CONFIG-BUILTIN-MODULE is
   op FreeListItem : String -> FreeListItem .
   op defaultBagItem : String -> Bag .
   op defaultMapItem : String -> Map .
+  op defaultSetItem : String -> Set .
   op defaultMapItem : Map -> Map .
   op defaultListItem : String -> List .
 

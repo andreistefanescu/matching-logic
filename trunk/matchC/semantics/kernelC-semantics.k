@@ -97,7 +97,11 @@ Statements
 ***)
   rule TV ; => .K [structural]
   rule
-    <k> block(KernelC) => KernelC ~> restoreEnv(keys(Env)) <_/k>
+    <k>
+        block(KernelC)
+      =>
+        KernelC ~> restoreEnv(keys(Env) SetItem(id("__return__")))
+    <_/k>
     <env> Env </env>
   [structural print "\n===push===\n" Env "\n===push===\n"]
   rule
@@ -345,12 +349,12 @@ Helpers
   rule initObject(_, _ , .List{KernelC}) => .Map [structural]
 
   syntax Map ::= filterMap ( Map , Set )
-  --- rule filterMap(Map, Set) => Map [structural]
   rule
-      filterMap((K1 |-> K2 Map), (SetItem(K1) Set))
+      filterMap((K1 |-> K2 Map), Set)
     =>
-      K1 |-> K2 filterMap(Map, Set)
+      if SetItem(K1) in Set then K1 |-> K2 else .Map fi
+      filterMap(Map, Set)
   [structural]
-  rule filterMap(Map, .Set) => .Map [structural]
+  rule filterMap(.Map, _) => .Map [structural]
 endkm
 

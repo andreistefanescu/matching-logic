@@ -38,7 +38,7 @@ open_flag = 'o'
 
 
 def format_timer(timer):
-    return '[' + cyan_color + '%.3f' % timer + 's' + no_color + ']'
+    return '[' + '%.3f' % timer + 's' + ']'
 
 
 def default_filter(line):

@@ -38,7 +38,7 @@ struct listNode* append(struct listNode *x, struct listNode *y)
 
   p = x;
   /*@ inv <heap_> lseg(x, p)(?A1), list(p)(?A2) <_/heap> 
-          /\ A = ?A1 @ ?A2 /\ ~(p = 0) /\ y = !y */
+          /\ A = ?A1 @ ?A2 /\ ~(p = 0) */
   while (p->next)
     p = p->next;
   p->next = y;

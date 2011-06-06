@@ -139,10 +139,6 @@ public class KernelCPreK {
       // Unflat list
       tree = (CommonTree) TreeUtils.unflat(tree, k.K_LIST, k.K_LIST_COMMA, k.K_LIST_UNIT, "_`,`,_", ".List{K}");
 
-      nodes = new CommonTreeNodeStream(tree);
-      kernelCPass3 pass3 = new kernelCPass3(nodes);
-      tree = (CommonTree) pass3.downup(tree);
-
       CommonTree maudifiedTree = tree;
 
       Table.makeVars();

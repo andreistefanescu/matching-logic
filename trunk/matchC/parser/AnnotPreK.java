@@ -263,11 +263,20 @@ public class AnnotPreK {
     newCell.addChild(container);
 
     if ("env".equals(cellLabel)) {
+      String wrapper = "make" + prefix + "Env`(_`,_`,_`)";
+      t = new CommonToken(annotParser.IDENTIFIER, wrapper);
+      CommonTree makeEnvNode = new CommonTree(t);
+      container.addChild(makeEnvNode);
+
+      t = new CommonToken(annotParser.MAP, "MAP");
+      CommonTree patternEnvNode = new CommonTree(t);
+      makeEnvNode.addChild(patternEnvNode);
       switch (annotParser.annotType) {
         case annotParser.RULE:
           t = new CommonToken(annotParser.REW);
           CommonTree rewNode = new CommonTree(t);
-          container.addChild(rewNode);
+          patternEnvNode.addChild(rewNode);
+
           t = new CommonToken(annotParser.MAP);
           CommonTree leftMapNode = new CommonTree(t);
           rewNode.addChild(leftMapNode);
@@ -277,21 +286,23 @@ public class AnnotPreK {
 
           addEnvVars(leftMapNode, true, false);
           addEnvVars(rightMapNode, false, true);
-
-          String oldPrefix = prefix;
-          prefix = "?";
-          rightMapNode.addChild(newVar("env", "MapItem", false));
-          prefix = oldPrefix;
           break;
         case annotParser.INVARIANT:
         case annotParser.ASSERT:
-          addEnvVars(container, false, false);
-          container.addChild(newVar("env", "MapItem", false));
+          addEnvVars(patternEnvNode, false, false);
           break;
         default:
-          container.addChild(newVar("env", "MapItem", true));
           break;
       }
+
+      t = new CommonToken(annotParser.IDENTIFIER, "defaultSetItem");
+      CommonTree varSetNode = new CommonTree(t);
+      makeEnvNode.addChild(varSetNode);
+      t = new CommonToken(annotParser.IDENTIFIER, "\"var\"");
+      varSetNode.addChild(new CommonTree(t));
+
+      t = new CommonToken(annotParser.IDENTIFIER, "\"" + suffix + "\"");
+      makeEnvNode.addChild(new CommonTree(t));
     }
     else if (cell.cells.isEmpty())
       container.addChild(newVar(cellLabel, cell.sort + "Item", cell.isDefault));
