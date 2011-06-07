@@ -64,6 +64,33 @@ ml_prog_footer = ['endm\n\n',
     'q\n']
 
 
+### check the c program compiles with some c compiler
+def checkc(source_filename, cc='gcc'):
+    print('CC program ..........', end='')
+    sys.stdout.flush()
+    start = time.time()
+
+    # check that cc binary exists
+    validcc = True
+    try:
+        null_fd = os.open(os.devnull, os.O_WRONLY)
+        subprocess.call(cc, stdout=null_fd, stderr=null_fd)
+    except OSError:
+        validcc = False
+
+    # if cc is a valid c compiler
+    if validcc == True:
+        (file_obj, compiled_file) = tempfile.mkstemp()
+        os.close(file_obj)
+        cmd = [cc, '-o', compiled_file, source_filename]
+        retcode = subprocess.call(cmd)
+        if retcode != 0: sys.exit(retcode)
+
+    end = time.time()
+    elapsed = "%.3f" % round(end - start, 3) + "s"
+    print(' DONE! [' + elapsed + ']')
+
+
 ### compile c program with ml annotation into labeled k (maude format)
 def compile(in_filename, out_filename):
     if os.name == 'posix' or os.name == 'mac':
@@ -77,6 +104,7 @@ def compile(in_filename, out_filename):
 
     print('Compiling program ...', end='')
     start = time.time()
+
     out_file.writelines(ml_prog_header)
     out_file.flush()
 
@@ -86,11 +114,13 @@ def compile(in_filename, out_filename):
     out_file.writelines(ml_prog_footer)
     in_file.close()
     out_file.close()
+
     end = time.time()
     elapsed = "%.3f" % round(end - start, 3) + "s"
     print(' DONE! [' + elapsed + ']')
 
 
+### verify the program in maude + smt
 def verify(prog_filename, log=None):
     cmd = None
     if platform.system() == 'Linux':
@@ -175,6 +205,13 @@ def main():
         action='store_true',
         default=False,
         help='do not generate any verifier output')
+
+    parser.add_argument(
+        '-cc',
+        default='gcc',
+        help='check c syntax of program with compiler',
+        metavar='compiler',
+        dest='cc')
     parser.add_argument(
         'file',
         help='file to verify',
@@ -190,6 +227,8 @@ def main():
 
     if not os.path.isfile(args.file):
         sys.exit('matchC: ' + args.file + ': no such file or directory')
+
+    checkc(args.file, cc=args.cc)
 
     if not args.compile:
         (file_obj, compiled_file) = tempfile.mkstemp(suffix='.maude')
