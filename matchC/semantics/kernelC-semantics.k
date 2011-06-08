@@ -233,6 +233,7 @@ Expressions
 ***(
 Memory load, store and rearrangement
 ***)
+*** structure fields
   rule
     <k> derive(I) => .K <_/k>
     <heap_> I |-> _ : _ <_/heap>
@@ -243,6 +244,18 @@ Memory load, store and rearrangement
   rule
     <k> store(T, I, V) => tv(T, V) <_/k>
     <heap_> I |-> (_ => V) : _ <_/heap>
+
+*** pointers to ints and pointers
+  rule
+    <k> derive(I) => .K <_/k>
+    <heap_> I |-> _ <_/heap>
+  [structural]
+  rule
+    <k> load(T, I) => tv(T, V) <_/k>
+    <heap_> I |-> V <_/heap>
+  rule
+    <k> store(T, I, V) => tv(T, V) <_/k>
+    <heap_> I |-> (_ => V) <_/heap>
 
 
 ***(

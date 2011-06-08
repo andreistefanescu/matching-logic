@@ -371,6 +371,17 @@ kmod FOL is including MATCHC-SEMANTICS
       <form> Phi => Phi /\ V1 === V2 </form>
     <_/task>
   [structural]
+  rule
+    <task_>
+      <taskType> Hypothesis </taskType>
+      <heap_> P |-> V1 => .Map <_/heap>
+    <_/task>
+    <task_>
+      <taskType> Conclusion </taskType>
+      <heap_> P |-> V2 => .Map <_/heap>
+      <form> Phi => Phi /\ V1 === V2 </form>
+    <_/task>
+  [structural]
 
 --- Step 3.3 : Eliminate a heap frame
   rule
