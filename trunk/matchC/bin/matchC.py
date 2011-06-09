@@ -148,8 +148,9 @@ def verify(prog_filename, log=None):
         print(green_color + 'Verification succeeded!' + no_color, statistics)
     else:
         print(red_color + 'Verification failed!' + no_color, statistics)
-    if output_stream != None and output_stream != "":
-        print('Output:', output_stream)
+    if output_stream != None:
+        if output_stream != "" and output_stream != "epsilon":
+            print('Output:', output_stream)
 
 
 verified = True

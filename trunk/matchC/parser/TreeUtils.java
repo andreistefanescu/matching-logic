@@ -76,11 +76,12 @@ public class TreeUtils {
   makeLabels(
     Tree tree,
     HashSet<String> coreK,
-    HashMap<String, String> tokenToWrapper
+    HashMap<String, String> tokenToWrapper,
+    String defaultWrapper
   ) {
     // tansform the children
     for (int index = 0; index < tree.getChildCount(); index++) {
-      tree.setChild(index, makeLabels(tree.getChild(index), coreK, tokenToWrapper));
+      tree.setChild(index, makeLabels(tree.getChild(index), coreK, tokenToWrapper, defaultWrapper));
     }
 
     int kTokenType = tree.getType();
@@ -107,24 +108,25 @@ public class TreeUtils {
     else if (kTokenType == k.BUILTIN && tree.getParent() != null) {
       int parentTokenType = ((CommonTree) tree.getParent()).getType();
       String parentString = ((CommonTree) tree.getParent()).getText();
-      if (parentTokenType == k.K || coreK.contains(parentString)) {
-        if (tokenToWrapper.containsKey(kString)) {
-          String wrapperString = tokenToWrapper.get(kString);
-          CommonToken wrapperToken;
-          wrapperToken = new CommonToken(k.WRAPPER, wrapperString);
-          CommonTree wrapperNode = new CommonTree(wrapperToken);
-          wrapperNode.addChild(tree);
+      if (parentTokenType == k.K || coreK.contains(parentString) || parentTokenType == k.K_LIST) {
+        String wrapperString;
+        if (tokenToWrapper.containsKey(kString))
+          wrapperString = tokenToWrapper.get(kString);
+        else
+          wrapperString = defaultWrapper;
 
-          CommonToken kListToken = new CommonToken(k.K_LIST, "_`,`,_");
-          CommonTree kListNode = new CommonTree(kListToken);
-          CommonToken appToken = new CommonToken(k.APP, "_`(_`)");
-          CommonTree appNode = new CommonTree(appToken);
-          appNode.addChild(wrapperNode);
-          appNode.addChild(kListNode);
-          tree = appNode;
-        } 
-        else {
-        }
+        CommonToken wrapperToken;
+        wrapperToken = new CommonToken(k.WRAPPER, wrapperString);
+        CommonTree wrapperNode = new CommonTree(wrapperToken);
+        wrapperNode.addChild(tree);
+
+        CommonToken kListToken = new CommonToken(k.K_LIST, "_`,`,_");
+        CommonTree kListNode = new CommonTree(kListToken);
+        CommonToken appToken = new CommonToken(k.APP, "_`(_`)");
+        CommonTree appNode = new CommonTree(appToken);
+        appNode.addChild(wrapperNode);
+        appNode.addChild(kListNode);
+        tree = appNode;
       }
     }
     else if (kTokenType == k.WRAPPER) {

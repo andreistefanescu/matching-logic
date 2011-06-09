@@ -24,12 +24,15 @@ public class AnnotPreK {
     coreK = new HashSet<String>();
   public static final HashMap<String, String>
     tokenToWrapper = new HashMap<String, String>();
+  public static final String defaultWrapper;
 
   static {
     coreK.add("_~>_");
     coreK.add("(.).K");
     coreK.add(".");
     coreK.add("_=>_");
+    coreK.add("_|->_");
+    coreK.add("_|->_:_");
 
     tokenToK.put(annotParser.REW, "_=>_");
 
@@ -42,6 +45,8 @@ public class AnnotPreK {
     tokenToK.put(annotParser.VERIFY, "@`verify");
     tokenToK.put(annotParser.BREAKPOINT, "@`breakpoint");
     tokenToK.put(annotParser.RETURN, "returnRule_");
+    tokenToK.put(annotParser.MAPSTO, "_|->_");
+    tokenToK.put(annotParser.POINTSTO, "_|->_:_");
 
     tokenToBuiltins.put(annotParser.DISJ, "_\\/_");
     tokenToBuiltins.put(annotParser.CONJ, "_/\\_");
@@ -63,13 +68,13 @@ public class AnnotPreK {
     tokenToBuiltins.put(annotParser.EPSILON, "epsilon");
     tokenToBuiltins.put(annotParser.SEQ, "`[_`]");
     tokenToBuiltins.put(annotParser.MSET, "`{|_|`}");
-    tokenToBuiltins.put(annotParser.MAPSTO, "_|->_");
-    tokenToBuiltins.put(annotParser.POINTSTO, "_|->_:_");
     tokenToBuiltins.put(annotParser.HEAP_PATTERN, "_`(_`)`(_`)");
     tokenToBuiltins.put(annotParser.CELL, "<_>_</_>");
     tokenToBuiltins.put(annotParser.FORMULA_TRUE, "TrueFormula");
     tokenToBuiltins.put(annotParser.FORMULA_FALSE, "FalseFormula");
     tokenToBuiltins.put(annotParser.ID, "id`(_`)");
+    
+    defaultWrapper = "List`{MathObj++`}_";
   }
 
 
@@ -115,8 +120,12 @@ public class AnnotPreK {
       annotPass3 pass3 = new annotPass3(nodes);
       tree = (CommonTree) pass3.downup(tree);
 
+      nodes = new CommonTreeNodeStream(tree);
+      annotPass4 pass4 = new annotPass4(nodes);
+      tree = (CommonTree) pass4.downup(tree);
+
       // Make KLabels
-      tree = (CommonTree) TreeUtils.makeLabels(tree, coreK, tokenToWrapper);
+      tree = (CommonTree) TreeUtils.makeLabels(tree, coreK, tokenToWrapper, defaultWrapper);
 
       // Unflat containers
       tree = (CommonTree) TreeUtils.unflat(tree, annotParser.LIST, annotParser.LIST, annotParser.LIST, "__", "(.).List");
