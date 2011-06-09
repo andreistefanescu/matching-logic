@@ -64,6 +64,7 @@ void readWriteBuffer(int n)
 int main()
 {
   int n;
+
   /*@ assume <in> [5, 1, 2, 3, 4, 5, 5, 6, 7, 8, 9, 10] </in>
              <out> epsilon </out> */
 
@@ -74,9 +75,8 @@ int main()
   scanf("%d", &n);
   readWriteBuffer(n);
   //@ assert <in> epsilon </in> <out> [1, 2, 3, 4, 5, 10, 9, 8, 7, 6] </out>
-
-  return 0;
 }
 
 
 //@ var A, B : Seq
+

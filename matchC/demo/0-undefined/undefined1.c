@@ -11,8 +11,8 @@ struct listNode {
 int main()
 {
   struct listNode *x;
-  x = (struct listNode*)malloc(sizeof(struct listNode));
+
+  x = (struct listNode*) malloc(sizeof(struct listNode));
   printf("%d\n", x->next);
-  return 0;
 }
 

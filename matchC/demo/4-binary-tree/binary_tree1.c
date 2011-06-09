@@ -91,25 +91,25 @@ struct treeNode *create()
 {
   struct treeNode* root;
 
-  root = (struct treeNode*)malloc(sizeof(struct treeNode));
+  root = (struct treeNode*) malloc(sizeof(struct treeNode));
   root->val = 4;
-  root->left = (struct treeNode*)malloc(sizeof(struct treeNode));
+  root->left = (struct treeNode*) malloc(sizeof(struct treeNode));
   root->left->val = 2;
-  root->left->left = (struct treeNode*)malloc(sizeof(struct treeNode));
+  root->left->left = (struct treeNode*) malloc(sizeof(struct treeNode));
   root->left->left->val = 1;
   root->left->left->left = 0;
   root->left->left->right = 0;
-  root->left->right = (struct treeNode*)malloc(sizeof(struct treeNode));
+  root->left->right = (struct treeNode*) malloc(sizeof(struct treeNode));
   root->left->right->val = 3;
   root->left->right->left = 0;
   root->left->right->right = 0;
-  root->right = (struct treeNode*)malloc(sizeof(struct treeNode));
+  root->right = (struct treeNode*) malloc(sizeof(struct treeNode));
   root->right->val = 6;
-  root->right->left = (struct treeNode*)malloc(sizeof(struct treeNode));
+  root->right->left = (struct treeNode*) malloc(sizeof(struct treeNode));
   root->right->left->val = 5;
   root->right->left->left = 0;
   root->right->left->right = 0;
-  root->right->right = (struct treeNode*)malloc(sizeof(struct treeNode));
+  root->right->right = (struct treeNode*) malloc(sizeof(struct treeNode));
   root->right->right->val = 7;
   root->right->right->left = 0;
   root->right->right->right = 0;
@@ -135,7 +135,7 @@ void print(struct listNode* x)
 {
   while(x)
   {
-    printf("%d ",x->val);
+    printf("%d ", x->val);
     x = x->next;
   }
   printf("\n"); 
@@ -158,6 +158,5 @@ int main()
   printf("l: ");
   print(l);
   destroy(l);
-
-  return 0;
 }
+

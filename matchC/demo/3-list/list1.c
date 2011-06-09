@@ -12,7 +12,7 @@ struct listNode* reverse(struct listNode *x)
 {
   struct listNode *p;
 
-  p = 0 ;
+  p = 0;
   while(x) {
     struct listNode *y;
 
@@ -46,7 +46,7 @@ int length(struct listNode* x)
   l = 0;
   while (x) {
     l += 1;
-    x = x->next ;
+    x = x->next;
   }
 
   return l;
@@ -61,7 +61,7 @@ struct listNode* create(int n)
   while (n)
   {
     y = x;
-    x = (struct listNode*)malloc(sizeof(struct listNode));
+    x = (struct listNode*) malloc(sizeof(struct listNode));
     x->val = n;
     x->next = y;
     n -= 1;
@@ -86,7 +86,7 @@ void print(struct listNode* x)
 {
   while(x)
   {
-    printf("%d ",x->val);
+    printf("%d ", x->val);
     x = x->next;
   }
   printf("\n"); 
@@ -123,10 +123,5 @@ int main()
   printf("append(x, y): ");
   print(x);
   destroy(x);
-
-  return 0;
 }
-
-
-//@ var A, B, C : Seq
 

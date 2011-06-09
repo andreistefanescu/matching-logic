@@ -23,7 +23,5 @@ int main()
 
   s = sum(10);
   printf("The sum for the first 10 natural numbers: %d\n", s);
-
-  return 0;
 }
 
