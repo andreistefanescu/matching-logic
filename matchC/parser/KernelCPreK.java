@@ -18,8 +18,9 @@ public class KernelCPreK {
     coreK = new HashSet<String>();
   public static final HashMap<String, String>
     tokenToWrapper = new HashMap<String, String>();
+  public static final String defaultWrapper;
 
-  public static void init() {
+  static {
     coreK.add("_~>_");
     coreK.add("(.).K");
     coreK.add(".");
@@ -37,6 +38,7 @@ public class KernelCPreK {
     tokenToK.put(kernelCParser.PARAM, "__;");
     tokenToBuiltins.put(kernelCParser.STRUCT, "struct_");
     tokenToBuiltins.put(kernelCParser.PTR, "_*");
+
     tokenToK.put(kernelCParser.NOP, "nop");
     tokenToK.put(kernelCParser.BLOCK, "block`(_`)");
     tokenToK.put(kernelCParser.SEP, "_;");
@@ -101,11 +103,12 @@ public class KernelCPreK {
     tokenToWrapper.put("_*", "ExpressionType_");
     tokenToWrapper.put("void", "ExpressionType_");
     tokenToWrapper.put("int", "ExpressionType_");
+
+    defaultWrapper = "List`{MathObj++`}_";
   }
 
   public static void main (String[] args) {
     Table.init();
-    init();
 
     try {
       ANTLRInputStream input = new ANTLRInputStream(System.in);
@@ -134,7 +137,7 @@ public class KernelCPreK {
       TreeUtils.makeOps(tree, tokenToK, tokenToBuiltins);
 
       // Make KLabels
-      tree = (CommonTree) TreeUtils.makeLabels(tree, coreK, tokenToWrapper);
+      tree = (CommonTree) TreeUtils.makeLabels(tree, coreK, tokenToWrapper, defaultWrapper);
 
       // Unflat list
       tree = (CommonTree) TreeUtils.unflat(tree, k.K_LIST, k.K_LIST_COMMA, k.K_LIST_UNIT, "_`,`,_", ".List{K}");

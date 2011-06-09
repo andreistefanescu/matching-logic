@@ -13,7 +13,6 @@ topdown
   ;
 
 logical_variable
-  : LOGICAL_VARIABLE { System.err.println("add " + $LOGICAL_VARIABLE.text); }
-    { Table.annotLogicalVariables.add($LOGICAL_VARIABLE.text); }
+  : LOGICAL_VARIABLE -> BUILTIN[$LOGICAL_VARIABLE.text]
   ;
 

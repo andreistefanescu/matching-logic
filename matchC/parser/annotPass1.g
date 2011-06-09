@@ -16,16 +16,16 @@ bottomup
 
 program_identifier
   : id=PROGRAM_IDENTIFIER
-    -> ^(IDENTIFIER["obj`(_`)"] ^(ID STRING_LITERAL["\"" + $id.text + "\""]))
+    -> ^(BUILTIN["obj`(_`)"] ^(ID STRING_LITERAL["\"" + $id.text + "\""]))
   ;
 
 program_variable
 options { backtrack = true; }
   : id=PROGRAM_VARIABLE { !Table.varString.startsWith("!") }?
-    -> ^(IDENTIFIER["FreeVar"]
+    -> ^(BUILTIN["FreeVar"]
          ^(ID["id"] STRING_LITERAL["\"" + $id.text + "\""]))
   | id=PROGRAM_VARIABLE { Table.varString.startsWith("!") }?
-    -> ^(IDENTIFIER["?var"] ^(ID["id"] STRING_LITERAL["\"" + $id.text + "\""]))
+    -> ^(BUILTIN["?var"] ^(ID["id"] STRING_LITERAL["\"" + $id.text + "\""]))
   ;
 
 /*
@@ -33,9 +33,10 @@ options { backtrack = true; }
     -> ^(IDENTIFIER["?var"]
          ^(ID["id"] STRING_LITERAL["\"" + $id.text.replace("\'", "") + "\""]))
 */
+
 old_program_variable
-  : ^(old_wrapper=IDENTIFIER ^(var_wrapper=IDENTIFIER c=.))
+  : ^(old_wrapper=IDENTIFIER ^(var_wrapper=BUILTIN c=.))
     { "old".equals($old_wrapper.text) && "?var".equals($var_wrapper.text) }?
-    -> ^(IDENTIFIER["FreeVar"] $c)
+    -> ^(BUILTIN["FreeVar"] $c)
   ;
 
