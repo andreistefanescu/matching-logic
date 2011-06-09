@@ -27,6 +27,5 @@ int main()
   printf("The sum for the first 10 natural numbers: %d\n", s);
 
   //@ assert <out> [55] </out>
-  return 0;
 }
 

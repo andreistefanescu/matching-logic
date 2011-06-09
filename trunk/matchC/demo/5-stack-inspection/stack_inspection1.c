@@ -26,7 +26,7 @@ void untrusted(int n)
 
 void any(int n)
 {
-  untrusted(n);   // violates security policy
+  untrusted(n); // violates security policy
   if(n > 10)
     trusted(n - 1);
 }
@@ -36,6 +36,5 @@ int main()
 {
   trusted(5);
   any(5);
-
-  return 0;
 }
+
