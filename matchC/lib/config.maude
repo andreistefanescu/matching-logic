@@ -149,6 +149,7 @@ mod CONFIG-BUILTIN-MODULE is
   op lseg : -> HeapLabel .
 
   op tree : -> HeapLabel .
+  op htree : -> HeapLabel .
   op treeList : -> HeapLabel .
 endm
 
@@ -167,8 +168,8 @@ mod ML-K is inc CONFIG-BUILTIN-MODULE + K + K-WHERE + K-CONDITION-SEARCH .
   op applySubst : Bag Subst -> Bag .
   op applySubst : Formula Subst -> Formula .
   op applySubst : Subst Subst -> Subst .
-  --- op applySubst : KResult Subst -> KResult .
   op _._ : Id Id -> Field .
   op _._ : Field Id -> Field .
+  op printMatchTask : Bag -> Bag [strat(0) frozen] .
 endm
 

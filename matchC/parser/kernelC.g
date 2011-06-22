@@ -88,7 +88,7 @@ tokens {
 
   TV;
   ID;
-  UNIT_EXP;
+  UNIT_VALUE;
 
   ANNOTATION;
 }

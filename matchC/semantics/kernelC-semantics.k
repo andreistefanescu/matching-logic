@@ -103,12 +103,12 @@ Statements
         KernelC ~> restoreEnv(keys(Env) SetItem(id("__return__")))
     <_/k>
     <env> Env </env>
-  [structural print "\n===push===\n" Env "\n===push===\n"]
+  [structural]
   rule
     <k> restoreEnv(Set) => .K <_/k>
     <env> Env => filterMap(Env, Set) </env>
     <tenv> TEnv => filterMap(TEnv, Set) </tenv>
-  [structural print "\n===pop===\n" Env "\n" Set "\n===pop===\n"]
+  [structural]
   rule if(tv(_, NzI)) S1 else S2 => S1 [structural]
   rule if(tv(_, 0)) S1 else S2 => S2 [structural]
   rule <k> while (E) S => if (E) block(S ~~> while(E) S) else nop <_/ k >

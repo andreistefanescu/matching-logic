@@ -25,7 +25,7 @@ mod MATHEMATICAL-DOMAIN-BUILTIN-MODULE is
     + MATHEMATICAL-TREE-BUILTIN-MODULE .
 
   var Obj : MathObj++ .
-  var I : Int++ .
+  var I J : Int++ .
   vars T TL TR : Tree++ .
 
   op tree2list : Tree++ -> NeSeq++ .
@@ -46,6 +46,7 @@ mod MATHEMATICAL-DOMAIN-BUILTIN-MODULE is
 ***)
   eq tree2mset(TL [ Obj ] TR) = tree2mset(TL) U {| Obj |} U tree2mset(TR) .
   eq tree2mset(upsilon) = empty .
+
   op isBst : Tree++ -> AtomFormula .
   eq isBst(TL [I] TR) = @(max(tree2mset(TL)) <=Int I) /\
                         @(I <=Int min(tree2mset(TR))) /\
@@ -53,6 +54,15 @@ mod MATHEMATICAL-DOMAIN-BUILTIN-MODULE is
   eq isBst(upsilon) = TrueFormula .
 
   vars NeA NeA' : NeSeq++ .
+
+  op isAvl : Tree++ -> AtomFormula .
+  eq isAvl(TL [[I] @ [J]] TR)
+    = leq(tree2mset(st(TL)), {| I |}) /\ leq({| I |}, tree2mset(st(TR)))
+      /\ J === height(TL [[I] @ [J]] TR)
+      /\ @(-1 <=Int (height(TL) -Int height(TR)))
+      /\ @((height(TL) -Int height(TR)) <=Int 1)
+      /\ isAvl(TL) /\ isAvl(TR) .
+  eq isAvl(upsilon) = TrueFormula .
 
   op seq2mset : Seq++ -> NeMSet++ .
 ***(

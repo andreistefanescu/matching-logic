@@ -68,7 +68,7 @@ mod MATHEMATICAL-MULTISET-BUILTIN-MODULE
   op in : MathObj++ MSet++ -> AtomFormula .
 
   var Phi1 Phi2 : Formula .
-  var I J : Int++ .
+  var I J K K1 K2 : Int++ .
   var Obj Obj1 Obj2 : MathObj++ .
   var ObjList : List{MathObj++} .
   var A A1 A2 : MSet++ .
@@ -94,18 +94,41 @@ mod MATHEMATICAL-MULTISET-BUILTIN-MODULE
   eq in(Obj, empty) = FalseFormula .
   ---eq @(-Int I +Int min(A) >= 0) /\ Phi1 ===> ~(I in A) /\ Phi2 = ===> Phi2 .
 
-  eq A1 === A2 U {| J |} /\ @(-Int max(A2) +Int I >=Int 0) /\
+  eq A1 U A === A2 U {| J |} /\ @(-Int max(A2) +Int I >=Int 0) /\
+     @(-Int J +Int -1 +Int I >=Int 0) /\ Phi1
+     ===> @(-Int max(A1) +Int I >=Int 0) /\ Phi2
+   = A1 U A === A2 U {| J |} /\ @(-Int max(A2) +Int I >=Int 0) /\
+     @(-Int J +Int -1 +Int I >=Int 0) /\ Phi1
+     ===> Phi2 .
+  eq A1 U A === A2 U {| J |} /\ @(min(A2) +Int -Int I >=Int 0) /\
+     @(J +Int -Int I >=Int 0) /\ Phi1
+     ===> @(min(A1) +Int -Int I >=Int 0) /\ Phi2
+   = A1 U A === A2 U {| J |} /\ @(min(A2) +Int -Int I >=Int 0) /\
+     @(J +Int -Int I >=Int 0) /\ Phi1
+     ===> Phi2 .
+
+  eq {| K |} U A1 === A2 U {| J |} /\ @(-Int max(A2) +Int I >=Int 0) /\
+     @(-Int J +Int -1 +Int I >=Int 0) /\ Phi1
+     ===> @(-Int K +Int I >=Int 0) /\ Phi2
+   = {| K |} U A1 === A2 U {| J |} /\ @(-Int max(A2) +Int I >=Int 0) /\
+     @(-Int J +Int -1 +Int I >=Int 0) /\ Phi1
+     ===> Phi2 .
+  eq {| K |} U A1 === A2 U {| J |} /\ @(min(A2) +Int -Int I >=Int 0) /\
+     @(J +Int -Int I >=Int 0) /\ Phi1
+     ===> @(K +Int -Int I >=Int 0) /\ Phi2
+   = {| K |} U A1 === A2 U {| J |} /\ @(min(A2) +Int -Int I >=Int 0) /\
+     @(J +Int -Int I >=Int 0) /\ Phi1
+     ===> Phi2 .
+
+
+***(
+  eq A1 U A === A2 U {| J |} /\ @(-Int max(A2) +Int I >=Int 0) /\
      @(-Int J +Int -1 +Int I >=Int 0) /\ Phi1
      ===> @(-Int max(A1) +Int I >=Int 0) /\ Phi2
    = A1 === A2 U {| J |} /\ @(-Int max(A2) +Int I >=Int 0) /\
      @(-Int J +Int -1 +Int I >=Int 0) /\ Phi1
      ===> Phi2 .
-  eq A1 === A2 U {| J |} /\ @(min(A2) +Int -Int I >=Int 0) /\
-     @(J +Int -Int I >=Int 0) /\ Phi1
-     ===> @(min(A1) +Int -Int I >=Int 0) /\ Phi2
-   = A1 === A2 U {| J |} /\ @(min(A2) +Int -Int I >=Int 0) /\
-     @(J +Int -Int I >=Int 0) /\ Phi1
-     ===> Phi2 .
+***)
 
   ---eq @(-Int max(A) +Int J >=Int 0) /\ @(-Int J +Int I >=Int 0) /\
   ---   ~(I === J) /\ in(I, A)
@@ -124,6 +147,78 @@ mod MATHEMATICAL-MULTISET-BUILTIN-MODULE
      ===> ~ in(I, A) /\ Phi2
    = @(min(A) +Int -Int J >=Int 0) /\ @(J +Int -Int I +Int -1 >=Int 0) /\
      ~(I === J) /\ Phi1
+     ===> Phi2 .
+
+  op leq : MSet++ MSet++ -> AtomFormula .
+  eq leq(NeA1 U NeA2, A) = leq(NeA1, A) /\ leq(NeA2, A) .
+  eq leq(A, NeA1 U NeA2) = leq(A, NeA1) /\ leq(A, NeA2) .
+  eq leq({| I |}, {| J |}) = @(J +Int -Int I >=Int 0) .
+  eq leq(empty, A) = TrueFormula .
+  eq leq(A, empty) = TrueFormula .
+
+  eq A1 U A === A2 U {| J |} /\ leq(A2, {| I |})
+     /\ @(-Int J +Int -1 +Int I >=Int 0) /\ Phi1
+     ===> leq(A1, {| I |}) /\ Phi2
+   = A1 U A === A2 U {| J |} /\ leq(A2, {| I |})
+     /\ @(-Int J +Int -1 +Int I >=Int 0) /\ Phi1
+     ===> Phi2 .
+  eq A1 U A === A2 U {| J |} /\ leq({| I |}, A2)
+     /\ @(J +Int -Int I >=Int 0) /\ Phi1
+     ===> leq({| I |}, A1) /\ Phi2
+   = A1 U A === A2 U {| J |} /\ leq({| I |}, A2)
+     /\ @(J +Int -Int I >=Int 0) /\ Phi1
+     ===> Phi2 .
+
+  eq A1 U {| K |} === A2 U {| J |} /\ leq(A2, {| I |})
+     /\ @(-Int J +Int -1 +Int I >=Int 0) /\ Phi1
+     ===> @(-Int K +Int I >=Int 0) /\ Phi2
+   = A1 U {| K |} === A2 U {| J |} /\ leq(A2, {| I |})
+     /\ @(-Int J +Int -1 +Int I >=Int 0) /\ Phi1
+     ===> Phi2 .
+  eq A1 U {| K |} === A2 U {| J |} /\ leq({| I |}, A2)
+     /\ @(J +Int -Int I >=Int 0) /\ Phi1
+     ===> @(-Int I +Int K >=Int 0) /\ Phi2
+   = A1 U {| K |} === A2 U {| J |} /\ leq({| I |}, A2)
+     /\ @(J +Int -Int I >=Int 0) /\ Phi1
+     ===> Phi2 .
+
+  eq A1 U {| K |} === A2 U {| J |} /\ leq(A2, {| I |})
+     /\ @(-Int J +Int -1 +Int I >=Int 0) /\ leq({| I |}, A) /\ Phi1
+     ===> leq({| K |}, A) /\ Phi2
+   = A1 U {| K |} === A2 U {| J |} /\ leq(A2, {| I |})
+     /\ @(-Int J +Int -1 +Int I >=Int 0) /\ leq({| I |}, A) /\ Phi1
+     ===> Phi2 .
+  eq A1 U {| K |} === A2 U {| J |} /\ leq({| I |}, A2)
+     /\ @(J +Int -Int I >=Int 0) /\ leq(A, {| I |}) /\ Phi1
+     ===> leq(A, {| K |}) /\ Phi2
+   = A1 U {| K |} === A2 U {| J |} /\ leq({| I |}, A2)
+     /\ @(J +Int -Int I >=Int 0) /\ leq(A, {| I |}) /\ Phi1
+     ===> Phi2 .
+
+  eq A1 U {| K1 |} === A2 U {| J |} /\ leq(A2, {| I |})
+     /\ @(-Int J +Int -1 +Int I >=Int 0)
+     /\ @(K2 +Int -Int I >=Int 0) /\ Phi1
+     ===> @(K2 +Int -Int K1 >=Int 0) /\ Phi2
+   = A1 U {| K1 |} === A2 U {| J |} /\ leq(A2, {| I |})
+     /\ @(-Int J +Int -1 +Int I >=Int 0)
+     /\ @(K2 +Int -Int I >=Int 0) /\ Phi1
+     ===> Phi2 .
+  eq A1 U {| K1 |} === A2 U {| J |} /\ leq({| I |}, A2)
+     /\ @(J +Int -Int I >=Int 0)
+     /\ @(I +Int -Int K2 >=Int 0) /\ Phi1
+     ===> @(K1 +Int -Int K2 >=Int 0) /\ Phi2
+   = A1 U {| K1 |} === A2 U {| J |} /\ leq({| I |}, A2)
+     /\ @(J +Int -Int I >=Int 0)
+     /\ @(I +Int -Int K2 >=Int 0) /\ Phi1
+     ===> Phi2 .
+
+  eq leq(A, {| I |}) /\ @(J +Int -Int I >=Int 0) /\ Phi1
+     ===> leq(A, {| J |}) /\ Phi2
+   = leq({| I |}, A) /\ @(J +Int -Int I >=Int 0) /\ Phi1
+     ===> Phi2 .
+  eq leq({| I |}, A) /\ @(I +Int -Int J >=Int 0) /\ Phi1
+     ===> leq({| J |}, A) /\ Phi2
+   = leq({| I |}, A) /\ @(I +Int -Int J >=Int 0) /\ Phi1
      ===> Phi2 .
 endm
 

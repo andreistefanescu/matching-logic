@@ -42,6 +42,7 @@ mod MATHEMATICAL-INT-BUILTIN-MODULE is
   ops _<=Int_ _<Int_ _>=Int_ _>Int_ : Int++ Int++ -> Bool [ditto] .
   ops _<<Int_ _>>Int_ : Int++ Int++ -> Int++ [ditto] .
   ops -Int_ ~Int_ : Int++ -> Int++ [ditto] .
+  ops minInt maxInt : Int++ Int++ -> Int++ [ditto] .
   op _==Int_ : Int++ Int++ -> Bool [ditto] .
 
   op bool2int : Bool -> Int++ .
