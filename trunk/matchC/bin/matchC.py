@@ -89,6 +89,7 @@ def checkc(source_filename, cc='gcc'):
     end = time.time()
     elapsed = "%.3f" % round(end - start, 3) + "s"
     print(' DONE! [' + elapsed + ']')
+    sys.stdout.flush()
 
 
 ### compile c program with ml annotation into labeled k (maude format)
@@ -103,6 +104,7 @@ def compile(in_filename, out_filename):
     out_file = open(out_filename, 'w')
 
     print('Compiling program ...', end='')
+    sys.stdout.flush()
     start = time.time()
 
     out_file.writelines(ml_prog_header)
@@ -118,6 +120,7 @@ def compile(in_filename, out_filename):
     end = time.time()
     elapsed = "%.3f" % round(end - start, 3) + "s"
     print(' DONE! [' + elapsed + ']')
+    sys.stdout.flush()
 
 
 ### verify the program in maude + smt

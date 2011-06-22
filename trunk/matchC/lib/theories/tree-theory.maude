@@ -20,7 +20,7 @@
 
 
 mod MATHEMATICAL-TREE-BUILTIN-MODULE
-  is inc MATHEMATICAL-INT-BUILTIN-MODULE .
+  is inc MATHEMATICAL-SEQUENCE-BUILTIN-MODULE .
 
   sorts PETree FETree FreeTree Tree Tree++ .
   subsort PETree FETree FreeTree Tree < Tree++ .
@@ -39,14 +39,25 @@ mod MATHEMATICAL-TREE-BUILTIN-MODULE
   op upsilon : -> Tree .
   op _`[_`]_ : Tree++ MathObj++ Tree++ -> Tree++ .
 
+  op st : Tree++ -> Tree++ .
+
+  op height : Tree++ -> Int++ .
+
   op mirror : Tree++ -> Tree++ .
 
   var Obj Obj' : MathObj++ .
   var TL TR TL' TR' : Tree++ .
+  var A : Seq++ .
 
-  eq TL [Obj] TR === upsilon = FalseFormula .
   eq TL [Obj] TR === TL' [Obj'] TR'
    = Obj === Obj' /\ TL === TL' /\ TR === TR' .
+  eq TL [Obj] TR === upsilon = FalseFormula .
+
+  eq height(TL [Obj] TR) = 1 +Int maxInt(height(TR), height(TL)) .
+  eq height(upsilon) = 0 .
+
+  eq st(TL [[Obj] @ A] TR) = st(TR) [Obj] st(TL) .
+  eq st(upsilon) = upsilon .
 
   eq mirror(TL [Obj] TR) = mirror(TR) [Obj] mirror(TL) .
   eq mirror(upsilon) = upsilon .

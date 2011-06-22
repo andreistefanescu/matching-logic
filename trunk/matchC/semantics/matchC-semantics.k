@@ -17,6 +17,7 @@ kmod MATCHC-SEMANTICS is including MATCHC-SYNTAX + KERNELC-SEMANTICS
   kvar K Program : K
   kvar ParamList ArgList : List{KernelC}
   kvar Annot : Annotation 
+  kvar TaskItem TaskItem1 TaskItem2 : BagItem
   kvar PreCfg PostCfg CfgItems CfgItems1 CfgItems2 TaskItems : Bag 
   kvar Pattern Pattern1 Pattern2 : Pattern
   kvar Env TEnv StructMap FunMap : Map
@@ -184,6 +185,7 @@ Function definition/declaration
         S
     <_/program>
   [structural]
+
   rule
     <program>
       T F(ParamList) [[@ cfg PreCfg -> PostCfg req PrePhi ens PostPhi]] => .K
@@ -193,18 +195,6 @@ Function definition/declaration
       =>
         T F(ParamList)
         [[@ cfg PreCfg -> PostCfg req PrePhi ens PostPhi]]
-        /*
-        [[@ cfg applyDefaultSubst(
-                  PreCfg,
-                  defaultMapItem("env") <- defaultFreeEnv(paramSet(ParamList))
-                )
-            ->
-                applyDefaultSubst(
-                  PostCfg,
-                  defaultMapItem("env") <- defaultEnv(paramSet(ParamList))
-                )
-            req PrePhi ens PostPhi]]
-        */
         |-> .K
     <_/fun>
   [structural]
@@ -217,32 +207,11 @@ Function definition/declaration
       =>
         T F(ParamList)
         [[@ cfg PreCfg -> PostCfg req PrePhi ens PostPhi]]
-        /*
-        [[@ cfg applyDefaultSubst(
-                  PreCfg,
-                  defaultMapItem("env") <- defaultFreeEnv(paramSet(ParamList))
-                )
-            ->
-                PostCfg
-                //applyDefaultSubst(
-                //  PostCfg,
-                //  defaultMapItem("env") <- defaultEnv(paramSet(ParamList))
-                //)
-            req PrePhi ens PostPhi]]
-        */
         |-> (S ~> return tv(void, unit))
     <_/fun>
     <check_> .Set => SetItem(checkContract(F)) <_/check>
   [structural]
-***(
-  rule
-    <program> T F(ParamList) [[Annot]] S => .K <_/program>
-    <fun_>
-      .Map => T F(ParamList) [[Annot]] |-> (S ~> return tv(void, unit))
-    <_/fun>
-    <check_> .Set => SetItem(checkContract(F)) <_/check>
-  [structural]
-***)
+
   rule
     <program> (@ verify  => .K) ~> T F(ParamList) S <_/program>
     <check_> .Set => SetItem(checkContract(F)) <_/check>
@@ -274,6 +243,37 @@ Statements
 ***(
 Expressions
 ***)
+  rule
+    <k> tv(_, (I => 1)) ? _ : _ <_/k>
+    <heap_> I |-> _ : _ <_/heap>
+  [structural]
+  rule
+    <k> tv(_, (bool2int(I ==Int 0) => 0)) ? _ : _ <_/k>
+    <heap_> I |-> _ : _ <_/heap>
+  [structural]
+  rule
+    <k> tv(_, (I => 1)) ? _ : _ <_/k>
+    <heap_> I |-> _ <_/heap>
+  [structural]
+  rule
+    <k> tv(_, (bool2int(I ==Int 0) => 0)) ? _ : _ <_/k>
+    <heap_> I |-> _ <_/heap>
+  [structural]
+  rule
+    <k> (tv(_, I) ? E1 : _) => E1 <_/k>
+    <form> Phi </form>
+  if check-validity(Phi ===> ~(I === 0))
+  //if (Phi /\ I === 0) ==Bool FalseFormula
+  [structural]
+  rule
+    <k> (tv(_, I) ? _ : E2) => E2 <_/k>
+    <form> Phi </form>
+  if check-validity(Phi ===> I === 0)
+  //if (Phi /\ ~(I === 0)) ==Bool FalseFormula
+  [structural]
+  // if the condition cannot be decided, split; it is specified as a
+  // computational rule, while all the cases that can be decided are specified
+  // as structural rules, making this rule the default action
   rule
     <task>
       <config>
@@ -387,7 +387,7 @@ assumed patterns
                 (defaultKItem("program") <- Program) ;;
                 (defaultMapItem("struct") <- StructMap) ;;
                 (defaultMapItem("fun") <- FunMap) ;;
-                ---(defaultKItem("k") <- K) ;;
+                //(defaultKItem("k") <- K) ;;
                 (defaultSetItem("var") <- keys(TEnv)) ;;
                 (defaultKItem("fname") <- FName) ;;
                 (defaultMapItem("tenv") <- TEnv) ;;
@@ -488,7 +488,6 @@ asserted patterns
     <tenv> TEnv </tenv>
     <counter> N => sNat N </counter>
     <subst> Subst </subst>
-  [structural print ">>>"]
   rule
     <task>
       <taskType> Run </taskType>
@@ -507,18 +506,20 @@ asserted patterns
       TaskItems
     </task>
   if search(
-      <task>
-        <taskType> Hypothesis </taskType>
-        <config> CfgItems1 </config>
-        <subst> .Subst </subst>
-        TaskItems
-      </task>
-      <task>
-        <taskType> Conclusion </taskType>
-        <config> CfgItems2 </config>
-        <form> Phi </form>
-        <subst> Subst1 </subst>
-      </task>
+      printMatchTask(
+        <task>
+          <taskType> Hypothesis </taskType>
+          <config> CfgItems1 </config>
+          <subst> .Subst </subst>
+          TaskItems
+        </task>
+        <task>
+          <taskType> Conclusion </taskType>
+          <config> CfgItems2 </config>
+          <form> Phi </form>
+          <subst> Subst1 </subst>
+        </task>
+      )
     =>
       <task>
         <taskType> Constrain </taskType>
@@ -568,7 +569,15 @@ Helpers
       id(IdString) |-> FreeVar(id(IdString +String "_" +String Suffix))
       makeFreeEnv(.Map, Set, Suffix)
   [structural]
-  rule makeFreeEnv(.Map, .Set, _) => .Map [ structural]
+  rule makeFreeEnv(.Map, .Set, _) => .Map [structural]
+
+  // ERROR: this should be declared here, but kompile does not accept the
+  // strategy 0 and frozen attributes
+  // FIX: defined in config.maude
+  // syntax Bag ::= printMatchTask ( BagItem BagItem ) [strat(0) frozen]
+  rule
+    printMatchTask(TaskItem1 TaskItem2) => TaskItem1 TaskItem2
+  [structural print "===match===\n" TaskItem1 "\n===>\n" TaskItem2 "\n===\n"]
 
   rule
     <k> cleanFrameSubst(VarRoot) => .K <_/k>
