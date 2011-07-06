@@ -2,13 +2,13 @@
 #include <stdio.h>
 
 
-/*@ pattern doublelinkedlist<(val,va,v),next,prev> dllist */
+/*@ pattern doublelinkedlist<(valone,valtwo,valthree),next,prev> dllist */
 struct dllistNode {
-	int val;
+	int valone;
 	struct dllistNode* next;
-	int va;
+	int valtwo;
 	struct dllistNode* prev;
-	int v;
+	int valthree;
 };
 
 /*@ pattern singlelinkedlist<next> list */

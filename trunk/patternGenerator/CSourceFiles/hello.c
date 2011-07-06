@@ -1,8 +1,7 @@
-/* hello.c -- The most famous program of them all ..
- */
-
 #include <stdio.h>
 
+
+/*@ pattern singlelinkedlist<(y,a,b,c),z> sll */
 struct name { int x;
 	
 	
