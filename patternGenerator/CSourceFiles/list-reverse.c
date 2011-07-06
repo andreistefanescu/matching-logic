@@ -1,13 +1,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-/*@ mappattern
- pattern singlelinkedlist
- name list
- next next
- */
+/*@ pattern singlelinkedlist<(Ox,Oy),next> list */
 struct listNode {
-  int val;
+  int Ox;
+  int Oy;
   struct listNode * next;
 };
 

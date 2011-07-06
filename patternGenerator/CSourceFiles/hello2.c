@@ -1,14 +1,6 @@
-/* hello.c -- The most famous program of them all ..
- */
-
 #include <stdio.h>
 
-/*@ map2hpattern
-	pattern doublelinkedlist
-	name dllist
-	next t
-	previous t
- */
+/*@ pattern doublelinkedlist<(x,y),t,z> dlinkedlist */
 struct structure {
 	int x;
 	int y;
