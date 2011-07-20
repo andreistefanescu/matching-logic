@@ -3,7 +3,6 @@ load matchC-semantics
 load ../lib/fol
 load ../patterns/list
 load ../patterns/binary_tree
-load ../patterns/binary_height_tree
 load ../patterns/io
 load ../patterns/stack
 
@@ -14,7 +13,6 @@ kmod MATCHC is
           + FOL
           + LIST-HP
           + BINARY-TREE-HP
-          + BINARY-HEIGHT-TREE-HP
           + IO-PATTERN
           + STACK-PATTERN
 
