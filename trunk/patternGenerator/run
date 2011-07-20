@@ -1,0 +1,33 @@
+#!/bin/bash
+
+if [ -d CSourceFiles ] ; 
+then 
+	{
+		for file in CSourceFiles/*.c ; do 
+		{
+			gcc $file &>/dev/null
+			if [ $? -ne 0 ]
+			then
+			{
+				echo "
+	$file contains errors when being compiled using gcc.
+	Please review your code!
+	"
+				exit 1
+			}
+			fi
+		}
+		done
+		rm a.out
+		cd source-files/
+		make
+		make run
+	}
+else
+{
+	echo "
+	You are missing the CSourceFiles folder!
+	It is meant to hold your annotated C files.
+	"
+}
+fi
