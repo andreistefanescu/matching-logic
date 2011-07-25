@@ -16,15 +16,15 @@ public class CProcessor {
 		if (GeneralFunctions.SetHasElement(this.hpnames, name)) 
 		{
 			System.out.print("The " + name + " heap pattern name is used in" 
-					+ " affiliation with more than one structure!\n" 
-					+ "If you would like the system to produce a new name " 
-					+ "for you and continue please press the y key.\n"
-					+ "If you would like to halt the generation process, press any other key.\n");
-
+							 + " affiliation with more than one structure!\n" 
+							 + "If you would like the system to produce a new name " 
+							 + "for you and continue please press the y key.\n"
+							 + "If you would like to halt the generation process, press any other key.\n");
+			
 		    BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-
+			
 		    String input = "";
-
+			
 		    try 
 		    {
 		    	input = br.readLine();
@@ -39,37 +39,39 @@ public class CProcessor {
 		    } 
 		    catch (Exception e)
 		    {
-		         System.out.println("Process halted!");
-		         System.exit(1);
+				System.out.println("Process halted!");
+				System.exit(1);
 		    }
-
+			
 		}
 		else this.hpnames.add(name);
 		return name;
 	}
-
+	
 	private String validPattern(String pattern, String structure)
 	{
-		if (pattern.equalsIgnoreCase("singlelinkedlist") || pattern.equalsIgnoreCase("doublelinkedlist") || pattern.equalsIgnoreCase("binarytree")) {return pattern;}
+		if (pattern.equalsIgnoreCase("simple") || pattern.equalsIgnoreCase("singlelinkedlist") || pattern.equalsIgnoreCase("doublelinkedlist") || pattern.equalsIgnoreCase("binarytree")) {return pattern;}
 		else
 		{
 			try
 			{
 				System.out.println("The file contains the following pattern in the annotation: " + pattern + ".\n" 
-						+ "It is not a recognizable pattern.\n"
-						+ "Please choose one of the following options:\n"
-						+ "Press 1 if you meant to link the " + structure + " to the single linked list pattern\n"
-						+ "Press 2 if you meant to link the " + structure + " to the double linked list pattern\n"
-						+ "Press 3 if you meant to link the " + structure + " to the binary tree pattern\n"
-						+ "Press any other key to halt the process\n");
+								   + "It is not a recognizable pattern.\n"
+								   + "Please choose one of the following options:\n"
+								   + "Press 1 if you meant to link the " + structure + " to the simple pattern\n"
+								   + "Press 2 if you meant to link the " + structure + " to the single linked list pattern\n"
+								   + "Press 3 if you meant to link the " + structure + " to the double linked list pattern\n"
+								   + "Press 4 if you meant to link the " + structure + " to the binary tree pattern\n"
+								   + "Press any other key to halt the process\n");
 				
 				BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 			    String input = "";
 			    input = br.readLine();
 			    
-			    if (input.equals("1")) return "singlelinkedlist";
-			    else if (input.equals("2")) return "doublelinkedlist";
-			    else if (input.equals("3")) return "binarytree";
+			    if (input.equals("1")) return "simple";
+			    else if (input.equals("2")) return "singlelinkedlist";
+			    else if (input.equals("3")) return "doublelinkedlist";
+			    else if (input.equals("4")) return "binarytree";
 			    else
 			    {
 					throw new Exception("Unrecognized heap pattern! Process was halted");
@@ -92,7 +94,7 @@ public class CProcessor {
 	{
 		int indexofstarter = original.indexOf(starter);
 		int indexofender = original.lastIndexOf(ender);
-
+		
 		if ((indexofender != -1) && (indexofstarter != -1))
 		{
 			return original.substring((indexofstarter + starter.length()), indexofender);
@@ -100,24 +102,52 @@ public class CProcessor {
 		
 		return "";
 	}
-
+	
 	public String[] getPattern(String original)
 	{
-		int startindex = original.indexOf("/*@ pattern ");
-		int endindex = original.substring(startindex).indexOf("*/") + startindex;
+		int startindex, endindex;
+		String[] res = {"",""};
 		
-		String result = "";
+		startindex = getPatternIndex(original);
 		
-		if ((startindex != -1) && (endindex != -1))
+		if (original.indexOf("//@ pattern ") == startindex)
 		{
-			result =  original.substring(startindex, endindex+2);
-			original = original.substring(endindex+2);
+			String ceva = original.substring(startindex); 
+			endindex = ceva.indexOf("\n") + startindex;
+			
+			String result = "";
+			
+			if ((startindex != -1) && (endindex != -1))
+			{
+				result =  original.substring(startindex, endindex+1);
+				original = original.substring(endindex+1);
+			}
+			else
+			{
+				original = "";
+			}
+			res[0] = original;
+			res[1] = result;
 		}
-		else
+		else if (original.indexOf("/*@ pattern ") == startindex)
 		{
-			original = "";
+			endindex = original.substring(startindex).indexOf("*/") + startindex;
+			
+			String result = "";
+			
+			if ((startindex != -1) && (endindex != -1))
+			{
+				result =  original.substring(startindex, endindex+2);
+				original = original.substring(endindex+2);
+			}
+			else
+			{
+				original = "";
+			}
+			res[0] = original;
+			res[1] = result;
 		}
-		String[] res = {original, result};
+		
 		return res;
 	}
 	
@@ -140,7 +170,7 @@ public class CProcessor {
 		String[] res = {original, result};
 		return res;
 	}
-
+	
 	public String getAnnHP(String information)
 	{
 		String result = getString(information, "pattern", "<");
@@ -150,7 +180,15 @@ public class CProcessor {
 	
 	public String getAnnHPName(String information)
 	{
-		String result = getString(information, ">", "*/");
+		String result = "";
+		if (information.contains("*/")) 
+		{
+			result = getString(information, ">", "*/");			
+		}
+		else
+		{
+			result = getString(information, ">", "\n");		
+		}
 		result = result.replaceAll(" ", "");
 		return result;
 	}
@@ -213,6 +251,28 @@ public class CProcessor {
 		}
 	}	
 	
+	private int getPatternIndex(String original)
+	{
+		int indexpattern;
+		
+		if (original.contains("/*@ pattern") && original.contains("//@ pattern"))
+		{
+			if (original.indexOf("/*@ pattern") < original.indexOf("//@ pattern"))
+			{
+				indexpattern = original.indexOf("/*@ pattern"); 
+			}
+			else
+			{
+				indexpattern = original.indexOf("//@ pattern");
+			}
+		}
+		else if (original.contains("/*@ pattern")) indexpattern = original.indexOf("/*@ pattern");
+		else if (original.contains("//@ pattern")) indexpattern = original.indexOf("//@ pattern");
+		else indexpattern = -1;
+		
+		return indexpattern;
+	}
+	
 	private void getGroups(String original)
 	{
 		while(original.contains("  "))
@@ -222,7 +282,9 @@ public class CProcessor {
 		
 		original = original.replaceAll(" ;", ";");
 		
-		int indexpattern = original.indexOf("/*@ pattern");
+		int indexpattern;
+		
+		indexpattern = getPatternIndex(original);
 		int indexstruct = original.indexOf("struct ");
 		int structend = original.indexOf("};");
 		String[] patterns = new String[10];
@@ -235,7 +297,7 @@ public class CProcessor {
 				patterns[numberofpatternforstruct] = getPattern(original)[1];
 				numberofpatternforstruct++;
 				original = getPattern(original)[0];
-				indexpattern = original.indexOf("/*@ pattern");
+				indexpattern = getPatternIndex(original);;
 				indexstruct = original.indexOf("struct ");
 				structend = original.indexOf("};");
 			}
@@ -263,20 +325,21 @@ public class CProcessor {
 				
 				for(int i=0; i< numberofpatternforstruct; i++)
 				{
-					CStructure strct = s;
+					CStructure strct = new CStructure();
+					strct.copy(s);
 					String hpattern = getAnnHP(patterns[i]);
 					String name = getAnnHPName(patterns[i]);
 					
 					hpattern = validPattern(hpattern, s.getName());
 					name = validateHPName(name);
-						
+					
 					String[] pointers = getAnnHPPointers(patterns[i],hpattern);
 					String[] inf = getAnnInfo(patterns[i]);
 					strct.setSmi(new StructMetaInfo(hpattern, name, pointers, inf));
 					this.fileStructs.addStruct(strct);
 				}
-
-				indexpattern = original.indexOf("/*@ pattern");
+				
+				indexpattern = getPatternIndex(original);
 				indexstruct = original.indexOf("struct ");
 				structend = original.indexOf("};");
 				numberofpatternforstruct = 0;
@@ -294,7 +357,7 @@ public class CProcessor {
 			it.next();
 		}
 	}
-
+	
 	public void process(String PathFileName)
 	{
 		this.getGroups(GeneralFunctions.readFileContent(PathFileName));
@@ -305,5 +368,5 @@ public class CProcessor {
 	{
 		return fileStructs.getStructure(index);
 	}
-
+	
 }
