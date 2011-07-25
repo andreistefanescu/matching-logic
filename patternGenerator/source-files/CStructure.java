@@ -7,7 +7,7 @@ public class CStructure {
 	private String name;
 	private Map<String, String> fields = new LinkedHashMap<String, String>();// <name,type>
 	private int numberoffields;
-	private StructMetaInfo smi;
+	private StructMetaInfo smi = new StructMetaInfo("", "", null);
 	private int size;
 	
 	public void addFieldToStruct(String FieldName, String FieldType)
@@ -15,7 +15,7 @@ public class CStructure {
 		fields.put(FieldName, FieldType);
 		this.numberoffields+=1;
 	}
-
+	
 	public int getNumberoffields() {
 		return numberoffields;
 	}
@@ -44,14 +44,14 @@ public class CStructure {
 			it.next();
 			startPoint--;
 		}
-
+		
 	    while (it.hasNext()) 
 	    {
 	    	Map.Entry<String, String> pair = (Map.Entry<String, String>) it.next();
 	    	if (pair.getValue().contains("struct "+ name + "*")) 
-	    		{
-	    			return (index);
-	    		}
+			{
+				return (index);
+			}
 	    	else
 	    	{
 	    		index++;
@@ -60,7 +60,7 @@ public class CStructure {
 	    
 		return -1;
 	}
-
+	
 	public String nameOfField(int index)
 	{
 		Iterator<Map.Entry<String, String>> iterator = fields.entrySet().iterator();
@@ -103,14 +103,14 @@ public class CStructure {
 	public String nameForPointerField()
 	{
 		Iterator<Map.Entry<String, String>> it = fields.entrySet().iterator();
-
+		
 	    while (it.hasNext()) 
 	    {
 	    	Map.Entry<String, String> pair = (Map.Entry<String, String>) it.next();
 	    	if (pair.getValue().contains("struct "+ name+"*")) 
-	    		{
-	    			return pair.getKey();
-	    		}
+			{
+				return pair.getKey();
+			}
 	    }
 		return "";
 	}
@@ -124,14 +124,14 @@ public class CStructure {
 			it.next();
 			startPos--;
 		}
-
+		
 	    while (it.hasNext())
 	    {
 	    	Map.Entry<String, String> pair = (Map.Entry<String, String>) it.next();
 	    	if (! pair.getValue().contains("struct "+ name+"*")) 
-	    		{
-	    			return pair.getKey();
-	    		}
+			{
+				return pair.getKey();
+			}
 	    }
 		return "";
 	}
@@ -144,9 +144,9 @@ public class CStructure {
 	    {
 	    	Map.Entry<String, String> pair = (Map.Entry<String, String>) it.next();
 	    	if (! pair.getKey().contains(smi.pointers()[0])) 
-	    		{
-	    			index++;
-	    		}
+			{
+				index++;
+			}
 	    	if (pair.getKey().contains(smi.pointers()[0])) 
     		{
     			break;
@@ -163,9 +163,9 @@ public class CStructure {
 	    {
 	    	Map.Entry<String, String> pair = (Map.Entry<String, String>) it.next();
 	    	if (! pair.getKey().contains(smi.pointers()[1])) 
-	    		{
-	    			index++;
-	    		}
+			{
+				index++;
+			}
 	    	if (pair.getKey().contains(smi.pointers()[1])) 
     		{
     			break;
@@ -182,35 +182,38 @@ public class CStructure {
 	public void setName(String name) {
 		this.name = name;
 	}
-
+	
 	public String getName() {
 		return name;
 	}
-
+	
 	public void setNumberoffields(int numberoffields) {
 		this.numberoffields = numberoffields;
 	}
-
+	
 	public void setSmi(StructMetaInfo smi) {
 		this.smi = smi;
 	}
-
+	
 	public StructMetaInfo getSmi() {
 		return smi;
 	}
-
-	public boolean isSLL()
+	
+	public void copy(CStructure cs)
 	{
-		if (smi.pattern().contains("singlelinkedlist")) return true;
-		return false;
+		this.name = cs.getName();
+		Iterator<Map.Entry<String, String>> it = cs.getFields().entrySet().iterator();
+		
+		while (it.hasNext())
+		{
+			Map.Entry<String, String> pair = (Map.Entry<String, String>) it.next();
+			this.fields.put(pair.getKey(), pair.getValue());
+			System.out.println();
+		}
+		this.numberoffields = this.fields.size();
+		this.smi = null;
 	}
 	
-	public boolean isDLL()
-	{
-		if (smi.pattern().contains("doublelinkedlist")) return true;
-		return false;
-	}
-
 	public void refine()
 	{
 		String[] fields = smi.fields();
@@ -219,13 +222,29 @@ public class CStructure {
 			
 		}
 	}
-
+	
 	public void setSize(int size) {
 		this.size = size;
 	}
-
+	
 	public int getSize() {
 		return size;
 	}
-
+	
+	public String toString()
+	{
+		String res = "";
+		
+		Iterator<Map.Entry<String, String>> it = this.fields.entrySet().iterator();
+		
+		res = name + " \n" + smi + "\nHaving the fields:\n";
+		while (it.hasNext())
+		{
+			Map.Entry<String, String> pair = (Map.Entry<String, String>) it.next();
+			res = res + pair.getKey() + " " + pair.getValue() + "\n";
+			this.fields.put(pair.getKey(), pair.getValue());
+		}
+		
+		return res;
+	}
 }

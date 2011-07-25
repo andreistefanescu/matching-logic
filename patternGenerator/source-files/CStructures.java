@@ -1,10 +1,12 @@
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 
 public class CStructures {
-	private Set<CStructure> structSet = new LinkedHashSet<CStructure>();
+	private List<CStructure> structSet = new LinkedList<CStructure>();
 	
 	public void addStruct(CStructure cs)
 	{
@@ -23,11 +25,24 @@ public class CStructures {
 		return null;
 	}
 	
-	public void setStructSet(Set<CStructure> structSet) {
+	public void setStructSet(List<CStructure> structSet) {
 		this.structSet = structSet;
 	}
-
-	public Set<CStructure> getStructSet() {
+	
+	public List<CStructure> getStructSet() {
 		return structSet;
+	}
+	
+	public String toString()
+	{
+		String res = "";
+		Iterator<CStructure> it = structSet.iterator();
+		
+		while (it.hasNext())
+		{
+			res = res + it.next() + "\n";
+		}
+		
+		return res;
 	}
 }
