@@ -19,9 +19,9 @@ struct treeNode *newNode(int v)
 
 
 struct treeNode *insertRecursive(struct treeNode *t, int v)
-/*@ cfg <heap_> tree(t)(T) => tree(?t)(?T) <_/heap>
-    req isBst(T) /\ v0 = v
-    ens isBst(?T) /\ tree2mset(?T) = tree2mset(T) U {v0} /\ returns(?t) */
+/*@ rule <k> $ => return ?t; <_/k>
+         <heap_> tree(t)(T) => tree(?t)(?T) <_/heap>
+    if isBst(T) /\ isBst(?T) /\ tree2mset(?T) = tree2mset(T) U {v} */
 {
   if (t == 0)
     return newNode(v);
@@ -46,7 +46,7 @@ struct treeNode *insertIterative(struct treeNode *root, int v)
   p = 0;
   t = root;
 
-  /*@ rule <heap_> tree(t)(T) => tree(old(t))(?T) <_/heap>
+  /* rule <heap_> tree(t)(T) => tree(old(t))(?T) <_/heap>
       if isBst(T) /\ isBst(?T) /\ tree2mset(?T) = tree2mset(T) U {v} */
   {
     while (t != 0) {
@@ -68,10 +68,8 @@ struct treeNode *insertIterative(struct treeNode *root, int v)
 
 
 struct treeNode *findRecursive(struct treeNode *t, int v)
-/*@ cfg <heap_> tree(t0)(T) <_/heap>
-    req isBst(T) /\ t0 = t /\ v0 = v
-    ens isBst(T) /\ returns(?r)
-     /\ (~(?r = 0) /\ in(v0, tree2mset(T))
+/* rule <k> $ => return ?r; <_/k> <heap_> tree(t)(T) <_/heap>
+    if isBst(T) /\ (~(?r = 0) /\ in(v0, tree2mset(T))
         \/ ?r = 0 /\ ~(in(v0, tree2mset(T)))) */
 {
   if (t == 0)
