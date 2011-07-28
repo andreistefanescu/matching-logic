@@ -157,7 +157,7 @@ Expressions
 *** referencing
   context &([HOLE]->_)
   rule
-    <k> &(tv(struct X *, I)->F) => tv(T *, I +Int listLen(KernelCList) )<_/k>
+    <k> &(tv(struct X *, I)->F) => tv(T *, I +Int listLen(KernelCList) ) <_/k>
     <struct_>
       X |-> fieldList(KernelCList,,, (T F;),,, _)
     <_/struct>
@@ -171,6 +171,7 @@ Expressions
   rule
     <k> tv(T, I)->F => *&(tv(T, I)->F) <_/k>
   [structural]
+  rule *localRef(X) => X [structural]
   
 *** binary expressions
   rule tv(T, I1) + tv(T, I2) => tv(T, I1 +Int I2) [structural]
@@ -206,6 +207,11 @@ Expressions
   rule
     <k> tv(T, I)->F = E => *&(tv(T, I)->F) = E <_/k>
   [structural]
+  rule
+    <k> *localRef(X) = tv(T, V) => tv(T, V) <_/k>
+    <env_> X |-> (_ => V) <_/env>
+  [structural]
+
   rule E1 += E2 => E1 = (E1 + E2) [structural]
   rule E1 -= E2 => E1 = (E1 - E2) [structural]
   rule E1 *= E2 => E1 = (E1 * E2) [structural]

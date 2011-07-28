@@ -17,7 +17,7 @@ kmod MATCHC is
           + STACK-PATTERN
 
 
-  kvar N : Nat
+  kvar N M : Nat
   kvar I : Int
   kvar S : String
   kvar L : List
@@ -92,5 +92,95 @@ Output
         .Bag
     <_/tasks>
   [structural]
+
+
+  syntax Map ::= labelHeap ( Int++ , Nat , Seq++ , Id , List{KernelC} , Nat )
+  rule
+    <struct_> X:Id |-> fieldList(KernelCList:List{KernelC}) <_/struct>
+    <heap_>
+        ?var(V:Id) |-> A:Seq++
+      =>
+        labelHeap(?var(V:Id), 0, A:Seq++, X:Id, KernelCList:List{KernelC}, 0)
+    <_/heap>
+    <tenv_> V:Id |-> struct X:Id* <_/tenv>
+  [structural]
+  rule
+    <struct_> X:Id |-> fieldList(KernelCList:List{KernelC}) <_/struct>
+    <heap_>
+        ?var(V:Id) +Int N |-> A:Seq++
+      =>
+        labelHeap(?var(V:Id), N, A:Seq++, X:Id, KernelCList:List{KernelC}, 0)
+    <_/heap>
+    <tenv_> V:Id |-> struct X:Id* <_/tenv>
+  [structural]
+  rule
+    <struct_> X:Id |-> fieldList(KernelCList:List{KernelC}) <_/struct>
+    <heap_>
+        !var(V:Id) |-> A:Seq++
+      =>
+        labelHeap(!var(V:Id), 0, A:Seq++, X:Id, KernelCList:List{KernelC}, 0)
+    <_/heap>
+    <tenv_> V:Id |-> struct X:Id* <_/tenv>
+  [structural]
+  rule
+    <struct_> X:Id |-> fieldList(KernelCList:List{KernelC}) <_/struct>
+    <heap_>
+        !var(V:Id) +Int N |-> A:Seq++
+      =>
+        labelHeap(!var(V:Id), N, A:Seq++, X:Id, KernelCList:List{KernelC}, 0)
+    <_/heap>
+    <tenv_> V:Id |-> struct X:Id* <_/tenv>
+  [structural]
+  rule
+    <struct_> X:Id |-> fieldList(KernelCList:List{KernelC}) <_/struct>
+    <heap_>
+        FreeVar(V:Id) |-> A:Seq++
+      =>
+        labelHeap(FreeVar(V:Id), 0, A:Seq++, X:Id, KernelCList:List{KernelC}, 0)
+    <_/heap>
+    <tenv_> V:Id |-> struct X:Id* <_/tenv>
+  [structural]
+  rule
+    <struct_> X:Id |-> fieldList(KernelCList:List{KernelC}) <_/struct>
+    <heap_>
+        FreeVar(V:Id) +Int N |-> A:Seq++
+      =>
+        labelHeap(FreeVar(V:Id), N, A:Seq++, X:Id, KernelCList:List{KernelC}, 0)
+    <_/heap>
+    <tenv_> V:Id |-> struct X:Id* <_/tenv>
+  [structural]
+/*
+  rule
+    <struct_> X:Id |-> fieldList(KernelCList:List{KernelC}) <_/struct>
+    <heap_>
+        co-skolem(M, FreeVar(V:Id)) |-> A:Seq++
+      =>
+        labelHeap(co-skolem(M, FreeVar(V:Id)), 0, A:Seq++
+                  X:Id, KernelCList:List{KernelC}, 0)
+    <_/heap>
+    <tenv_> V:Id |-> struct X:Id* <_/tenv>
+  [structural]
+  rule
+    <struct_> X:Id |-> fieldList(KernelCList:List{KernelC}) <_/struct>
+    <heap_>
+        co-skolem(M, FreeVar(V:Id)) +Int N |-> A:Seq++
+      =>
+        labelHeap(co-skolem(M, FreeVar(V:Id)), N, A:Seq++,
+                  X:Id, KernelCList:List{KernelC}, 0)
+    <_/heap>
+    <tenv_> V:Id |-> struct X:Id* <_/tenv>
+  [structural]
+*/
+  rule labelHeap(_, N, _, _, (_:KernelC => .List{KernelC}),,,_, (M => sNat M))
+  if M <Int N [structural]
+  rule
+      labelHeap(P:Int++, N, ([Q:Int++] @ A:Seq++),
+                X:Id, ((_ F:Id;),,, KernelCList:List{KernelC}), N)
+    =>
+      P:Int++ +Int N |-> Q:Int++ : X.F
+      labelHeap(P:Int++, sNat N, A:Seq++,
+                X:Id, KernelCList:List{KernelC}, sNat N)
+  [structural]
+  rule labelHeap(_, _, epsilon, _, _, _) => .Map [structural]
 endkm
 
