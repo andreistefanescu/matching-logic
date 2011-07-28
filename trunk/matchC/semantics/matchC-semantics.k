@@ -2,6 +2,7 @@ load kernelC-semantics
 
 
 kmod MATCHC-SEMANTICS is including MATCHC-SYNTAX + KERNELC-SEMANTICS
+
   kvar N Counter : Nat
   kvar I : Int++
   kvar VarRoot IdString Suffix : String
@@ -465,13 +466,13 @@ asserted patterns
           applySubst(
             applyDefaultSubst(
               Pattern,
-              //(defaultKItem("program") <- Program) ;;
-              //(defaultMapItem("struct") <- StructMap) ;;
-              //(defaultMapItem("fun") <- FunMap) ;;
+              (defaultKItem("program") <- Program) ;;
+              (defaultMapItem("struct") <- StructMap) ;;
+              (defaultMapItem("fun") <- FunMap) ;;
               //(defaultKItem("k") <- K) ;;
-              (defaultSetItem("var") <- keys(TEnv))
-              //(defaultKItem("fname") <- FName) ;;
-              //(defaultMapItem("tenv") <- TEnv) ;;
+              (defaultSetItem("var") <- keys(TEnv)) ;;
+              (defaultKItem("fname") <- FName) ;;
+              (defaultMapItem("tenv") <- TEnv)
               //(defaultKItem("counter") <- sNat N)
             ),
             Subst
