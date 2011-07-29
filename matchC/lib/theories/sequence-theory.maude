@@ -65,12 +65,13 @@ mod MATHEMATICAL-SEQUENCE-BUILTIN-MODULE is
   op _@_ : NeSeq++ NeSeq -> NeSeq++ [ditto] .
   op _@_ : NeSeq NeSeq++ -> NeSeq++ [ditto] . 
 
+  op in : MathObj++ Seq++ -> AtomFormula .
   op rev : Seq++ -> NeSeq++ .
   op len : Seq++ -> Int++ .
-  op maximum : Seq++ -> Int++ .
   op hd : Seq++ -> MathObj++ .
-  op in : MathObj++ Seq++ -> AtomFormula .
-  op contain : Seq++ Int++ -> AtomFormula .
+  op filter : MathObj++ Seq++ -> Seq++ .
+  op sum : Seq++ -> Int++ .
+  op maximum : Seq++ -> Int++ .
 
 
   var N : Nat .
@@ -81,6 +82,7 @@ mod MATHEMATICAL-SEQUENCE-BUILTIN-MODULE is
   var NeA NeA1 NeA2 : NeSeq++ .
   var B : Seq . 
   var NeB : NeSeq . 
+
 
   eq [Obj1, Obj2, ObjList] = [Obj1] @ [Obj2] @ [ObjList] .
   eq [.List{MathObj++}] = epsilon .
@@ -93,9 +95,14 @@ mod MATHEMATICAL-SEQUENCE-BUILTIN-MODULE is
   eq A1 @ [Obj1] === A2 @ [Obj2] = Obj1 === Obj2 /\ A1 === A2 .
 
 
+  eq in(Obj, NeA1 @ NeA2) = in(Obj, NeA1) \/ in(Obj, NeA2) .
+  eq in(Obj1, [Obj2]) = (Obj1 === Obj2) .
+  eq in(Obj, epsilon) = FalseFormula .
+
   eq rev(NeA1 @ NeA2) = rev(NeA2) @ rev(NeA1) .
   eq rev([Obj]) = [Obj] .
   eq rev(epsilon) = epsilon .
+
   eq len(NeA1 @ NeA2) = len(NeA1) +Int len(NeA2) .
   eq len([Obj]) = 1 .
   eq len(epsilon) = 0 .
@@ -103,13 +110,13 @@ mod MATHEMATICAL-SEQUENCE-BUILTIN-MODULE is
   eq hd(NeA1 @ NeA2) = hd(NeA1) .
   eq hd([Obj]) = Obj .
 
-  eq in(Obj, NeA1 @ NeA2) = in(Obj, NeA1) \/ in(Obj, NeA2) .
-  eq in(Obj1, [Obj2]) = (Obj1 === Obj2) .
-  eq in(Obj, epsilon) = FalseFormula .
+  eq filter(Obj, NeA1 @ NeA2) = filter(Obj, NeA1) @ filter(Obj, NeA2) .
+  eq filter(Obj, [Obj]) = epsilon .
+  eq filter(Obj, epsilon) = epsilon .
 
-  eq contain(NeA1 @ NeA2 , I) = contain(NeA1 , I) \/ contain(NeA2 , I) .
-  eq contain([J] , I) = (I === J) .
-  eq contain(epsilon , I) = FalseFormula .
+  eq sum(NeA1 @ NeA2) = sum(NeA1) +Int sum(NeA2) .
+  eq sum([I]) = I .
+  eq sum(epsilon) = 0 .
 
   eq rev(rev(A)) = A .
   eq rev(A1) === rev(A2) = A1 === A2 .
@@ -124,5 +131,9 @@ mod MATHEMATICAL-SEQUENCE-BUILTIN-MODULE is
  ceq len(NeA1) === N /\ NeA1 @ NeA2 === NeB @ B
    = len(NeA1) === N /\ NeA1 === NeB /\ NeA2 === B
   if len(NeB) ==Bool N .
+  eq A === [Obj1] @ A1 /\ A === [Obj2] @ A2
+   = A === [Obj1] @ A1 /\ Obj1 === Obj2 /\ A1 === A2 . 
+  eq A1 @ filter(Obj1, [Obj2]) @ A2 === A /\ ~(Obj1 === Obj2)
+   = A1 @ [Obj2] @ A2 === A /\ ~(Obj1 === Obj2) .
 endm
 

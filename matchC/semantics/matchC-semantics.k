@@ -89,8 +89,18 @@ kmod MATCHC-SEMANTICS is including MATCHC-SYNTAX + KERNELC-SEMANTICS
 
 
   rule
-    <program> checkContracts => setToK(checkSet) <_/program>
     <check> checkSet </check>
+    <fun> FunMap </fun>
+    <program>
+        checkContracts
+      =>
+        setToK(checkSet)
+        ~> if SetItem(int id("main")(.List{KernelC})) in keys(FunMap) then 
+             checkContract(id("main"))
+           else
+             .K
+           fi
+    <_/program>
   [structural print "\\{print tr\\}DONE!\n\\{print o\\}Verifying program ..."]
   rule
     <check_>
@@ -201,7 +211,9 @@ Function definition/declaration
   [structural]
   rule
     <program>
-      T F(ParamList) [[@ cfg PreCfg -> PostCfg req PrePhi ens PostPhi]] S => .K
+        T F(ParamList) [[@ cfg PreCfg -> PostCfg req PrePhi ens PostPhi]] S 
+      =>
+        .K
     <_/program>
     <fun_>
         .Map
