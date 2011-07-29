@@ -27,7 +27,7 @@ public class DoubleLinkedListGenerator {
 		}
 		vars = vars + ": Int++\n";
 	}
-	
+
 	private static void genLUnroll()
 	{
 		int valueFieldsIndex[] = new int[noef];
@@ -37,9 +37,9 @@ public class DoubleLinkedListGenerator {
 		for(int i=0; i<nof; i++)
 		{
 			String s = Integer.toString(i);
-			
+
 			lunroll = lunroll + "      (LEFT +Int " + s + ") |-> FreeInt(N +Int " + s + ") : " +
-			"(id(\"" + hpseg + "\").id(\"" + cs.nameOfField(i) + "\"))\n";
+					  "(id(\"" + hpseg + "\").id(\"" + cs.nameOfField(i) + "\"))\n";
 			
 			if ((i != cs.indexNext()) && (i != cs.indexPrev()))
 			{
@@ -50,14 +50,14 @@ public class DoubleLinkedListGenerator {
 		if (noef > 1)
 		{
 			lunroll = lunroll + "      " + hpseg + "(LEFT, FreeInt(N +Int " + cs.indexNext() + "))(RIGHT, ERIGHT, FreeSeq(N +Int "
-			+ Integer.toString(nof) + "))\n      H\n  </heap>\n    <counter> N +Int " + Integer.toString(nof + 1) 
-			+ "    </counter>\n    CfgItems\n  </config>\n  </form>\n    Phi /\\ ~(LEFT === 0) /\\ (Alpha === [< ";
+						  + Integer.toString(nof) + "))\n      H\n  </heap>\n    <counter> N +Int " + Integer.toString(nof + 1) 
+						  + "    </counter>\n    CfgItems\n  </config>\n  </form>\n    Phi /\\ ~(LEFT === 0) /\\ (Alpha === [< ";
 		}
 		else
 		{
 			lunroll = lunroll + "      " + hpseg + "(LEFT, FreeInt(N +Int " + cs.indexNext() + "))(RIGHT, ERIGHT, FreeSeq(N +Int "
-			+ Integer.toString(nof) + "))\n      H\n  </heap>\n    <counter> N +Int " + Integer.toString(nof + 1) 
-			+ "    </counter>\n    CfgItems\n  </config>\n  </form>\n    Phi /\\ ~(LEFT === 0) /\\ (Alpha === [ ";
+			  + Integer.toString(nof) + "))\n      H\n  </heap>\n    <counter> N +Int " + Integer.toString(nof + 1) 
+			  + "    </counter>\n    CfgItems\n  </config>\n  </form>\n    Phi /\\ ~(LEFT === 0) /\\ (Alpha === [ ";
 		}
 		
 		for(int i=0;i < noef;i++)
@@ -68,12 +68,12 @@ public class DoubleLinkedListGenerator {
 		if (noef > 1)
 		{
 			lunroll = lunroll + ">] @ FreeSeq(N +Int " + Integer.toString(nof) + "))\n  </form>\n  TaskItems\n </task>\n" 
-			+ "  if VALID(Phi ===> ";
+							  + "  if VALID(Phi ===> ";
 		}
 		else
 		{
 			lunroll = lunroll + "] @ FreeSeq(N +Int " + Integer.toString(nof) + "))\n  </form>\n  TaskItems\n </task>\n" 
-			+ "  if VALID(Phi ===> ";
+			  				  + "  if VALID(Phi ===> ";
 		}
 		for(int i=0;i<nof;i++)
 		{
@@ -83,7 +83,7 @@ public class DoubleLinkedListGenerator {
 		lunroll = lunroll.substring(0, lunroll.length() - 4);
 		lunroll = lunroll + ")";
 	}
-	
+
 	private static void genRUnroll()
 	{
 		int valueFieldsIndex[] = new int[noef];
@@ -93,9 +93,9 @@ public class DoubleLinkedListGenerator {
 		for(int i=0; i<nof; i++)
 		{
 			String s = Integer.toString(i);
-			
+
 			runroll = runroll + "      (RIGHT +Int " + s + ") |-> FreeInt(N +Int " + s + ") : " +
-			"(id(\"" + hpseg + "\").id(\"" + cs.nameOfField(i) + "\"))\n";
+					  "(id(\"" + hpseg + "\").id(\"" + cs.nameOfField(i) + "\"))\n";
 			
 			if ((i != cs.indexNext()) && (i != cs.indexPrev()))
 			{
@@ -106,14 +106,14 @@ public class DoubleLinkedListGenerator {
 		if (noef > 1)
 		{
 			runroll = runroll + "      " + hpseg + "(ELEFT, LEFT)(FreeInt(N +Int " + cs.indexPrev() + "), RIGHT, FreeSeq(N +Int "
-			+ Integer.toString(nof) + "))\n      H\n  </heap>\n    <counter> N +Int " + Integer.toString(nof + 1) 
-			+ "    </counter>\n    CfgItems\n  </config>\n  </form>\n    Phi /\\ ~(RIGHT === 0) /\\ (Alpha === [< ";
+						  + Integer.toString(nof) + "))\n      H\n  </heap>\n    <counter> N +Int " + Integer.toString(nof + 1) 
+						  + "    </counter>\n    CfgItems\n  </config>\n  </form>\n    Phi /\\ ~(RIGHT === 0) /\\ (Alpha === [< ";
 		}
 		else
 		{
 			runroll = runroll + "      " + hpseg + "(ELEFT, LEFT)(FreeInt(N +Int " + cs.indexPrev() + "), RIGHT, FreeSeq(N +Int "
-			+ Integer.toString(nof) + "))\n      H\n  </heap>\n    <counter> N +Int " + Integer.toString(nof + 1) 
-			+ "    </counter>\n    CfgItems\n  </config>\n  </form>\n    Phi /\\ ~(RIGHT === 0) /\\ (Alpha === [ ";
+			  + Integer.toString(nof) + "))\n      H\n  </heap>\n    <counter> N +Int " + Integer.toString(nof + 1) 
+			  + "    </counter>\n    CfgItems\n  </config>\n  </form>\n    Phi /\\ ~(RIGHT === 0) /\\ (Alpha === [ ";
 		}
 		
 		for(int i=0;i < noef;i++)
@@ -124,12 +124,12 @@ public class DoubleLinkedListGenerator {
 		if (noef > 1)
 		{
 			runroll = runroll + ">] @ FreeSeq(N +Int " + Integer.toString(nof) + "))\n  </form>\n  TaskItems\n </task>\n" 
-			+ "  if VALID(Phi ===> ";
+							  + "  if VALID(Phi ===> ";
 		}
 		else
 		{
 			runroll = runroll + "] @ FreeSeq(N +Int " + Integer.toString(nof) + "))\n  </form>\n  TaskItems\n </task>\n" 
-			+ "  if VALID(Phi ===> ";
+			  				  + "  if VALID(Phi ===> ";
 		}
 		for(int i=0;i<nof;i++)
 		{
@@ -151,7 +151,7 @@ public class DoubleLinkedListGenerator {
 			String s = Integer.toString(i);
 			{
 				sroll = sroll + "      (P +Int " + s + ") |-> I" + s + " : " +
-				"(id(\"" + cs.getName() + "\").id(\"" + cs.nameOfField(i) + "\"))\n";
+					  "(id(\"" + cs.getName() + "\").id(\"" + cs.nameOfField(i) + "\"))\n";
 			}
 			
 			if ((i != cs.indexNext()) && (i != cs.indexPrev()))
@@ -170,9 +170,9 @@ public class DoubleLinkedListGenerator {
 		{
 			sroll = sroll + "[<";
 			for(int i=0;i<noef;i++)
-			{
-				sroll = sroll + "I" + valueFieldsIndex[i] + ", ";
-			}
+				{
+					sroll = sroll + "I" + valueFieldsIndex[i] + ", ";
+				}
 			sroll = sroll.substring(0, sroll.length() - 2);
 			sroll = sroll + ">])";
 		}
@@ -187,6 +187,7 @@ public class DoubleLinkedListGenerator {
 		genVars();
 		genLUnroll();
 		genRUnroll();
+		genSRoll();
 		String content = GeneralFunctions.readFileContent("../patternTemplates/DLList.template");
 		content = content.replaceAll("HPNAME", hpname.toUpperCase());
 		content = content.replaceAll("hpname", hpname);
@@ -196,8 +197,9 @@ public class DoubleLinkedListGenerator {
 		content = content.replace("RUNROLL", runroll);
 		content = content.replaceAll("SROLL", sroll);
 		content = content.replaceAll(" [+]Int 0", "");
+		
 		GeneralFunctions.writeFileContent(content, "../GeneratedContent/" + hpname + ".k");
 	}
-	
-	
+
+
 }

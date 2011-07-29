@@ -21,19 +21,17 @@ public class ParametrizedPatterns {
 			}
 			if (cs.getSmi().pattern().equalsIgnoreCase("simple"))
 			{
-				new SimpleStructureGenerator(cs).Generate();
+				new ElementaryFieldsOnlyGenerator(cs).Generate();
 			}
 			else
 			if (cs.getSmi().pattern().equalsIgnoreCase("singlelinkedlist"))
 			{
-				//System.out.println("SLL " + cs.getName());
 				SingleLinkedListGenerator sllg = new SingleLinkedListGenerator(cs);
 				sllg.Generate();
 			} 
 			else
 			if (cs.getSmi().pattern().equalsIgnoreCase("doublelinkedlist"))
 			{
-				//System.out.println("DLL " + cs.getName());
 				DoubleLinkedListGenerator dllg = new DoubleLinkedListGenerator(cs);
 				dllg.Generate();
 			}

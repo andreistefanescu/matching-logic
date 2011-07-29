@@ -1,21 +1,28 @@
-/* hello.c -- The most famous program of them all ..
- */
-
 #include <stdio.h>
-/*@ pattern singlelinkedlist<(y,a,b,c),z> hellolist */
-struct name { int x;
-	
-	
+
+/*@ pattern simple<(y,x,z)> simpleheapyxz */
+/*@ pattern simple<(x,z)> simpleheapxz */
+struct elementary {
+	int x;
 	int y;
-	
-	struct name    * z;
-	
-	int a;
-	int b;
-	int c;
-	
-	
-}    ;
+	int z;
+};
+
+
+/*@ pattern singlelinkedlist<(val),next> list */
+struct listNode {
+	int val;
+	struct listNode * next;
+};
+
+//*@ pattern doublelinkedlist<(val,va,v),next,prev> dllist
+struct dllistNode {
+	int val;
+	struct dllistNode* next;
+	int va;
+	struct dllistNode* prev;
+	int v;
+};
 
 int main() {
 	printf("Hello World!\n");

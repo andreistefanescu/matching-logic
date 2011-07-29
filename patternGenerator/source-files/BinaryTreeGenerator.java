@@ -6,7 +6,7 @@ public class BinaryTreeGenerator {
 	private static int noef = 0;
 	private static CStructure cs;
 	private static int[] valueFieldsIndex;
-	
+
 	
 	public BinaryTreeGenerator(CStructure cs)
 	{
@@ -40,7 +40,7 @@ public class BinaryTreeGenerator {
 		}
 		vars = vars + ": Int++\n";
 	}
-	
+
 	private static void genUnroll()
 	{
 		int next=0, prev=0, counter=nof+2;
@@ -51,9 +51,9 @@ public class BinaryTreeGenerator {
 		for(int i=0; i<nof; i++)
 		{
 			String s = Integer.toString(i);
-			
+
 			unroll = unroll + "      (P +Int " + s + ") |-> FreeInt(N +Int " + s + ") : " +
-			"(id(\"" + hpname + "\").id(\"" + cs.nameOfField(i) + "\"))\n";
+					  "(id(\"" + hpname + "\").id(\"" + cs.nameOfField(i) + "\"))\n";
 			
 			if ((i != cs.indexNext()) && (i != cs.indexPrev()))
 			{
@@ -77,18 +77,18 @@ public class BinaryTreeGenerator {
 		if (noef > 1)
 		{
 			unroll = unroll + "      " + hpname + "(FreeInt(N +Int " + cs.indexPrev() + "))(FreeTree(N +Int " + prev 
-			+ "))\n      " + hpname + "(FreeInt(N +Int " + cs.indexNext() + "))(FreeTree(N +Int " + next
-			+ "))\n" + "      H\n  </heap>\n    <counter> N +Int " + counter
-			+ "    </counter>\n    CfgItems\n  </config>\n  </form>\n    Phi /\\ ~(P === 0) /\\ (Alpha === FreeTree (N +Int "
-			+ prev + ") [< ";
+			    			  + "))\n      " + hpname + "(FreeInt(N +Int " + cs.indexNext() + "))(FreeTree(N +Int " + next
+						  + "))\n" + "      H\n  </heap>\n    <counter> N +Int " + counter
+						  + "    </counter>\n    CfgItems\n  </config>\n  </form>\n    Phi /\\ ~(P === 0) /\\ (Alpha === FreeTree (N +Int "
+						  + prev + ") [< ";
 		}
 		else
 		{
 			unroll = unroll + "      " + hpname + "(FreeInt(N +Int " + cs.indexPrev() + "))(FreeTree(N +Int " + (prev) 
-			+ "))\n      " + hpname + "(FreeInt(N +Int " + cs.indexNext() + "))(FreeTree(N +Int " + (next)
-			+ "))\n" + "      H\n  </heap>\n    <counter> N +Int " + (nof + 2) 
-			+ "    </counter>\n    CfgItems\n  </config>\n  </form>\n    Phi /\\ ~(P === 0) /\\ (Alpha === FreeTree(N +Int "
-			+ prev + ") [";
+			  + "))\n      " + hpname + "(FreeInt(N +Int " + cs.indexNext() + "))(FreeTree(N +Int " + (next)
+			  + "))\n" + "      H\n  </heap>\n    <counter> N +Int " + (nof + 2) 
+			  + "    </counter>\n    CfgItems\n  </config>\n  </form>\n    Phi /\\ ~(P === 0) /\\ (Alpha === FreeTree(N +Int "
+			  + prev + ") [";
 		}
 		
 		for(int i=0;i < noef;i++)
@@ -99,12 +99,12 @@ public class BinaryTreeGenerator {
 		if (noef > 1)
 		{
 			unroll = unroll + ">] FreeTree(N +Int " + next + "))\n  </form>\n  TaskItems\n </task>\n" 
-			+ "  if VALID(Phi ===> ";
+							  + "  if VALID(Phi ===> ";
 		}
 		else
 		{
 			unroll = unroll + " ] FreeTree(N +Int " + next + "))\n  </form>\n  TaskItems\n </task>\n" 
-			+ "  if VALID(Phi ===> ";
+			  				  + "  if VALID(Phi ===> ";
 		}
 		for(int i=0;i<nof;i++)
 		{
@@ -114,7 +114,7 @@ public class BinaryTreeGenerator {
 		unroll = unroll.substring(0, unroll.length() - 4);
 		unroll = unroll + ")";
 	}
-	
+
 	private static void genSRoll()
 	{
         
@@ -143,9 +143,9 @@ public class BinaryTreeGenerator {
 		{
 			sroll = sroll + "[<";
 			for(int i=0;i<noef;i++)
-			{
-				sroll = sroll + "I" + valueFieldsIndex[i] + ", ";
-			}
+				{
+					sroll = sroll + "I" + valueFieldsIndex[i] + ", ";
+				}
 			sroll = sroll.substring(0, sroll.length() - 2);
 			sroll = sroll + ">])";
 		}
@@ -155,7 +155,7 @@ public class BinaryTreeGenerator {
 		}
 		sroll = sroll + " upsilon)";
 	}
-	
+
 	private static void genLRoll()
 	{	
 		for(int i=0; i<nof;i++)
@@ -175,9 +175,9 @@ public class BinaryTreeGenerator {
 		{
 			lroll = lroll + "<";
 			for(int i=0;i<noef;i++)
-			{
-				lroll = lroll + "I" + valueFieldsIndex[i] + ", ";
-			}
+				{
+					lroll = lroll + "I" + valueFieldsIndex[i] + ", ";
+				}
 			lroll = lroll.substring(0, lroll.length() - 2);
 			lroll = lroll + ">";
 		}
@@ -208,9 +208,9 @@ public class BinaryTreeGenerator {
 		{
 			rroll = rroll + "<";
 			for(int i=0;i<noef;i++)
-			{
-				rroll = rroll + "I" + valueFieldsIndex[i] + ", ";
-			}
+				{
+					rroll = rroll + "I" + valueFieldsIndex[i] + ", ";
+				}
 			rroll = rroll.substring(0, rroll.length() - 2);
 			rroll = rroll + ">";
 		}
@@ -229,15 +229,15 @@ public class BinaryTreeGenerator {
 			croll = croll + "      (P +Int " + i + ") |-> " + "I" + i + ": (id(\"" + hpname + "\").id(\"" + cs.nameOfField(i) + "\"))\n";	
 		}
 		croll = croll + "        " + hpname + "(I" + cs.indexPrev() + ")(Tau)\n" 
-		+ "        " + hpname + "(I" + cs.indexNext() + ")(Sigma)\n      =>\n        " + hpname + "(P)(Tau [";
+				      + "        " + hpname + "(I" + cs.indexNext() + ")(Sigma)\n      =>\n        " + hpname + "(P)(Tau [";
 		
 		if (noef > 1)
 		{
 			croll = croll + "<";
 			for(int i=0;i<noef;i++)
-			{
-				croll = croll + "I" + valueFieldsIndex[i] + ", ";
-			}
+				{
+					croll = croll + "I" + valueFieldsIndex[i] + ", ";
+				}
 			croll = croll.substring(0, croll.length() - 2);
 			croll = croll + ">";
 		}
@@ -267,6 +267,7 @@ public class BinaryTreeGenerator {
 		content = content.replaceAll("RROLL", rroll);
 		content = content.replaceAll("CROLL", croll);
 		content = content.replaceAll(" [+]Int 0", "");
+		
 		GeneralFunctions.writeFileContent(content, "../GeneratedContent/" + hpname + ".k");
 	}
 }

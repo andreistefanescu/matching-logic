@@ -2,7 +2,7 @@ public class StructMetaInfo {
 	private String pattern = "", name = "";
 	private String[] pointers;
 	private String[] valuefields;
-	
+
 	public StructMetaInfo(String pattern, String name, String[] pointers)
 	{
 		this.pattern = pattern;
@@ -28,9 +28,9 @@ public class StructMetaInfo {
 			this.pointers[i] = smi.pointers()[i];
 		}
 		
-		for(int i=0; i < smi.fields().length; i++)
+		for(int i=0; i < smi.valuefields().length; i++)
 		{
-			this.valuefields[i] = smi.fields()[i];
+			this.valuefields[i] = smi.valuefields()[i];
 		}
 	}
 	
@@ -39,7 +39,7 @@ public class StructMetaInfo {
 		this.valuefields = fields;
 	}
 	
-	public String[] fields()
+	public String[] valuefields()
 	{
 		return this.valuefields;
 	}
