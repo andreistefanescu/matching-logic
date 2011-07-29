@@ -28,7 +28,7 @@ public class CStructures {
 	public void setStructSet(List<CStructure> structSet) {
 		this.structSet = structSet;
 	}
-	
+
 	public List<CStructure> getStructSet() {
 		return structSet;
 	}

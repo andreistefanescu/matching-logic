@@ -36,11 +36,9 @@ public class SingleLinkedListGenerator {
 		int index = 0;
 		int indexOfPointerField = cs.indexOfPointerField(0); 
 		
-		for(int i=0; i<nof; i++)
+		for(int i=0; i < nof; i++)
 		{
-			String s = Integer.toString(i);
-
-			sunroll = sunroll + "      (P +Int " + s + ") |-> FreeInt(N +Int " + s + ") : " +
+			sunroll = sunroll + "      (P +Int " + i + ") |-> FreeInt(N +Int " + i + ") : " +
 					  "(id(\"" + cs.getName() + "\").id(\"" + cs.nameOfField(i) + "\"))\n";
 			
 			if (indexOfPointerField != (i))
@@ -67,10 +65,14 @@ public class SingleLinkedListGenerator {
 			sunroll = sunroll + "FreeInt(N +Int " + Integer.toString(valueFieldsIndex[i]) + "), ";
 		}
 		sunroll = sunroll.substring(0, sunroll.length() - 2);
-		if (nof>2)
+		if (cs.numberOfElementaryFileds()>1)
 		{
 			sunroll = sunroll + ">] @ FreeSeq(N +Int " + Integer.toString(nof) + "))\n  </form>\n  TaskItems\n </task>\n" 
 							  + "  if VALID(Phi ===> ";
+		}
+		else if (cs.numberOfElementaryFileds() == 0)
+		{
+			sunroll = sunroll + "epsilon) /\\ ";
 		}
 		else
 		{
@@ -132,7 +134,7 @@ public class SingleLinkedListGenerator {
 
 	private static void genSRoll()
 	{
-		int valueFieldsIndex[] = new int[nof -1];
+		int valueFieldsIndex[] = new int[nof - 1];
 		int index = 0;
 		int indexOfPointerField = cs.indexOfPointerField(0); 
 		
@@ -159,7 +161,7 @@ public class SingleLinkedListGenerator {
 		
 		sroll = sroll + "      => " + hpname + "(P)(";
 		
-		if (nof>2)
+		if (cs.numberOfElementaryFileds()>1)
 		{
 			sroll = sroll + "[<";
 			for(int i=0;i<nof -1;i++)
@@ -168,6 +170,10 @@ public class SingleLinkedListGenerator {
 				}
 			sroll = sroll.substring(0, sroll.length() - 2);
 			sroll = sroll + ">])";
+		}
+		else if (cs.numberOfElementaryFileds() ==0)
+		{
+			sroll = sroll + "epsilon) ";
 		}
 		else
 		{
@@ -197,7 +203,7 @@ public class SingleLinkedListGenerator {
 		
 		croll = croll + "      " + hpname + "(I" + indexOfPointerField + ")(Alpha)\n      =>\n       " + hpname + "(P)(";
 		
-		if (nof>2)
+		if (cs.numberOfElementaryFileds()>1)
 		{
 			croll = croll + "[<";
 			for(int i=0;i<nof -1;i++)
@@ -206,6 +212,10 @@ public class SingleLinkedListGenerator {
 				}
 			croll = croll.substring(0, croll.length() - 2);
 			croll = croll + ">] @ Alpha)";
+		}
+		else if (cs.numberOfElementaryFileds() ==0)
+		{
+			croll = croll + "epsilon) ";
 		}
 		else
 		{
@@ -277,7 +287,7 @@ public class SingleLinkedListGenerator {
 		{
 			String s = Integer.toString(i);
 
-				srollseg = srollseg + "      (P +Int " + s + ") |-> I" + s + ") : " +
+				srollseg = srollseg + "      (P +Int " + s + ") |-> I" + s + " : " +
 					  "(id(\"" + cs.getName() + "\").id(\"" + cs.nameOfField(i) + "\"))\n";			
 			if (indexOfPointerField != (i))
 			{
@@ -288,7 +298,7 @@ public class SingleLinkedListGenerator {
 		
 		srollseg = srollseg + "      => " + lseghp + "(P , I" + indexOfPointerField + ")(";
 		
-		if (nof>2)
+		if (cs.numberOfElementaryFileds()>1)
 		{
 			srollseg = srollseg + "[<";
 			for(int i=0;i<nof -1;i++)
@@ -297,6 +307,10 @@ public class SingleLinkedListGenerator {
 				}
 			srollseg = srollseg.substring(0, srollseg.length() - 2);
 			srollseg = srollseg + ">])";
+		}
+		else if (cs.numberOfElementaryFileds() == 0)
+		{
+			srollseg = srollseg + "epsilon) ";
 		}
 		else
 		{
@@ -325,6 +339,7 @@ public class SingleLinkedListGenerator {
 		content = content.replace("SUNROLLSEG", sunrollseg);
 		content = content.replaceAll("SROLLSEG", srollseg);
 		content = content.replaceAll(" [+]Int 0", "");
+		
 		GeneralFunctions.writeFileContent(content, "../GeneratedContent/" + hpname + ".k");
 	}
 }

@@ -6,8 +6,10 @@ public class ElementaryFieldsOnlyGenerator {
 	private static int nof = 0;
 	private static CStructure cs;
 	
-	public ElementaryFieldsOnlyGenerator(CStructure cs, String HeapPatternName)
+	public ElementaryFieldsOnlyGenerator(CStructure cs)
 	{
+		String HeapPatternName = cs.getSmi().name();
+		
 		vars = "";  sunroll = "";  sunrolling = "";  sroll = "";
 		setHpname("");
 		lseghp = "";
@@ -148,6 +150,7 @@ public class ElementaryFieldsOnlyGenerator {
 		content = content.replace("SIMPLEUNROLING", sunrolling);
 		content = content.replace("SIMPLEROLL", sroll);
 		content = content.replaceAll(" [+]Int 0", "");
+		
 		GeneralFunctions.writeFileContent(content, "../GeneratedContent/" + getHpname() + ".k");
 	}
 

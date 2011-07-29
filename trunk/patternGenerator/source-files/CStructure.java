@@ -15,6 +15,13 @@ public class CStructure {
 		fields.put(FieldName, FieldType);
 		this.numberoffields+=1;
 	}
+
+	public void setFields(Map<String,String> newfields)
+	{
+		this.fields.clear();
+		this.fields.putAll(newfields);
+		numberoffields = fields.size();
+	}
 	
 	public int getNumberoffields() {
 		return numberoffields;
@@ -44,14 +51,14 @@ public class CStructure {
 			it.next();
 			startPoint--;
 		}
-		
+
 	    while (it.hasNext()) 
 	    {
 	    	Map.Entry<String, String> pair = (Map.Entry<String, String>) it.next();
 	    	if (pair.getValue().contains("struct "+ name + "*")) 
-			{
-				return (index);
-			}
+	    		{
+	    			return (index);
+	    		}
 	    	else
 	    	{
 	    		index++;
@@ -60,7 +67,7 @@ public class CStructure {
 	    
 		return -1;
 	}
-	
+
 	public String nameOfField(int index)
 	{
 		Iterator<Map.Entry<String, String>> iterator = fields.entrySet().iterator();
@@ -103,14 +110,14 @@ public class CStructure {
 	public String nameForPointerField()
 	{
 		Iterator<Map.Entry<String, String>> it = fields.entrySet().iterator();
-		
+
 	    while (it.hasNext()) 
 	    {
 	    	Map.Entry<String, String> pair = (Map.Entry<String, String>) it.next();
 	    	if (pair.getValue().contains("struct "+ name+"*")) 
-			{
-				return pair.getKey();
-			}
+	    		{
+	    			return pair.getKey();
+	    		}
 	    }
 		return "";
 	}
@@ -124,14 +131,14 @@ public class CStructure {
 			it.next();
 			startPos--;
 		}
-		
+
 	    while (it.hasNext())
 	    {
 	    	Map.Entry<String, String> pair = (Map.Entry<String, String>) it.next();
 	    	if (! pair.getValue().contains("struct "+ name+"*")) 
-			{
-				return pair.getKey();
-			}
+	    		{
+	    			return pair.getKey();
+	    		}
 	    }
 		return "";
 	}
@@ -144,9 +151,9 @@ public class CStructure {
 	    {
 	    	Map.Entry<String, String> pair = (Map.Entry<String, String>) it.next();
 	    	if (! pair.getKey().contains(smi.pointers()[0])) 
-			{
-				index++;
-			}
+	    		{
+	    			index++;
+	    		}
 	    	if (pair.getKey().contains(smi.pointers()[0])) 
     		{
     			break;
@@ -163,9 +170,9 @@ public class CStructure {
 	    {
 	    	Map.Entry<String, String> pair = (Map.Entry<String, String>) it.next();
 	    	if (! pair.getKey().contains(smi.pointers()[1])) 
-			{
-				index++;
-			}
+	    		{
+	    			index++;
+	    		}
 	    	if (pair.getKey().contains(smi.pointers()[1])) 
     		{
     			break;
@@ -182,23 +189,23 @@ public class CStructure {
 	public void setName(String name) {
 		this.name = name;
 	}
-	
+
 	public String getName() {
 		return name;
 	}
-	
+
 	public void setNumberoffields(int numberoffields) {
 		this.numberoffields = numberoffields;
 	}
-	
+
 	public void setSmi(StructMetaInfo smi) {
 		this.smi = smi;
 	}
-	
+
 	public StructMetaInfo getSmi() {
 		return smi;
 	}
-	
+
 	public void copy(CStructure cs)
 	{
 		this.name = cs.getName();
@@ -213,20 +220,11 @@ public class CStructure {
 		this.numberoffields = this.fields.size();
 		this.smi = null;
 	}
-	
-	public void refine()
-	{
-		String[] fields = smi.fields();
-		for(int i=0; i<fields.length;i++)
-		{
-			
-		}
-	}
-	
+
 	public void setSize(int size) {
 		this.size = size;
 	}
-	
+
 	public int getSize() {
 		return size;
 	}
@@ -234,9 +232,9 @@ public class CStructure {
 	public String toString()
 	{
 		String res = "";
-		
+	
 		Iterator<Map.Entry<String, String>> it = this.fields.entrySet().iterator();
-		
+	
 		res = name + " \n" + smi + "\nHaving the fields:\n";
 		while (it.hasNext())
 		{

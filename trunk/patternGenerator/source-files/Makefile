@@ -22,7 +22,7 @@ BinaryTreeGenerator.java \
 DoubleLinkedListGenerator.java \
 SingleLinkedListGenerator.java \
 ElementaryFieldsOnlyGenerator.java \
-SimpleStructureGenerator.java \
+ElementaryFieldsOnlyGenerator.java \
 MathObjUpleGenerate.java \
 ParametrizedPatterns.java
 
