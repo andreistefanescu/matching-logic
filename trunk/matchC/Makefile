@@ -18,7 +18,6 @@ SEMANTICS_COMPILED_FILE=$(SEMANTICS_DIR)/$(COMPILED_FILE)
 RELEASE_COMPILED_FILE=$(LIB_DIR)/$(COMPILED_FILE)
 VIEWER_JAR=$(VIEWER_DIR)/matchCviewer.jar
 
-K_BASE=/home/grosu/stefane1/k-release
 K_MAUDE_LIB=$(K_BASE)/core/maude/lib
 
 all: install
@@ -42,6 +41,7 @@ dist: install
 	svn export bin $(MATCHC_DIST_DIR)/bin
 	svn export lib $(MATCHC_DIST_DIR)/lib
 	svn export demo $(MATCHC_DIST_DIR)/demo
+	svn export examples $(MATCHC_DIST_DIR)/examples
 	mv $(MATCHC_DIST_DIR)/bin/matchC.py $(MATCHC_DIST_DIR)/bin/matchC
 	rm -rf $(MATCHC_DIST_DIR)/bin/__pycache__
 	rm -rf $(MATCHC_DIST_DIR)/bin/primitive_style.yml
