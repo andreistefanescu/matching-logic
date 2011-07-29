@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <stdio.h>
 
 /*@ pattern simple<(y,x,z)> simpleheapyxz */
@@ -8,6 +9,21 @@ struct elementary {
 	int z;
 };
 
+/*@ pattern singlelinkedlist<(val),nexts> lists */
+struct listNodes {
+	int val;
+	struct listNodes * nexts;
+};
+
+
+/*@ pattern singlelinkedlist<nextd> lists */
+/*@ pattern singlelinkedlist<(v,va,val),nextd> listd */
+struct listNoded {
+	int v;
+	int va;
+	int val;
+	struct listNoded * nextd;
+};
 
 /*@ pattern singlelinkedlist<(val),next> list */
 struct listNode {
@@ -15,7 +31,8 @@ struct listNode {
 	struct listNode * next;
 };
 
-//*@ pattern doublelinkedlist<(val,va,v),next,prev> dllist
+
+//@ pattern doublelinkedlist<(val,va,v),next,prev> dllist
 struct dllistNode {
 	int val;
 	struct dllistNode* next;
@@ -24,7 +41,12 @@ struct dllistNode {
 	int v;
 };
 
-int main() {
-	printf("Hello World!\n");
-	return 0; 
+
+
+int main()
+{
+	struct listNode *x;
+	struct listNode *y;
+	
+	return 0;
 }

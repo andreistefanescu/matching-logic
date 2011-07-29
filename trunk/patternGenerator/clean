@@ -1,0 +1,17 @@
+#!/bin/bash
+
+if [ -d source-files ] ; 
+then 
+	{
+		cd GeneratedContent/
+		rm *
+		cd ../source-files/
+		make clean
+	}
+else
+{
+	echo "
+	You are missing the source-files folder!
+	"
+}
+fi

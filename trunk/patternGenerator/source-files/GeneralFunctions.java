@@ -38,14 +38,14 @@ public class GeneralFunctions {
 	public static void writeFileContent(String content, String PathAndFileName)
 	{
 		try {
-				BufferedWriter out = new BufferedWriter(new FileWriter(PathAndFileName));
-				out.write(content);
-				out.close();
-			} 
-			catch (IOException e) 
-			{ 
-				e.printStackTrace();
-			}
+			BufferedWriter out = new BufferedWriter(new FileWriter(PathAndFileName));
+			out.write(content);
+			out.close();
+		} 
+		catch (IOException e) 
+		{ 
+			e.printStackTrace();
+		}
 	}
 	
 	public static int MapHasElement(Map<String,String> map, String element)
@@ -198,7 +198,7 @@ public class GeneralFunctions {
 		}
 		cs.setFields(newfields);
 	}
-
+	
 	public static void swap(String[] array, int position1, int position2)
 	{
 		if ((position1 >= array.length) || (position2 >= array.length))
@@ -213,6 +213,8 @@ public class GeneralFunctions {
 	
 	public static void scramble(CStructure cs, StructMetaInfo smi)
 	{	
+		if (smi.valuefields() == null) return;
+		
 		Map<String,String> copy = new LinkedHashMap<String,String>();
 		copy.putAll(cs.getFields());
 		Iterator<Map.Entry<String,String>>it = copy.entrySet().iterator();

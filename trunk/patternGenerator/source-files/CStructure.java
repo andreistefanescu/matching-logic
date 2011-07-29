@@ -215,7 +215,6 @@ public class CStructure {
 		{
 			Map.Entry<String, String> pair = (Map.Entry<String, String>) it.next();
 			this.fields.put(pair.getKey(), pair.getValue());
-			System.out.println();
 		}
 		this.numberoffields = this.fields.size();
 		this.smi = null;
