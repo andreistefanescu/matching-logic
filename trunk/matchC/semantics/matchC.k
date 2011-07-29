@@ -27,7 +27,8 @@ kmod MATCHC is
                    | ( Nat feasible and Nat infeasible paths)
 
   macro check(K:K) = <top_>
-                       <check> SetItem(checkContract(id("main"))) </check>
+                       //<check> SetItem(checkContract(id("main"))) </check>
+                       <check> .Set </check>
                        <program> K:K ~> checkContracts </program>
                        <k> disolveTask </k>
                      <_/top>
