@@ -164,7 +164,6 @@ public class DoubleLinkedListGenerator {
 		sroll = sroll + "      => " + hpseg + "(I" + cs.indexPrev() + ", P)(P, I" + cs.indexNext() + ", ";
 		CStructure cs = new CStructure();
 		cs.copy(cs);
-		System.out.println(cs);
 		
 		if (noef > 1)
 		{
