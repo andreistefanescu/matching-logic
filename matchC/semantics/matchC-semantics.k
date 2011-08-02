@@ -590,7 +590,7 @@ Helpers
   // syntax Bag ::= printMatchTask ( BagItem BagItem ) [strat(0) frozen]
   rule
     printMatchTask(TaskItem1 TaskItem2) => TaskItem1 TaskItem2
-  [structural print "===match===\n" TaskItem1 "\n===>\n" TaskItem2 "\n===\n"]
+  [structural print "=match=\n" TaskItem1 "\n===>\n" TaskItem2 "\n=endmatch=\n"]
 
   rule
     <k> cleanFrameSubst(VarRoot) => .K <_/k>
