@@ -24,69 +24,71 @@ mod MATHEMATICAL-DOMAIN-BUILTIN-MODULE is
     + MATHEMATICAL-MULTISET-BUILTIN-MODULE
     + MATHEMATICAL-TREE-BUILTIN-MODULE .
 
-  var Obj : MathObj++ .
+  vars Phi Phi1 Phi2 : Formula .
+  var Obj Obj1 Obj2 : MathObj++ .
   var I J : Int++ .
-  vars T TL TR : Tree++ .
+  var A A1 A2 : Seq++ .
+  var NeA NeA1 NeA2 : NeSeq++ .
+  var M M1 M2 : MSet++ .
+  var T TL TR : Tree++ .
+
 
   op tree2list : Tree++ -> NeSeq++ .
-***(
-  op tree2list : PETree -> PESeq [ditto] .
-  op tree2list : FETree -> FESeq [ditto] .
-  op tree2list : FreeTree -> FreeSeq [ditto] .
-  op tree2list : Tree -> NeSeq [ditto] .
-***)
   eq tree2list(TL [ Obj ] TR) = tree2list(TL) @ [Obj] @ tree2list(TR) .
   eq tree2list(upsilon) = epsilon .
+
   op tree2mset : Tree++ -> NeMSet++ .
-***(
-  op tree2mset : PETree -> PEMSet [ditto] .
-  op tree2mset : FETree -> FEMSet [ditto] .
-  op tree2mset : FreeTree -> FreeMSet [ditto] .
-  op tree2mset : Tree -> NeMSet [ditto] .
-***)
   eq tree2mset(TL [ Obj ] TR) = tree2mset(TL) U {| Obj |} U tree2mset(TR) .
   eq tree2mset(upsilon) = empty .
 
   op isBst : Tree++ -> AtomFormula .
-  eq isBst(TL [I] TR) = @(max(tree2mset(TL)) <=Int I) /\
-                        @(I <=Int min(tree2mset(TR))) /\
-                        isBst(TL) /\ isBst(TR) .
+  eq isBst(TL [I] TR)
+   = leq(tree2mset(TL), {| I |}) /\ leq({| I |}, tree2mset(TR))
+     /\ isBst(TL) /\ isBst(TR) .
   eq isBst(upsilon) = TrueFormula .
-
-  vars NeA NeA' : NeSeq++ .
 
   op isAvl : Tree++ -> AtomFormula .
   eq isAvl(TL [[I] @ [J]] TR)
-    = leq(tree2mset(st(TL)), {| I |}) /\ leq({| I |}, tree2mset(st(TR)))
-      /\ J === height(TL [[I] @ [J]] TR)
-      /\ @(-1 <=Int (height(TL) -Int height(TR)))
-      /\ @((height(TL) -Int height(TR)) <=Int 1)
-      /\ isAvl(TL) /\ isAvl(TR) .
+   = leq(tree2mset(st(TL)), {| I |}) /\ leq({| I |}, tree2mset(st(TR)))
+     /\ J === height(TL [[I] @ [J]] TR)
+     /\ @(-1 <=Int (height(TL) -Int height(TR)))
+     /\ @((height(TL) -Int height(TR)) <=Int 1)
+     /\ isAvl(TL) /\ isAvl(TR) .
   eq isAvl(upsilon) = TrueFormula .
 
   op seq2mset : Seq++ -> NeMSet++ .
-***(
-  op seq2mset : PESeq -> PEMSet [ditto] .
-  op seq2mset : FESeq -> FEMSet [ditto] .
-  op seq2mset : FreeSeq -> FreeMSet [ditto] .
-  op seq2mset : Seq -> NeMSet [ditto] .
-***)
-  eq seq2mset(NeA @ NeA') = seq2mset(NeA) U seq2mset(NeA') .
+  eq seq2mset(NeA1 @ NeA2) = seq2mset(NeA1) U seq2mset(NeA2) .
   eq seq2mset([Obj]) = {| Obj |} .
   eq seq2mset(epsilon) = empty .
 
+
+ ceq [Obj1] @ A1 === A2 /\ Phi1 ===> {| Obj1 |} U seq2mset(A1) === M2 /\ Phi2
+   = [Obj1] @ A1 === A2 /\ seq2mset([Obj1] @ A1) === seq2mset(A2) /\ Phi1
+     ===> {| Obj1 |} U seq2mset(A1) === M2 /\ Phi2
+  if ([Obj1] @ A1 === A2 /\ Phi1)
+     =/=Bool
+     ([Obj1] @ A1 === A2 /\ seq2mset([Obj1] @ A1) === seq2mset(A2)) .
+
   op isSorted : Seq++ -> AtomFormula .
-  eq isSorted(NeA @ NeA')
-   = @(min(seq2mset(NeA')) >=Int max(seq2mset(NeA))) /\
-     isSorted(NeA) /\ isSorted(NeA') .
+  eq isSorted(NeA1 @ NeA2)
+   = leq(seq2mset(NeA1), seq2mset(NeA2))
+     /\ isSorted(NeA1) /\ isSorted(NeA2) .
   eq isSorted([I]) = TrueFormula .
   eq isSorted(epsilon) = TrueFormula .
 
-  vars Phi Phi1 Phi2 : Formula .
-  var A A1 A2 : Seq++ .
+ ceq [Obj1] @ A1 === A2 /\ leq({| Obj1 |}, seq2mset(A1)) /\ isSorted(A1) /\ Phi1
+     ===> Phi2
+   = [Obj1] @ A1 === A2 /\ leq({| Obj1 |}, seq2mset(A1)) /\ isSorted(A1)
+     /\ isSorted(A2) /\ Phi1
+     ===> Phi2
+  if ([Obj1] @ A1 === A2 /\ leq({| Obj1 |}, seq2mset(A1)) /\ isSorted(A1)
+     /\ isSorted(A2) /\ Phi1)
+     =/=Bool
+     ([Obj1] @ A1 === A2 /\ leq({| Obj1 |}, seq2mset(A1)) /\ isSorted(A1)
+     /\ Phi1) .
 
   eq @(1 +Int (-Int len(A)) >=Int 0) /\ Phi1 ===> isSorted(A) /\ Phi2
-   = @(1 +Int (-Int len(A)) >=Int 0) /\ Phi1 ===> Phi2 .
+   = @(1 +Int (-Int len(A)) >=Int 0) /\ isSorted(A) /\ Phi1 ===> Phi2 .
 
   op treeList2list : Seq++ -> Seq++ .
   eq treeList2list(A1 @ [T] @ A2)

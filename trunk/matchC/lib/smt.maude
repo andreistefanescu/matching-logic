@@ -43,7 +43,7 @@ mod SMT-LIB is
   op formToSMTString : TermList -> String .
   op symToSMTString : Qid -> String .
   op eqToSMTString : TermList -> String .
-  op unionToSMTString : TermList -> String .
+  op assocTermToSMTString : Qid TermList -> String .
   op leqToSMTString : TermList -> String .
   op constsToSMTString : TermList -> StringSet .
   op varsToSMTString : TermList -> StringSet .
@@ -143,8 +143,8 @@ mod SMT-LIB is
            +String formToSMTString(QTList) +String ")"
          else if Q ==Bool '_===_ then
            eqToSMTString(QTList)
-         else if Q ==Bool '_U_ then
-           unionToSMTString(QTList)
+         else if Q ==Bool '_@_ orBool Q ==Bool '_U_ then
+           assocTermToSMTString(Q, QTList)
          *** else if Q ==Bool 'leq then
          ***   leqToSMTString(QTList)
          else
@@ -161,10 +161,11 @@ mod SMT-LIB is
      +String formToSMTString(QT1) +String " "
      +String formToSMTString(QT2) +String ")" .
 
-  eq unionToSMTString((QT : QTNeList))
-   = "(union " +String formToSMTString(QT) +String " "
-     +String unionToSMTString(QTNeList) +String ")" .
-  eq unionToSMTString(QT) = formToSMTString(QT) .
+  eq assocTermToSMTString(Q, (QT : QTNeList))
+   = "(" +String symToSMTString(Q) +String " "
+     +String formToSMTString(QT) +String " "
+     +String assocTermToSMTString(Q, QTNeList) +String ")" .
+  eq assocTermToSMTString(Q, QT) = formToSMTString(QT) .
 
 ***(
   eq leqToSMTString((QT1 : QT2))

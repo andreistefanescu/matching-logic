@@ -67,7 +67,7 @@ public class KernelCPreK {
     tokenToK.put(kernelCParser.LT, "_<_");
     tokenToK.put(kernelCParser.GT, "_>_");
     tokenToK.put(kernelCParser.LEQ, "_<=_");
-    tokenToK.put(kernelCParser.GEQ, "_=>_");
+    tokenToK.put(kernelCParser.GEQ, "_>=_");
     tokenToK.put(kernelCParser.SHL, "_<<_");
     tokenToK.put(kernelCParser.SHR, "_>>_");
     tokenToK.put(kernelCParser.ADD, "_+_");
