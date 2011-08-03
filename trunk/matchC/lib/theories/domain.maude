@@ -61,6 +61,8 @@ mod MATHEMATICAL-DOMAIN-BUILTIN-MODULE is
   eq seq2mset([Obj]) = {| Obj |} .
   eq seq2mset(epsilon) = empty .
 
+  eq seq2mset(A) === empty = A === epsilon .
+
 
  ceq A1 @ [Obj] @ A2 === A /\ Phi1 ===> {| Obj |} U M1 === M /\ Phi2
    = A1 @ [Obj] @ A2 === A /\ seq2mset(A1 @ [Obj] @ A2) === seq2mset(A) /\ Phi1
@@ -103,5 +105,12 @@ mod MATHEMATICAL-DOMAIN-BUILTIN-MODULE is
   eq treeList2list(A1 @ [T] @ A2)
    = treeList2list(A1) @ tree2list(T) @ treeList2list(A2) .
   eq treeList2list(epsilon) = epsilon .
+
+
+  eq (A === epsilon \/ len(A) === 1)
+     /\ seq2mset(A) === {| Obj1 |} U {| Obj2 |} U M
+   = FalseFormula .
+ ceq len(A) +Int I === J = FalseFormula
+  if -Int J +Int I >Int 0 .  
 endm
 

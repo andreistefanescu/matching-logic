@@ -31,8 +31,8 @@ struct listNode* quicksort(struct listNode* x)
   struct listNode* y;
   struct listNode* z;
 
-  if (x == NULL)
-    return NULL;
+  if (x == NULL || x->next == NULL)
+    return x;
 
   p = x;
   x = x->next;

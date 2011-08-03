@@ -28,7 +28,7 @@ struct listNode* insertion_sort(struct listNode* x)
         /*@ inv <heap_>
                   lseg(y, z)(?B), z |-> [?v, ?n], list(?n)(?C), n |-> [nval, 0]
                 <_/heap>
-                /\ B = ?B @ [?v] @ ?C /\ ?v < nval */
+                /\ D = ?B @ [?v] @ ?C /\ ?v < nval */
 			  while (z->next != NULL && z->next->val < n->val)
 					z = z->next;
 
@@ -51,5 +51,5 @@ struct listNode* insertion_sort(struct listNode* x)
 int main() {}
 
 //@ var v, nval : Int
-//@ var A, B, C : Seq
+//@ var A, B, C, D : Seq
 
