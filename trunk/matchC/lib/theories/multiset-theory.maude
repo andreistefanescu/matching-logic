@@ -65,7 +65,7 @@ mod MATHEMATICAL-MULTISET-BUILTIN-MODULE
   var I I1 I2 J J1 J2 K K1 K2 : Int++ .
   var Obj Obj1 Obj2 : MathObj++ .
   var ObjList : List{MathObj++} .
-  var A A1 A2 : MSet++ .
+  var A A1 A2 A3 : MSet++ .
   var NeA NeA1 NeA2 : NeMSet++ .
 
 
@@ -92,7 +92,8 @@ mod MATHEMATICAL-MULTISET-BUILTIN-MODULE
   eq (-Int max(empty)) +Int I >=Int 0 = true .
 
   eq {| Obj |} U A === empty = FalseFormula .
-  ---eq @(-Int I +Int min(A) >= 0) /\ Phi1 ===> ~(I in A) /\ Phi2 = ===> Phi2 .
+  eq A === A1 U A2 /\ A2 === A3 /\ Phi1 ===> A === A1 U A3 /\ Phi2
+   = A === A1 U A2 /\ A2 === A3 /\ A === A1 U A3 /\ Phi1 ===> Phi2 .
 
 
 ***(

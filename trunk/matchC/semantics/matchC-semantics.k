@@ -501,6 +501,7 @@ asserted patterns
     <tenv> TEnv </tenv>
     <counter> N => sNat N </counter>
     <subst> Subst </subst>
+  [metadata "computational" print "===begin assert==="]
   rule
     <task>
       <taskType> Run </taskType>
@@ -541,6 +542,7 @@ asserted patterns
         <subst> Subst2 </subst>
       </task>
     )
+  [metadata "computational" print "===end assert==="]
 
 
 ***(
