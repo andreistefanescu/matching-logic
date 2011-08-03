@@ -62,7 +62,7 @@ inc MATCHC
  ceq skolemTerm(NT, '_`(_`)[QC : QTList]) = '_`(_`)[QC : QTList]
   if getName(QC) ==Bool ''@`assume_ orBool
      getName(QC) ==Bool ''@`assert_ orBool
-     getName(QC) ==Bool ''@`invariant_ orBool
+     getName(QC) ==Bool ''@`inv_ orBool
      getName(QC) ==Bool ''@`pre_ orBool
      getName(QC) ==Bool ''@`post_ .
  ceq skolemTerm(NT, '<_>_</_>[QC : QT : QC]) = '<_>_</_>[QC : QT : QC]
@@ -153,7 +153,7 @@ inc MATCHC
  ceq substTerm('_`(_`)[QC : QTList], MetaSubst) = '_`(_`)[QC : QTList]
   if getName(QC) ==Bool ''@`assume_ orBool
      getName(QC) ==Bool ''@`assert_ orBool
-     getName(QC) ==Bool ''@`invariant_ orBool
+     getName(QC) ==Bool ''@`inv_ orBool
      getName(QC) ==Bool ''@`pre_ orBool
      getName(QC) ==Bool ''@`post_ .
  ceq substTerm(Q[QTList], MetaSubst) = Q[QTList]
