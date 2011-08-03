@@ -30,9 +30,9 @@ struct listNode* list_insert(struct listNode* x, int v)
             lseg(x, y)(?B), y |-> [?v, ?n], list(?n)(?C), n |-> [v, 0]
           <_/heap>
           /\ v = !v /\ A = ?B @ [?v] @ ?C /\ ?v < v */
-	while (y->next != NULL && y->next->val < v) {
+	while (y->next != NULL && y->next->val < v)
     y = y->next;
-	}
+
   n->next = y->next;
   y->next = n;
 
