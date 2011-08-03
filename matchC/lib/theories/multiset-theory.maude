@@ -65,7 +65,7 @@ mod MATHEMATICAL-MULTISET-BUILTIN-MODULE
   var I I1 I2 J J1 J2 K K1 K2 : Int++ .
   var Obj Obj1 Obj2 : MathObj++ .
   var ObjList : List{MathObj++} .
-  var A A1 A2 A3 : MSet++ .
+  var A A1 A2 A3 A4 : MSet++ .
   var NeA NeA1 NeA2 : NeMSet++ .
 
 
@@ -94,6 +94,10 @@ mod MATHEMATICAL-MULTISET-BUILTIN-MODULE
   eq {| Obj |} U A === empty = FalseFormula .
   eq A === A1 U A2 /\ A2 === A3 /\ Phi1 ===> A === A1 U A3 /\ Phi2
    = A === A1 U A2 /\ A2 === A3 /\ A === A1 U A3 /\ Phi1 ===> Phi2 .
+  eq A === A1 U A2 /\ A1 === A3 /\ A2 === A4 /\ Phi1
+     ===> A === A3 U A4 /\ Phi2
+   = A === A1 U A2 /\ A1 === A3 /\ A2 === A4 /\ A === A3 U A4 /\ Phi1
+     ===> Phi2 .
 
 
 ***(
@@ -158,6 +162,17 @@ mod MATHEMATICAL-MULTISET-BUILTIN-MODULE
   eq leq(empty, A) = TrueFormula .
   eq leq(A, empty) = TrueFormula .
 
+ ceq leq(A, A1) /\ A1 === A2 /\ Phi1 ===> Phi2
+   = leq(A, A1) /\ A1 === A2 /\ leq(A, A2) /\ Phi1 ===> Phi2
+  if (leq(A, A1) /\ A1 === A2 /\ leq(A, A2) /\ Phi1) 
+     =/=Bool
+     (leq(A, A1) /\ A1 === A2 /\ Phi1) .
+ ceq leq(A1, A) /\ A1 === A2 /\ Phi1 ===> Phi2
+   = leq(A1, A) /\ A1 === A2 /\ leq(A2, A) /\ Phi1 ===> Phi2
+  if (leq(A1, A) /\ A1 === A2 /\ leq(A2, A) /\ Phi1) 
+     =/=Bool
+     (leq(A1, A) /\ A1 === A2 /\ Phi1) .
+
 
  ceq {| J1 |} U A1 === A2 /\ leq(A1, {| I |}) /\ @(-Int J1 +Int I >=Int 0)
      /\ Phi1
@@ -196,6 +211,15 @@ mod MATHEMATICAL-MULTISET-BUILTIN-MODULE
   if (leq({| I |}, A) /\ @(I +Int -Int J >=Int 0) /\ leq({| J |}, A) /\ Phi1)
      =/=Bool
      (leq({| I |}, A) /\ @(I +Int -Int J >=Int 0) /\ Phi1) .
+
+ ceq leq(A1, {| I |}) /\ leq({| I |}, A2) /\ Phi1
+     ===> Phi2
+   = leq(A1, {| I |}) /\ leq({| I |}, A2) /\ leq(A1, A2) /\ Phi1
+     ===> Phi2
+  if (leq(A1, {| I |}) /\ leq({| I |}, A2) /\ leq(A1, A2) /\ Phi1)
+     =/=Bool
+     (leq(A1, {| I |}) /\ leq({| I |}, A2) /\ Phi1) .
+
 
 ***(
   eq A1 U A === A2 U {| J |} /\ leq(A2, {| I |})
