@@ -128,5 +128,10 @@ mod MATHEMATICAL-SEQUENCE-BUILTIN-MODULE is
    = A === [Obj1] @ A1 /\ Obj1 === Obj2 /\ A1 === A2 . 
   eq A1 @ filter(Obj1, [Obj2]) @ A2 === A /\ ~(Obj1 === Obj2)
    = A1 @ [Obj2] @ A2 === A /\ ~(Obj1 === Obj2) .
+
+  *** TO BE REMOVED
+  eq I1:Int++ === I2:Int++ /\ len(A) === -Int I1:Int++ +Int I2:Int++
+   = I1:Int++ === I2:Int++ /\ A === epsilon . 
+  eq A === epsilon /\ A1 === A2 @ A = A === epsilon /\ A1 === A2 .
 endm
 
