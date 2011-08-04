@@ -55,6 +55,7 @@ mod MATHEMATICAL-INT-BUILTIN-MODULE is
   var I J K I1 I2 J1 J2 N : Int++ .
   var NzI : NzInt . 
   var Phi Phi1 Phi2 : Formula .
+  var NtPhi : NtFormula .
 
 
   eq @(I ==Int J) = I === J .
@@ -82,6 +83,7 @@ mod MATHEMATICAL-INT-BUILTIN-MODULE is
  ceq I1 === J1 /\ ~(I2 === J2) = FalseFormula
   if (-Int I1) +Int (-Int I2) +Int J1 +Int J2 ==Bool 0 .
 
+
   eq I <Int J = J >Int I .
   eq I <=Int J = J >=Int I .
   eq @(I >Int J) = @(I >=Int J) /\ ~(I === J) . 
@@ -91,6 +93,8 @@ mod MATHEMATICAL-INT-BUILTIN-MODULE is
  ceq @(-Int J +Int I >=Int 0) /\ ~(I === J) /\ Phi1 ===> @(K >=Int 0) /\ Phi2
    = @(-Int J +Int I >=Int 0) /\ ~(I === J) /\ Phi1 ===> Phi2
   if I ==Bool J +Int K +Int 1 .
+  eq @(-Int J +Int I >=Int 0) /\ (@(-Int I +Int J >=Int 0) /\ ~(I === J) \/ NtPhi) 
+   = @(-Int J +Int I >=Int 0) /\ NtPhi . 
 
   *** partial transitive closure
  ceq @(-Int J +Int I >=Int 0) /\ @(-Int K +Int J >=Int 0) /\ Phi1 ===> Phi2

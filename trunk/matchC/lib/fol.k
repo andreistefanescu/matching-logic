@@ -491,7 +491,6 @@ kmod FOL is including MATCHC-SEMANTICS
         <subst> Subst </subst>
       <_/task>
   [structural print Phi1 "\n===>\n" Phi2]
-  ---[structural]
 
 
 --- Step 6: Call external SMT solver to check the formula if the "in-house"
