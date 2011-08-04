@@ -117,7 +117,9 @@ mod CONFIG-BUILTIN-MODULE is
   op _|->_:_ : Int++ Value Field -> MapItem .
   op stream : List{MathObj++} -> ListItem .
   op id`(_`) : String -> Id .
+
   op obj`(_`) : Id -> MathObj++ .
+  eq obj(id(S1:String)) === obj(id(S2:String)) = @(S1:String ==Bool S2:String) .
 
 
   *** [ERROR] Here subsorting Pattern to K gives all sort of errors,
