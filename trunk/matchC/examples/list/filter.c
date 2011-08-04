@@ -42,7 +42,6 @@ struct listNode* list_filter(struct listNode* x, int v)
 	return x;
 }
 
-int main() {}
 
 /*@ var n : Int */
 /*@ var A, B, C : Seq */

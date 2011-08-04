@@ -39,7 +39,6 @@ struct listNode* list_insert(struct listNode* x, int v)
 	return x;
 }
 
-int main() {}
 
 //@ var A, B, C : Seq
 

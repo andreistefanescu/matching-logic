@@ -21,7 +21,6 @@ int list_sum(struct listNode* x)
   return s;
 }
 
-int main() {}
 
 /*@ var A : Seq */
 

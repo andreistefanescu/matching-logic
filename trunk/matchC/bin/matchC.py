@@ -82,7 +82,7 @@ def checkc(source_filename, cc='gcc'):
     if validcc == True:
         (file_obj, compiled_file) = tempfile.mkstemp()
         os.close(file_obj)
-        cmd = [cc, '-o', compiled_file, source_filename]
+        cmd = [cc, '-c', '-o', compiled_file, source_filename]
         retcode = subprocess.call(cmd)
         if retcode != 0: sys.exit(retcode)
 

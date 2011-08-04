@@ -18,7 +18,6 @@ void list_free(struct listNode* x)
   }
 }
 
-int main() {}
 
 //@ var A : Seq
 

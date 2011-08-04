@@ -41,7 +41,6 @@ struct listNode* bubble_sort(struct listNode* x)
   return x;
 }
 
-int main() {}
 
 //@ var v, n : Int
 //@ var A, B, C, D : Seq

@@ -25,7 +25,6 @@ struct listNode* reverse(struct listNode *x)
   return p;
 }
 
-int main() {}
 
 //@ var A, B, C : Seq
 

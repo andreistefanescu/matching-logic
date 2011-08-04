@@ -23,7 +23,6 @@ struct listNode* list_append(struct listNode *x, struct listNode *y)
   return x;
 }
 
-int main() {}
 
 //@ var A, B : Seq
 

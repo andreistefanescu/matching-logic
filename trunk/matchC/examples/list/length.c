@@ -21,7 +21,6 @@ int list_length(struct listNode* x)
   return l;
 }
 
-int main() {}
 
 //@ var A : Seq
 
