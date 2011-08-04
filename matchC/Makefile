@@ -58,6 +58,9 @@ online: dist
         then \
           rm -rf $(FSL_MATCHC_DIR); \
           cp -r $(MATCHC_DIST_DIR) $(FSL_SOFTWARE_DIR); \
+					mkdir $(FSL_MATCHC_DIR)/online; \
+					mv $(FSL_MATCHC_DIR)/demo $(FSL_MATCHC_DIR)/online/; \
+					mv $(FSL_MATCHC_DIR)/examples $(FSL_MATCHC_DIR)/online/; \
         fi
 
 clean:
