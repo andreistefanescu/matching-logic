@@ -41,7 +41,6 @@ struct listNode *list_copy(struct listNode *x)
   return y;
 }
 
-int main() {}
 
 /*@ var v: Int */
 /*@ var A, B, C : Seq */

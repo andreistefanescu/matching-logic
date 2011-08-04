@@ -38,7 +38,6 @@ struct listNode *readList(int n)
   return x;
 }
 
-int main() {}
 
 //@ var v : Int
 //@ var A, B, C : Seq

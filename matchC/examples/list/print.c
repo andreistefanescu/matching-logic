@@ -19,7 +19,6 @@ void print(struct listNode* x)
   printf("\n"); 
 }
 
-int main() {}
 
 //@ var A : Seq
 

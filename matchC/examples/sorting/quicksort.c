@@ -64,7 +64,6 @@ struct listNode* quicksort(struct listNode* x)
   return x;
 }
 
-int main() {}
 
 //@ var v : Int
 //@ var A, B, C : Seq

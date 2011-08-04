@@ -48,7 +48,6 @@ struct listNode* insertion_sort(struct listNode* x)
   return y;
 }
 
-int main() {}
 
 //@ var v, nval : Int
 //@ var A, B, C, D : Seq
