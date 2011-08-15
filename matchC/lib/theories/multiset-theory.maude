@@ -55,6 +55,9 @@ mod MATHEMATICAL-MULTISET-BUILTIN-MODULE
   op _U_ : MSet++ MSet -> MSet++ [ditto] .
   op _U_ : MSet MSet++ -> MSet++ [ditto] .
 
+
+  op diff : MSet++ MSet++ -> MSet++ .
+
   op in : MathObj++ MSet++ -> AtomFormula .
   op size : MSet++ -> Int++ . 
   ops min max : MSet++ -> Int++ .
@@ -72,6 +75,8 @@ mod MATHEMATICAL-MULTISET-BUILTIN-MODULE
   eq {| Obj1, Obj2, ObjList |} = {| Obj1 |} U {| Obj2 |} U {| ObjList |} .
   eq {| .List{MathObj++} |} = empty .
   eq NeA U A1 === NeA U A2 = A1 === A2 .
+  eq diff(A1 U A2, A1) = A2 . 
+  eq diff(empty, A) = empty . 
 
 
   eq size(NeA1 U NeA2) = size(NeA1) +Int size(NeA2) .
@@ -99,6 +104,12 @@ mod MATHEMATICAL-MULTISET-BUILTIN-MODULE
    = A === A1 U A2 /\ A1 === A3 /\ A2 === A4 /\ A === A3 U A4 /\ Phi1
      ===> Phi2 .
 
+ ceq in(I, A1) /\ A2 === diff(A1, {| I |}) /\ Phi1 ===> Phi2
+   = in(I, A1) /\ A2 === diff(A1, {| I |}) /\ A1 === {| I |} U A2 /\ Phi1
+     ===> Phi2
+  if (in(I, A1) /\ A2 === diff(A1, {| I |}) /\ A1 === {| I |} U A2 /\ Phi1)
+     =/=Bool
+     (in(I, A1) /\ A2 === diff(A1, {| I |}) /\ Phi1) .
 
 ***(
   eq A1 U A === A2 U {| J |} /\ @(-Int max(A2) +Int I >=Int 0) /\
@@ -287,5 +298,47 @@ mod MATHEMATICAL-MULTISET-BUILTIN-MODULE
    = leq({| I |}, A) /\ @(I +Int -Int J >=Int 0) /\ Phi1
      ===> Phi2 .
 ***)
+  eq leq(A, {| J |}) /\ @(-Int J +Int I >=Int 0) /\ ~(I === J) /\ Phi1
+     ===> ~ in(I, A) /\ Phi2
+   = leq(A, {| J |}) /\ @(-Int J +Int I >=Int 0) /\ ~(I === J) /\ ~ in(I, A)
+     /\ Phi1
+     ===> Phi2 .
+  eq leq({| J |}, A) /\ @(-Int I +Int J >=Int 0) /\ ~(I === J) /\ Phi1
+     ===> ~ in(I, A) /\ Phi2
+   = leq({| J |}, A) /\ @(-Int I +Int J >=Int 0) /\ ~(I === J) /\ ~ in(I, A)
+     /\ Phi1
+     ===> Phi2 .
+
+  eq in(I, A) /\ leq(A, {| J |}) /\ Phi1 ===> @(-Int I +Int J >=Int 0) /\ Phi2
+   = in(I, A) /\ leq(A, {| J |}) /\ @(-Int I +Int J >=Int 0) /\ Phi1 ===> Phi2 .
+  eq in(I, A) /\ leq({| J |}, A) /\ Phi1 ===> @(-Int J +Int I >=Int 0) /\ Phi2
+   = in(I, A) /\ leq({| J |}, A) /\ @(-Int J +Int I >=Int 0) /\ Phi1 ===> Phi2 .
+
+  eq leq(A2, {| J |}) /\ @(-Int J +Int I >=Int 0) /\ ~(I === J) /\ Phi1
+     ===> diff(A1 U A2, {| I |}) === A /\ Phi2
+   = leq(A2, {| J |}) /\ @(-Int J +Int I >=Int 0) /\ ~(I === J) /\ Phi1
+     ===> diff(A1, {| I |}) U A2 === A /\ Phi2 .
+  eq leq({| J |}, A2) /\ @(-Int I +Int J >=Int 0) /\ ~(I === J) /\ Phi1
+     ===> diff(A1 U A2, {| I |}) === A /\ Phi2
+   = leq({| J |}, A2) /\ @(-Int I +Int J >=Int 0) /\ ~(I === J) /\ Phi1
+     ===> diff(A1, {| I |}) U A2 === A /\ Phi2 .
+  eq @(-Int J +Int I >=Int 0) /\ ~(I === J) /\ Phi1
+     ===> diff(A1 U {| J |}, {| I |}) === A /\ Phi2
+   = @(-Int J +Int I >=Int 0) /\ ~(I === J) /\ Phi1
+     ===> diff(A1, {| I |}) U {| J |} === A /\ Phi2 .
+  eq @(-Int I +Int J >=Int 0) /\ ~(I === J) /\ Phi1
+     ===> diff(A1 U {| J |}, {| I |}) === A /\ Phi2
+   = @(-Int I +Int J >=Int 0) /\ ~(I === J) /\ Phi1
+     ===> diff(A1, {| I |}) U {| J |} === A /\ Phi2 .
+
+  eq leq(A1, A) /\ A3 === diff(A1, A2) /\ Phi1 ===> leq(A3, A) /\ Phi2
+   = leq(A1, A) /\ A3 === diff(A1, A2) /\ leq(A3, A) /\ Phi1 ===> Phi2 .
+  eq leq(A, A1) /\ A3 === diff(A1, A2) /\ Phi1 ===> leq(A, A3) /\ Phi2
+   = leq(A, A1) /\ A3 === diff(A1, A2) /\ leq(A, A3) /\ Phi1 ===> Phi2 .
+
+  eq in(I, A1) /\ leq(A1, A2) /\ Phi1 ===> leq({| I |}, A2) /\ Phi2
+   = in(I, A1) /\ leq(A1, A2) /\ leq({| I |}, A2) /\ Phi1 ===> Phi2 .
+  eq in(I, A2) /\ leq(A1, A2) /\ Phi1 ===> leq(A1, {| I |}) /\ Phi2
+   = in(I, A2) /\ leq(A1, A2) /\ leq(A1, {| I |}) /\ Phi1 ===> Phi2 .
 endm
 
