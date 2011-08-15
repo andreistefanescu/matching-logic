@@ -11,7 +11,9 @@ struct node {
 
 
 int max(int a, int b)
+/* rule <k> $ => return r; <_/k> if r = maxInt(a, b) */
 {
+  //@ breakpoint
   return a > b ? a : b;
 }
 
@@ -112,6 +114,7 @@ struct node * insert(struct node *tree, int value)
     tree->right = insert(tree->right, value);
 
   update_height(tree);
+  //@ breakpoint
   tree = balance(tree);
 
   return tree;

@@ -88,13 +88,16 @@ mod MATHEMATICAL-INT-BUILTIN-MODULE is
   eq I <=Int J = J >=Int I .
   eq @(I >Int J) = @(I >=Int J) /\ ~(I === J) . 
  ceq I >=Int J = I +Int (-Int J) >=Int 0 if J =/=Bool 0 .
+
   eq ~(@(I >=Int 0)) = @(I <Int 0) .
+  eq (@(-Int I +Int J >=Int 0) /\ ~(I === J) \/ I === J) 
+   = @(-Int I +Int J >=Int 0) .
 
  ceq @(-Int J +Int I >=Int 0) /\ ~(I === J) /\ Phi1 ===> @(K >=Int 0) /\ Phi2
    = @(-Int J +Int I >=Int 0) /\ ~(I === J) /\ Phi1 ===> Phi2
   if I ==Bool J +Int K +Int 1 .
-  eq @(-Int J +Int I >=Int 0) /\ (@(-Int I +Int J >=Int 0) /\ ~(I === J) \/ NtPhi) 
-   = @(-Int J +Int I >=Int 0) /\ NtPhi . 
+  ***eq @(-Int J +Int I >=Int 0) /\ (@(-Int I +Int J >=Int 0) /\ ~(I === J) \/ NtPhi) 
+  *** = @(-Int J +Int I >=Int 0) /\ NtPhi . 
 
   *** partial transitive closure
  ceq @(-Int J +Int I >=Int 0) /\ @(-Int K +Int J >=Int 0) /\ Phi1 ===> Phi2
