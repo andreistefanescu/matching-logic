@@ -81,6 +81,7 @@ mod MATHEMATICAL-MULTISET-BUILTIN-MODULE
 
 
   eq size(NeA1 U NeA2) = size(NeA1) +Int size(NeA2) .
+  eq size({| Obj |}) = 1 .
   eq size(empty) = 0 .
 
   eq in(Obj, NeA1 U NeA2) = in(Obj, NeA1) \/ in(Obj, NeA2) . 
