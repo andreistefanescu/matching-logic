@@ -8,7 +8,7 @@ struct treeNode {
 };
 
 
-struct treeNode *newNode(int v)
+struct treeNode* newNode(int v)
 {
   struct treeNode *node;
   node = (struct treeNode *) malloc(sizeof(struct treeNode));
@@ -16,6 +16,7 @@ struct treeNode *newNode(int v)
   node->left = node->right = NULL;
   return node;
 }
+
 
 int find_min(struct treeNode *t)
 /*@ rule <k> $ => return m; <_/k> <heap_> tree(t)(T) <_/heap>
@@ -28,9 +29,8 @@ int find_min(struct treeNode *t)
 }
 
 
-struct treeNode *insertRecursive(struct treeNode *t, int v)
-/*@ rule <k> $ => return ?t; <_/k>
-         <heap_> tree(t)(T) => tree(?t)(?T) <_/heap>
+struct treeNode* insertRecursive(struct treeNode *t, int v)
+/*@ rule <k> $ => return ?t; <_/k> <heap_> tree(t)(T) => tree(?t)(?T) <_/heap>
     if isBst(T) /\ isBst(?T) /\ tree2mset(?T) = tree2mset(T) U {v} */
 {
   if (t == NULL)
@@ -47,7 +47,7 @@ struct treeNode *insertRecursive(struct treeNode *t, int v)
 int findRecursive(struct treeNode *t, int v)
 /*@ rule <k> $ => return r; <_/k> <heap_> tree(t)(T) <_/heap>
     if (~(r = 0) /\ in(v, tree2mset(T)) \/ r = 0 /\ ~(in(v, tree2mset(T))))
-    /\ isBst(T) */
+       /\ isBst(T) */
 {
   if (t == NULL)
     return 0;
@@ -59,9 +59,8 @@ int findRecursive(struct treeNode *t, int v)
     return findRecursive(t->right, v);
 }
 
-struct treeNode *deleteRecursive(struct treeNode *t, int v)
-/*@ rule <k> $ => return ?t; <_/k>
-         <heap_> tree(t)(T) => tree(?t)(?T) <_/heap>
+struct treeNode* deleteRecursive(struct treeNode *t, int v)
+/*@ rule <k> $ => return ?t; <_/k> <heap_> tree(t)(T) => tree(?t)(?T) <_/heap>
     if isBst(T) /\ isBst(?T) /\ tree2mset(?T) = diff(tree2mset(T), {v}) */
 {
   int min;
@@ -99,6 +98,7 @@ struct treeNode *deleteRecursive(struct treeNode *t, int v)
 
   return t;
 }
+
 
 //@ var m, r : Int
 //@ var T : Tree

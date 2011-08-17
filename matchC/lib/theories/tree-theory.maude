@@ -43,15 +43,17 @@ mod MATHEMATICAL-TREE-BUILTIN-MODULE
   op height : Tree++ -> Int++ .
   op mirror : Tree++ -> Tree++ .
 
-  var Obj Obj' : MathObj++ .
-  var TL TR TL' TR' : Tree++ .
+  var Obj Obj1 Obj2 : MathObj++ .
   var A : Seq++ .
+  var T TL TL1 TL2 TR TR1 TR2 : Tree++ .
 
-  eq TL [Obj] TR === TL' [Obj'] TR'
-   = Obj === Obj' /\ TL === TL' /\ TR === TR' .
+
+  eq TL1 [Obj1] TR1 === TL2 [Obj2] TR2
+   = Obj1 === Obj2 /\ TL1 === TL2 /\ TR1 === TR2 .
   eq TL [Obj] TR === upsilon = FalseFormula .
 
-  eq st(TL [[Obj] @ A] TR) = st(TR) [Obj] st(TL) .
+
+  eq st(TL [[Obj] @ A] TR) = st(TL) [Obj] st(TR) .
   eq st(upsilon) = upsilon .
 
   eq height(TL [Obj] TR) = 1 +Int maxInt(height(TR), height(TL)) .
@@ -59,5 +61,13 @@ mod MATHEMATICAL-TREE-BUILTIN-MODULE
 
   eq mirror(TL [Obj] TR) = mirror(TR) [Obj] mirror(TL) .
   eq mirror(upsilon) = upsilon .
+
+
+  eq height(st(T)) = height(T) .
+  eq height(mirror(T)) = height(T) .
+
+
+  eq height(T) === 0 = T === upsilon .
+  eq @(-Int height(T) >=Int 0) = T === upsilon .
 endm
 

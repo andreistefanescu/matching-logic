@@ -1,9 +1,11 @@
 #include <stdlib.h>
 
+
 struct listNode {
   int val;
   struct listNode *next;
 };
+
 
 void list_free(struct listNode* x)
 //@ rule <k> $ => return; </k> <heap_> list(x)(A) => . <_/heap>

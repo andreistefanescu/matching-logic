@@ -1,9 +1,11 @@
 #include <stdlib.h>
 
+
 struct listNode {
   int val;
   struct listNode *next;
 };
+
 
 struct listNode *list_copy(struct listNode *x)
 /*@ rule <k> $ => return ?y; <_/k>

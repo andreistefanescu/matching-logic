@@ -84,6 +84,12 @@ mod FORMULA-BUILTIN-MODULE is inc PL-BOOL + PL-STRING .
    = (NtPhi ===> NtPhi1) \/ (NtPhi ===> NtPhi2) [owise] .
 
 
+  op norm : Formula -> Formula .
+  eq norm(Phi) = Phi [owise] .
+
+ ceq Phi1 ===> Phi2 = norm(Phi1) ===> Phi2 if norm(Phi1) =/=Bool Phi1 [owise] .
+
+
   op VALID : Formula -> Bool .
   eq VALID(TrueFormula) = true .
 endm
