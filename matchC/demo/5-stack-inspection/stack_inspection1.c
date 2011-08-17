@@ -15,7 +15,6 @@ void trusted(int n)
     trusted(n - 1);
 }
 
-
 void untrusted(int n)
 {
   printf("%d ", -n);
@@ -23,11 +22,11 @@ void untrusted(int n)
     any(n - 1);
 }
 
-
 void any(int n)
 {
-  untrusted(n); // violates security policy
+  // untrusted(n);
   if(n > 10)
+    // security policy possibly (when any is called) violated if n <= 10
     trusted(n - 1);
 }
 

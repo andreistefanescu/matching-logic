@@ -8,7 +8,7 @@ struct listNode {
 };
 
 
-void readWrite(int n)
+void read_write(int n)
 {
   while (n) {
     int t;
@@ -19,8 +19,7 @@ void readWrite(int n)
   }
 }
 
-
-void readWriteBuffer(int n)
+void read_write_buffer(int n)
 {
   int i;
   struct listNode *x;
@@ -52,14 +51,14 @@ int main()
 {
   int n;
 
-  // the semantics is NOT interactive; we need to provide all input upfront
+  // the semantics is NOT interactive; we need to provide all the input upfront
   /*@ assume <in> [5, 1, 2, 3, 4, 5, 5, 6, 7, 8, 9, 10] </in>
              <out> epsilon </out> */
 
   scanf("%d", &n);
-  readWrite(n);
+  read_write(n);
 
   scanf("%d", &n);
-  readWriteBuffer(n);
+  read_write_buffer(n);
 }
 

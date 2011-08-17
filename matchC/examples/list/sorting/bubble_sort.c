@@ -8,7 +8,8 @@ struct listNode {
 
 
 struct listNode* bubble_sort(struct listNode* x)
-/*@ rule <k> $ => return ?x; <_/k> <heap_> list(x)(A) => list(?x)(?A) <_/heap>
+/*@ rule <k> $ => return ?x; ...</k>
+         <heap>... list(x)(A) => list(?x)(?A) ...</heap>
     if isSorted(?A) /\ seq2mset(A) = seq2mset(?A) */
 {
   int change;
@@ -17,7 +18,7 @@ struct listNode* bubble_sort(struct listNode* x)
     return x;
 
   change = 1 ;
-  /*@ inv <heap_> list(x)(?A) <_/heap>
+  /*@ inv <heap>... list(x)(?A) ...</heap>
           /\ ~(x = 0) /\ seq2mset(A) = seq2mset(?A)
           /\ (isSorted(?A) \/ ~(change = 0)) */
   while (change) {
@@ -25,7 +26,7 @@ struct listNode* bubble_sort(struct listNode* x)
 
     change = 0;
     y = x;
-    /*@ inv <heap_> lseg(x, y)(?B), y |-> [?v, ?n], list(?n)(?C) <_/heap>
+    /*@ inv <heap>... lseg(x, y)(?B), y |-> [?v, ?n], list(?n)(?C) ...</heap>
             /\ ~(x = 0) /\ seq2mset(A) = seq2mset(?B @ [?v] @ ?C)
             /\ (isSorted(?B @ [?v]) \/ ~(change = 0)) */
     while (y->next != NULL) {

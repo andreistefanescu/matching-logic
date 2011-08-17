@@ -9,7 +9,7 @@ struct treeNode {
 
 
 int bst_find(struct treeNode *t, int v)
-/*@ rule <k> $ => return r; <_/k> <heap_> tree(t)(T) <_/heap>
+/*@ rule <k> $ => return r; ...</k> <heap>... tree(t)(T) ...</heap>
     if isBst(T)
        /\ (~(r = 0) /\ in(v, tree2mset(T)) \/ r = 0 /\ ~in(v, tree2mset(T))) */
 {

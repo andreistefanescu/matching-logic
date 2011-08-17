@@ -19,7 +19,8 @@ struct treeNode* newNode(int v)
 
 
 struct treeNode* bst_insert(struct treeNode *t, int v)
-/*@ rule <k> $ => return ?t; <_/k> <heap_> tree(t)(T) => tree(?t)(?T) <_/heap>
+/*@ rule <k> $ => return ?t; ...</k>
+         <heap>... tree(t)(T) => tree(?t)(?T) ...</heap>
     if isBst(T) /\ isBst(?T) /\ tree2mset(?T) = tree2mset(T) U {v} */
 {
   if (t == NULL)

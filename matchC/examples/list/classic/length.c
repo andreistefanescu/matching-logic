@@ -8,12 +8,12 @@ struct listNode {
 
 
 int list_length(struct listNode* x)
-//@ rule <k> $ => return len(A); </k> <heap_> list(x)(A) <_/heap>
+//@ rule <k> $ => return len(A); ...</k> <heap>... list(x)(A) ...</heap>
 {
   int l;
   
   l = 0;
-  /*@ inv <heap_> lseg(old(x), x)(?A1), list(x)(?A2) <_/heap> 
+  /*@ inv <heap>... lseg(old(x), x)(?A1), list(x)(?A2) ...</heap>
           /\ A = ?A1 @ ?A2 /\ l = len(?A1) */
   while (x != NULL) {
     l += 1;

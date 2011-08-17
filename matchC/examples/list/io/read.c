@@ -8,9 +8,9 @@ struct listNode {
 };
 
 
-struct listNode *readList(int n)
-/*@ rule <k> $ => return ?x; </k> <heap_> . => list(?x)(A) <_/heap>
-         <in> A => epsilon <_/in>
+struct listNode* list_read(int n)
+/*@ rule <k> $ => return ?x; ...</k> <heap>... . => list(?x)(A) ...</heap>
+         <in> A => epsilon ...</in>
     if n = len(A) */
 {
   int i;
@@ -26,7 +26,7 @@ struct listNode *readList(int n)
 
   i = 1;
   p = x;
-  /*@ inv <heap_> lseg(x, p)(?B), p |-> [?v, 0] <_/heap> <in> ?C <_/in>
+  /*@ inv <heap>... lseg(x, p)(?B), p |-> [?v, 0] ...</heap> <in> ?C ...</in>
           /\ i <= n /\ len(?C) = n - i /\ A = ?B @ [?v] @ ?C */
   while (i < n) {
     p->next = (struct listNode*) malloc(sizeof(struct listNode));

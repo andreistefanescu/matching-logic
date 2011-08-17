@@ -8,9 +8,9 @@ struct listNode {
 
 
 void list_free(struct listNode* x)
-//@ rule <k> $ => return; </k> <heap_> list(x)(A) => . <_/heap>
+//@ rule <k> $ => return; ...</k> <heap>... list(x)(A) => . ...</heap>
 {
-  //@ inv <heap_> list(x)(?A) <_/heap>
+  //@ inv <heap>... list(x)(?A) ...</heap>
   while(x != NULL) {
     struct listNode *y;
 

@@ -9,7 +9,8 @@ struct treeNode {
 
 
 int tree_size(struct treeNode *t)
-//@ rule <k> $ => return size(tree2mset(T)); </k> <heap_> tree(t)(T) <_/heap>
+/*@ rule <k> $ => return size(tree2mset(T)); ...</k>
+         <heap>... tree(t)(T) ...</heap> */
 {
   if (t == NULL)
     return 0;

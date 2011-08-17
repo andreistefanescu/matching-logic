@@ -1,11 +1,14 @@
 #include <stdio.h>
 
+
 void trusted(int n);
 void untrusted(int n);
 void any(int n);
 
+
 void trusted(int n)
-/*@ rule <k> $ => return; </k> <stack> S </stack> <out_> epsilon => A </out>
+/*@ rule <k> $ => return; ...</k> <stack> S </stack>
+         <out>... epsilon => A </out>
     if n >= 10 \/ in(hd(ids(S)), {main, trusted}) */
 {
   printf("%d ", n);
@@ -16,7 +19,8 @@ void trusted(int n)
 }
 
 void untrusted(int n)
-/*@ rule <k> $ => return; </k> <stack> S </stack> <out_> epsilon => A </out>
+/*@ rule <k> $ => return; ...</k> <stack> S </stack>
+         <out>... epsilon => A </out>
     if in(trusted, ids(S)) */
 {
   printf("%d ", -n);
@@ -32,11 +36,13 @@ void any(int n)
     trusted(n - 1);
 }
 
+
 int main()
 {
   trusted(5);
   any(5);
 }
+
 
 //@ var S : ListItem
 //@ var A : Seq

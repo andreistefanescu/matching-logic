@@ -8,12 +8,12 @@ struct listNode {
 
 
 int list_sum(struct listNode* x)
-//@ rule <k> $ => return sum(A); </k> <heap_> list(x)(A) <_/heap>
+//@ rule <k> $ => return sum(A); ...</k> <heap>... list(x)(A) ...</heap>
 {
   int s;
   
   s = 0;
-  /*@ inv <heap_> lseg(old(x), x)(?A1), list(x)(?A2) <_/heap> 
+  /*@ inv <heap>... lseg(old(x), x)(?A1), list(x)(?A2) ...</heap>
           /\ A = ?A1 @ ?A2 /\ s = sum(?A1) */
   while (x != NULL) {
     s += x->val;

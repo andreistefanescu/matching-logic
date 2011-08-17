@@ -15,7 +15,7 @@ int max(int a, int b)
 
 
 int tree_height(struct treeNode *t)
-//@ rule <k> $ => return height(T); </k> <heap_> tree(t)(T) <_/heap>
+//@ rule <k> $ => return height(T); ...</k> <heap>... tree(t)(T) ...</heap>
 {
   if (t == NULL)
     return 0;

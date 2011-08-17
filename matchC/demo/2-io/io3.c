@@ -8,13 +8,12 @@ struct listNode {
 };
 
 
-void readWrite(int n)
-/*@ rule <k> $ => return; </k>
-         <in> A => epsilon <_/in>
-         <out_> epsilon => A </out>
+void read_write(int n)
+/*@ rule <k> $ => return; ...</k> <in> A => epsilon ...</in>
+         <out>... epsilon => A </out>
     if n = len(A) */
 {
-  /*@ inv <in> ?B <_/in> <out_> ?A </out>
+  /*@ inv <in> ?B ...</in> <out>... ?A </out>
           /\ n >= 0 /\ len(?B) = n /\ A = ?A @ ?B */
   while (n) {
     int t;
@@ -25,11 +24,9 @@ void readWrite(int n)
   }
 }
 
-
-void readWriteBuffer(int n)
-/*@ rule <k> $ => return; </k>
-         <in> A => epsilon <_/in>
-         <out_> epsilon => rev(A) </out>
+void read_write_buffer(int n)
+/*@ rule <k> $ => return; ...</k> <in> A => epsilon ...</in>
+         <out>... epsilon => rev(A) </out>
     if n = len(A) */
 {
   int i;
@@ -37,7 +34,7 @@ void readWriteBuffer(int n)
 
   i = 0;
   x = 0;
-  /*@ inv <in> ?B <_/in> <heap_> list(x)(?A) <_/heap>
+  /*@ inv <in> ?B ...</in> <heap>... list(x)(?A) ...</heap>
           /\ i <= n /\ len(?B) = n - i /\ A = rev(?A) @ ?B */
   while (i < n) {
     struct listNode *y;
@@ -49,7 +46,8 @@ void readWriteBuffer(int n)
     i += 1;
   }
 
-  //@ inv <out_> ?A </out> <heap_> list(x)(?B) <_/heap> /\ A = rev(?A @ ?B)
+  /*@ inv <out>... ?A </out> <heap>... list(x)(?B) ...</heap>
+          /\ A = rev(?A @ ?B) */
   while (x) {
     struct listNode *y;
 
@@ -69,11 +67,11 @@ int main()
              <out> epsilon </out> */
 
   scanf("%d", &n);
-  readWrite(n);
+  read_write(n);
   //@ assert <in> [5, 6, 7, 8, 9, 10] </in> <out> [1, 2, 3, 4, 5] </out>
 
   scanf("%d", &n);
-  readWriteBuffer(n);
+  read_write_buffer(n);
   //@ assert <in> epsilon </in> <out> [1, 2, 3, 4, 5, 10, 9, 8, 7, 6] </out>
 }
 
