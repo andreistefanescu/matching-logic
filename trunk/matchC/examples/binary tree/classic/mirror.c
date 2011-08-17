@@ -8,10 +8,9 @@ struct treeNode {
 };
 
 
-
 void tree_mirror(struct treeNode *t)
-/*@ rule <k> $ => return; </k>
-         <heap_> tree(t)(T) => tree(t)(mirror(T)) <_/heap> */
+/*@ rule <k> $ => return; ...</k>
+         <heap>... tree(t)(T) => tree(t)(mirror(T)) ...</heap> */
 {
   struct treeNode *tmp;
 

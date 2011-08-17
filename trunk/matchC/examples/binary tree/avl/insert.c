@@ -10,7 +10,7 @@ struct node {
 
 
 int max(int a, int b)
-/*@ rule <k> $ => return maxInt(a, b); <_/k> */
+//@ rule <k> $ => return maxInt(a, b); ...</k>
 {
   return a > b ? a : b;
 }
@@ -31,7 +31,7 @@ struct node* new_leaf(int value)
 
 
 int height(struct node *tree)
-/*@ rule <k> $ => return height(T); <_/k> <heap_> htree(tree)(T) <_/heap>
+/*@ rule <k> $ => return height(T); ...</k> <heap>... htree(tree)(T) ...</heap>
     if hasHeight(T) */
 {
   return tree ? tree->height : 0;
@@ -88,9 +88,9 @@ struct node* balance(struct node *tree)
 }
 
 
-struct node* insert(struct node *tree, int value)
-/*@ rule <k> $ => return ?tree; <_/k>
-         <heap_> htree(tree)(T) => htree(?tree)(?T) <_/heap>
+struct node* avl_insert(struct node *tree, int value)
+/*@ rule <k> $ => return ?tree; ...</k>
+         <heap>... htree(tree)(T) => htree(?tree)(?T) ...</heap>
     if isAvl(T) /\ isAvl(?T)
        /\ tree2mset(st(?T)) = tree2mset(st(T)) U {value}
        /\ 0 <= height(?T) - height(T) /\ height(?T) - height(T) <= 1 */
@@ -100,9 +100,9 @@ struct node* insert(struct node *tree, int value)
 
   tree->value;
   if (value < tree->value)
-    tree->left = insert(tree->left, value);
+    tree->left = avl_insert(tree->left, value);
   else
-    tree->right = insert(tree->right, value);
+    tree->right = avl_insert(tree->right, value);
 
   update_height(tree);
   tree = balance(tree);

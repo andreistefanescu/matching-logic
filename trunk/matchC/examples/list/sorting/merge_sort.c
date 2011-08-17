@@ -8,7 +8,8 @@ struct listNode {
 
 
 struct listNode* merge_sort(struct listNode* x)
-/*@ rule <k> $ => return ?x; <_/k> <heap_> list(x)(A) => list(?x)(?A) <_/heap>
+/*@ rule <k> $ => return ?x; ...</k>
+         <heap>... list(x)(A) => list(?x)(?A) ...</heap>
     if isSorted(?A) /\ seq2mset(A) = seq2mset(?A) */
 {
   struct listNode* p;
@@ -20,7 +21,7 @@ struct listNode* merge_sort(struct listNode* x)
 
   y = NULL;
   z = NULL;
-  /*@ inv <heap_> list(x)(?A), list(y)(?B), list(z)(?C) <_/heap>
+  /*@ inv <heap>... list(x)(?A), list(y)(?B), list(z)(?C) ...</heap>
           /\ seq2mset(A) = seq2mset(?A) U seq2mset(?B) U seq2mset(?C)
           /\ (len(?B) = len(?C) \/ len(?B) = len(?C) + 1 /\ x = 0) */
   while (x != NULL) {
@@ -50,9 +51,9 @@ struct listNode* merge_sort(struct listNode* x)
     x = p = z;
     z = z->next;
   }
-  /*@ inv <heap_>
+  /*@ inv <heap>...
             lseg(x, p)(?A1), p |-> [?v, ?n], list(y)(?B), list(z)(?C)
-          <_/heap>
+          ...</heap>
           /\ seq2mset(A) = seq2mset(?A1 @ [?v]) U seq2mset(?B) U seq2mset(?C)
           /\ leq(seq2mset(?A1 @ [?v]), seq2mset(?B))
           /\ leq(seq2mset(?A1 @ [?v]), seq2mset(?C))

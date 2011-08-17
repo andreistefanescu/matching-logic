@@ -8,13 +8,13 @@ struct listNode {
 
 
 struct listNode* list_filter(struct listNode* x, int v)
-/*@ rule <k> $ => return ?x; <_/k>
-         <heap_> list(x)(A) => list(?x)(filter(v, A)) <_/heap> */
+/*@ rule <k> $ => return ?x; ...</k>
+         <heap>... list(x)(A) => list(?x)(filter(v, A)) ...</heap> */
 {
   struct listNode* y;
   
-  /*@ inv <heap> list(x)(?A) <_/heap>
-          /\ v = !v /\ filter(v, A) = filter(v, ?A) */ 
+  /*@ inv <heap>... list(x)(?A) ...</heap>
+          /\ v = !v /\ filter(v, A) = filter(v, ?A) */
   while (x != NULL && x->val == v) {
     struct listNode* z;
 
@@ -27,7 +27,7 @@ struct listNode* list_filter(struct listNode* x, int v)
     return NULL;
 
   y = x;
-  /*@ inv <heap> lseg(x, y)(?B), y |-> [?v, ?n], list(?n)(?C) <_/heap>
+  /*@ inv <heap>... lseg(x, y)(?B), y |-> [?v, ?n], list(?n)(?C) ...</heap>
           /\ v = !v /\ filter(v, A) = ?B @ [?v] @ filter(v, ?C) */
   while(y->next != NULL) {
     struct listNode* z;

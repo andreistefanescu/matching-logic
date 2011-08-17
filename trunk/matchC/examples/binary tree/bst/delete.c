@@ -9,7 +9,7 @@ struct treeNode {
 
 
 int find_min(struct treeNode *t)
-/*@ rule <k> $ => return m; <_/k> <heap_> tree(t)(T) <_/heap>
+/*@ rule <k> $ => return m; ...</k> <heap>... tree(t)(T) ...</heap>
     if ~(t = 0) /\ isBst(T) /\ in(m, tree2mset(T)) /\ leq({m}, tree2mset(T)) */
 {
   if (t->left == NULL)
@@ -20,7 +20,8 @@ int find_min(struct treeNode *t)
 
 
 struct treeNode* bst_delete(struct treeNode *t, int v)
-/*@ rule <k> $ => return ?t; <_/k> <heap_> tree(t)(T) => tree(?t)(?T) <_/heap>
+/*@ rule <k> $ => return ?t; ...</k>
+         <heap>... tree(t)(T) => tree(?t)(?T) ...</heap>
     if isBst(T) /\ isBst(?T) /\ tree2mset(?T) = diff(tree2mset(T), {v}) */
 {
   int min;

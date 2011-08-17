@@ -15,9 +15,11 @@ struct listNode {
 
 
 struct listNode* tree_to_list_recursive(struct treeNode *t, struct listNode *l)
-/*@ rule <k> $ => return ?l; </k>
-         <heap_> tree(t)(T), list(l)(A) => list(?l)(tree2list(T) @ A) <_/heap>
-         <out_> epsilon => rev(tree2list(T)) </out> */
+/*@ rule <k> $ => return ?l; ...</k>
+         <heap>...
+           tree(t)(T), list(l)(A) => list(?l)(tree2list(T) @ A)
+         ...</heap>
+         <out>... epsilon => rev(tree2list(T)) </out> */
 {
   struct listNode *ln;
 

@@ -8,7 +8,8 @@ struct listNode {
 
 
 struct listNode* list_insert(struct listNode* x, int v)
-/*@ rule <k> $ => return ?x; <_/k> <heap_> list(x)(A) => list(?x)(?A) <_/heap>
+/*@ rule <k> $ => return ?x; ...</k>
+         <heap>... list(x)(A) => list(?x)(?A) ...</heap>
     if isSorted(A) /\ isSorted(?A) /\ seq2mset(?A) = seq2mset(A) U {v} */
 {
   struct listNode* n;
@@ -28,9 +29,9 @@ struct listNode* list_insert(struct listNode* x, int v)
   }
 
   y = x;
-  /*@ inv <heap_>
+  /*@ inv <heap>...
             lseg(x, y)(?B), y |-> [?v, ?n], list(?n)(?C), n |-> [v, 0]
-          <_/heap>
+          ...</heap>
           /\ v = !v /\ A = ?B @ [?v] @ ?C /\ ?v < v */
   while (y->next != NULL && y->next->val < v)
     y = y->next;

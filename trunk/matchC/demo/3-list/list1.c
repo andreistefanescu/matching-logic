@@ -8,12 +8,12 @@ struct listNode {
 };
 
 
-struct listNode* reverse(struct listNode *x)
+struct listNode* list_reverse(struct listNode *x)
 {
   struct listNode *p;
 
-  p = 0;
-  while(x) {
+  p = NULL;
+  while(x != NULL) {
     struct listNode *y;
 
     y = x->next;
@@ -25,54 +25,53 @@ struct listNode* reverse(struct listNode *x)
   return p;
 }
 
-struct listNode* append(struct listNode *x, struct listNode *y)
+struct listNode* list_append(struct listNode *x, struct listNode *y)
 {
   struct listNode *p;
-  if (x == 0)
+  if (x == NULL)
     return y;
 
   p = x;
-  while (p->next)
+  while (p->next != NULL)
     p = p->next;
   p->next = y;
 
   return x;
 }
 
-int length(struct listNode* x)
-{
-  int l;
-  
-  l = 0;
-  while (x) {
-    l += 1;
-    x = x->next;
-  }
 
-  return l;
-}
-
-
-struct listNode* create(int n)
+struct listNode* list_create(int n)
 {
   struct listNode *x;
-  struct listNode *y;
-  x = 0;
-  while (n)
-  {
+
+  x = NULL;
+  while (n) {
+    struct listNode *y;
+
     y = x;
     x = (struct listNode*) malloc(sizeof(struct listNode));
     x->val = n;
     x->next = y;
+
     n -= 1;
   }
+
   return x;
 }
 
-void destroy(struct listNode* x)
+
+void list_print(struct listNode* x)
 {
-  while(x)
-  {
+  while(x != NULL) {
+    printf("%d ", x->val);
+    x = x->next;
+  }
+  printf("\n"); 
+}
+
+void list_free(struct listNode* x)
+{
+  while(x != NULL) {
     struct listNode *y;
 
     y = x->next;
@@ -82,46 +81,28 @@ void destroy(struct listNode* x)
 }
 
 
-void print(struct listNode* x)
-{
-  while(x)
-  {
-    printf("%d ", x->val);
-    x = x->next;
-  }
-  printf("\n"); 
-}
-
-
 int main()
 {
   struct listNode *x;
   struct listNode *y;
 
-  x = create(5);
-  x = reverse(x);
-  destroy(x);
-  x = create(5);
+  x = list_create(5);
   printf("x: ");
-  print(x);
-  x = reverse(x);
+  list_print(x);
+  x = list_reverse(x);
   printf("reverse(x): ");
-  print(x);
-  destroy(x);
+  list_print(x);
+  list_free(x);
 
-  x = create(3);
-  y = create(3);
-  x = append(x, y);
-  destroy(x);
-  x = create(3);
+  x = list_create(3);
   printf("x: ");
-  print(x);
-  y = create(3);
+  list_print(x);
+  y = list_create(3);
   printf("y: ");
-  print(y);
-  x = append(x, y);
+  list_print(y);
+  x = list_append(x, y);
   printf("append(x, y): ");
-  print(x);
-  destroy(x);
+  list_print(x);
+  list_free(x);
 }
 

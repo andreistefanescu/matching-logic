@@ -7,16 +7,16 @@ struct listNode {
 };
 
 
-struct listNode* append(struct listNode *x, struct listNode *y)
-/*@ rule <k> $ => return x1; </k>
-         <heap_> list(x)(A), list(y)(B) => list(x1)(A @ B) <_/heap> */
+struct listNode* list_append(struct listNode *x, struct listNode *y)
+/*@ rule <k> $ => return ?x; ...</k>
+         <heap>... list(x)(A), list(y)(B) => list(?x)(A @ B) ...</heap> */
 {
   struct listNode *p;
   if (x == NULL)
     return y;
 
   p = x;
-  /*@ inv <heap_> lseg(x, p)(?A1), list(p)(?A2) <_/heap> 
+  /*@ inv <heap>... lseg(x, p)(?A1), list(p)(?A2) ...</heap> 
           /\ A = ?A1 @ ?A2 /\ ~(p = 0) */
   while (p->next != NULL)
     p = p->next;
@@ -27,7 +27,8 @@ struct listNode* append(struct listNode *x, struct listNode *y)
 
 
 struct listNode* quicksort(struct listNode* x)
-/*@ rule <k> $ => return ?x; <_/k> <heap_> list(x)(A) => list(?x)(?A) <_/heap>
+/*@ rule <k> $ => return ?x; ...</k>
+         <heap>... list(x)(A) => list(?x)(?A) ...</heap>
     if isSorted(?A) /\ seq2mset(A) = seq2mset(?A) */
 {
   struct listNode* p;
@@ -42,7 +43,9 @@ struct listNode* quicksort(struct listNode* x)
   p->next = NULL;
   y = NULL;
   z = NULL;
-  /*@ inv <heap_> p |-> [v, 0], list(x)(?A), list(y)(?B), list(z)(?C) <_/heap>
+  /*@ inv <heap>...
+            p |-> [v, 0], list(x)(?A), list(y)(?B), list(z)(?C)
+          ...</heap>
           /\ seq2mset(A) = {v} U seq2mset(?A) U seq2mset(?B) U seq2mset(?C)
           /\ leq(seq2mset(?B), {v}) /\ leq({v}, seq2mset(?C)) */
   while(x != NULL) {
@@ -62,7 +65,7 @@ struct listNode* quicksort(struct listNode* x)
 
   y = quicksort(y);
   z = quicksort(z);
-  x = append(y, append(p, z));
+  x = list_append(y, list_append(p, z));
 
   return x;
 }

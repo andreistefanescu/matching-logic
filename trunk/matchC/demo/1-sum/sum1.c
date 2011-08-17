@@ -1,4 +1,3 @@
-#include <stdlib.h>
 #include <stdio.h>
 
 
@@ -7,8 +6,7 @@ int sum(int n)
   int s;
 
   s = 0;
-  while (n > 0)
-  {
+  while (n > 0) {
     s += n;
     n -= 1;
   }

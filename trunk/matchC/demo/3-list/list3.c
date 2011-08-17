@@ -8,15 +8,15 @@ struct listNode {
 };
 
 
-struct listNode* reverse(struct listNode *x)
-/*@ rule <k> $ => return p1; </k>
-         <heap_> list(x)(A) => list(p1)(rev(A)) <_/heap> */
+struct listNode* list_reverse(struct listNode *x)
+/*@ rule <k> $ => return ?p; ...</k>
+         <heap>... list(x)(A) => list(?p)(rev(A)) ...</heap> */
 {
   struct listNode *p;
 
-  p = 0;
-  //@ inv <heap_> list(p)(?B), list(x)(?C) <_/heap> /\ A = rev(?B) @ ?C
-  while(x) {
+  p = NULL;
+  //@ inv <heap>... list(p)(?B), list(x)(?C) ...</heap> /\ A = rev(?B) @ ?C
+  while(x != NULL) {
     struct listNode *y;
 
     y = x->next;
@@ -28,63 +28,64 @@ struct listNode* reverse(struct listNode *x)
   return p;
 }
 
-struct listNode* append(struct listNode *x, struct listNode *y)
-/*@ rule <k> $ => return x1; </k>
-         <heap_> list(x)(A), list(y)(B) => list(x1)(A @ B) <_/heap> */
+struct listNode* list_append(struct listNode *x, struct listNode *y)
+/*@ rule <k> $ => return ?x; ...</k>
+         <heap>... list(x)(A), list(y)(B) => list(?x)(A @ B) ...</heap> */
 {
   struct listNode *p;
-  if (x == 0)
+  if (x == NULL)
     return y;
 
   p = x;
-  /*@ inv <heap_> lseg(x, p)(?A1), list(p)(?A2) <_/heap> 
+  /*@ inv <heap>... lseg(x, p)(?A1), list(p)(?A2) ...</heap> 
           /\ A = ?A1 @ ?A2 /\ ~(p = 0) */
-  while (p->next)
+  while (p->next != NULL)
     p = p->next;
   p->next = y;
 
   return x;
 }
 
-int length(struct listNode* x)
-//@ rule <k> $ => return len(A); </k> <heap_> list(x)(A) <_/heap>
-{
-  int l;
-  
-  l = 0;
-  /*@ inv <heap_> lseg(old(x), x)(?A1), list(x)(?A2) <_/heap> 
-          /\ A = ?A1 @ ?A2 /\ l = len(?A1) */
-  while (x) {
-    l += 1;
-    x = x->next;
-  }
 
-  return l;
-}
-
-
-struct listNode* create(int n)
+struct listNode* list_create(int n)
 {
   struct listNode *x;
-  struct listNode *y;
-  x = 0;
-  while (n)
-  {
+
+  x = NULL;
+  while (n) {
+    struct listNode *y;
+
     y = x;
     x = (struct listNode*) malloc(sizeof(struct listNode));
     x->val = n;
     x->next = y;
+
     n -= 1;
   }
+
   return x;
 }
 
-void destroy(struct listNode* x)
-//@ rule <k> $ => return; </k> <heap_> list(x)(A) => . <_/heap>
+
+void list_print(struct listNode* x)
+/*@ rule <k> $ => return; ...</k> <heap>... list(x)(A) ...</heap>
+         <out>... epsilon => A </out> */
 {
-  //@ inv <heap_> list(x)(?A) <_/heap>
-  while(x)
-  {
+  /*@ inv <heap>... lseg(old(x), x)(?A1), list(x)(?A2) ...</heap>
+          <out>... ?A1 </out>
+          /\ A = ?A1 @ ?A2 */
+  while(x != NULL) {
+    printf("%d ", x->val);
+    x = x->next;
+  }
+  printf("\n"); 
+}
+
+void list_free(struct listNode* x)
+//@ rule <k> $ => return; ...</k> <heap>... list(x)(A) => . ...</heap>
+{
+  //@ inv <heap>... list(x)(?A) ...</heap>
+  while(x != NULL) {
     struct listNode *y;
 
     y = x->next;
@@ -94,64 +95,50 @@ void destroy(struct listNode* x)
 }
 
 
-void print(struct listNode* x)
-/*@ rule <k> $ => return; </k>
-         <heap_> list(x)(A) <_/heap>
-         <out_> epsilon => A </out> */
-{
-  /*@ inv <heap_> lseg(old(x), x)(?A1), list(x)(?A2) <_/heap> <out_> ?A1 </out>
-          /\ A = ?A1 @ ?A2 */
-  while(x)
-  {
-    printf("%d ", x->val);
-    x = x->next;
-  }
-  printf("\n"); 
-}
-
-
 int main()
 {
   struct listNode *x;
   struct listNode *y;
 
-  x = create(5);
+  x = list_create(5);
   //@ assert <heap> list(x)([1, 2, 3, 4, 5]) </heap>
-  x = reverse(x);
+  x = list_reverse(x);
   //@ assert <heap> list(x)([5, 4, 3, 2, 1]) </heap>
-  destroy(x);
+  list_free(x);
   //@ assert <heap> . </heap>
-  x = create(5);
+  x = list_create(5);
   printf("x: ");
-  print(x);
+  list_print(x);
   //@ assert <heap> list(x)(A1) </heap> <out> A1 </out>
-  x = reverse(x);
+  x = list_reverse(x);
   printf("reverse(x): ");
-  print(x);
+  list_print(x);
   //@ assert <heap> list(x)(rev(A1)) </heap> <out> A1 @ rev(A1) </out>
-  destroy(x);
-
-  x = create(3);
-  //@ assert <heap> list(x)([1, 2, 3]) </heap>
-  y = create(3);
-  //@ assert <heap> list(x)([1, 2, 3]), list(y)([1, 2, 3]) </heap>
-  x = append(x, y);
-  //@ assert <heap> list(x)([1, 2, 3, 1, 2, 3]) </heap>
-  destroy(x);
+  list_free(x);
   //@ assert <heap> . </heap>
-  x = create(3);
+
+  x = list_create(3);
+  //@ assert <heap> list(x)([1, 2, 3]) </heap>
+  y = list_create(3);
+  //@ assert <heap> list(x)([1, 2, 3]), list(y)([1, 2, 3]) </heap>
+  x = list_append(x, y);
+  //@ assert <heap> list(x)([1, 2, 3, 1, 2, 3]) </heap>
+  list_free(x);
+  //@ assert <heap> . </heap>
+  x = list_create(3);
   printf("x: ");
-  print(x);
+  list_print(x);
   //@ assert <heap> list(x)(A2) </heap>
-  y = create(3);
+  y = list_create(3);
   printf("y: ");
-  print(y);
+  list_print(y);
   //@ assert <heap> list(x)(A2), list(y)(A3) </heap>
-  x = append(x, y);
+  x = list_append(x, y);
   printf("append(x, y): ");
-  print(x);
-  //@ assert <heap> list(x)(A2 @ A3) </heap>
-  destroy(x);
+  list_print(x);
+  /*@ assert <heap> list(x)(A2 @ A3) </heap>
+             <out> A1 @ rev(A1) @ A2 @ A3 @ A2 @ A3 </out> */
+  list_free(x);
   //@ assert <heap> . </heap>
 }
 

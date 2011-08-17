@@ -20,9 +20,9 @@ struct stackNode {
 
 
 struct listNode* tree_to_list_iterative(struct treeNode *t)
-/*@ rule <k> $ => return ?l; </k>
-         <heap_> tree(t)(T) => list(?l)(tree2list(T)) <_/heap>
-         <out_> epsilon => rev(tree2list(T)) </out> */
+/*@ rule <k> $ => return ?l; ...</k>
+         <heap>... tree(t)(T) => list(?l)(tree2list(T)) ...</heap>
+         <out>... epsilon => rev(tree2list(T)) </out> */
 {
   struct listNode *l;
   struct stackNode *s;
@@ -34,7 +34,8 @@ struct listNode* tree_to_list_iterative(struct treeNode *t)
   s = (struct stackNode *) malloc(sizeof(struct stackNode));
   s->val = t;
   s->next = NULL;
-  /*@ inv <heap_> treeList(s)(?TS), list(l)(?A) <_/heap> <out_> rev(?A) </out>
+  /*@ inv <heap>... treeList(s)(?TS), list(l)(?A) ...</heap>
+          <out>... rev(?A) </out>
           /\ tree2list(T) = treeList2list(rev(?TS)) @ ?A */
   while (s != NULL) {
     struct treeNode *tn;

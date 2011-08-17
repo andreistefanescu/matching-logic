@@ -10,14 +10,14 @@ struct node {
 
 
 int max(int a, int b)
-/*@ rule <k> $ => return maxInt(a, b); <_/k> */
+//@ rule <k> $ => return maxInt(a, b); ...</k>
 {
   return a > b ? a : b;
 }
 
 
 int height(struct node *tree)
-/*@ rule <k> $ => return height(T); <_/k> <heap_> htree(tree)(T) <_/heap>
+/*@ rule <k> $ => return height(T); ...</k> <heap>... htree(tree)(T) ...</heap>
     if hasHeight(T) */
 {
   return tree ? tree->height : 0;
@@ -30,7 +30,7 @@ void update_height(struct node *tree)
 
 
 int find_min(struct node *tree)
-/*@ rule <k> $ => return m; <_/k> <heap_> htree(tree)(T) <_/heap>
+/*@ rule <k> $ => return m; ...</k> <heap>... htree(tree)(T) ...</heap>
     if ~(tree = 0) /\ isBst(st(T))
        /\ in(m, tree2mset(st(T))) /\ leq({m}, tree2mset(st(T))) */
 {
@@ -86,9 +86,9 @@ struct node* balance(struct node *tree)
 }
 
 
-struct node* delete(struct node *tree, int value)
-/*@ rule <k> $ => return ?tree; <_/k>
-         <heap_> htree(tree)(T) => htree(?tree)(?T) <_/heap>
+struct node* avl_delete(struct node *tree, int value)
+/*@ rule <k> $ => return ?tree; ...</k>
+         <heap>... htree(tree)(T) => htree(?tree)(?T) ...</heap>
     if isAvl(T) /\ isAvl(?T)
        /\ tree2mset(st(?T)) = diff(tree2mset(st(T)), {value})
        /\ 0 <= height(T) - height(?T) /\ height(T) - height(?T) <= 1 */
@@ -117,14 +117,14 @@ struct node* delete(struct node *tree, int value)
     }
     else {
       min = find_min(tree->right);
-      tree->right = delete(tree->right, min);
+      tree->right = avl_delete(tree->right, min);
       tree->value = min;
     }
   }
   else if (value < tree->value)
-    tree->left = delete(tree->left, value);
+    tree->left = avl_delete(tree->left, value);
   else
-    tree->right = delete(tree->right, value);
+    tree->right = avl_delete(tree->right, value);
 
   update_height(tree);
   tree = balance(tree);

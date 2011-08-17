@@ -7,7 +7,8 @@ void any(int n);
 
 
 void trusted(int n)
-/*@ rule <k> $ => return; </k> <stack> S </stack> <out_> epsilon => A </out>
+/*@ rule <k> $ => return; ...</k> <stack> S </stack>
+         <out>... epsilon => A </out>
     if n >= 10 \/ in(hd(ids(S)), {main, trusted}) */
 {
   printf("%d ", n);
@@ -17,16 +18,15 @@ void trusted(int n)
     trusted(n - 1);
 }
 
-
 void untrusted(int n)
-/*@ rule <k> $ => return; </k> <stack> S </stack> <out_> epsilon => A </out>
+/*@ rule <k> $ => return; ...</k> <stack> S </stack>
+         <out>... epsilon => A </out>
     if in(trusted, ids(S)) */
 {
   printf("%d ", -n);
   if (n)
     any(n - 1);
 }
-
 
 void any(int n)
 {

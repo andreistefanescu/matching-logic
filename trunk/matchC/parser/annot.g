@@ -389,7 +389,7 @@ scope {
   ;
 
 open_cell_tag
-  : '<'! IDENTIFIER ('>'! | '_>'! { $cell::cellOpen |= Table.Cell.LEFT; })
+  : '<'! IDENTIFIER ('>'! | '>...'! { $cell::cellOpen |= Table.Cell.LEFT; })
     { $cell::cellLabel = $IDENTIFIER.text; }
   ;
 
@@ -408,7 +408,7 @@ cell_content
   ;
 
 close_cell_tag
-  : ('</'! | '<_/'! { $cell::cellOpen |= Table.Cell.RIGHT; })  IDENTIFIER '>'!
+  : ('</'! | '...</'! { $cell::cellOpen |= Table.Cell.RIGHT; })  IDENTIFIER '>'!
     { $cell::cellLabel.equals($IDENTIFIER.text) }?
   ;
 

@@ -7,9 +7,9 @@ struct listNode {
 };
 
 
-struct listNode *list_copy(struct listNode *x)
-/*@ rule <k> $ => return ?y; <_/k>
-         <heap_> list(x)(A), (. => list(?y)(A)) <_/heap> */
+struct listNode* list_copy(struct listNode *x)
+/*@ rule <k> $ => return ?y; ...</k>
+         <heap>... list(x)(A), (. => list(?y)(A)) ...</heap> */
 {
   struct listNode *y;
   struct listNode *iterx;
@@ -24,10 +24,10 @@ struct listNode *list_copy(struct listNode *x)
 
   iterx = x->next;
   itery = y;
-  /*@ inv <heap_>
+  /*@ inv <heap>...
             lseg(old(x), iterx)(?B @ [?v]), list(iterx)(?C),
             lseg(y, itery)(?B), itery |-> [?v, 0]
-          <_/heap>
+          ...</heap>
           /\ A = ?B @ [?v] @ ?C */
   while(iterx) {
     struct listNode *node;

@@ -8,7 +8,7 @@ struct listNode {
 };
 
 
-void readWrite(int n)
+void read_write(int n)
 {
   while (n) {
     int t;
@@ -19,8 +19,7 @@ void readWrite(int n)
   }
 }
 
-
-void readWriteBuffer(int n)
+void read_write_buffer(int n)
 {
   int i;
   struct listNode *x;
@@ -56,11 +55,11 @@ int main()
              <out> epsilon </out> */
 
   scanf("%d", &n);
-  readWrite(n);
+  read_write(n);
   //@ assert <in> [5, 6, 7, 8, 9, 10] </in> <out> [1, 2, 3, 4, 5] </out>
 
   scanf("%d", &n);
-  readWriteBuffer(n);
+  read_write_buffer(n);
   //@ assert <in> epsilon </in> <out> [1, 2, 3, 4, 5, 10, 9, 8, 7, 6] </out>
 }
 
