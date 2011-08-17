@@ -1,9 +1,11 @@
 #include <stdlib.h>
 
+
 struct listNode {
   int val;
   struct listNode *next;
 };
+
 
 int list_length(struct listNode* x)
 //@ rule <k> $ => return len(A); </k> <heap_> list(x)(A) <_/heap>

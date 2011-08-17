@@ -17,6 +17,7 @@ struct treeNode *newNode(int v)
   return node;
 }
 
+
 int find_min(struct treeNode *t)
 /*@ rule <k> $ => return m; <_/k> <heap_> tree(t)(T) <_/heap>
     if ~(t = 0) /\ isBst(T) /\ in(m, tree2mset(T)) /\ leq({m}, tree2mset(T)) */
@@ -29,7 +30,7 @@ int find_min(struct treeNode *t)
 
 
 struct treeNode *insertRecursive(struct treeNode *t, int v)
-/* rule <k> $ => return ?t; <_/k>
+/*@ rule <k> $ => return ?t; <_/k>
          <heap_> tree(t)(T) => tree(?t)(?T) <_/heap>
     if isBst(T) /\ isBst(?T) /\ tree2mset(?T) = tree2mset(T) U {v} */
 {
@@ -45,7 +46,7 @@ struct treeNode *insertRecursive(struct treeNode *t, int v)
 }
 
 int findRecursive(struct treeNode *t, int v)
-/* rule <k> $ => return r; <_/k> <heap_> tree(t)(T) <_/heap>
+/*@ rule <k> $ => return r; <_/k> <heap_> tree(t)(T) <_/heap>
     if (~(r = 0) /\ in(v, tree2mset(T)) \/ r = 0 /\ ~(in(v, tree2mset(T))))
     /\ isBst(T) */
 {

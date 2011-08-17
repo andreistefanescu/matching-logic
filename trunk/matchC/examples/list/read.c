@@ -1,15 +1,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+
 struct listNode {
   int val;
   struct listNode *next;
 };
 
+
 struct listNode *readList(int n)
-/*@ rule <k> $ => return ?x; </k>
+/*@ rule <k> $ => return ?x; </k> <heap_> . => list(?x)(A) <_/heap>
          <in> A => epsilon <_/in>
-         <heap_> . => list(?x)(A) <_/heap>
     if n = len(A) */
 {
   int i;
@@ -25,7 +26,7 @@ struct listNode *readList(int n)
 
   i = 1;
   p = x;
-  /*@ inv <in> ?C <_/in> <heap_> lseg(x, p)(?B), p |-> [?v, 0] <_/heap>
+  /*@ inv <heap_> lseg(x, p)(?B), p |-> [?v, 0] <_/heap> <in> ?C <_/in>
           /\ i <= n /\ len(?C) = n - i /\ A = ?B @ [?v] @ ?C */
   while (i < n) {
     p->next = (struct listNode*) malloc(sizeof(struct listNode));

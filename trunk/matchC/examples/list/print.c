@@ -1,10 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+
 struct listNode {
   int val;
   struct listNode *next;
 };
+
 
 void print(struct listNode* x)
 /*@ rule <k> $ => return; </k> <heap_> list(x)(A) <_/heap>

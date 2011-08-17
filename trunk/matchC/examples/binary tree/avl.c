@@ -16,7 +16,7 @@ int max(int a, int b)
   return a > b ? a : b;
 }
 
-struct node * new_leaf(int value)
+struct node* new_leaf(int value)
 {
   struct node *leaf;
   leaf = (struct node *) malloc(sizeof(struct node));
@@ -37,7 +37,7 @@ int height(struct node *tree)
   return tree ? tree->height : 0;
 }
 
-int update_height(struct node *tree)
+void update_height(struct node *tree)
 {
   tree->height = max(height(tree->left), height(tree->right)) + 1;
 }
@@ -55,7 +55,7 @@ int find_min(struct node *tree)
 }
 
 
-struct node * left_rotate(struct node *x)
+struct node* left_rotate(struct node *x)
 {
   struct node *y;
 
@@ -69,7 +69,7 @@ struct node * left_rotate(struct node *x)
   return y;
 }
 
-struct node * right_rotate(struct node *x)
+struct node* right_rotate(struct node *x)
 {
   struct node *y;
 
@@ -83,7 +83,7 @@ struct node * right_rotate(struct node *x)
   return y;
 }
 
-struct node * balance(struct node *tree)
+struct node* balance(struct node *tree)
 {
   if (height(tree->left) - height(tree->right) > 1) {
     if (height(tree->left->left) < height(tree->left->right))
@@ -100,7 +100,7 @@ struct node * balance(struct node *tree)
 }
 
 
-struct node * insert(struct node *tree, int value)
+struct node* insert(struct node *tree, int value)
 /*@ rule <k> $ => return ?tree; <_/k>
          <heap_> htree(tree)(T) => htree(?tree)(?T) <_/heap>
     if isAvl(T) /\ isAvl(?T)
@@ -122,7 +122,7 @@ struct node * insert(struct node *tree, int value)
   return tree;
 }
 
-struct node * delete(struct node *tree, int value)
+struct node* delete(struct node *tree, int value)
 /*@ rule <k> $ => return ?tree; <_/k>
          <heap_> htree(tree)(T) => htree(?tree)(?T) <_/heap>
     if isAvl(T) /\ isAvl(?T)
@@ -168,72 +168,6 @@ struct node * delete(struct node *tree, int value)
   return tree;
 }
 
-/*
-void check_balance(struct node *tree)
-{
-  if (tree == NULL)
-    return;
-
-  check_balance(tree->left);
-  check_balance(tree->right);
-
-  // assert(tree->height == max(height(tree->left), height(tree->right)) + 1);
-  // assert(fabs(height(tree->left) - height(tree->right)) < 2);
-}
-*/
-
-void print_tree(struct node *tree, int indent) {
-  int i;
-
-  if (tree == NULL)
-    return;
-
-  /*
-  print_tree(tree->right, indent + 1);
-  for(i = 0; i < indent; i++) printf("  ");
-  printf("(%d, %d)\n", tree->value, tree->height);
-  print_tree(tree->left, indent + 1);
-  */
-  print_tree(tree->left, indent + 1);
-  printf("%d ", tree->value);
-  printf("%d\n", tree->height);
-  print_tree(tree->right, indent + 1);
-}
-
-/*
-int main() {
-  int i;
-  int n;
-  struct node *tree;
-
-  return 0;
-
-  i = 0;
-  n = 16;
-  tree = NULL;
-  while(i < n) {
-    tree = insert(tree, i);
-    i += 1;
-  }
-
-  print_tree(tree, 0);
-}
-
-  int n, value;
-  struct node *tree
-
-  tree = NULL;
-  scanf("%d", &n);
-  while(n--) {
-    scanf("%d", &value);
-    printf("insert %d\n", value);
-    tree = insert(tree, value);
-    check_balance(tree);
-  }
-
-  print_tree(tree, 0);
-
-*/
 
 //@ var m : Int
 //@ var T : Tree

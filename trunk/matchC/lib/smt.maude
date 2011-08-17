@@ -26,7 +26,7 @@ mod SMT-LIB is
 
   var Phi : Formula .
   eq toSMTLibString(Phi)
-   = logicSMTString +String funsSMTString *** +String axiomsSMTString
+   = logicSMTString +String funsSMTString +String axiomsSMTString
      +String string(constsToSMTString(upTerm(Phi)))
      +String "(assert (not " +String
      if string(varsToSMTString(upTerm(Phi))) =/=Bool "" then
@@ -141,8 +141,8 @@ mod SMT-LIB is
          else if Q ==Bool 'minInt then
            "(ite (< " +String formToSMTString(QTList) +String ") "
            +String formToSMTString(QTList) +String ")"
-         else if Q ==Bool '_===_ then
-           eqToSMTString(QTList)
+         *** else if Q ==Bool '_===_ then
+         ***   eqToSMTString(QTList)
          else if Q ==Bool '_@_ orBool Q ==Bool '_U_ then
            assocTermToSMTString(Q, QTList)
          *** else if Q ==Bool 'leq then
@@ -150,7 +150,7 @@ mod SMT-LIB is
          else
            "(" +String symToSMTString(Q) +String " "
            +String formToSMTString(QTList) +String ")"
-         fi fi fi fi
+         fi fi fi *** fi fi
        else
          formToSMTString(QTList)
        fi
@@ -231,65 +231,57 @@ mod SMT-LIB is
 
 
   eq axiomsSMTString
-   = "(assert (forall ((n Int)) (=> (> n 0) (= (fact n) (* n (fact (- n 1)))))))\
-(declare-fun empty () Int)\
-(declare-fun singleton (Int) Int)\
-\
-(declare-fun eq (Int Int) Bool)\
-(declare-fun union (Int Int) Int)\
-(declare-fun leq (Int Int) Bool)\
-\
-(assert (forall ((x Int) (s Int) (t Int))\
-  (=> (and (leq (singleton x) s) (eq s t)) (leq (singleton x) t))\
-))\
-(assert (forall ((x Int) (s Int) (t Int))\
-  (=> (and (leq s (singleton x)) (eq s t)) (leq t (singleton x)))\
-))\
-\
-(assert (forall ((x Int) (y Int))\
-  (= (leq (singleton x) (singleton y)) (<= x y))\
-))\
-\
-(assert (forall ((x Int) (s Int) (t Int))\
-  (= (leq (singleton x) (union s t))\
-     (and (leq (singleton x) s) (leq (singleton x) t)))\
-))\
-(assert (forall ((x Int) (s Int) (t Int))\
-  (= (leq (union s t) (singleton x))\
-     (and (leq s (singleton x)) (leq t (singleton x))))\
-))\
+   = "\
 (assert (forall ((x Int)) (>= (len x) 0)))\
 (assert (forall ((x Int)) (>= (size x) 0)))\
-(assert (forall ((x Int)) (>= (height x) 0)))" .
+(assert (forall ((x Int)) (>= (height x) 0)))\
+" .
+***(
+(assert (forall ((n Int)) (=> (> n 0) (= (fact n) (* n (fact (- n 1)))))))\
+\
+***)
+
 
   eq logicSMTString = "(set-logic AUFNIRA)" .
 
-  eq funsSMTString = "(declare-fun fact (Int) Int) \
-                      (declare-fun append (Int Int) Int) \
-                      (declare-fun seq (Int) Int) \
-(declare-fun empty () Int)\
-(declare-fun singleton (Int) Int)\
+  eq funsSMTString = "\
+                      (declare-fun in (Int Int) Bool)\
 \
-(declare-fun eq (Int Int) Bool)\
-(declare-fun union (Int Int) Int)\
-(declare-fun leq (Int Int) Bool)\
-                      (declare-fun tree (Int Int) Int) \
-                      (declare-fun in (Int) Bool) \
-                      (declare-fun min (Int) Int) \
-                      (declare-fun max (Int) Int) \
-                      (declare-fun hd (Int Int) Int) \
-                      (declare-fun len (Int) Int) \
-                      (declare-fun rev (Int) Int) \
-                      (declare-fun size (Int) Int) \
-                      (declare-fun st (Int) Int) \
-                      (declare-fun height (Int) Int) \
-                      (declare-fun mirror (Int) Int) \
-                      (declare-fun tree2list (Int) Int) \
-                      (declare-fun tree2mset (Int) Int) \
-                      (declare-fun seq2mset (Int) Int) \
-                      (declare-fun isBst (Int) Bool) \
-                      (declare-fun isAvl (Int) Bool) \
-                      (declare-fun isSorted (Int) Bool)" .
+                      (declare-fun absolute (Int) Int)\
+                      (declare-fun fibon (Int) Int)\
+                      (declare-fun fact (Int) Int)\
+\
+                      (declare-fun epsilon () Int)\
+                      (declare-fun seq (Int) Int)\
+                      (declare-fun append (Int Int) Int)\
+                      (declare-fun rev (Int) Int)\
+                      (declare-fun len (Int) Int)\
+                      (declare-fun hd (Int) Int)\
+                      (declare-fun filter (Int Int) Int)\
+                      (declare-fun sum (Int) Int)\
+\
+                      (declare-fun empty () Int)\
+                      (declare-fun singleton (Int) Int)\
+                      (declare-fun union (Int Int) Int)\
+                      (declare-fun diff (Int Int) Int)\
+                      (declare-fun size (Int) Int)\
+                      (declare-fun leq (Int Int) Bool)\
+\
+                      (declare-fun upsilon () Int)\
+                      (declare-fun tree (Int Int Int) Int)\
+                      (declare-fun st (Int) Int)\
+                      (declare-fun height (Int) Int)\
+                      (declare-fun mirror (Int) Int)\
+\
+                      (declare-fun seq2mset (Int) Int)\
+                      (declare-fun tree2list (Int) Int)\
+                      (declare-fun tree2mset (Int) Int)\
+                      (declare-fun isSorted (Int) Bool)\
+                      (declare-fun isBst (Int) Bool)\
+                      (declare-fun hasHeight (Int) Bool)\
+                      (declare-fun isBalanced (Int) Bool)\
+                      (declare-fun isAvl (Int) Bool)\
+" .
 
 
   eq symToSMTString('TrueFormula.TruthFormula) = "true" .

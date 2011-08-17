@@ -1,9 +1,11 @@
 #include <stdlib.h>
 
+
 struct listNode {
   int val;
   struct listNode *next;
 };
+
 
 struct listNode* merge_sort(struct listNode* x)
 /*@ rule <k> $ => return ?x; <_/k> <heap_> list(x)(A) => list(?x)(?A) <_/heap>
@@ -21,7 +23,6 @@ struct listNode* merge_sort(struct listNode* x)
   /*@ inv <heap_> list(x)(?A), list(y)(?B), list(z)(?C) <_/heap>
           /\ seq2mset(A) = seq2mset(?A) U seq2mset(?B) U seq2mset(?C)
           /\ (len(?B) = len(?C) \/ len(?B) = len(?C) + 1 /\ x = 0) */
-          ///\ (x = old(x) \/ ~(y = 0) /\ ~(z = 0)) */
   while (x != NULL) {
     struct listNode* t;
 

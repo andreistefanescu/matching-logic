@@ -1,9 +1,11 @@
 #include <stdlib.h>
 
+
 struct listNode {
   int val;
   struct listNode *next;
 };
+
 
 struct listNode* reverse(struct listNode *x)
 /*@ rule <k> $ => return p1; </k>

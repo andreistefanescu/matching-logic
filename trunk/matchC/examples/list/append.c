@@ -1,9 +1,11 @@
 #include <stdlib.h>
 
+
 struct listNode {
   int val;
   struct listNode *next;
 };
+
 
 struct listNode* list_append(struct listNode *x, struct listNode *y)
 /*@ rule <k> $ => return x1; </k>

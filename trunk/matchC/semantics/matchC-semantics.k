@@ -243,7 +243,7 @@ Return & Assert
       =>
         restoreEnv(Set)
     <_/k>
-    <env_> .Map => id("__return__") |-> V <_/form>
+    <env_> .Map => id("__return__") |-> V <_/env>
 
 
 ***(
@@ -455,7 +455,7 @@ assumed patterns
         <_/k>
         (_ => CfgItems)
       </config>
-      <form> Phi1 => Phi1 /\ Phi2 </form>
+      <form> Phi1 => norm(Phi1 /\ Phi2) </form>
     <_/task>
   [structural]
 
@@ -501,21 +501,22 @@ asserted patterns
     <tenv> TEnv </tenv>
     <counter> N => sNat N </counter>
     <subst> Subst </subst>
-  [metadata "computational" print "===begin assert==="]
+  [metadata "computational" print "(===begin assert==="]
   rule
     <task>
       <taskType> Run </taskType>
       <config>
         <k>
           (
-            assertNormal(<config> CfgItems2 </config> /\ Phi)
+            assertNormal(<config> CfgItems2 </config> /\ Phi2)
           =>
-            @ assume (<config> CfgItems2 </config> /\ Phi)
+            @ assume (<config> CfgItems2 </config> /\ Phi2)
           )
           ~> K
         </k>
         CfgItems1
       </config>
+      <form> Phi1 => norm(Phi1) </form>
       <subst> Subst1 => Subst2 </subst>
       TaskItems
     </task>
@@ -524,13 +525,13 @@ asserted patterns
         <task>
           <taskType> Hypothesis </taskType>
           <config> CfgItems1 </config>
+          <form> norm(Phi1) </form>
           <subst> .Subst </subst>
-          TaskItems
         </task>
         <task>
           <taskType> Conclusion </taskType>
           <config> CfgItems2 </config>
-          <form> Phi </form>
+          <form> Phi2 </form>
           <subst> Subst1 </subst>
         </task>
       )
@@ -542,7 +543,7 @@ asserted patterns
         <subst> Subst2 </subst>
       </task>
     )
-  [metadata "computational" print "===end assert==="]
+  [metadata "computational" print "===end assert===)"]
 
 
 ***(

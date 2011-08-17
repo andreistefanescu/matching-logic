@@ -1,9 +1,11 @@
 #include <stdlib.h>
 
+
 struct listNode {
   int val;
   struct listNode *next;
 };
+
 
 int list_sum(struct listNode* x)
 //@ rule <k> $ => return sum(A); </k> <heap_> list(x)(A) <_/heap>
