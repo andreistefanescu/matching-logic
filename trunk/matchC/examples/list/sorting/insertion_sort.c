@@ -31,21 +31,21 @@ struct listNode* insertion_sort(struct listNode* x)
                   lseg(y, z)(?B), z |-> [?v, ?n], list(?n)(?C), n |-> [nval, 0]
                 <_/heap>
                 /\ D = ?B @ [?v] @ ?C /\ ?v < nval */
-			  while (z->next != NULL && z->next->val < n->val)
-					z = z->next;
+        while (z->next != NULL && z->next->val < n->val)
+          z = z->next;
 
-				n->next = z->next;
-				z->next = n;
-			}
-			else {
-				n->next = y;
-				y = n;
-			}
-		}
-		else {
-			y = n;
-		}						  
-	}
+        n->next = z->next;
+        z->next = n;
+      }
+      else {
+        n->next = y;
+        y = n;
+      }
+    }
+    else {
+      y = n;
+    }              
+  }
 
   return y;
 }

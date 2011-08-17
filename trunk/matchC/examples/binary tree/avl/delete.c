@@ -1,4 +1,3 @@
-#include<stdio.h>
 #include<stdlib.h>
 
 
@@ -14,19 +13,6 @@ int max(int a, int b)
 /*@ rule <k> $ => return maxInt(a, b); <_/k> */
 {
   return a > b ? a : b;
-}
-
-struct node* new_leaf(int value)
-{
-  struct node *leaf;
-  leaf = (struct node *) malloc(sizeof(struct node));
-
-  leaf->value = value;
-  leaf->height = 1;
-  leaf->left = NULL;
-  leaf->right = NULL;
-
-  return leaf;
 }
 
 
@@ -99,28 +85,6 @@ struct node* balance(struct node *tree)
   return tree;
 }
 
-
-struct node* insert(struct node *tree, int value)
-/*@ rule <k> $ => return ?tree; <_/k>
-         <heap_> htree(tree)(T) => htree(?tree)(?T) <_/heap>
-    if isAvl(T) /\ isAvl(?T)
-       /\ tree2mset(st(?T)) = tree2mset(st(T)) U {value}
-       /\ 0 <= height(?T) - height(T) /\ height(?T) - height(T) <= 1 */
-{
-  if (tree == NULL)
-    return new_leaf(value);
-
-  tree->value;
-  if (value < tree->value)
-    tree->left = insert(tree->left, value);
-  else
-    tree->right = insert(tree->right, value);
-
-  update_height(tree);
-  tree = balance(tree);
-
-  return tree;
-}
 
 struct node* delete(struct node *tree, int value)
 /*@ rule <k> $ => return ?tree; <_/k>
