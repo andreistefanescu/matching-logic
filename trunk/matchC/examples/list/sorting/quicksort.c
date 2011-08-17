@@ -48,16 +48,16 @@ struct listNode* quicksort(struct listNode* x)
   while(x != NULL) {
     struct listNode* t;
 
-	  t = x;
-	  x = x->next;
-	  if (t->val < p->val) {
-	    t->next = y;
-	    y = t;
-	  }
-	  else {
-	    t->next = z;
-	    z = t;
-	  }
+    t = x;
+    x = x->next;
+    if (t->val < p->val) {
+      t->next = y;
+      y = t;
+    }
+    else {
+      t->next = z;
+      z = t;
+    }
   }
 
   y = quicksort(y);
