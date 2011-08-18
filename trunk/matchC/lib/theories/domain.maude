@@ -26,6 +26,8 @@ mod MATHEMATICAL-DOMAIN-BUILTIN-MODULE is
 
   op seq2mset : Seq++ -> NeMSet++ .
   op tree2list : Tree++ -> NeSeq++ .
+  op tree2preorder : Tree++ -> NeSeq++ .
+  op tree2postorder : Tree++ -> NeSeq++ .
   op tree2mset : Tree++ -> NeMSet++ .
   op treeList2list : Seq++ -> Seq++ .
 
@@ -48,6 +50,14 @@ mod MATHEMATICAL-DOMAIN-BUILTIN-MODULE is
 
   eq tree2list(TL [ Obj ] TR) = tree2list(TL) @ [Obj] @ tree2list(TR) .
   eq tree2list(upsilon) = epsilon .
+
+  eq tree2preorder(TL [ Obj ] TR)
+   = [Obj] @ tree2preorder(TL) @ tree2preorder(TR) .
+  eq tree2preorder(upsilon) = epsilon .
+
+  eq tree2postorder(TL [ Obj ] TR)
+   = tree2postorder(TL) @ tree2postorder(TR) @ [Obj] .
+  eq tree2postorder(upsilon) = epsilon .
 
   eq tree2mset(TL [ Obj ] TR) = tree2mset(TL) U {| Obj |} U tree2mset(TR) .
   eq tree2mset(upsilon) = empty .
