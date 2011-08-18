@@ -9,8 +9,7 @@ struct listNode {
 
 
 void read_write(int n)
-/*@ rule <k> $ => return; ...</k> <in> A => epsilon ...</in>
-         <out>... epsilon => A </out>
+/*@ rule <k> $ => return; ...</k> <in> A => . ...</in> <out>... . => A </out>
     if n = len(A) */
 {
   /*@ inv <in> ?B ...</in> <out>... ?A </out>
@@ -25,8 +24,8 @@ void read_write(int n)
 }
 
 void read_write_buffer(int n)
-/*@ rule <k> $ => return; ...</k> <in> A => epsilon ...</in>
-         <out>... epsilon => rev(A) </out>
+/*@ rule <k> $ => return; ...</k> <in> A => . ...</in>
+         <out>... . => rev(A) </out>
     if n = len(A) */
 {
   int i;
@@ -63,8 +62,7 @@ int main()
 {
   int n;
 
-  /*@ assume <in> [5, 1, 2, 3, 4, 5, 5, 6, 7, 8, 9, 10] </in>
-             <out> epsilon </out> */
+  //@ assume <in> [5, 1, 2, 3, 4, 5, 5, 6, 7, 8, 9, 10] </in> <out> . </out>
 
   scanf("%d", &n);
   read_write(n);
@@ -72,7 +70,7 @@ int main()
 
   scanf("%d", &n);
   read_write_buffer(n);
-  //@ assert <in> epsilon </in> <out> [1, 2, 3, 4, 5, 10, 9, 8, 7, 6] </out>
+  //@ assert <in> . </in> <out> [1, 2, 3, 4, 5, 10, 9, 8, 7, 6] </out>
 }
 
 

@@ -24,7 +24,7 @@ struct listNode* tree_to_list_recursive(struct treeNode *t, struct listNode *l)
          <heap>...
            tree(t)(T), list(l)(A) => list(?l)(tree2list(T) @ A)
          ...</heap>
-         <out>... epsilon => rev(tree2list(T)) </out> */
+         <out>... . => rev(tree2list(T)) </out> */
 {
   struct listNode *ln;
 
@@ -44,7 +44,7 @@ struct listNode* tree_to_list_recursive(struct treeNode *t, struct listNode *l)
 struct listNode* tree_to_list_iterative(struct treeNode *t)
 /*@ rule <k> $ => return ?l; ...</k>
          <heap>... tree(t)(T) => list(?l)(tree2list(T)) ...</heap>
-         <out>... epsilon => rev(tree2list(T)) </out> */
+         <out>... . => rev(tree2list(T)) </out> */
 {
   struct listNode *l;
   struct stackNode *s;

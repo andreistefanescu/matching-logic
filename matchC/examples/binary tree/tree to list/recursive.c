@@ -19,7 +19,7 @@ struct listNode* tree_to_list_recursive(struct treeNode *t, struct listNode *l)
          <heap>...
            tree(t)(T), list(l)(A) => list(?l)(tree2list(T) @ A)
          ...</heap>
-         <out>... epsilon => rev(tree2list(T)) </out> */
+         <out>... . => rev(tree2list(T)) </out> */
 {
   struct listNode *ln;
 
