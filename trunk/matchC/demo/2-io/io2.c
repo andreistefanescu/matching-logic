@@ -51,8 +51,7 @@ int main()
 {
   int n;
 
-  /*@ assume <in> [5, 1, 2, 3, 4, 5, 5, 6, 7, 8, 9, 10] </in>
-             <out> epsilon </out> */
+  //@ assume <in> [5, 1, 2, 3, 4, 5, 5, 6, 7, 8, 9, 10] </in> <out> . </out>
 
   scanf("%d", &n);
   read_write(n);
@@ -60,6 +59,6 @@ int main()
 
   scanf("%d", &n);
   read_write_buffer(n);
-  //@ assert <in> epsilon </in> <out> [1, 2, 3, 4, 5, 10, 9, 8, 7, 6] </out>
+  //@ assert <in> . </in> <out> [1, 2, 3, 4, 5, 10, 9, 8, 7, 6] </out>
 }
 

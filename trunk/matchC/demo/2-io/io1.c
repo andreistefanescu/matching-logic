@@ -52,8 +52,7 @@ int main()
   int n;
 
   // the semantics is NOT interactive; we need to provide all the input upfront
-  /*@ assume <in> [5, 1, 2, 3, 4, 5, 5, 6, 7, 8, 9, 10] </in>
-             <out> epsilon </out> */
+  //@ assume <in> [5, 1, 2, 3, 4, 5, 5, 6, 7, 8, 9, 10] </in> <out> . </out>
 
   scanf("%d", &n);
   read_write(n);

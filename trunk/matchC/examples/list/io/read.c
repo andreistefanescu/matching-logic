@@ -10,7 +10,7 @@ struct listNode {
 
 struct listNode* list_read(int n)
 /*@ rule <k> $ => return ?x; ...</k> <heap>... . => list(?x)(A) ...</heap>
-         <in> A => epsilon ...</in>
+         <in> A => . ...</in>
     if n = len(A) */
 {
   int i;

@@ -113,6 +113,7 @@ tokens {
 
 
 @members {
+  static boolean isStream;
   static int annotType;
   static CommonTree retTree;
 }
@@ -124,6 +125,7 @@ tokens {
 
 annot_text
 @init {
+  isStream = false;
   annotType = -1;
   retTree = null;
 }
@@ -366,7 +368,7 @@ list_constructor
   ;
 
 stream_list
-  : k -> ^(STREAM["stream"] k)
+  : { isStream = true;} k { isStream = false; } -> ^(STREAM["stream"] k)
   ;
 
 
@@ -540,6 +542,7 @@ primary_identifier
 constant
   //: DOT -> K_UNIT
   : K_UNIT
+  | { isStream }?=> DOT  -> EPSILON["epsilon"]
   | FORMULA_TRUE
   | FORMULA_FALSE
   | DECIMAL_LITERAL

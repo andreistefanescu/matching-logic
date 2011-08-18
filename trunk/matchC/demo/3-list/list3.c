@@ -69,7 +69,7 @@ struct listNode* list_create(int n)
 
 void list_print(struct listNode* x)
 /*@ rule <k> $ => return; ...</k> <heap>... list(x)(A) ...</heap>
-         <out>... epsilon => A </out> */
+         <out>... . => A </out> */
 {
   /*@ inv <heap>... lseg(old(x), x)(?A1), list(x)(?A2) ...</heap>
           <out>... ?A1 </out>
