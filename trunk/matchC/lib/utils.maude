@@ -341,4 +341,11 @@ mod UTILS is inc PATTERN-SKOLEM + APPLY-SUBST + SMT-LIB + SMT-INTERFACE .
   eq filterCallCoSkolemSubst(SubstItem ;; Subst)
    = SubstItem ;; filterCallCoSkolemSubst(Subst) [owise] .
   eq filterCallCoSkolemSubst(.Subst) = .Subst . 
+
+
+  op red-form : Formula -> Bag .
+  eq red-form(Phi:Formula)
+   = < form > Formula (Phi:Formula)(.List{K}) </ form >
+     < taskType > ('Constrain).KProperLabel(.List{K}) </ taskType > .
 endm
+

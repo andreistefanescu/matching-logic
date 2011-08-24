@@ -39,13 +39,23 @@ mod MATHEMATICAL-TREE-BUILTIN-MODULE
   op upsilon : -> Tree .
   op _`[_`]_ : Tree++ MathObj++ Tree++ -> Tree++ .
 
+  op isConst : MathObj++ Seq++ -> AtomFormula .
+  op proj : Nat Tree++ -> Tree++ .
   op st : Tree++ -> Tree++ .
+  op nd : Tree++ -> Tree++ .
   op height : Tree++ -> Int++ .
   op mirror : Tree++ -> Tree++ .
 
+  op isSWMarkedPath : Tree++ Tree++ -> AtomFormula .
+  op isSWMarkedQPath : Tree++ -> AtomFormula .
+  op SWPath2ptrTree : Tree++ Tree++ -> Tree++ .
+  op SWQPath2ptrTree : Tree++ Tree++ -> Tree++ .
+
+  var N : Nat .
   var Obj Obj1 Obj2 : MathObj++ .
+  var I J : Int++ .
   var A : Seq++ .
-  var T TL TL1 TL2 TR TR1 TR2 : Tree++ .
+  var T T1 T2 TL TL1 TL2 TR TR1 TR2 : Tree++ .
 
 
   eq TL1 [Obj1] TR1 === TL2 [Obj2] TR2
@@ -53,8 +63,18 @@ mod MATHEMATICAL-TREE-BUILTIN-MODULE
   eq TL [Obj] TR === upsilon = FalseFormula .
 
 
-  eq st(TL [[Obj] @ A] TR) = st(TL) [Obj] st(TR) .
+  eq isConst(Obj1, TL [Obj2] TR)
+   = Obj1 === Obj2 /\ isConst(Obj1, TL) /\ isConst(Obj1, TR) .
+  eq isConst(Obj1, upsilon) = TrueFormula .
+
+  eq proj(N, TL [A] TR) = proj(N, TL) [seq-elem(A, N)] proj(N, TR) .
+  eq proj(N, upsilon) = upsilon .
+
+  eq st(TL [[Obj1] @ A] TR) = st(TL) [Obj1] st(TR) .
   eq st(upsilon) = upsilon .
+
+  eq nd(TL [[Obj1] @ [Obj2] @ A] TR) = nd(TL) [Obj2] nd(TR) .
+  eq nd(upsilon) = upsilon .
 
   eq height(TL [Obj] TR) = 1 +Int maxInt(height(TR), height(TL)) .
   eq height(upsilon) = 0 .
@@ -63,8 +83,38 @@ mod MATHEMATICAL-TREE-BUILTIN-MODULE
   eq mirror(upsilon) = upsilon .
 
 
+  eq isSWMarkedPath(TL [I] TR, T)
+   = I === 0 /\ isConst(0, TL) /\ isConst(0, TR) /\ isSWMarkedQPath(T)
+     \/ I === 1 /\ isConst(3, T) /\ isConst(0, TL) /\ isSWMarkedQPath(TR)
+     \/ I === 2 /\ isConst(3, TR) /\ isConst(3, T) /\ isSWMarkedQPath(TL) .
+  eq isSWMarkedPath(upsilon, T) = isConst(3, T) .
+
+  eq isSWMarkedQPath(TL [I] TR)
+   = I === 1 /\ isConst(0, TL) /\ isSWMarkedQPath(TR)
+     \/ I === 2 /\ isConst(3, TR) /\ isSWMarkedQPath(TL) .
+  eq isSWMarkedQPath(upsilon) = TrueFormula .
+
+  eq SWPath2ptrTree(TL [[I] @ [0]] TR, T)
+   = SWQPath2ptrTree(proj(0, TL) [I] proj(0, TR), T) .
+  eq SWPath2ptrTree(TL [[I] @ [1]] TR, T)
+   = SWQPath2ptrTree(proj(0, T) [I] proj(0, TL), TR) .
+  eq SWPath2ptrTree(TL [[I] @ [2]] TR, T)
+   = SWQPath2ptrTree(proj(0, TR) [I] proj(0, T), TL) .
+  eq SWPath2ptrTree(upsilon, T) = proj(0, T) .
+
+  eq SWQPath2ptrTree(T, TL [[I] @ [1]] TR)
+   = SWQPath2ptrTree(T [I] proj(0, TL), TR) . 
+  eq SWQPath2ptrTree(T, TL [[I] @ [2]] TR)
+   = SWQPath2ptrTree(proj(0, TR) [I] T, TL) .
+  eq SWQPath2ptrTree(T, upsilon) = T .
+
+
   eq height(st(T)) = height(T) .
   eq height(mirror(T)) = height(T) .
+  
+  eq isSWMarkedPath(T, TL [3] TR) = isSWMarkedQPath(T) .
+  eq SWPath2ptrTree(T, TL [[I] @ [3]] TR)
+   = SWQPath2ptrTree(proj(0, TL) [I] proj(0, TR), T) .
 
 
   eq height(T) === 0 = T === upsilon .

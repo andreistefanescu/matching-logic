@@ -57,6 +57,9 @@ mod MATHEMATICAL-SEQUENCE-BUILTIN-MODULE is
   op _@_ : Seq++ Seq -> Seq++ [ditto] .
   op _@_ : Seq Seq++ -> Seq++ [ditto] .
 
+  op seq-elem : Seq++ Nat -> MathObj++ .
+
+
   op in : MathObj++ Seq++ -> AtomFormula .
   op rev : Seq++ -> NeSeq++ .
   op len : Seq++ -> Int++ .
@@ -86,6 +89,9 @@ mod MATHEMATICAL-SEQUENCE-BUILTIN-MODULE is
   eq A1 @ NeA === A2 @ NeA = A1 === A2  .
   eq [Obj1] @ A1 === [Obj2] @ A2 = Obj1 === Obj2 /\ A1 === A2 .
   eq A1 @ [Obj1] === A2 @ [Obj2] = Obj1 === Obj2 /\ A1 === A2 .
+
+  eq seq-elem([Obj] @ A, sNat N) = seq-elem(A, N) .
+  eq seq-elem([Obj] @ A, 0) = Obj .
 
 
   eq in(Obj, NeA1 @ NeA2) = in(Obj, NeA1) \/ in(Obj, NeA2) .

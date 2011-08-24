@@ -152,6 +152,7 @@ mod CONFIG-BUILTIN-MODULE is
 
   op tree : -> HeapLabel .
   op htree : -> HeapLabel .
+  op swtree : -> HeapLabel .
   op treeList : -> HeapLabel .
 endm
 
