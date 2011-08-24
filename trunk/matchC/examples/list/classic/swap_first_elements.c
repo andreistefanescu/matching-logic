@@ -16,9 +16,9 @@ struct nodeList {
 
 struct nodeList* swap(struct nodeList* x)
 /*@ rule <k> $ => return ?x; ...</k> 
-    <heap>... list(x)([?first] @ [?second] @ A) 
+    <heap>... list(x)([first] @ [second] @ A) 
               =>
-              list(?x)([?second] @ [?first] @ A)
+              list(?x)([second] @ [first] @ A)
     ...</heap>
  */
 {
