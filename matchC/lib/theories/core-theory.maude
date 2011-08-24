@@ -40,15 +40,16 @@ mod FORMULA-BUILTIN-MODULE is inc PL-BOOL + PL-STRING .
 
 
   var Atom : AtomFormula .
-  vars NtPhi NtPhi1 NtPhi2 NtPhi' : NtFormula .
-  vars Phi Phi1 Phi2 Phi' : Formula .
+  vars NtPhi NtPhi1 NtPhi2 : NtFormula .
+  vars Phi Phi1 Phi2 : Formula .
+
 
   eq  @ true =  TrueFormula .
   eq @ false = FalseFormula .
 
-  eq  ~(TrueFormula) = FalseFormula .
-  eq ~(FalseFormula) =  TrueFormula .
-  eq ~(~(Phi)) = Phi .
+  eq  ~ TrueFormula = FalseFormula .
+  eq ~ FalseFormula =  TrueFormula .
+  eq ~ ~ Phi = Phi .
 
   eq  TrueFormula \/  TrueFormula =  TrueFormula .
   eq FalseFormula /\ FalseFormula = FalseFormula .
@@ -56,32 +57,39 @@ mod FORMULA-BUILTIN-MODULE is inc PL-BOOL + PL-STRING .
   eq FalseFormula /\ NtPhi = FalseFormula .
   eq NtPhi /\ NtPhi = NtPhi .
   eq NtPhi \/ NtPhi = NtPhi .
-  eq NtPhi /\ ~(NtPhi) = FalseFormula .
-  eq NtPhi \/ ~(NtPhi) =  TrueFormula .
-
-  eq ~ (NtPhi1 \/ NtPhi2) = ~ NtPhi1 /\ ~ NtPhi2 .
-  eq ~ (NtPhi1 /\ NtPhi2) = ~ NtPhi1 \/ ~ NtPhi2 .
-
+  eq NtPhi /\ ~ NtPhi = FalseFormula .
+  eq NtPhi \/ ~ NtPhi =  TrueFormula .
 
   eq Phi ===>  TrueFormula = TrueFormula .
   eq Phi ===> FalseFormula = ~ Phi .
 ---  leads to in infinite rewriting
----  eq FalseFormula ===> Phi = TrueFormula .
+  eq FalseFormula ===> Phi = TrueFormula .
   eq  TrueFormula ===> Phi = Phi .
 
+
+  eq ~(NtPhi1 \/ NtPhi2) = ~ NtPhi1 /\ ~ NtPhi2 .
+  eq ~(NtPhi1 /\ NtPhi2) = ~ NtPhi1 \/ ~ NtPhi2 .
+
   eq Atom /\ Phi1 ===> Atom /\ Phi2 = Atom /\ Phi1 ===> Phi2 .
-  eq ~(NtPhi) /\ Phi1 ===> ~(NtPhi) /\ Phi2 = ~(NtPhi) /\ Phi1 ===> Phi2 .
+  eq ~ NtPhi /\ Phi1 ===> ~ NtPhi /\ Phi2 = ~ NtPhi /\ Phi1 ===> Phi2 .
   eq (NtPhi1 \/ NtPhi2) /\ Phi1 ===> (NtPhi1 \/ NtPhi2) /\ Phi2
    = (NtPhi1 \/ NtPhi2) /\ Phi1 ===> Phi2 .
 
-  eq NtPhi /\ (NtPhi1 \/ NtPhi2) ===> NtPhi'
-   = NtPhi /\ NtPhi1 \/ NtPhi /\ NtPhi2 ===> NtPhi' [owise] .
-  eq NtPhi' ===> NtPhi /\ (NtPhi1 \/ NtPhi2)
-   = NtPhi' ===> NtPhi /\ NtPhi1 \/ NtPhi /\ NtPhi2 [owise] .
-  eq NtPhi1 \/ NtPhi2 ===> NtPhi
-   = (NtPhi1 ===> NtPhi) /\ (NtPhi2 ===> NtPhi) [owise] .
-  eq NtPhi ===> NtPhi1 \/ NtPhi2
+  eq NtPhi /\ (NtPhi1 \/ NtPhi2) ===> Phi
+   = NtPhi /\ NtPhi1 \/ NtPhi /\ NtPhi2 ===> Phi [owise] .
+  eq Phi ===> NtPhi /\ (NtPhi1 \/ NtPhi2)
+   = Phi ===> NtPhi /\ NtPhi1 \/ NtPhi /\ NtPhi2 [owise] .
+
+***(
+  eq NtPhi1 \/ NtPhi2 ===> Phi
+   = (NtPhi1 ===> Phi) /\ (NtPhi2 ===> Phi) [owise] .
+ ceq Phi ===> Atom \/ NtPhi = TrueFormula
+  if Phi ===> Atom ==Bool TrueFormula [owise] .
+ ceq Phi ===> ~(NtPhi) \/ NtPhi2
+
+ ceq Phi ===> (NtPhi1 /\ NtPhi2) \/ NtPhi
    = (NtPhi ===> NtPhi1) \/ (NtPhi ===> NtPhi2) [owise] .
+***)
 
 
   op norm : Formula -> Formula .
@@ -132,5 +140,7 @@ Sort++ stands for all the above
 
 
   op in : MathObj++ MathObj++ -> AtomFormula .
+  op isConst : MathObj++ MathObj++ -> AtomFormula .
+  op proj : Nat MathObj++ -> MathObj++ .
 endm
 

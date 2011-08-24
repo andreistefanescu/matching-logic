@@ -1,8 +1,4 @@
 kmod FOL is including MATCHC-SEMANTICS
---- FOL= is the proving heart of matching logic.  Provided that one had a "FOL= oracle" that can
---- prove any implications of the form "Pattern ===> Pattern1 Pattern2 ... PatternN" (the conclusion is a disjunction of patterns),
---- then one basically has a matching logic verifier.  Since we do not have such a magic oracle, we are going to mimic one.
---- We do it in a few steps.
   kvar CfgItems CfgItems1 CfgItems2 TaskItems : Bag
   kvar PEObj : PEMathObj
   kvar FEObj : FEMathObj
@@ -35,6 +31,7 @@ kmod FOL is including MATCHC-SEMANTICS
   kvar FECfgItems : FEBagItem
   kvar FreeCfgItems : FreeBagItem
   kvar Set : Set
+  kvar Atom : AtomFormula
   kvar Phi Phi1 Phi2 : Formula
   kvar NtPhi NtPhi1 NtPhi2 : NtFormula
   kvar K : K
@@ -493,13 +490,78 @@ kmod FOL is including MATCHC-SEMANTICS
   [structural print Phi1 "\n===>\n" Phi2]
 
 
---- Step 6: Call external SMT solver to check the formula if the "in-house"
+  rule
+    <taskType> Constrain </taskType>
+    <form>
+      Phi1 ===> Phi2 => applySubst(Phi1 ===> Phi2, getFreeSubstItem(Phi1))
+    </form>
+  if getFreeSubstItem(Phi1) =/=Bool .Subst
+  [structural]
+  rule
+    <taskType> Constrain </taskType>
+    <form>
+      Phi1 ===> Phi2 => applySubst(Phi1 ===> Phi2, getPESubstItem(Phi2))
+    </form>
+  if getPESubstItem(Phi2) =/=Bool .Subst
+  [structural]
+
+
+--- Step 6: Case analysis
+  rule
+    <taskType> Constrain </taskType>
+    (
+      <form> NtPhi1 \/ NtPhi2 ===> Phi </form>
+    =>
+      <form> NtPhi1 ===> Phi </form>
+      <form> NtPhi2 ===> Phi </form>
+    )
+  [structural]
+  rule
+  (
+    <form> NtPhi </form>
+    <form> TrueFormula </form>
+  =>
+    <form> NtPhi </form>
+  )
+  [structural]
+
+
+***(
+  rule
+    <taskType> Constrain </taskType>
+    <form> Phi ===> Atom \/ NtPhi => TrueFormula </form>
+  if isValidFormula(Phi ===> Atom)
+  [structural]
+  rule
+    <taskType> Constrain </taskType>
+    <form> Phi ===> ~ NtPhi1 \/ NtPhi => TrueFormula </form>
+  if isValidFormula(Phi ===> ~ NtPhi1)
+  [structural]
+  rule
+    <taskType> Constrain </taskType>
+    <form> Phi ===> (NtPhi1 /\ NtPhi2) \/ NtPhi => TrueFormula </form>
+  if isValidFormula(Phi ===> (NtPhi1 /\ NtPhi2))
+  [structural print "RHS disj" NtPhi]
+
+
+  syntax Bool ::= isValidFormula ( Formula )
+  rule
+      isValidFormula(Phi1 ===> Phi2)
+    =>
+      <taskType> Constrain </taskType>
+      <form> Phi1 ===> Phi2 </form>
+      ==Bool
+      <taskType> Constrain </taskType>
+      <form> TrueFormula </form>
+  [structural print "\n=case=\n" Phi1 "\n===>\n" Phi2 "\n=endc=\n"]
+***)
+
+
+--- Step 7: Call external SMT solver to check the formula if the "in-house"
 --- approach failed
   rule
-    <task_>
-      <taskType> Constrain </taskType>
-      <form> NtPhi => TrueFormula </form>
-    <_/task> 
+    <taskType> Constrain </taskType>
+    <form> NtPhi => TrueFormula </form>
   if check-validity(NtPhi)
   [structural]
 endkm
