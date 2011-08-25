@@ -133,7 +133,10 @@ mod MATHEMATICAL-INT-BUILTIN-MODULE is
   ***eq @(-Int J +Int I >=Int 0) /\ (@(-Int I +Int J >=Int 0) /\ ~(I === J) \/ NtPhi) 
   *** = @(-Int J +Int I >=Int 0) /\ NtPhi . 
 
-
+  op divisionInt : Int++ Int++ Int++ -> Int++ .
+  eq I /Int J = divisionInt(I, J, 0) .
+ ceq divisionInt(I, J, K) = K if (I <Int J) .
+  eq divisionInt(I, J, K) = divisionInt(I -Int J, J, K +Int 1) .
 
   eq (bool2int(B) === 0) = ~(@ B) .
   eq (bool2int(B) === NzI) = @ B .
@@ -144,12 +147,35 @@ mod MATHEMATICAL-INT-BUILTIN-MODULE is
   op absolute : Int++ -> Int++ .
   op fibon : Int++ -> Int++ .
   op fact : Int++ -> Int++ .
+  op moduloInt : Int++ Int++ -> Int++ .
+
+ ceq moduloInt(I , J) = I if I <Int J .
+  eq moduloInt(I , J) = moduloInt((I -Int J) , J) .
+
+  op primeInt : Int++ -> Int++ .
+  op primeeInt : Int++ Int++ -> Int++ .
+
+  eq primeInt(I)     = primeeInt(I, I -Int 1) .
+ ceq primeeInt(I , J) = 1 if (J ==Bool 1) .
+ ceq primeeInt(I , J) = 1 *Int primeeInt(I , J -Int 1) if moduloInt(I , J) =/=Bool 0 .
+ ceq primeeInt(I , J) = 0 if moduloInt(I , J) ==Bool 0 .
+
 
  ceq absolute(I) = I if (I >=Int 0) .
+ ceq absolute(I) = (-Int I) if (I <Int 0) .
  
- ceq fibon(I) = 1 if (I <=Int 1) .
+ ceq fibon(I) = 1 if (I ==Int 1) .
+ ceq fibon(I) = 1 if (I ==Int 2) .
+  eq fibon(I) = fibon(I -Int 1) +Int fibon(I -Int 2) .
 
   eq fact(0) = 1 .
  ceq fact(I) = I *Int fact(-1 +Int I) if I >Int 0 .
+
+
+ ceq maxInt(I, J) = I if (I >Int J) .
+ ceq maxInt(I, J) = J if (I <=Int J) .
+
+ ceq minInt(I, J) = J if (I >Int J) .
+ ceq minInt(I, J) = I if (I <=Int J) .
 endm
 
