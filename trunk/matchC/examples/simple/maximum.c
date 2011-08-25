@@ -7,11 +7,10 @@
 int maximum(int x, int y)
 //@ rule <k> $ => return maxInt(x, y); ...</k>
 {
-	if (x < y) {
-		return y;
-	}
-	else {
-		return x;
-	}
-
+  if (x < y) {
+    return y;
+  }
+  else {
+    return x;
+  }
 }
