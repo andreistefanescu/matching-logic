@@ -134,7 +134,7 @@ mod MATHEMATICAL-INT-BUILTIN-MODULE is
   *** = @(-Int J +Int I >=Int 0) /\ NtPhi . 
 
   op divisionInt : Int++ Int++ Int++ -> Int++ .
-  eq I /Int J = divisionInt(I, J, 0) .
+  ***eq I /Int J = divisionInt(I, J, 0) .
  ceq divisionInt(I, J, K) = K if (I <Int J) .
   eq divisionInt(I, J, K) = divisionInt(I -Int J, J, K +Int 1) .
 
