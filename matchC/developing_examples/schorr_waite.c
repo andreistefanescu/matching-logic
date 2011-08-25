@@ -1,3 +1,6 @@
+/*
+ * 
+ */
 #include<stdlib.h>
 
 
@@ -17,8 +20,8 @@ void schorr_waite_tree(struct graphNode *root)
   struct graphNode *p;
   struct graphNode *q;
 
-  if (root != NULL)
-    root->mark;
+  if (root == NULL)
+    return;
 
   p = root; q = NULL;
   /*@ inv <heap>... swtree(p)(?TP), swtree(q)(?TQ) ...</heap>
@@ -43,8 +46,6 @@ void schorr_waite_tree(struct graphNode *root)
     }
   }
 
-  if (q != NULL)
-    q->mark;
 }
 
 

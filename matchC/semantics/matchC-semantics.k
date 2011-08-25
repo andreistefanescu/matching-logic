@@ -457,7 +457,7 @@ assumed patterns
       </config>
       <form> Phi1 => norm(Phi1 /\ Phi2) </form>
     <_/task>
-  [structural]
+  [structural print "\n=assume=(\n" Phi1 "\n" Phi2 "\n)=enda=\n"]
 
 
 ***(
@@ -500,6 +500,7 @@ asserted patterns
     <fname> FName </fname>
     <tenv> TEnv </tenv>
     <counter> N => sNat N </counter>
+    <form> Phi => norm(Phi) </form>
     <subst> Subst </subst>
   [metadata "computational" print "(===begin assert==="]
   rule

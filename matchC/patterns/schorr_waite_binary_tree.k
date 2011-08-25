@@ -56,15 +56,14 @@ kmod SCHORR-WAITE-BINARY-TREE-HP is
       </config>
       <form>
         Phi /\ ~(P === 0)
-        /\ (Tau === (FreeTree(N +Int 3)
-                    [[P] @ [FreeInt(N)]]
-                    FreeTree(N +Int 4)))
+        /\ Tau === (FreeTree(N +Int 3) [[P] @ [FreeInt(N)]] FreeTree(N +Int 4))
       </form>
       TaskItems
     </task>
   )
   if VALID(Phi ===> P' === P \/ P' === P +Int 1 \/ P' === P +Int 2)
   [structural]
+
 
   rule
     <heap_> swtree(0)(Tau) => .Map <_/heap>
@@ -74,6 +73,46 @@ kmod SCHORR-WAITE-BINARY-TREE-HP is
     <heap_> swtree(P)(upsilon) => .Map <_/heap>
     <form> Phi => Phi /\ P === 0 <_/form>
   [structural]
+
+  rule
+    <taskType> Run </taskType>
+    <heap_>
+        swtree(P)(Tau)
+      =>
+        P |-> FreeInt(N) : (id("graphNode").id("mark"))
+        (P +Int 1) |-> FreeInt(N +Int 1) : (id("graphNode").id("left"))
+        (P +Int 2) |-> FreeInt(N +Int 2) : (id("graphNode").id("right"))
+        swtree(FreeInt(N +Int 1))(FreeTree(N +Int 3))
+        swtree(FreeInt(N +Int 2))(FreeTree(N +Int 4))
+    <_/heap>
+    <counter> N => N +Int 5 </counter>
+    <form>
+        Phi /\ ~(P === 0)
+      =>
+        Phi /\ ~(P === 0)
+        /\ Tau === (FreeTree(N +Int 3) [[P] @ [FreeInt(N)]] FreeTree(N +Int 4))
+    </form>
+  [structural]
+  rule
+    <taskType> Run </taskType>
+    <heap_>
+        swtree(P)(Tau)
+      =>
+        P |-> FreeInt(N) : (id("graphNode").id("mark"))
+        (P +Int 1) |-> FreeInt(N +Int 1) : (id("graphNode").id("left"))
+        (P +Int 2) |-> FreeInt(N +Int 2) : (id("graphNode").id("right"))
+        swtree(FreeInt(N +Int 1))(FreeTree(N +Int 3))
+        swtree(FreeInt(N +Int 2))(FreeTree(N +Int 4))
+    <_/heap>
+    <counter> N => N +Int 5 </counter>
+    <form>
+        Phi /\ ~(Tau === upsilon)
+      =>
+        Phi /\ ~(P === 0)
+        /\ Tau === (FreeTree(N +Int 3) [[P] @ [FreeInt(N)]] FreeTree(N +Int 4))
+    </form>
+  [structural]
+
 
   rule
     <taskType> Hypothesis </taskType>

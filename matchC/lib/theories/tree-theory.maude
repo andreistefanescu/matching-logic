@@ -52,6 +52,7 @@ mod MATHEMATICAL-TREE-BUILTIN-MODULE
   op SWQPath2ptrTree : Tree++ Tree++ -> Tree++ .
 
   var N : Nat .
+  var Phi : Formula .
   var Obj Obj1 Obj2 : MathObj++ .
   var I J : Int++ .
   var A : Seq++ .
@@ -119,5 +120,12 @@ mod MATHEMATICAL-TREE-BUILTIN-MODULE
 
   eq height(T) === 0 = T === upsilon .
   eq @(-Int height(T) >=Int 0) = T === upsilon .
+
+
+ ceq norm(proj(N, T) === TL [Obj] TR /\ Phi)
+   = norm(proj(N, T) === TL [Obj] TR /\ ~(T === upsilon) /\ Phi)
+  if (proj(N, T) === TL [Obj] TR /\ ~(T === upsilon) /\ Phi)
+     =/=Bool
+     (proj(N, T) === TL [Obj] TR /\ Phi) .
 endm
 
