@@ -3,7 +3,9 @@
  * natural numbers by repeated additions.
  */
 
+
 #include <stdio.h>
+
 
 int multiplication_by_add(int x, int y)
 //@ rule <k> $ => return (x * y); ...</k>
@@ -15,8 +17,5 @@ int multiplication_by_add(int x, int y)
   {
     return -multiplication_by_add(-x,y);
   }
-  else if (x > 0)
-  {
-    return y + multiplication_by_add(x - 1, y);
-  }
+  return y + multiplication_by_add(x - 1, y);
 }
