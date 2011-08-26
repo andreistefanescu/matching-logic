@@ -20,6 +20,7 @@ VIEWER_JAR=$(VIEWER_DIR)/matchCviewer.jar
 
 K_MAUDE_LIB=$(K_BASE)/core/maude/lib
 
+
 all: install
 
 build:
@@ -33,7 +34,7 @@ install: build
 	sed -i -e 's/^load .*$$//' $(RELEASE_COMPILED_FILE)
 	cp $(VIEWER_JAR) $(LIB_DIR)
 
-dist: install
+dist:
 	rm -rf $(MATCHC_DIST_DIR)
 	mkdir -p $(MATCHC_DIST_DIR)
 	cp LICENSE $(MATCHC_DIST_DIR)
@@ -47,21 +48,23 @@ dist: install
 	rm -rf $(MATCHC_DIST_DIR)/bin/primitive_style.yml
 	rm -rf $(MATCHC_DIST_DIR)/lib/fol.k
 	cp $(K_MAUDE_LIB)/k-prelude.maude $(K_MAUDE_LIB)/pl-builtins.maude \
-          $(K_MAUDE_LIB)/socket.maude $(MATCHC_DIST_DIR)/lib
+    $(K_MAUDE_LIB)/socket.maude $(MATCHC_DIST_DIR)/lib
 	cp lib/ml-prelude.maude $(MATCHC_DIST_DIR)/lib
 	sed -i -e '1s/^load.*k-prelude.maude$$/load k-prelude.maude/' \
-          $(MATCHC_DIST_DIR)/lib/ml-prelude.maude
+    $(MATCHC_DIST_DIR)/lib/ml-prelude.maude
+
+pack: install dist
 	bash -c 'cd $(DIST_DIR); tar cvfz matchC.tar.gz matchC'
 
 online: dist
 	if [ $(LOCAL_HOST_NAME) = $(FSL_HOST_NAME) ]; \
-        then \
-          rm -rf $(FSL_MATCHC_DIR); \
-          cp -r $(MATCHC_DIST_DIR) $(FSL_SOFTWARE_DIR); \
-          mkdir $(FSL_MATCHC_DIR)/online; \
-          mv $(FSL_MATCHC_DIR)/demo $(FSL_MATCHC_DIR)/online/DEMO; \
-          mv $(FSL_MATCHC_DIR)/examples/* $(FSL_MATCHC_DIR)/online/; \
-        fi
+  then \
+    rm -rf $(FSL_MATCHC_DIR); \
+    cp -r $(MATCHC_DIST_DIR) $(FSL_SOFTWARE_DIR); \
+    mkdir $(FSL_MATCHC_DIR)/online; \
+    mv $(FSL_MATCHC_DIR)/demo $(FSL_MATCHC_DIR)/online/DEMO; \
+    mv $(FSL_MATCHC_DIR)/examples/* $(FSL_MATCHC_DIR)/online/; \
+  fi
 
 clean:
 	$(MAKE) -C $(PARSER_DIR) clean
