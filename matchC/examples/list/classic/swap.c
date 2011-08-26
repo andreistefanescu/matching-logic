@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+
 struct nodeList {
   int val;
   struct nodeList *next;
