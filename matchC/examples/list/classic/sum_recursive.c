@@ -1,7 +1,6 @@
 /*
- * The example computes the sum of the elements of a list
- * received as argument for the function.
- * The function is recursive.
+ * Function computing recursively the sum of the integer
+ * elements of a list.
  */
 
 #include <stdlib.h>
