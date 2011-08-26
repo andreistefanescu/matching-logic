@@ -6,6 +6,7 @@
 
 #include <stdlib.h>
 
+
 struct listNode {
   int val;
   struct listNode *next;
