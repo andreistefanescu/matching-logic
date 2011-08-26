@@ -3,7 +3,9 @@
  * natural numbers.
  */
 
+
 #include <stdio.h>
+
 
 int minimum(int x, int y)
 //@ rule <k> $ => return minInt(x, y); ...</k>
@@ -11,7 +13,5 @@ int minimum(int x, int y)
   if (x < y) {
     return x;
   }
-  else {
-    return y;
-  }	
+  return y;
 }

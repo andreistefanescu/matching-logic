@@ -3,7 +3,9 @@
  * natural numbers.
  */
 
+
 #include <stdio.h>
+
 
 int maximum(int x, int y)
 //@ rule <k> $ => return maxInt(x, y); ...</k>
@@ -11,7 +13,5 @@ int maximum(int x, int y)
   if (x < y) {
     return y;
   }
-  else {
-    return x;
-  }
+  return x;
 }

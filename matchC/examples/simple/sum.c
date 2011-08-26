@@ -22,4 +22,3 @@ int sum(int n)
 
   return s;
 }
-
