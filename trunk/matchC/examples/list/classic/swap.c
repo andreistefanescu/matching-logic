@@ -1,8 +1,9 @@
 /*
- * The example consists of a function which swaps the
- * first two elements of a list received as argument.
- * The precondition states that the list must have at 
- * least two elements.
+ * Function that swaps the first two elements 
+ * of a list.
+ * The function specification states that the
+ * list must have at leat two elements in order
+ * for the function to be called.
  */
 
 
@@ -14,12 +15,13 @@ struct nodeList {
   struct nodeList *next;
 };
 
+
 struct nodeList* swap(struct nodeList* x)
 /*@ rule <k> $ => return ?x; ...</k> 
-    <heap>... list(x)([first] @ [second] @ A) 
-              =>
-              list(?x)([second] @ [first] @ A)
-    ...</heap>
+         <heap>... list(x)([first] @ [second] @ A) 
+				   =>
+                   list(?x)([second] @ [first] @ A)
+         ...</heap>
  */
 {
   struct nodeList* p;
