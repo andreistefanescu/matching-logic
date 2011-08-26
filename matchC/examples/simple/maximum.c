@@ -1,5 +1,6 @@
 /*
- * The example computes the maximum between two values
+ * Function computing the maximum value between two
+ * natural numbers.
  */
 
 #include <stdio.h>
