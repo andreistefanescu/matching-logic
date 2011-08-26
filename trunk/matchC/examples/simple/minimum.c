@@ -1,10 +1,11 @@
 /*
- * The example computes the minimum between two values
+ * Function computing the minimum value between two
+ * natural numbers.
  */
 
 #include <stdio.h>
 
-int maximum(int x, int y)
+int minimum(int x, int y)
 //@ rule <k> $ => return minInt(x, y); ...</k>
 {
   if (x < y) {

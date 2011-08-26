@@ -1,3 +1,9 @@
+/*
+ * Function computing the sum for the first n natural
+ * numbers.
+ */
+
+
 #include <stdio.h>
 
 

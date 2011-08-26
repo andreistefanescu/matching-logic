@@ -1,6 +1,6 @@
 /* 
- * The example computes the sum for the first n natural 
- * numbers recursively.
+ * Function computing recursively the sum for the first n natural 
+ * numbers.
  */
 
 

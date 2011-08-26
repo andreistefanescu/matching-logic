@@ -1,12 +1,12 @@
 /*
- * The example computes the integer average of
- * thee numbers received as arguments.
+ * Function computing the integer average of
+ * three natural numbers received as arguments.
  */
 
 #include <stdio.h>
 
 int average(int x, int y, int z)
-/*@ rule <k> $ => return (x + y + z) / 3; ...</k> */
+//@ rule <k> $ => return (x + y + z) / 3; ...</k>
 {
   int sum;
   sum = x + y + z;
