@@ -64,7 +64,7 @@ online: dist
     mkdir $(FSL_MATCHC_DIR)/online; \
     mv $(FSL_MATCHC_DIR)/demo $(FSL_MATCHC_DIR)/online/DEMO; \
     mv $(FSL_MATCHC_DIR)/examples/* $(FSL_MATCHC_DIR)/online/; \
-		chmod -R 777 $(FSL_MATCHC_DIR); \
+    chmod -R 777 $(FSL_MATCHC_DIR); \
   fi
 
 clean:
