@@ -49,7 +49,7 @@ dist:
 	rm -rf $(MATCHC_DIST_DIR)/lib/fol.k
 	cp $(K_MAUDE_LIB)/k-prelude.maude $(K_MAUDE_LIB)/pl-builtins.maude \
     $(K_MAUDE_LIB)/socket.maude $(MATCHC_DIST_DIR)/lib
-	cp lib/ml-prelude.maude $(MATCHC_DIST_DIR)/lib
+	cp $(LIB_DIR)/ml-prelude.maude $(MATCHC_DIST_DIR)/lib
 	sed -i -e '1s/^load.*k-prelude.maude$$/load k-prelude.maude/' \
     $(MATCHC_DIST_DIR)/lib/ml-prelude.maude
 
