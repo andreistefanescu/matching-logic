@@ -1,6 +1,6 @@
 /*
- * Function separating a list into its head and rest of the list.
- * It returns the first element.
+ * Function list_head returns the head of a singly-linked list. The
+ * specification requires the list to have at least one element.
  */
 
 
@@ -13,14 +13,13 @@ struct listNode {
 };
 
 
-
-int head(struct listNode *a)
-/*@ rule <k> $ => return val; ...</k>
-         <heap>... list(a)([val] @ A) ...</heap> */
+int list_head(struct listNode *x)
+//@ rule <k> $ => return v; ...</k> <heap>... list(x)([v] @ A) ...</heap>
 {
-  return a->val;
+  return x->val;
 }
 
 
-//@ var val : Int
+//@ var v : Int
 //@ var A : Seq
+

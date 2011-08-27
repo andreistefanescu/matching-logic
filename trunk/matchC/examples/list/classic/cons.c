@@ -1,6 +1,5 @@
 /*
- * Function adding a new node with a given integer value
- * to the beginning of a list.
+ * Function list_cons appends an integer value to a singly-linked list.
  */
 
 
@@ -13,18 +12,16 @@ struct listNode {
 };
 
 
-struct listNode* add(struct listNode* x, int i)
+struct listNode* list_cons(struct listNode* x, int v)
 /*@ rule <k> $ => return ?x; ...</k> 
-         <heap>... 
-             list(x)(A) 
-			 => 
-             list(?x)([i] @ A) 
-         ...</heap> */
+         <heap>... list(x)(A) => list(?x)([v] @ A) ...</heap> */
 {
   struct listNode* y;
+
   y = (struct listNode*) malloc (sizeof(struct listNode));
-  y->val = i;
+  y->val = v;
   y->next = x;
+
   return y;
 }
 
