@@ -21,6 +21,8 @@ VIEWER_JAR=$(VIEWER_DIR)/matchCviewer.jar
 K_LIB=$(K_BASE)/core/maude/lib/
 
 
+.PHONY: build install dist pack online
+
 all: install
 
 klib:
@@ -41,15 +43,14 @@ install: build
 dist:
 	rm -rf $(MATCHC_DIST_DIR)
 	mkdir -p $(MATCHC_DIST_DIR)
-	svn export LICENSE $(MATCHC_DIST_DIR)
-	svn export README $(MATCHC_DIST_DIR)
+	cp LICENSE $(MATCHC_DIST_DIR)
+	cp README $(MATCHC_DIST_DIR)
 	svn export bin $(MATCHC_DIST_DIR)/bin
 	svn export lib $(MATCHC_DIST_DIR)/lib
 	svn export demo $(MATCHC_DIST_DIR)/demo
 	svn export examples $(MATCHC_DIST_DIR)/examples
 	mv $(MATCHC_DIST_DIR)/bin/matchC.py $(MATCHC_DIST_DIR)/bin/matchC
-	rm -rf $(MATCHC_DIST_DIR)/bin/__pycache__
-	rm -rf $(MATCHC_DIST_DIR)/lib/fol.k
+	rm $(MATCHC_DIST_DIR)/lib/fol.k
 
 pack: install dist
 	bash -c 'cd $(DIST_DIR); tar cvfz matchC.tar.gz matchC'
