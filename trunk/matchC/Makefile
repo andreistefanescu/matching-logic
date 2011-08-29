@@ -9,8 +9,8 @@ MATCHC_DIST_DIR=$(DIST_DIR)/matchC
 
 LOCAL_HOST_NAME=`hostname`
 FSL_HOST_NAME='fsl3.cs.uiuc.edu'
-FSL_SOFTWARE_DIR=/home/software
-FSL_MATCHC_DIR=$(FSL_SOFTWARE_DIR)/matchC
+FSL_ONLINE_EXTENSIONS_DIR=/www/www-root/extensions_stefane1
+FSL_MATCHC_ONLINE_DIR=$(FSL_ONLINE_EXTENSIONS_DIR)/matchC
 
 PARSER_JAR=$(PARSER_DIR)/matchCparser.jar
 COMPILED_FILE=matchC-compiled.maude
@@ -59,12 +59,12 @@ pack: install dist
 online: dist
 	if [ $(LOCAL_HOST_NAME) = $(FSL_HOST_NAME) ]; \
   then \
-    rm -rf $(FSL_MATCHC_DIR); \
-    cp -r $(MATCHC_DIST_DIR) $(FSL_SOFTWARE_DIR); \
-    mkdir $(FSL_MATCHC_DIR)/online; \
-    mv $(FSL_MATCHC_DIR)/demo $(FSL_MATCHC_DIR)/online/DEMO; \
-    mv $(FSL_MATCHC_DIR)/examples/* $(FSL_MATCHC_DIR)/online/; \
-    chmod -R 777 $(FSL_MATCHC_DIR); \
+	  ( \
+	    umask 0000 && \
+      rm -rf $(FSL_MATCHC_ONLINE_DIR) && \
+      cp -r $(MATCHC_DIST_DIR) $(FSL_ONLINE_EXTENSIONS_DIR) && \
+      mv $(FSL_MATCHC_ONLINE_DIR)/demo $(FSL_MATCHC_ONLINE_DIR)/examples/DEMO \
+		) \
   fi
 
 clean:
