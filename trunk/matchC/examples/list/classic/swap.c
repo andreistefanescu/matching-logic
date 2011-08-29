@@ -18,15 +18,18 @@ struct nodeList {
 
 struct nodeList* swap(struct nodeList* x)
 /*@ rule <k> $ => return ?x; ...</k> 
-         <heap>... list(x)([v1,v2] @ A) => list(?x)([v2,v1] @ A) ...</heap> */
+         <heap>... list(x)([v1, v2] @ A) => list(?x)([v2, v1] @ A) ...</heap> */
 {
   struct nodeList* p;
+
   p = x;
   x = x->next;
   p->next = x->next;
   x->next = p;
+
   return x;
 }
 
 //@ var v : Int
 //@ var A : Seq
+
