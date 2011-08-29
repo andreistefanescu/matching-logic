@@ -58,12 +58,12 @@ pack: install dist
 online: dist
 	if [ $(LOCAL_HOST_NAME) = $(FSL_HOST_NAME) ]; \
   then \
-	  ( \
-	    umask 0000; \
+    ( \
+      umask 0000; \
       rm -rf $(FSL_MATCHC_ONLINE_DIR); \
-      cp -r $(MATCHC_DIST_DIR) $(FSL_ONLINE_EXTENSIONS_DIR); \
+      cp -r $(MATCHC_DIST_DIR) $(FSL_MATCHC_ONLINE_DIR); \
       mv $(FSL_MATCHC_ONLINE_DIR)/demo $(FSL_MATCHC_ONLINE_DIR)/examples/DEMO; \
-		) \
+    ) \
   fi
 
 clean:
