@@ -1,6 +1,5 @@
 /*
- * Function computing recursively the sum of the integer
- * elements of a list.
+ * Function computing recursively the sum of the integer elements of a list.
  */
 
 
