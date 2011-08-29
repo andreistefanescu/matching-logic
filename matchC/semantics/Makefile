@@ -1,7 +1,8 @@
 LANG_NAME = kernelC
 EXT_NAME = matchC
 
-KC = kompile
+K_BASE=/Users/andrei/k-release
+KC = K_BASE=$(K_BASE) $(K_BASE)/core/kompile
 
 ML_ROOT_DIR = ..
 ML_LIB_DIR = $(ML_ROOT_DIR)/lib
@@ -33,11 +34,9 @@ EXT_K_FILES = $(LANG_K_SYNTAX) $(LANG_K_SEMANTICS) \
               $(EXT_K_MAIN)
 EXT_COMPILED = $(EXT_NAME)-compiled.maude
 
-CLEAN_FILES = $(LANG_COMPILED) \
-              $(LANG_COMPILED)-e \
+CLEAN_FILES = $(LANG_COMPILED) $(LANG_COMPILED)-e \
               $(LANG_K_FILES:.k=.maude) \
-              $(EXT_COMPILED) \
-              $(EXT_COMPILED)-e \
+              $(EXT_COMPILED) $(EXT_COMPILED)-e \
               $(EXT_K_FILES:.k=.maude) \
               shared.maude
 
