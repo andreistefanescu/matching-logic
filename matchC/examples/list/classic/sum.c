@@ -1,3 +1,9 @@
+/*
+ * Function list_sum_recursive returns the sum of the elements of a
+ * singly-linked list. The sum is iteratively computed.
+ */
+
+
 #include <stdlib.h>
 
 
