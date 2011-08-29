@@ -1,5 +1,6 @@
 /*
- * Function computing recursively the length of a list.
+ * Function list_length_recursive returns the length of a singly-linked list.
+ * The length is recursively computed.
  */
 
 
@@ -12,11 +13,15 @@ struct listNode {
 };
 
 
-int length(struct listNode* x)
+int list_length_recursive(struct listNode* x)
 //@ rule <k> $ => return len(A); ...</k> <heap>... list(x)(A) ...</heap>
 {
-  if (x == 0) return 0;
-  return length(x->next) + 1;  
+  if (x == 0)
+    return 0;
+
+  return 1 + list_length_recursive(x->next);  
 }
 
+
 //@ var A : Seq
+

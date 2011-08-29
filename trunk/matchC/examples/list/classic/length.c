@@ -1,3 +1,9 @@
+/*
+ * Function list_length returns the length of a singly-linked list.  The length
+ * is iteratively computed.
+ */
+
+
 #include <stdlib.h>
 
 
