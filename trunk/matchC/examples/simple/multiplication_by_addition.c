@@ -1,6 +1,6 @@
 /*
- * Function computing recursively the multiplication of two
- * natural numbers by repeated additions.
+ * Function computing recursively the multiplication of two natural numbers
+ * by repeated additions.
  */
 
 
@@ -10,12 +10,7 @@
 int multiplication_by_add(int x, int y)
 //@ rule <k> $ => return (x * y); ...</k>
 {
-  if (x == 0) {
-    return 0;
-  }
-  else if (x < 0)
-  {
-    return -multiplication_by_add(-x,y);
-  }
+  if (x == 0) return 0;
+  if (x < 0) return -multiplication_by_add(-x,y);
   return y + multiplication_by_add(x - 1, y);
 }
