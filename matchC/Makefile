@@ -8,9 +8,7 @@ VIEWER_DIR=$(ML_ROOT_DIR)/viewer/
 DIST_DIR=$(ML_ROOT_DIR)/dist/
 MATCHC_DIST_DIR=$(DIST_DIR)/matchC/
 
-LOCAL_HOST_NAME=`hostname`
-FSL_HOST_NAME='fsl3.cs.uiuc.edu'
-FSL_MATCHC_ONLINE_DIR=/www/www-root/extensions_stefane1/matchC_online/
+K_LIB=$(K_BASE)/core/maude/lib/
 
 PARSER_JAR=$(PARSER_DIR)/matchCparser.jar
 COMPILED_FILE=matchC-compiled.maude
@@ -18,7 +16,9 @@ SEMANTICS_COMPILED_FILE=$(SEMANTICS_DIR)/$(COMPILED_FILE)
 RELEASE_COMPILED_FILE=$(LIB_DIR)/$(COMPILED_FILE)
 VIEWER_JAR=$(VIEWER_DIR)/matchCviewer.jar
 
-K_LIB=$(K_BASE)/core/maude/lib/
+LOCAL_HOST_NAME=`hostname`
+FSL_HOST_NAME='fsl3.cs.uiuc.edu'
+FSL_MATCHC_ONLINE_DIR=/www/www-root/extensions_stefane1/matchC_online/
 
 
 .PHONY: build install dist pack online
@@ -45,10 +45,10 @@ dist:
 	mkdir -p $(MATCHC_DIST_DIR)
 	cp LICENSE $(MATCHC_DIST_DIR)
 	cp README $(MATCHC_DIST_DIR)
-	svn export bin $(MATCHC_DIST_DIR)/bin
-	svn export lib $(MATCHC_DIST_DIR)/lib
-	svn export demo $(MATCHC_DIST_DIR)/demo
-	svn export examples $(MATCHC_DIST_DIR)/examples
+	svn export bin $(MATCHC_DIST_DIR)/bin $(SVN_FLAGS)
+	svn export lib $(MATCHC_DIST_DIR)/lib $(SVN_FLAGS)
+	svn export demo $(MATCHC_DIST_DIR)/demo $(SVN_FLAGS)
+	svn export examples $(MATCHC_DIST_DIR)/examples $(SVN_FLAGS)
 	mv $(MATCHC_DIST_DIR)/bin/matchC.py $(MATCHC_DIST_DIR)/bin/matchC
 	rm $(MATCHC_DIST_DIR)/lib/fol.k
 
