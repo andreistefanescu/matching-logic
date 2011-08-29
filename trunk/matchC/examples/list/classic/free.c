@@ -1,3 +1,8 @@
+/*
+ * Function list_free deallocates a singly-linked list.
+ */
+
+
 #include <stdlib.h>
 
 
