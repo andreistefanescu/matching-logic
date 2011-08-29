@@ -9,8 +9,7 @@ MATCHC_DIST_DIR=$(DIST_DIR)/matchC
 
 LOCAL_HOST_NAME=`hostname`
 FSL_HOST_NAME='fsl3.cs.uiuc.edu'
-FSL_ONLINE_EXTENSIONS_DIR=/www/www-root/extensions_stefane1
-FSL_MATCHC_ONLINE_DIR=$(FSL_ONLINE_EXTENSIONS_DIR)/matchC
+FSL_MATCHC_ONLINE_DIR=/www/www-root/extensions_stefane1/matchC_online
 
 PARSER_JAR=$(PARSER_DIR)/matchCparser.jar
 COMPILED_FILE=matchC-compiled.maude
@@ -60,10 +59,10 @@ online: dist
 	if [ $(LOCAL_HOST_NAME) = $(FSL_HOST_NAME) ]; \
   then \
 	  ( \
-	    umask 0000 && \
-      rm -rf $(FSL_MATCHC_ONLINE_DIR) && \
-      cp -r $(MATCHC_DIST_DIR) $(FSL_ONLINE_EXTENSIONS_DIR) && \
-      mv $(FSL_MATCHC_ONLINE_DIR)/demo $(FSL_MATCHC_ONLINE_DIR)/examples/DEMO \
+	    umask 0000; \
+      rm -rf $(FSL_MATCHC_ONLINE_DIR); \
+      cp -r $(MATCHC_DIST_DIR) $(FSL_ONLINE_EXTENSIONS_DIR); \
+      mv $(FSL_MATCHC_ONLINE_DIR)/demo $(FSL_MATCHC_ONLINE_DIR)/examples/DEMO; \
 		) \
   fi
 
