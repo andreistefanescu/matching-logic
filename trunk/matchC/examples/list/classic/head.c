@@ -8,8 +8,8 @@
 
 
 struct listNode {
-	int val;
-	struct listNode *next;
+  int val;
+  struct listNode *next;
 };
 
 
