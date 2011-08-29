@@ -8,8 +8,8 @@
 
 
 struct listNode {
-	int val;
-	struct listNode *next;
+  int val;
+  struct listNode *next;
 };
 
 
@@ -17,7 +17,7 @@ struct listNode* list_tail(struct listNode *x)
 /*@ rule <k> $ => return n; ...</k>
          <heap>... x |-> [v, n], list(n)(A) ...</heap> */
 {
-	return x->next;
+  return x->next;
 }
 
 
