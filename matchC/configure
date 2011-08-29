@@ -1,5 +1,6 @@
 #!/bin/bash
 
-sed -i '' -e "s|^K_BASE=.*$|K_BASE=${K_BASE}|" Makefile
-sed -i '' -e "s|^K_BASE=.*$|K_BASE=${K_BASE}|" semantics/Makefile
+sed -i'.tmp' -e"s|^K_BASE=.*$|K_BASE=${K_BASE}|" Makefile
+sed -i'.tmp' -e"s|^K_BASE=.*$|K_BASE=${K_BASE}|" semantics/Makefile
+rm Makefile.tmp semantics/Makefile.tmp
 
