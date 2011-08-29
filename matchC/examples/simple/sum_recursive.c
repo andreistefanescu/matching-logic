@@ -1,6 +1,5 @@
 /* 
- * Function computing recursively the sum for the first n natural 
- * numbers.
+ * Function computing recursively the sum for the first n natural numbers.
  */
 
 
@@ -11,8 +10,6 @@ int sum(int n)
 /*@ rule <k> $ => return (n * (n + 1)) / 2; ...</k>
     if n >= 0 */
 {
-  if (n <= 0) {
-    return 0;
-  }
+  if (n <= 0) return 0;
   return n + sum(n-1);
 }
