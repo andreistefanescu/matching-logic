@@ -1,5 +1,6 @@
 /*
- * Function computing recursively the sum of the integer elements of a list.
+ * Function list_sum_recursive returns the sum of the elements of a
+ * singly-linked list. The sum is recursively computed.
  */
 
 
@@ -12,17 +13,15 @@ struct listNode {
 };
 
 
-int list_sum(struct listNode* x)
+int list_sum_recursive(struct listNode* x)
 //@ rule <k> $ => return sum(A); ...</k> <heap>... list(x)(A) ...</heap>
 {
-  if (x == 0) {
+  if (x == NULL)
     return 0;
-  }
-  else {
-    return x->val + list_sum(x->next);
-  }
 
+  return x->val + list_sum_recursive(x->next);
 }
 
 
 /*@ var A : Seq */
+
