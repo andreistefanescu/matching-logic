@@ -1,9 +1,8 @@
 /*
- * Function that swaps the first two elements 
- * of a list.
- * The function specification states that the
- * list must have at leat two elements in order
- * for the function to be called.
+ * Function that swaps the first two elements of a list.
+ 
+ * The function specification states that the list must have at least two
+ * elements in order for the function to be called.
  */
 
 
@@ -19,10 +18,8 @@ struct nodeList {
 
 struct nodeList* swap(struct nodeList* x)
 /*@ rule <k> $ => return ?x; ...</k> 
-         <heap>... list(x)([first] @ [second] @ A) 
-				   =>
-                   list(?x)([second] @ [first] @ A)
-         ...</heap>
+         <heap>... list(x)([first, second] @ A) 
+                => list(?x)([second, first] @ A) ...</heap>
  */
 {
   struct nodeList* p;
