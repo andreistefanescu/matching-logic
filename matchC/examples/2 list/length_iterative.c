@@ -1,6 +1,6 @@
 /*
- * Function list_length returns the length of a singly-linked list.  The length
- * is iteratively computed.
+ * Function list_length_iterative returns the length of a singly-linked list.
+ * The length is iteratively computed.
  */
 
 
@@ -13,7 +13,7 @@ struct listNode {
 };
 
 
-int list_length(struct listNode* x)
+int list_length_iterative(struct listNode* x)
 //@ rule <k> $ => return len(A); ...</k> <heap>... list(x)(A) ...</heap>
 {
   int l;
