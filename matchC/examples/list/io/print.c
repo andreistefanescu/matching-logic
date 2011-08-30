@@ -1,7 +1,8 @@
 /*
  * Function list_print writes the elements of a singly-linked list to the
- * standard output .
+ * standard output.
  */
+
 
 #include <stdio.h>
 #include <stdlib.h>
