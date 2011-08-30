@@ -1,3 +1,9 @@
+/*
+ * Function list_insert adds a new node of value "v" to a sorted singly linked
+ * list. The resulting list remains sorted.
+ */
+
+
 #include <stdlib.h>
 
 

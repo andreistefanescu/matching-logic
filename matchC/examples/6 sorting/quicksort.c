@@ -1,3 +1,12 @@
+/*
+ * Function that sorts the content of a singly linked list using the quicksort
+ * algorithm. It returns the new first node of the list.
+ *
+ * The quicksort function requires the append function to be defined in order 
+ * for it to work.
+ */
+
+
 #include <stdlib.h>
 
 
