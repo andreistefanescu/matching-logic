@@ -1,3 +1,9 @@
+/*
+ * Functin that recursively transforms a binary tree into a singly linked list 
+ * and returns the first node of the list.
+ */
+
+
 #include <stdlib.h>
 #include <stdio.h>
 

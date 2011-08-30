@@ -1,3 +1,8 @@
+/*
+ * Function mirrors the structure of a binary tree.
+ */
+
+
 #include <stdlib.h>
 
 

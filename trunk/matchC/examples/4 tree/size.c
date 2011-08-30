@@ -1,3 +1,9 @@
+/*
+ * Function tree_size computes the number of nodes of a binary tree without 
+ * altering its content.
+ */
+
+
 #include <stdlib.h>
 
 

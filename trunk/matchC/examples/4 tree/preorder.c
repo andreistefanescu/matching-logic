@@ -1,3 +1,8 @@
+/*
+ * Function prints in preorder a binary tree without altering its content.
+ */
+
+
 #include <stdio.h>
 #include <stdlib.h>
 
