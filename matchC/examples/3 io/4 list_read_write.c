@@ -3,7 +3,7 @@
  * writes them to the standard output in reverse order.  To do so, it
  * first stores the n elements in a singly-linked list, which it allocates
  * as the elements are read, and then it outputs the n elements from the
- * list, at the same time deallocating the list.  In the end, the heap
+ * list, at the same time dealocating the list.  In the end, the heap
  * stays unchanged (the heap does not appear in the function specification).
  */
 
