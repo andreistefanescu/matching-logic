@@ -1,12 +1,12 @@
 /*
- * Function sum returns the sum of the first n natural numbers.
+ * Function sum_iterative returns the sum of the first n natural numbers.
  */
 
 
 #include <stdio.h>
 
 
-int sum(int n)
+int sum_iterative(int n)
 /*@ rule <k> $ => return (n * (n + 1)) / 2; ...</k>
     if n >= 0 */
 {
