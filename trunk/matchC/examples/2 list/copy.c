@@ -30,10 +30,8 @@ struct listNode* list_copy(struct listNode *x)
 
   iterx = x->next;
   itery = y;
-  /*@ inv <heap>...
-            lseg(old(x), iterx)(?B @ [?v]), list(iterx)(?C),
-            lseg(y, itery)(?B), itery |-> [?v, 0]
-          ...</heap>
+  /*@ inv <heap>... lseg(old(x), iterx)(?B @ [?v]), list(iterx)(?C),
+                    lseg(y, itery)(?B), itery |-> [?v, 0] ...</heap>
           /\ A = ?B @ [?v] @ ?C */
   while(iterx) {
     struct listNode *node;
