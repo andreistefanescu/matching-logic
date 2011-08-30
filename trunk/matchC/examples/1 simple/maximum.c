@@ -1,5 +1,5 @@
 /*
- * Function computing the maximum value between two natural numbers.
+ * Function maximum computes the maximum value between two natural numbers.
  */
 
 
@@ -9,6 +9,6 @@
 int maximum(int x, int y)
 //@ rule <k> $ => return maxInt(x, y); ...</k>
 {
-	if (x < y) return y;
-	return x;
+  if (x < y) return y;
+  return x;
 }

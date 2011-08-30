@@ -1,5 +1,5 @@
 /* 
- * Function computing recursively the sum for the first n natural numbers.
+ * Function sum computes recursively the sum for the first n natural numbers.
  */
 
 
