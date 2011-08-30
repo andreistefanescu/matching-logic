@@ -27,6 +27,7 @@ import sys
 import time
 
 from ansi_colors import *
+import timeout_function
 
 
 ### 
@@ -41,11 +42,19 @@ def format_timer(timer):
     return '[' + '%.3f' % timer + 's' + ']'
 
 
+verification_time = None
+
 def default_filter(line):
-    return
+    pass
+
+def default_timeout_handle():
+    print()
 
 
+#@timeout(2, default_timeout_handle)
 def run(cmd='maude', cmd_args=[], path=None, filter=default_filter, epilog=''):
+    global verification_time
+
     if path != None:
         args = [os.path.abspath(os.path.join(path, cmd))]
     else:
@@ -76,6 +85,7 @@ def run(cmd='maude', cmd_args=[], path=None, filter=default_filter, epilog=''):
             end = time.time()
             elapsed = round(end - start, 3)
             print(epilog + ' ' + format_timer(elapsed))
+            verification_time = '%.3f' % elapsed
             break
 
         print_suffix_index = line.find(print_suffix)
@@ -111,6 +121,7 @@ def run(cmd='maude', cmd_args=[], path=None, filter=default_filter, epilog=''):
                 print(formated_line)
         else:
             filter(line)
+
     return maude.wait()
 
 

@@ -64,35 +64,45 @@ ml_prog_footer = ['endm\n\n',
     'q\n']
 
 
-### check the c program compiles with some c compiler
-def checkc(source_filename, cc='gcc'):
-    print('CC program ..........', end='')
-    sys.stdout.flush()
-    start = time.time()
+def timer(start_message, stop_message):
+    def timer_function(function):
+        def timer_wrapper(*args, **kwargs):
+            print(start_message, end='')
+            sys.stdout.flush()
+            start = time.time()
 
+            retval = function(*args, **kwargs)
+
+            end = time.time()
+            elapsed = "%.3f" % round(end - start, 3) + "s"
+            print(stop_message + ' [' + elapsed + ']')
+            sys.stdout.flush()
+
+            return retval
+        return timer_wrapper
+    return timer_function
+ 
+
+
+### check the c program compiles with some c compiler
+@timer('CC program ..........', ' DONE!')
+def checkc(source_filename, cc='gcc'):
     # check that cc binary exists
-    validcc = True
     try:
         null_fd = os.open(os.devnull, os.O_WRONLY)
         subprocess.call(cc, stdout=null_fd, stderr=null_fd)
     except OSError:
-        validcc = False
+        return 127;
 
-    # if cc is a valid c compiler
-    if validcc == True:
-        (file_obj, compiled_file) = tempfile.mkstemp()
-        os.close(file_obj)
-        cmd = [cc, '-c', '-o', compiled_file, source_filename]
-        retcode = subprocess.call(cmd)
-        if retcode != 0: sys.exit(retcode)
-
-    end = time.time()
-    elapsed = "%.3f" % round(end - start, 3) + "s"
-    print(' DONE! [' + elapsed + ']')
-    sys.stdout.flush()
+    # compile the c program with the cc compiler
+    (file_obj, compiled_file) = tempfile.mkstemp()
+    os.close(file_obj)
+    cmd = [cc, '-c', '-o', compiled_file, source_filename]
+    return subprocess.call(cmd)
 
 
 ### compile c program with ml annotation into labeled k (maude format)
+@timer('Compiling program ...', ' DONE!')
 def compile(in_filename, out_filename):
     if os.name == 'posix' or os.name == 'mac':
         cp_sep = ':'
@@ -103,28 +113,23 @@ def compile(in_filename, out_filename):
     in_file = open(in_filename, 'r')
     out_file = open(out_filename, 'w')
 
-    print('Compiling program ...', end='')
-    sys.stdout.flush()
-    start = time.time()
-
     out_file.writelines(ml_prog_header)
     out_file.flush()
 
     retcode = subprocess.call(cmd, bufsize=-1, stdin=in_file, stdout=out_file)
-    if retcode != 0: sys.exit(retcode)
 
     out_file.writelines(ml_prog_footer)
     in_file.close()
     out_file.close()
 
-    end = time.time()
-    elapsed = "%.3f" % round(end - start, 3) + "s"
-    print(' DONE! [' + elapsed + ']')
-    sys.stdout.flush()
+    return retcode
 
 
 ### verify the program in maude + smt
-def verify(prog_filename, log=None):
+def verify(prog_filename, log_filename=None):
+    global is_verified
+    is_verified = True
+
     cmd = None
     if platform.system() == 'Linux':
         if platform.machine() == 'i686':
@@ -135,8 +140,8 @@ def verify(prog_filename, log=None):
         cmd = 'maude.intelDarwin'
 
     args = ['-no-prelude', '-no-banner', '-no-wrap', '-no-ansi-color']
-    if log != None:
-        args += ['-xml-log=' + log]
+    if log_filename != None:
+        args += ['-xml-log=' + log_filename]
     args += [prog_filename]
 
     retcode = run_maude.run(
@@ -147,7 +152,7 @@ def verify(prog_filename, log=None):
                   epilog='DONE!')
     if retcode != 0: sys.exit(retcode)
 
-    if verified:
+    if is_verified:
         print(green_color + 'Verification succeeded!' + no_color, statistics)
     else:
         print(red_color + 'Verification failed!' + no_color, statistics)
@@ -156,11 +161,16 @@ def verify(prog_filename, log=None):
             print('Output:', output_stream)
 
 
-verified = True
+is_timeout = False
+is_verified = False
 statistics = None
 output_stream = None
+
+def timeout_handle():
+    global is_timeout
+
 def output_filter(line):
-    global verified
+    global is_verified
     global statistics
     global output_stream
 
@@ -175,23 +185,21 @@ def output_filter(line):
         infeasible = red_color + line.split()[3][15:-10] + no_color
         statistics += infeasible + ' infeasible paths]'
     elif line.startswith('< tasks >'):
-        verified = False
+        is_verified = False
     elif line.startswith('< mainOut >'):
         output_stream = line.replace(' @ ', ' ')
         output_stream = output_stream.replace('[', '').replace(']', '')
         output_stream = output_stream[19:-14]
 
 
-###
-def main():
+args = None
+def parse_args():
+    global args
+
     parser = argparse.ArgumentParser(
         description='Matching logic verifier',
         prog='matchC')
-    parser.add_argument(
-        '-o',
-        help='place tool output into file',
-        metavar='file',
-        dest='output')
+
     parser.add_argument(
         '-c', '--compile-only',
         action='store_true',
@@ -200,27 +208,41 @@ def main():
             +' only; do not verify any function',
         dest='compile')
     parser.add_argument(
-        '-d', '--display',
-        action='store_true',
-        default=False,
-        help='display verifier output into a java widget')
-    parser.add_argument(
-        '-s', '--silent',
-        action='store_true',
-        default=False,
-        help='do not generate any verifier output')
-
-    parser.add_argument(
         '-cc',
         default='gcc',
         help='check c syntax of program with compiler',
         metavar='compiler',
         dest='cc')
     parser.add_argument(
+        '-d', '--display',
+        action='store_true',
+        default=False,
+        help='display verifier output into a java widget')
+    parser.add_argument(
+        '-o',
+        help='place tool output into file',
+        metavar='file',
+        dest='output')
+    parser.add_argument(
+        '-s', '--silent',
+        action='store_true',
+        default=False,
+        help='do not generate any verifier output')
+    parser.add_argument(
         'file',
         help='file to verify',
         metavar='file')
+
     args = parser.parse_args()
+    return args
+
+
+###
+def main():
+    args = parse_args()
+
+    if not os.path.isfile(args.file):
+        sys.exit('matchC: ' + args.file + ': no such file or directory')
 
     if args.output == None:
         rootname = os.path.splitext(os.path.basename(args.file))[0]
@@ -229,37 +251,37 @@ def main():
         else:
             args.output = rootname + '.maude'
 
-    if not os.path.isfile(args.file):
-        sys.exit('matchC: ' + args.file + ': no such file or directory')
-
-    checkc(args.file, cc=args.cc)
+    retcode = checkc(args.file, cc=args.cc)
+    if retcode != 0: return retcode
 
     if not args.compile:
         (file_obj, compiled_file) = tempfile.mkstemp(suffix='.maude')
         os.close(file_obj)
     else:
         compiled_file = args.output
-    compile(args.file, compiled_file)
-    if args.compile: return
+    retcode = compile(args.file, compiled_file)
+    if retcode != 0: return retcode
+
+    if args.compile: return 0
 
     if not args.silent:
-        (file_obj, log_file) = tempfile.mkstemp(suffix='.xml')
+        (file_obj, log_filename) = tempfile.mkstemp(suffix='.xml')
         os.close(file_obj)
-        verify(compiled_file, log=log_file)
+        verify(compiled_file, log_filename=log_filename)
     else:
         verify(compiled_file)
 
-    if verified: sys.exit(0)
+    if is_verified: return 0
 
     if not args.silent and not args.display:
         cmd = ['java', '-cp', ml_viewer_jar, ml_viewer_text_main_class,
-              log_file, args.output]
+              log_filename, args.output]
 
         start = time.time()
         print('Generating error ....', end="")
 
         retcode = subprocess.call(cmd)
-        if retcode != 0: sys.exit(retcode)
+        if retcode != 0: return retcode
 
         end = time.time()
         elapsed = "%.3f" % round(end - start, 3) + "s"
@@ -267,14 +289,13 @@ def main():
 
         print('Check ' + args.output + ' for the complete output.')
 
-    if args.display:
+    if not args.silent and args.display:
         cmd = ['java', '-cp', ml_viewer_jar, ml_viewer_visual_main_class,
-              log_file]
+              log_filename]
 
         retcode = subprocess.call(cmd)
-        if retcode != 0: sys.exit(retcode)
+        if retcode != 0: return retcode
 
 
-main()
-
-
+if __name__ == '__main__':
+    main()
