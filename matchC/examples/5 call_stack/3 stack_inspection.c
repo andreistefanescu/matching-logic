@@ -1,11 +1,10 @@
 /*
- * The trusted function can only be called  from the main function or by itself
- * and if the argument is at least 10.
- * The untrusted function can be called only if the trusted function has been 
- * called.
- * The any function has no specification associated with it, but the 
- * verification fails if either it calls the untrusted function or it calls the
- * trusted function with an argument of value smaller than 10. 
+ * The trusted(n) function can only be called from the main function or by
+ * itself and if the argument n is at least 10.  The untrusted function can
+ * be called only if the trusted function is in the stack.  The any function
+ * has no specification associated with it, but since it is called from main,
+ * the verification fails if either it calls the untrusted function or it calls
+ * the trusted function with an argument of value smaller than 10. 
  */
 
 
@@ -44,7 +43,6 @@ void any(int n)
     // security policy possibly (when any is called) violated if n <= 10
     trusted(n - 1);
 }
-
 
 int main()
 {
