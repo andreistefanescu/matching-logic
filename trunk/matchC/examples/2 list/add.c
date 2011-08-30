@@ -1,5 +1,5 @@
 /*
- * Function list_add appends an integer value to the beginning of a singly
+ * Function add prepends an integer value to the beginning of a singly
  * linked list.
  */
 
@@ -13,7 +13,7 @@ struct listNode {
 };
 
 
-struct listNode* list_add(int v, struct listNode* x)
+struct listNode* add(int v, struct listNode* x)
 /*@ rule <k> $ => return ?x; ...</k> 
          <heap>... list(x)(A) => list(?x)([v] @ A) ...</heap> */
 {
