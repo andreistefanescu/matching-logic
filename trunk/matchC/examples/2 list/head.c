@@ -1,5 +1,5 @@
 /*
- * Function list_head returns the head of a singly linked list. The
+ * Function head returns the head of a singly linked list. The
  * specification requires the list to have at least one element.
  */
 
@@ -13,7 +13,7 @@ struct listNode {
 };
 
 
-int list_head(struct listNode *x)
+int head(struct listNode *x)
 //@ rule <k> $ => return v; ...</k> <heap>... list(x)([v] @ A) ...</heap>
 {
   return x->val;
