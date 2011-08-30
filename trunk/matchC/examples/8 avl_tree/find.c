@@ -1,3 +1,9 @@
+/*
+ * Function avl_find goes through the nodes of an avl tree based on their values
+ * and returns whether or not the value was found.
+ */
+
+
 #include<stdlib.h>
 
 
