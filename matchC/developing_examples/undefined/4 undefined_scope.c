@@ -8,8 +8,10 @@
 
 int main() {
   int *p;
-  // If you comment the next block, the resulting program compiles but segfaults
+  // If you comment the next block, the resulting program compiles with gcc
+  // but the resulting binary yields a segmentation fault when executed.
+  // Normally, the program would be undefined before the memory access *p
+  // because of reading the uninitialized variable p, but gcc does not check it.
   { int x; p = &x; }
   printf("%d", *p);
 }
-

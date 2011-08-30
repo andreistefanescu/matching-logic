@@ -1,5 +1,6 @@
 /*
- * The program below performs a division by zero, which is undefined.
+ * The program below performs a read on an uninitialized integer variable,
+ * which is undefined according to the C standard.
  * gcc happily compiles this program and the resulting program prints 0.
  */
 
