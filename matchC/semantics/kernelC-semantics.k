@@ -86,7 +86,7 @@ Variable declaration
 ***)
   rule
     <k> T X ; => .K <_/k>
-    <env_> .Map => X |-> FreeInt(N) <_/env>
+    <env_> .Map => X |-> undef <_/env>
     <tenv_> .Map =>  X |-> T <_/tenv>
     <counter> N => sNat N </counter>
   [structural]
@@ -181,7 +181,7 @@ Expressions
   rule tv(T *, I1) - tv(int, I2) => tv(T *, I1 -Int I2) [structural]
   rule tv(T *, I1) - tv(T *, I2) => tv(int, I1 -Int I2) [structural]  
   rule tv(T, I1) * tv(T, I2) => tv(T, I1 *Int I2) [structural]
-  rule tv(T, I1) / tv(T, I2) => tv(T, I1 /Int I2) [structural]
+  rule tv(T, I) / tv(T, NzI) => tv(T, I /Int NzI) [structural]
   rule tv(T, I1) % tv(T, I2) => tv(T, I1 %Int I2) [structural]
   rule tv(T, I) << tv(int, N) => tv(T, I <<Int N) [structural]
   rule tv(T, I) >> tv(int, N) => tv(T, I >>Int N) [structural]
