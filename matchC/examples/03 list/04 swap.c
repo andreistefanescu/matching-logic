@@ -1,8 +1,7 @@
 /*
  * Function swapping the first two elements of a singly linked list.
- * 
- * The function specification states that the list must have at least two
- * elements in order for the function to be called.
+ * The function specification requires that the list must have at
+ * least two elements in order for the function to be called.
  */
 
 
