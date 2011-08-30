@@ -1,5 +1,5 @@
 /*
- * Function list_append concatenates two singly linked lists and returns the 
+ * Function append concatenates two singly linked lists and returns the 
  * first element of the resulting list.
  */
 
@@ -13,7 +13,7 @@ struct listNode {
 };
 
 
-struct listNode* list_append(struct listNode *x, struct listNode *y)
+struct listNode* append(struct listNode *x, struct listNode *y)
 /*@ rule <k> $ => return ?x; ...</k>
          <heap>... list(x)(A), list(y)(B) => list(?x)(A @ B) ...</heap> */
 {

@@ -1,5 +1,5 @@
 /*
- * Function list_tail returns the tail of a singly linked list. The
+ * Function tail returns the tail of a singly linked list. The
  * specification requires the list to have at least one element.
  */
 
@@ -13,7 +13,7 @@ struct listNode {
 };
 
 
-struct listNode* list_tail(struct listNode *x)
+struct listNode* tail(struct listNode *x)
 /*@ rule <k> $ => return n; ...</k>
          <heap>... x |-> [v, n], list(n)(A) ...</heap> */
 {
