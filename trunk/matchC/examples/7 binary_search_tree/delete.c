@@ -1,3 +1,11 @@
+/*
+ * Function find_min returns the outmost left leaf of a tree.
+ *
+ * Function bst_delete deletes the node of the tree having value "v" and 
+ * rebalances the tree to be a binary search tree.
+ */
+
+
 #include <stdlib.h>
 
 
