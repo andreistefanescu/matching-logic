@@ -48,7 +48,6 @@ dist:
 	cp README $(MATCHC_DIST_DIR)
 	svn export bin $(MATCHC_DIST_DIR)/bin $(SVN_FLAGS)
 	svn export lib $(MATCHC_DIST_DIR)/lib $(SVN_FLAGS)
-	svn export demo $(MATCHC_DIST_DIR)/demo $(SVN_FLAGS)
 	svn export examples $(MATCHC_DIST_DIR)/examples $(SVN_FLAGS)
 	mv $(MATCHC_DIST_DIR)/bin/matchC.py $(MATCHC_DIST_DIR)/bin/matchC
 	rm $(MATCHC_DIST_DIR)/lib/fol.k
