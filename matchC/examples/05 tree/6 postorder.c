@@ -1,5 +1,5 @@
 /*
- * Function prints in postorder a binary tree without altering its content.
+ * Function that prints the contents of a binary tree in postorder traversal.
  */
 
 
@@ -14,15 +14,15 @@ struct treeNode {
 };
 
 
-void tree_postorder(struct treeNode *t)
+void postorder(struct treeNode *t)
 /*@ rule <k> $ => return; ...</k> <heap>... tree(t)(T) ...</heap>
          <out>... . => tree2postorder(T) </out> */
 {
   if (t == NULL)
     return;
 
-  tree_postorder(t->left);
-  tree_postorder(t->right);
+  postorder(t->left);
+  postorder(t->right);
   printf("%d ", t->val);
 }
 

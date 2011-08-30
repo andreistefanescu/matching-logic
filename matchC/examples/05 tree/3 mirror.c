@@ -13,7 +13,7 @@ struct treeNode {
 };
 
 
-void tree_mirror(struct treeNode *t)
+void mirror(struct treeNode *t)
 /*@ rule <k> $ => return; ...</k>
          <heap>... tree(t)(T) => tree(t)(mirror(T)) ...</heap> */
 {
@@ -25,8 +25,8 @@ void tree_mirror(struct treeNode *t)
   tmp = t->left;
   t->left = t->right;
   t->right = tmp;
-  tree_mirror(t->left);
-  tree_mirror(t->right);
+  mirror(t->left);
+  mirror(t->right);
 }
 
 
