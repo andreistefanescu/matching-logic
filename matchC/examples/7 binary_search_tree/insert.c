@@ -1,3 +1,11 @@
+/*
+ * Function newNode creates a new node of type binary tree and returns it.
+ *
+ * Function bst_insert introduces a new node of value v into a binary search
+ * tree, while maintaining its properties.
+ */
+
+
 #include <stdlib.h>
 
 

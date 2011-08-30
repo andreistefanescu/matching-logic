@@ -1,3 +1,8 @@
+/*
+ * Function that searches a binary search tree for a node with value "v".
+ */
+
+
 #include <stdlib.h>
 
 
