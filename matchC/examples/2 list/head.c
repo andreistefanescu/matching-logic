@@ -1,5 +1,5 @@
 /*
- * Function list_head returns the head of a singly-linked list. The
+ * Function list_head returns the head of a singly linked list. The
  * specification requires the list to have at least one element.
  */
 

@@ -1,5 +1,5 @@
 /*
- * Function list_tail returns the tail of a singly-linked list. The
+ * Function list_tail returns the tail of a singly linked list. The
  * specification requires the list to have at least one element.
  */
 

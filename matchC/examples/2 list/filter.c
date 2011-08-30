@@ -1,3 +1,9 @@
+/*
+ * Function list_filter deletes the nodes of a singly linked list that hold 
+ * the value "v".
+ */
+
+
 #include<stdlib.h>
 
 
