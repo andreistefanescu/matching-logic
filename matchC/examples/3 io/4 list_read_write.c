@@ -1,10 +1,10 @@
 /*
- * Function list_read_write reads n elements from the standard input and
- * writes them to the standard output in reverse order.  To do so, it
- * first stores the n elements in a singly-linked list, which it allocates
- * as the elements are read, and then it outputs the n elements from the
- * list, at the same time freeing the list.  In the end, the heap
- * stays unchanged (the heap does not appear in the function specification).
+ * Function list_read_write reads n elements from the standard input and writes
+ * them to the standard output in reverse order. Internally, it stores the n
+ * elements into a singly-linked list, which is allocated as the elements are
+ * read. Then it outputs the n elements from the list, which is deallocated as
+ * the element are written. In the end, the heap stays unchanged (the heap does
+ * not appear in the function specification).
  */
 
 

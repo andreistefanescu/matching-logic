@@ -1,6 +1,6 @@
 /*
- * Function list_read reads the elements of a singly-linked list from the
- * standard input.
+ * Function list_read reads n elements from the standard input into a new
+ * singly-linked list.
  */
 
 
