@@ -1,5 +1,5 @@
 /*
- * Function list_sum_iterative  returns the sum of the elements of a
+ * Function sum_iterative  returns the sum of the elements of a
  * singly linked list. The sum is iteratively computed.
  */
 
@@ -13,7 +13,7 @@ struct listNode {
 };
 
 
-int list_sum_iterative(struct listNode* x)
+int sum_iterative(struct listNode* x)
 //@ rule <k> $ => return sum(A); ...</k> <heap>... list(x)(A) ...</heap>
 {
   int s;

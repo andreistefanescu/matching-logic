@@ -1,5 +1,5 @@
 /*
- * Function list_reverse reverses in-place the nodes of a singly linked list.
+ * Function reverse reverses in-place the nodes of a singly linked list.
  */
 
 
@@ -12,7 +12,7 @@ struct listNode {
 };
 
 
-struct listNode* list_reverse(struct listNode *x)
+struct listNode* reverse(struct listNode *x)
 /*@ rule <k> $ => return ?p; ...</k>
          <heap>... list(x)(A) => list(?p)(rev(A)) ...</heap> */
 {
