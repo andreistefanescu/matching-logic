@@ -1,3 +1,9 @@
+/*
+ * Function that sequencially transforms a binary tree into a singly linked
+ * list and returns the first of the list's nodes.
+ */
+
+
 #include <stdlib.h>
 #include <stdio.h>
 

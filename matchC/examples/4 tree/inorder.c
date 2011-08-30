@@ -1,3 +1,8 @@
+/*
+ * Function prints inorder the content of a binary tree received as an argument.
+ */
+
+
 #include <stdio.h>
 #include <stdlib.h>
 

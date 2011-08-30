@@ -1,3 +1,9 @@
+/*
+ * Function tree_height computes the height of the binary tree received as 
+ * an argument.
+ */
+
+
 #include <stdlib.h>
 
 
