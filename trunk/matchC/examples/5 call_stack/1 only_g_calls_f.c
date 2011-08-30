@@ -16,33 +16,26 @@ void f()
 /*@ rule <k> $ => return; ...</k> <stack> S </stack>
     if hd(ids(S)) = g */
 {
-  // any code
 }
 
 void g()
 {
-  // any code
   f();
-  // any code
 }
 
 void h()
 {
-  // any code
   g();
-  // Verification fails if you uncomment the next call,
+  // Verification fails if you uncomment the next call to f(),
   // but it succeeds again if you comment the call to h()
   // in function main() below or skip the function main().
   //f();
   g();
-  // any code
 }
 
 int main()
 {
-  // any code
   h();
-  // any code
 }
 
 
