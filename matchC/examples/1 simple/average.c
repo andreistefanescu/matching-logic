@@ -1,5 +1,5 @@
 /*
- * Function computing the integer average of three natural.
+ * Function average computes the integer average of three natural numbers.
  */
 
 
@@ -9,7 +9,7 @@
 int average(int x, int y, int z)
 //@ rule <k> $ => return (x + y + z) / 3; ...</k>
 {
-	int sum;
-	sum = x + y + z;
-	return sum / 3;
+  int sum;
+  sum = x + y + z;
+  return sum / 3;
 }

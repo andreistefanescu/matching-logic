@@ -7,10 +7,10 @@
 #include <stdio.h>
 
 
-int multiplication_by_add(int x, int y)
+int multiplication_by_addition(int x, int y)
 //@ rule <k> $ => return (x * y); ...</k>
 {
   if (x == 0) return 0;
-  if (x < 0) return -multiplication_by_add(-x,y);
-  return y + multiplication_by_add(x - 1, y);
+  if (x < 0) return -multiplication_by_addition(-x,y);
+  return y + multiplication_by_addition(x - 1, y);
 }
