@@ -1,5 +1,5 @@
 /*
- * Function list_insert adds a new node of value "v" to a sorted singly linked
+ * Function insert adds a new node of value "v" to a sorted singly linked
  * list. The resulting list remains sorted.
  */
 
@@ -13,7 +13,7 @@ struct listNode {
 };
 
 
-struct listNode* list_insert(struct listNode* x, int v)
+struct listNode* insert(struct listNode* x, int v)
 /*@ rule <k> $ => return ?x; ...</k>
          <heap>... list(x)(A) => list(?x)(?A) ...</heap>
     if isSorted(A) /\ isSorted(?A) /\ seq2mset(?A) = seq2mset(A) U {v} */
@@ -50,4 +50,3 @@ struct listNode* list_insert(struct listNode* x, int v)
 
 
 //@ var A, B, C : Seq
-

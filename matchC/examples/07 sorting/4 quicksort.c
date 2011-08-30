@@ -1,9 +1,5 @@
 /*
- * Function that sorts the content of a singly linked list using the quicksort
- * algorithm. It returns the new first node of the list.
- *
- * The quicksort function requires the append function to be defined in order 
- * for it to work.
+ * Function that sorts the content of a singly linked list using quicksort.
  */
 
 
@@ -16,7 +12,7 @@ struct listNode {
 };
 
 
-struct listNode* list_append(struct listNode *x, struct listNode *y)
+struct listNode* append(struct listNode *x, struct listNode *y)
 /*@ rule <k> $ => return ?x; ...</k>
          <heap>... list(x)(A), list(y)(B) => list(?x)(A @ B) ...</heap> */
 {
@@ -74,7 +70,7 @@ struct listNode* quicksort(struct listNode* x)
 
   y = quicksort(y);
   z = quicksort(z);
-  x = list_append(y, list_append(p, z));
+  x = append(y, append(p, z));
 
   return x;
 }
@@ -82,4 +78,3 @@ struct listNode* quicksort(struct listNode* x)
 
 //@ var v : Int
 //@ var A, B, C : Seq
-

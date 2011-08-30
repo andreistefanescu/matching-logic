@@ -1,6 +1,5 @@
 /*
- * Function that sorts the content of a singly linked list using the merge
- * sort algorithm. It returns the new first node of the list.
+ * Function that sorts the contents of a singly linked list using merge sort.
  */
 
 
@@ -57,9 +56,7 @@ struct listNode* merge_sort(struct listNode* x)
     x = p = z;
     z = z->next;
   }
-  /*@ inv <heap>...
-            lseg(x, p)(?A1), p |-> [?v, ?n], list(y)(?B), list(z)(?C)
-          ...</heap>
+  /*@ inv <heap>...lseg(x,p)(?A1),p|->[?v,?n],list(y)(?B),list(z)(?C) ...</heap>
           /\ seq2mset(A) = seq2mset(?A1 @ [?v]) U seq2mset(?B) U seq2mset(?C)
           /\ leq(seq2mset(?A1 @ [?v]), seq2mset(?B))
           /\ leq(seq2mset(?A1 @ [?v]), seq2mset(?C))
