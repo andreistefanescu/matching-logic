@@ -1,3 +1,27 @@
+/*
+ * Function max returns the maximum between two integer values.
+ *
+ * Function height return the height of the tree received as argument.
+ *
+ * Function update_height computes the height of the tree received as argument.
+ *
+ * Function find_min returns the outmost left node of the tree, having the 
+ * minimum value in the tree.
+ *
+ * Function left_rotate transforms the right child node of the root into the 
+ * new root.
+ * 
+ * Function right_rotate transforms the left child node of the root into the 
+ * new root.
+ *
+ * Function balance rotates the tree received ar argument so that it becomes an
+ * avl tree.
+ *
+ * Function avl_delete erases from the tree the node having the "value" value 
+ * and maintains the tree as an avl one.
+ */
+
+
 #include<stdlib.h>
 
 

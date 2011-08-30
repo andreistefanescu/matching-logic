@@ -1,3 +1,26 @@
+/*
+ * Function max returns the maximum value between two integer values.
+ *
+ * Function new_leaf creates a new node and returns the address to it.
+ *
+ * Function height returns the height of the tree.
+ *
+ * Function update_height computes the height of a tree.
+ *
+ * Function left_rotate transforms the right child node of the root into the 
+ * new root.
+ * 
+ * Function right_rotate transforms the left child node of the root into the 
+ * new root.
+ *
+ * Function balance rotates the tree received ar argument so that it becomes an
+ * avl tree.
+ *
+ * Function avl_insert adds a new node of value "value" into the avl tree and
+ * maintains the properties of the tree.
+ */
+
+
 #include<stdlib.h>
 
 
