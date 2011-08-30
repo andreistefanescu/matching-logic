@@ -19,6 +19,7 @@ VIEWER_JAR=$(VIEWER_DIR)/matchCviewer.jar
 LOCAL_HOST_NAME=`hostname`
 FSL_HOST_NAME='fsl3.cs.uiuc.edu'
 FSL_MATCHC_ONLINE_DIR=/www/www-root/extensions_stefane1/matchC_online/
+FSL_ONLINE_EXAMPLES_DIR=$(FSL_MATCHC_ONLINE_DIR)/examples
 
 
 .PHONY: build install dist pack online
@@ -61,7 +62,7 @@ online: dist
     ( \
       rm -rf $(FSL_MATCHC_ONLINE_DIR); \
       cp -r $(MATCHC_DIST_DIR) $(FSL_MATCHC_ONLINE_DIR); \
-      mv $(FSL_MATCHC_ONLINE_DIR)/demo $(FSL_MATCHC_ONLINE_DIR)/examples/DEMO; \
+      mv $(FSL_ONLINE_EXAMPLES_DIR)/demo $(FSL_ONLINE_EXAMPLES_DIR)/DEMO; \
       chmod -R a+w $(FSL_MATCHC_ONLINE_DIR); \
     ) \
   fi
