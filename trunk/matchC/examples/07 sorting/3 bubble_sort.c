@@ -1,6 +1,5 @@
 /*
- * Function that sorts the content of a singly linked list using the bubble
- * sort algorithm. It returns the new first node of the list.
+ * Function that sorts the content of a singly linked list using bubble sort.
  */
 
 

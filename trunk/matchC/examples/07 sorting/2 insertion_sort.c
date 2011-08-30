@@ -1,6 +1,5 @@
 /*
- * Function that sorts the content of a singly linked list using the insertion
- * sort algorithm. It returns the new first node of the list.
+ * Function that sorts the content of a singly linked list using insertion sort.
  */
 
 
@@ -60,4 +59,3 @@ struct listNode* insertion_sort(struct listNode* x)
 
 //@ var v, nval : Int
 //@ var A, B, C, D : Seq
-
