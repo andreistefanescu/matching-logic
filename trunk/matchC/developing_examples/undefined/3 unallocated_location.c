@@ -1,5 +1,5 @@
 /*
- * The program below accesses a location which has not been assocated.
+ * The program below accesses a location which has not been allocated.
  * gcc compiles it, but the generated binary yields a segmentation fault.
  */
 
