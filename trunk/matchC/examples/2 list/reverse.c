@@ -1,3 +1,8 @@
+/*
+ * Function list_reverse reverses in-place the nodes of a singly linked list.
+ */
+
+
 #include <stdlib.h>
 
 

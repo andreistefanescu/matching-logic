@@ -1,5 +1,6 @@
 /*
- * Function list_add appends an integer value to a singly-linked list.
+ * Function list_add appends an integer value to the beginning of a singly
+ * linked list.
  */
 
 

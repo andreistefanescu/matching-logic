@@ -1,5 +1,5 @@
 /*
- * Function list_free deallocates a singly-linked list.
+ * Function list_free deallocates a singly linked list.
  */
 
 

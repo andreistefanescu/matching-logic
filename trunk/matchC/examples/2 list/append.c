@@ -1,3 +1,9 @@
+/*
+ * Function list_append concatenates two singly linked lists and returns the 
+ * first element of the resulting list.
+ */
+
+
 #include <stdlib.h>
 
 

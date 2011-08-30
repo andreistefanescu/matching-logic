@@ -1,5 +1,5 @@
 /*
- * Function list_length_recursive returns the length of a singly-linked list.
+ * Function list_length_recursive returns the length of a singly linked list.
  * The length is recursively computed.
  */
 

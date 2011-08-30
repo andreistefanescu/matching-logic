@@ -1,3 +1,9 @@
+/*
+ * Function list_copy duplicates a singly linked list by allocating memory and 
+ * copying the content of the original list to the newly created one.
+ */
+
+
 #include <stdlib.h>
 
 

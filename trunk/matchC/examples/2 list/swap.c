@@ -1,5 +1,5 @@
 /*
- * Function that swaps the first two elements of a list.
+ * Function swapping the first two elements of a singly linked list.
  * 
  * The function specification states that the list must have at least two
  * elements in order for the function to be called.
@@ -16,7 +16,7 @@ struct nodeList {
 };
 
 
-struct nodeList* swap(struct nodeList* x)
+struct nodeList* list_swap(struct nodeList* x)
 /*@ rule <k> $ => return ?x; ...</k> 
          <heap>... list(x)([v1, v2] @ A) => list(?x)([v2, v1] @ A) ...</heap> */
 {
