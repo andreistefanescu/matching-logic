@@ -1,4 +1,6 @@
 /*
+ * WE CURRENTLY DO NOT SUPPORT "&"
+ *
  * The following program is undefined in C, because it accesses the
  * location corresponding to a dangling pointer.  gcc compiles it with
  * no complains and the resulting binary program runs fine.
