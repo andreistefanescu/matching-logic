@@ -1,3 +1,14 @@
+/*
+ * The trusted function can only be called  from the main function or by itself
+ * and if the argument is at least 10.
+ * The untrusted function can be called only if the trusted function has been 
+ * called.
+ * The any function has no specification associated with it, but the 
+ * verification fails if either it calls the untrusted function or it calls the
+ * trusted function with an argument of value smaller than 10. 
+ */
+
+
 #include <stdio.h>
 
 
