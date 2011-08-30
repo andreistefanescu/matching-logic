@@ -1,6 +1,6 @@
 /*
  * Function list_sum_iterative  returns the sum of the elements of a
- * singly-linked list.  The sum is iteratively computed.
+ * singly-linked list. The sum is iteratively computed.
  */
 
 
