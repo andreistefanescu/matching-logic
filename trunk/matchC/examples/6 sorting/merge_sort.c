@@ -1,3 +1,9 @@
+/*
+ * Function that sorts the content of a singly linked list using the merge
+ * sort algorithm. It returns the new first node of the list.
+ */
+
+
 #include <stdlib.h>
 
 
