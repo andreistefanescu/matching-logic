@@ -1,6 +1,6 @@
 /*
- * Function that sequencially transforms a binary tree into a singly linked
- * list and returns the first of the list's nodes.
+ * Function that iteratively transforms a binary tree into a singly linked list,
+ * at the same time printing the list of elements in reverse order.
  */
 
 

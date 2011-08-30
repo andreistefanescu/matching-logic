@@ -1,6 +1,7 @@
 /*
- * Functin that recursively transforms a binary tree into a singly linked list 
- * and returns the first node of the list.
+ * Function that recursively transforms a binary tree into a singly linked list.
+ * When freeing each tree node, it also prints its value.
+ * Thus, the list of elements gets printed in reverse order.
  */
 
 
@@ -22,9 +23,7 @@ struct listNode {
 
 struct listNode* tree_to_list_recursive(struct treeNode *t, struct listNode *l)
 /*@ rule <k> $ => return ?l; ...</k>
-         <heap>...
-           tree(t)(T), list(l)(A) => list(?l)(tree2list(T) @ A)
-         ...</heap>
+         <heap>... tree(t)(T),list(l)(A) => list(?l)(tree2list(T) @ A) ...</heap>
          <out>... . => rev(tree2list(T)) </out> */
 {
   struct listNode *ln;
