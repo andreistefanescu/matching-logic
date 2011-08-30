@@ -2,9 +2,10 @@ ML_ROOT_DIR=.
 K_BASE=/Users/andrei/k-release
 
 LIB_DIR=$(ML_ROOT_DIR)/lib/
-PARSER_DIR=$(ML_ROOT_DIR)/parser/
 SEMANTICS_DIR=$(ML_ROOT_DIR)/semantics/
+PARSER_DIR=$(ML_ROOT_DIR)/parser/
 VIEWER_DIR=$(ML_ROOT_DIR)/viewer/
+EXAMPLES_DIR=$(ML_ROOT_DIR)/examples/
 DIST_DIR=$(ML_ROOT_DIR)/dist/
 MATCHC_DIST_DIR=$(DIST_DIR)/matchC/
 
@@ -21,7 +22,7 @@ FSL_HOST_NAME='fsl3.cs.uiuc.edu'
 FSL_MATCHC_ONLINE_DIR=/www/www-root/extensions_stefane1/matchC_online/
 
 
-.PHONY: build install dist pack online
+.PHONY: build install dist pack online test
 
 all: install
 
@@ -31,13 +32,13 @@ klib:
 	cp $(K_LIB)/socket.maude $(LIB_DIR)
 
 build: klib
-	$(MAKE) -C $(PARSER_DIR)
 	$(MAKE) -C $(SEMANTICS_DIR)
+	$(MAKE) -C $(PARSER_DIR)
 	$(MAKE) -C $(VIEWER_DIR)
 
 install: build
-	cp $(PARSER_JAR) $(LIB_DIR)
 	sed '1d' $(SEMANTICS_COMPILED_FILE) >$(RELEASE_COMPILED_FILE)
+	cp $(PARSER_JAR) $(LIB_DIR)
 	cp $(VIEWER_JAR) $(LIB_DIR)
 
 dist:
@@ -63,6 +64,9 @@ online: dist
       chmod -R a+w $(FSL_MATCHC_ONLINE_DIR); \
     ) \
   fi
+
+test:
+	find $(EXAMPLES_DIR) -type f -name '*.c' -exec bin/test_matchC.py "{}" \;
 
 clean:
 	$(MAKE) -C $(PARSER_DIR) clean
