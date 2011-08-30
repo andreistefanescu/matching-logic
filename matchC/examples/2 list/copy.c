@@ -1,5 +1,5 @@
 /*
- * Function list_copy duplicates a singly linked list by allocating memory and 
+ * Function copy duplicates a singly linked list by allocating memory and 
  * copying the content of the original list to the newly created one.
  */
 
@@ -13,7 +13,7 @@ struct listNode {
 };
 
 
-struct listNode* list_copy(struct listNode *x)
+struct listNode* copy(struct listNode *x)
 /*@ rule <k> $ => return ?y; ...</k>
          <heap>... list(x)(A), (. => list(?y)(A)) ...</heap> */
 {
