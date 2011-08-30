@@ -10,5 +10,6 @@
 int main()
 {
   int *x;
+  x = (int *) 1000;
   printf("%d", *x);
 }
