@@ -1,5 +1,5 @@
 /*
- * Function list_filter deletes the nodes of a singly linked list that hold 
+ * Function filter deletes the nodes of a singly linked list that hold 
  * the value "v".
  */
 
@@ -13,7 +13,7 @@ struct listNode {
 };
 
 
-struct listNode* list_filter(struct listNode* x, int v)
+struct listNode* filter(struct listNode* x, int v)
 /*@ rule <k> $ => return ?x; ...</k>
          <heap>... list(x)(A) => list(?x)(filter(v, A)) ...</heap> */
 {
