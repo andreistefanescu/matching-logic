@@ -1,3 +1,9 @@
+/*
+ * Function list_read reads the elements of a singly-linked list from the
+ * standard input.
+ */
+
+
 #include <stdio.h>
 #include <stdlib.h>
 
