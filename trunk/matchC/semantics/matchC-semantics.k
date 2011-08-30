@@ -95,7 +95,9 @@ kmod MATCHC-SEMANTICS is including MATCHC-SYNTAX + KERNELC-SEMANTICS
         checkContracts
       =>
         setToK(checkSet)
-        ~> if SetItem(int id("main")(.List{KernelC})) in keys(FunMap) then 
+        ~> if (SetItem(int id("main")(.List{KernelC})) in keys(FunMap)) andBool
+              notBool(SetItem(uncheckContract(id("main"))) in checkSet)
+           then 
              checkContract(id("main"))
            else
              .K
@@ -106,6 +108,9 @@ kmod MATCHC-SEMANTICS is including MATCHC-SYNTAX + KERNELC-SEMANTICS
     <check_>
       SetItem(checkContract(F)) SetItem(uncheckContract(F)) => .Set
     <_/check>
+  [structural]
+  rule
+    <program> uncheckContract(id("main")) => .K <_/program>
   [structural]
 
 
@@ -232,6 +237,11 @@ Function definition/declaration
   rule
     <program> (@ skip  => .K) ~> T F(ParamList) S <_/program>
     <check_> .Set => SetItem(uncheckContract(F)) <_/check>
+  [structural]
+  rule
+    <program> (@ skip  => .K) ~> T F(ParamList) [[Annot]] S <_/program>
+    <check_> .Set => SetItem(uncheckContract(F)) <_/check>
+  [structural]
 
 
 ***(
