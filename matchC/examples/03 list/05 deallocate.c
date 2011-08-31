@@ -3,7 +3,7 @@
  * In matchC, "." means "nothing"; technically, "." is the unit
  * of all collection structures (lists, sets, bags, maps, etc.).
  * By rewriting "list(x)(A)" into "." below, we mean that the list
- * that x points to dissappears after the function is applied.
+ * that x points to disappears after the function is applied.
  */
 
 
