@@ -35,9 +35,7 @@ struct listNode* insert(struct listNode* x, int v)
   }
 
   y = x;
-  /*@ inv <heap>...
-            lseg(x, y)(?B), y |-> [?v, ?n], list(?n)(?C), n |-> [v, 0]
-          ...</heap>
+  /*@ inv <heap>...lseg(x,y)(?B), y|->[?v,?n], list(?n)(?C), n|->[v,0]...</heap>
           /\ v = !v /\ A = ?B @ [?v] @ ?C /\ ?v < v */
   while (y->next != NULL && y->next->val < v)
     y = y->next;
