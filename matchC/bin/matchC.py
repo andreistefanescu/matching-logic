@@ -193,6 +193,7 @@ def output_filter(line):
 
 
 args = None
+### parse command line arguments
 def parse_args():
     global args
 
