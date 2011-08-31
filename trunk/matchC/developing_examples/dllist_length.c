@@ -22,7 +22,7 @@ int length(struct dllistNode* a)
   if (a != 0) {             
     x = a;
     /*@ inv <heap>... dllseg(0,a)(?y,x,?A1), dllseg(?y,x)(?z,0,?A2) ...</heap>
-          /\ l = len(?A1) */  
+            /\ l = len(?A1) */  
     while (x != 0) {
       x = x->next ;
       l = l + 1 ;
