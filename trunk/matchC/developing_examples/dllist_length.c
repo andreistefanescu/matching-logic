@@ -31,16 +31,5 @@ int length(struct dllistNode* a)
   return l;
 }
 
-int main()
-{
-  struct dllistNode* x;
-  x = (struct dllistNode*)malloc(sizeof(struct dllistNode));
-  x->val = 5;
-  x->next = 0;
-  x->prev = 0;
-  printf("%d\n", length(x));
-  return 0;
-}
-
 //@ var y, z : Int
 //@ var A : Seq
