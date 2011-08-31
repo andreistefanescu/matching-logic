@@ -1,8 +1,7 @@
 /*
- * Function find_min returns the outmost left leaf of a tree.
- *
- * Function bst_delete deletes the node of the tree having value "v" and 
- * rebalances the tree to be a binary search tree.
+ * Function that deletes the node of the tree having value "v" and 
+ * rebalances the tree to be a binary search tree. Auxilliary function
+ * find_min returns the leftmost leaf of a tree (holding its smallest element).
  */
 
 
@@ -20,14 +19,12 @@ int find_min(struct treeNode *t)
 /*@ rule <k> $ => return m; ...</k> <heap>... tree(t)(T) ...</heap>
     if ~(t = 0) /\ isBst(T) /\ in(m, tree2mset(T)) /\ leq({m}, tree2mset(T)) */
 {
-  if (t->left == NULL)
-    return t->val;
-  else
-    return find_min(t->left);
+  if (t->left == NULL) return t->val;
+  return find_min(t->left);
 }
 
 
-struct treeNode* bst_delete(struct treeNode *t, int v)
+struct treeNode* delete(int v, struct treeNode *t)
 /*@ rule <k> $ => return ?t; ...</k>
          <heap>... tree(t)(T) => tree(?t)(?T) ...</heap>
     if isBst(T) /\ isBst(?T) /\ tree2mset(?T) = diff(tree2mset(T), {v}) */
@@ -56,14 +53,14 @@ struct treeNode* bst_delete(struct treeNode *t, int v)
     }
     else {
       min = find_min(t->right);
-      t->right = bst_delete(t->right, min);
+      t->right = delete(min, t->right);
       t->val = min;
     }
   }
   else if (v < t->val)
-    t->left = bst_delete(t->left, v);
+    t->left = delete(v, t->left);
   else
-    t->right = bst_delete(t->right, v);
+    t->right = delete(v, t->right);
 
   return t;
 }

@@ -1,8 +1,5 @@
 /*
- * Function newNode creates a new node of type binary tree and returns it.
- *
- * Function bst_insert introduces a new node of value v into a binary search
- * tree, while maintaining its properties.
+ * Function that inserts a new node with value v into a binary search tree.
  */
 
 
@@ -26,7 +23,7 @@ struct treeNode* newNode(int v)
 }
 
 
-struct treeNode* bst_insert(struct treeNode *t, int v)
+struct treeNode* insert(int v, struct treeNode *t)
 /*@ rule <k> $ => return ?t; ...</k>
          <heap>... tree(t)(T) => tree(?t)(?T) ...</heap>
     if isBst(T) /\ isBst(?T) /\ tree2mset(?T) = tree2mset(T) U {v} */
@@ -35,13 +32,12 @@ struct treeNode* bst_insert(struct treeNode *t, int v)
     return newNode(v);
 
   if (v < t->val)
-    t->left = bst_insert(t->left, v);
+    t->left = insert(v, t->left);
   else
-    t->right = bst_insert(t->right, v);
+    t->right = insert(v, t->right);
 
   return t;
 }
 
 
 //@ var T : Tree
-
