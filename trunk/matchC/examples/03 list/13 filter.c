@@ -13,14 +13,15 @@ struct listNode {
 };
 
 
-struct listNode* filter(struct listNode* x, int v)
+struct listNode* filter(int v, struct listNode* x)
 /*@ rule <k> $ => return ?x; ...</k>
          <heap>... list(x)(A) => list(?x)(filter(v, A)) ...</heap> */
 {
   struct listNode* y;
-  
-  /*@ inv <heap>... list(x)(?A) ...</heap>
-          /\ v = !v /\ filter(v, A) = filter(v, ?A) */
+
+  // Variable !v below stays unchanged during loop iterations,
+  // so it says that the value of v is not changed by the loop.
+  //@ inv <heap>...list(x)(?A)...</heap> /\ v = !v /\ filter(v,A) = filter(v,?A)
   while (x != NULL && x->val == v) {
     struct listNode* z;
 
