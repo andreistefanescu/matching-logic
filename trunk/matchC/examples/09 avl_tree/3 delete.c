@@ -27,7 +27,7 @@ int max(int a, int b)
 
 int height(struct node *t)
 /*@ rule <k> $ => return height(T); ...</k> <heap>... htree(t)(T) ...</heap>
-    if hasHeight(T) */
+    if isHeightTree(heights(T)) */
 {
   return t ? t->height : 0;
 }
@@ -88,8 +88,8 @@ struct node* balance(struct node *t)
 
 int find_min(struct node *t)
 /*@ rule <k> $ => return m; ...</k> <heap>... htree(t)(T) ...</heap>
-    if ~(t = 0) /\ isBst(st(T))
-       /\ in(m, tree2mset(st(T))) /\ leq({m}, tree2mset(st(T))) */
+    if ~(t = 0) /\ isBst(values(T))
+       /\ in(m, tree2mset(values(T))) /\ leq({m}, tree2mset(values(T))) */
 {
   if (t->left == NULL) return t->value;
   return find_min(t->left);
@@ -100,7 +100,7 @@ struct node* delete(int v, struct node *t)
 /*@ rule <k> $ => return ?t; ...</k>
          <heap>... htree(t)(T) => htree(?t)(?T) ...</heap>
     if isAvl(T) /\ isAvl(?T)
-       /\ tree2mset(st(?T)) = diff(tree2mset(st(T)), {v})
+       /\ tree2mset(values(?T)) = diff(tree2mset(values(T)), {v})
        /\ 0 <= height(T) - height(?T) /\ height(T) - height(?T) <= 1 */
 {
   int min;

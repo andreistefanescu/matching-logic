@@ -518,10 +518,10 @@ kmod FOL is including MATCHC-SEMANTICS
   [structural]
   rule
   (
-    <form> NtPhi </form>
+    <form> Phi </form>
     <form> TrueFormula </form>
   =>
-    <form> NtPhi </form>
+    <form> Phi </form>
   )
   [structural]
 

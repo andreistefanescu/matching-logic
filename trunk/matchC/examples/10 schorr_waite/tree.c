@@ -14,8 +14,8 @@ struct graphNode {
 void schorr_waite_tree(struct graphNode *root)
 /*@ rule <k> $ => return; ...</k>
          <heap>... swtree(root)(T) => swtree(root)(?T) ...</heap>
-    if isConst(0, proj(1, T)) /\ isConst(3, proj(1, ?T))
-       /\ proj(0, T) = proj(0, ?T) */
+    if isConst(0, marks(T)) /\ isConst(3, marks(?T))
+       /\ pointers(T) = pointers(?T) */
 {
   struct graphNode *p;
   struct graphNode *q;
@@ -25,13 +25,14 @@ void schorr_waite_tree(struct graphNode *root)
 
   p = root; q = NULL;
   /*@ inv <heap>... swtree(p)(?TP), swtree(q)(?TQ) ...</heap>
-          /\ isSWMarkedPath(proj(1, ?TP), proj(1, ?TQ))
-          /\ proj(0, T) = SWPath2ptrTree(?TP, ?TQ) */
+          /\ isMarked(marks(?TP), marks(?TQ))
+          /\ pointers(T) = restore(?TP, ?TQ) */
   while (p != NULL) {
     struct graphNode *t;
 
     p->mark = p->mark + 1;
     if (p->mark == 3 || p->left != NULL && p->left->mark == 0) {
+      // parallel assignment p->left, p->right, q, p = p->right, q, p, p->left
       t = p->left;
       p->left = p->right;
       p->right = q;
@@ -39,6 +40,7 @@ void schorr_waite_tree(struct graphNode *root)
       p = t;
     }
     else {
+      // parallel assignment p->left, p->right, q = p->right, q, p->left
       t = p->left;
       p->left = p->right;
       p->right = q;

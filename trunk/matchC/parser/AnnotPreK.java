@@ -48,6 +48,8 @@ public class AnnotPreK {
     tokenToK.put(annotParser.MAPSTO, "_|->_");
     tokenToK.put(annotParser.POINTSTO, "_|->_:_");
 
+    tokenToBuiltins.put(annotParser.EQUIV, "_<=fe=>_");
+    tokenToBuiltins.put(annotParser.IMPL, "_=fe=>_");
     tokenToBuiltins.put(annotParser.DISJ, "_\\/_");
     tokenToBuiltins.put(annotParser.CONJ, "_/\\_");
     tokenToBuiltins.put(annotParser.NEG, "~_");

@@ -34,7 +34,7 @@ mod MATHEMATICAL-DOMAIN-BUILTIN-MODULE is
 
   op isSorted : Seq++ -> AtomFormula .
   op isBst : Tree++ -> AtomFormula .
-  op hasHeight : Tree++ -> AtomFormula .
+  op isHeightTree : Tree++ -> AtomFormula .
   op isBalanced : Tree++ -> AtomFormula .
   op isAvl : Tree++ -> AtomFormula .
 
@@ -82,9 +82,9 @@ mod MATHEMATICAL-DOMAIN-BUILTIN-MODULE is
      /\ isBst(TL) /\ isBst(TR) .
   eq isBst(upsilon) = TrueFormula .
 
-  eq hasHeight(TL [[I] @ [J]] TR)
-   = J === height(TL [[I] @ [J]] TR) /\ hasHeight(TL) /\ hasHeight(TR) .
-  eq hasHeight(upsilon) = TrueFormula .
+  eq isHeightTree(TL [I] TR)
+   = I === height(TL [I] TR) /\ isHeightTree(TL) /\ isHeightTree(TR) .
+  eq isHeightTree(upsilon) = TrueFormula .
 
   eq isBalanced(TL [Obj] TR)
    = @(-1 <=Int (height(TL) -Int height(TR)))
@@ -92,7 +92,7 @@ mod MATHEMATICAL-DOMAIN-BUILTIN-MODULE is
      /\ isBalanced(TL) /\ isBalanced(TR) .
   eq isBalanced(upsilon) = TrueFormula .
 
-  eq isAvl(T) = isBst(st(T)) /\ isBalanced(st(T)) /\ hasHeight(T) .
+  eq isAvl(T) = isBst(values(T)) /\ isHeightTree(heights(T)) /\ isBalanced(T) .
 
 
   eq seq2mset(A) === empty = A === epsilon .

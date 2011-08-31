@@ -246,6 +246,7 @@ mod SMT-LIB is
 
   eq funsSMTString = "\
                       (declare-fun in (Int Int) Bool)\
+                      (declare-fun proj (Int Int) Int)\
 \
                       (declare-fun absolute (Int) Int)\
                       (declare-fun fibon (Int) Int)\
@@ -269,7 +270,6 @@ mod SMT-LIB is
 \
                       (declare-fun upsilon () Int)\
                       (declare-fun tree (Int Int Int) Int)\
-                      (declare-fun st (Int) Int)\
                       (declare-fun height (Int) Int)\
                       (declare-fun mirror (Int) Int)\
 \
@@ -278,7 +278,7 @@ mod SMT-LIB is
                       (declare-fun tree2mset (Int) Int)\
                       (declare-fun isSorted (Int) Bool)\
                       (declare-fun isBst (Int) Bool)\
-                      (declare-fun hasHeight (Int) Bool)\
+                      (declare-fun isHeightTree (Int) Bool)\
                       (declare-fun isBalanced (Int) Bool)\
                       (declare-fun isAvl (Int) Bool)\
 " .
