@@ -44,32 +44,5 @@ struct dllistNode* reverse(struct dllistNode* a)
 }
 
 
-void print(struct dllistNode* a)
-{
-  struct dllistNode* aux;
-  aux = a;
-  printf("\n");
-  while(aux!=0)
-  {
-    printf("%d ", aux->val);
-    aux = aux->next;
-  }
-  printf("\n");
-}
-
-int main()
-{
-  struct dllistNode* x;
-  x = (struct dllistNode*)malloc(sizeof(struct dllistNode));
-  x->val = 5;
-  x->next = 0;
-  x->prev = 0;
-  print(x);
-  x = reverse(x);
-  print(x);
-  return 0;
-}
-
-
 //@ var y, z : Int
 //@var A : Seq
