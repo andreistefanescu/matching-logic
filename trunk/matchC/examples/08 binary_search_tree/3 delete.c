@@ -1,6 +1,6 @@
 /*
- * Function that deletes the node of the tree having value "v" and 
- * rebalances the tree to be a binary search tree. Auxilliary function
+ * Function that deletes the node of the tree having a certain value and 
+ * rebalances the tree to be a binary search tree.  Auxilliary function
  * find_min returns the leftmost leaf of a tree (holding its smallest element).
  */
 

@@ -1,5 +1,5 @@
 /*
- * Function that inserts a new node with value v into a binary search tree.
+ * Function that inserts a new value into a binary search tree.
  */
 
 
@@ -13,7 +13,7 @@ struct treeNode {
 };
 
 
-struct treeNode* newNode(int v)
+struct treeNode* new_node(int v)
 {
   struct treeNode *node;
   node = (struct treeNode *) malloc(sizeof(struct treeNode));
@@ -29,7 +29,7 @@ struct treeNode* insert(int v, struct treeNode *t)
     if isBst(T) /\ isBst(?T) /\ tree2mset(?T) = tree2mset(T) U {v} */
 {
   if (t == NULL)
-    return newNode(v);
+    return new_node(v);
 
   if (v < t->val)
     t->left = insert(v, t->left);
