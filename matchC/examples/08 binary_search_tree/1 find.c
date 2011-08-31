@@ -1,5 +1,5 @@
 /*
- * Function that searches a binary search tree for a node with value "v".
+ * Function that searches a binary search tree for a node with a certain value.
  */
 
 
