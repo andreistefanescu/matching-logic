@@ -13,15 +13,15 @@ struct treeNode {
 };
 
 
-int find(struct treeNode *t, int v)
+int find(int v, struct treeNode *t)
 /*@ rule <k> $ => return r; ...</k> <heap>... tree(t)(T) ...</heap>
     if isBst(T)
        /\ (~(r = 0) /\ in(v, tree2mset(T)) \/ r = 0 /\ ~in(v, tree2mset(T))) */
 {
   if (t == NULL) return 0;
   if (v == t->val) return 1;
-  if (v < t->val) return find(t->left, v);
-  return find(t->right, v);
+  if (v < t->val) return find(v, t->left);
+  return find(v, t->right);
 }
 
 
