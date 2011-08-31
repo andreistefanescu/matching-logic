@@ -10,7 +10,8 @@ import matchC
 
 matchC.main()
 
-xml_filename = os.path.splitext(os.path.basename(matchC.args.file))[0] + ".xml"
+rootname = os.path.splitext(os.path.basename(matchC.args.file))[0]
+xml_filename = "test_" + rootname + ".xml"
 xml_file = open(xml_filename, "w")
 xml_file.write("<?xml version='1.0' encoding='UTF-8' ?>\n")
 xml_file.write("<testsuite name='adhoc'>\n")
