@@ -13,7 +13,7 @@ struct listNode {
 };
 
 
-struct listNode* insert(struct listNode* x, int v)
+struct listNode* insert(int v, struct listNode* x)
 /*@ rule <k> $ => return ?x; ...</k>
          <heap>... list(x)(A) => list(?x)(?A) ...</heap>
     if isSorted(A) /\ isSorted(?A) /\ seq2mset(?A) = seq2mset(A) U {v} */
