@@ -20,7 +20,7 @@ struct listNode* filter(int v, struct listNode* x)
   struct listNode* y;
 
   // Variable !v below stays unchanged during loop iterations,
-  // so it says that the value of v is not changed by the loop.
+  // so "v = !v" says that the value of v is not changed by the loop.
   //@ inv <heap>...list(x)(?A)...</heap> /\ v = !v /\ filter(v,A) = filter(v,?A)
   while (x != NULL && x->val == v) {
     struct listNode* z;
