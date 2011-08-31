@@ -36,12 +36,19 @@ mod FORMULA-BUILTIN-MODULE is inc PL-BOOL + PL-STRING .
   op _\/_ : Formula Formula -> Formula [ditto] .
   op _===>_ : Formula Formula -> NtFormula [prec 61] .
 
+  op _=fe=>_ : Formula Formula -> NtFormula .
+  op _<=fe=>_ : Formula Formula -> NtFormula .
+
   op check-validity : Formula -> Bool .
 
 
   var Atom : AtomFormula .
   vars NtPhi NtPhi1 NtPhi2 : NtFormula .
   vars Phi Phi1 Phi2 : Formula .
+
+
+  eq Phi1 =fe=> Phi2 = ~ Phi1 \/ Phi2 .
+  eq Phi1 <=fe=> Phi2 = Phi1 /\ Phi2 \/ ~ Phi1 /\ ~ Phi2 .
 
 
   eq  @ true =  TrueFormula .
@@ -62,7 +69,6 @@ mod FORMULA-BUILTIN-MODULE is inc PL-BOOL + PL-STRING .
 
   eq Phi ===>  TrueFormula = TrueFormula .
   eq Phi ===> FalseFormula = ~ Phi .
----  leads to in infinite rewriting
   eq FalseFormula ===> Phi = TrueFormula .
   eq  TrueFormula ===> Phi = Phi .
 
@@ -74,6 +80,9 @@ mod FORMULA-BUILTIN-MODULE is inc PL-BOOL + PL-STRING .
   eq ~ NtPhi /\ Phi1 ===> ~ NtPhi /\ Phi2 = ~ NtPhi /\ Phi1 ===> Phi2 .
   eq (NtPhi1 \/ NtPhi2) /\ Phi1 ===> (NtPhi1 \/ NtPhi2) /\ Phi2
    = (NtPhi1 \/ NtPhi2) /\ Phi1 ===> Phi2 .
+
+  *** eq NtPhi /\ Phi ===> Phi1 \/ (~ NtPhi /\ Phi2) = NtPhi /\ Phi ===> Phi1 .
+  *** eq ~ NtPhi /\ Phi ===> Phi1 \/ (NtPhi /\ Phi2) = ~ NtPhi /\ Phi ===> Phi1 .
 
   eq NtPhi /\ (NtPhi1 \/ NtPhi2) ===> Phi
    = NtPhi /\ NtPhi1 \/ NtPhi /\ NtPhi2 ===> Phi [owise] .

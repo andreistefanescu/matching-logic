@@ -31,7 +31,7 @@ int max(int a, int b)
 
 int height(struct node *t)
 /*@ rule <k> $ => return height(T); ...</k> <heap>... htree(t)(T) ...</heap>
-    if hasHeight(T) */
+    if isHeightTree(heights(T)) */
 {
   return t ? t->height : 0;
 }
@@ -108,7 +108,7 @@ struct node* insert(int v, struct node *t)
 /*@ rule <k> $ => return ?t; ...</k>
          <heap>... htree(t)(T) => htree(?t)(?T) ...</heap>
     if isAvl(T) /\ isAvl(?T)
-       /\ tree2mset(st(?T)) = tree2mset(st(T)) U {v}
+       /\ tree2mset(values(?T)) = tree2mset(values(T)) U {v}
        /\ height(T) <= height(?T) /\ height(?T) <= height(T) + 1 */
 {
   if (t == NULL)

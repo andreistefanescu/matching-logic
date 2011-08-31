@@ -36,6 +36,8 @@ tokens {
   LPAREN = '(';
   RPAREN = ')'; 
 
+  EQUIV = '<==>';
+  IMPL = '==>';
   DISJ = '\\/';
   CONJ = '/\\';
   NEG = '~';
@@ -448,7 +450,15 @@ k_item
  * Grammar rules for formula parsing
  */
 formula
-  : disjunction_formula
+  : equivalence_formula
+  ;
+
+equivalence_formula
+  : implication_formula (EQUIV^ implication_formula)*
+  ;
+
+implication_formula
+  : disjunction_formula (IMPL^ disjunction_formula)*
   ;
 
 disjunction_formula
