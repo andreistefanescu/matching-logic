@@ -3,7 +3,7 @@ kmod QUEUE-HP is
 
   kvar N : Nat
   kvar P P' Q Q' : Int++
-  kvar I I1 I2 : Int++
+  kvar I I1 I2 I3 I4 : Int++
   kvar Alpha Beta : Seq++
   kvar H : Map
   kvar K : K
@@ -148,9 +148,11 @@ if VALID(Phi ===> P' === P \/ P' === P +Int 1 \/ P' === Q \/ P' === Q +Int 1)
     <heap_>
       P |-> I1 : (id("queue").id("head"))
       (P +Int 1) |-> I2 : (id("queue").id("tail"))
-      queue(I1, I2)(Alpha)
+      lseg(I1, I2)(Alpha)
+      I2 |-> I3 : (id("listNode").id("val"))
+      (I2 +Int 1) |-> I4 : (id("listNode").id("next"))
       =>
-      queue(P)(Alpha)
+      queue(P)(Alpha @ [I3])
     <_/heap>
   [structural]
 
@@ -170,14 +172,6 @@ if VALID(Phi ===> P' === P \/ P' === P +Int 1 \/ P' === Q \/ P' === Q +Int 1)
     <form> Phi => Phi /\ Q === 0 /\ Alpha === epsilon </form>
   [structural]
 
-  rule
-    <heap_>
-      Q |-> I : (id("listNode").id("val"))
-      (Q +Int 1) |-> Q' : (id("listNode").id("next"))
-      =>
-      queue(Q, Q)([I])
-    <_/heap>
-  [structural]
 
   rule
     <heap_>
