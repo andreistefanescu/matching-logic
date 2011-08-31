@@ -48,9 +48,7 @@ struct listNode* quicksort(struct listNode* x)
   p->next = NULL;
   y = NULL;
   z = NULL;
-  /*@ inv <heap>...
-            p |-> [v, 0], list(x)(?A), list(y)(?B), list(z)(?C)
-          ...</heap>
+  /*@ inv <heap>... p|->[v,0], list(x)(?A), list(y)(?B), list(z)(?C) ...</heap>
           /\ seq2mset(A) = {v} U seq2mset(?A) U seq2mset(?B) U seq2mset(?C)
           /\ leq(seq2mset(?B), {v}) /\ leq({v}, seq2mset(?C)) */
   while(x != NULL) {
