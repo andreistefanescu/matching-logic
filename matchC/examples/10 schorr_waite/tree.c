@@ -25,8 +25,8 @@ void schorr_waite_tree(struct graphNode *root)
 
   p = root; q = NULL;
   /*@ inv <heap>... swtree(p)(?TP), swtree(q)(?TQ) ...</heap>
-          /\ isMarked(marks(?TP), marks(?TQ))
-          /\ pointers(T) = restore(?TP, ?TQ) */
+          /\ isWellMarked(?TP, ?TQ)
+          /\ pointers(T) = restorePointers(?TP, ?TQ) */
   while (p != NULL) {
     struct graphNode *t;
 
