@@ -37,6 +37,8 @@
  * [1] http://www.cs.cornell.edu/courses/cs312/2007fa/lectures/lec21-schorr-waite.pdf
  * [2] http://code.google.com/p/matching-logic/source/browse/trunk/matchC/lib/theories/schorr-waite-theory.maude
  */
+
+
 #include<stdlib.h>
 
 
