@@ -3,8 +3,8 @@
  * them to the standard output in reverse order. Internally, it stores the n
  * elements into a singly-linked list, which is allocated as the elements are
  * read. Then it outputs the n elements from the list, which is deallocated as
- * the element are written. In the end, the heap stays unchanged (the heap does
- * not appear in the function specification).
+ * the element are written. In the end, the heap stays unchanged (implicitly
+ * stated, because the heap does not appear in the function specification).
  */
 
 
