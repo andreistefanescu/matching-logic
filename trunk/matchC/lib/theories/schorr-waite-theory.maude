@@ -1,0 +1,78 @@
+***(
+    This file is part of the Matching Logic Verification Framework
+
+    Copyright (C) 2009-2011 Grigore Rosu
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+***)
+
+
+mod MATHEMATICAL-SCHORR-WAITE-BUILTIN-MODULE
+  is inc MATHEMATICAL-TREE-BUILTIN-MODULE .
+
+  op isMarked : Tree++ Tree++ -> AtomFormula .
+  op isMarkedPath : Tree++ -> AtomFormula .
+  op restore : Tree++ Tree++ -> Tree++ .
+  op restorePath : Tree++ Tree++ -> Tree++ .
+
+  op pointers : Tree++ -> Tree++ .
+  op marks : Tree++ -> Tree++ .
+
+
+  var Phi : Formula .
+  var I J : Int++ .
+  var T TL TR : Tree++ .
+
+
+  eq pointers(T) = proj(0, T) .
+  eq marks(T)    = proj(1, T) .
+
+
+  eq isMarked(T, TL [3] TR) = isMarkedPath(T) .
+  eq restore(T, TL [[I] @ [3]] TR)
+   = restorePath(proj(0, TL) [I] proj(0, TR), T) .
+
+  eq isMarked(TL [I] TR, T)
+   = I === 0 /\ isConst(0, TL) /\ isConst(0, TR) /\ isMarkedPath(T)
+     \/ I === 1 /\ isConst(3, T) /\ isConst(0, TL) /\ isMarkedPath(TR)
+     \/ I === 2 /\ isConst(3, TR) /\ isConst(3, T) /\ isMarkedPath(TL) .
+  eq isMarked(upsilon, T) = isConst(3, T) .
+
+  eq isMarkedPath(TL [I] TR)
+   = I === 1 /\ isConst(0, TL) /\ isMarkedPath(TR)
+     \/ I === 2 /\ isConst(3, TR) /\ isMarkedPath(TL) .
+  eq isMarkedPath(upsilon) = TrueFormula .
+
+
+  eq restore(TL [[I] @ [0]] TR, T)
+   = restorePath(proj(0, TL) [I] proj(0, TR), T) .
+  eq restore(TL [[I] @ [1]] TR, T)
+   = restorePath(proj(0, T) [I] proj(0, TL), TR) .
+  eq restore(TL [[I] @ [2]] TR, T)
+   = restorePath(proj(0, TR) [I] proj(0, T), TL) .
+  eq restore(upsilon, T) = proj(0, T) .
+
+  eq restorePath(T, TL [[I] @ [1]] TR)
+   = restorePath(T [I] proj(0, TL), TR) . 
+  eq restorePath(T, TL [[I] @ [2]] TR)
+   = restorePath(proj(0, TR) [I] T, TL) .
+  eq restorePath(T, upsilon) = T .
+
+
+  eq isMarked(T, TL [3] TR) = isMarkedPath(T) .
+  eq restore(T, TL [[I] @ [3]] TR)
+   = restorePath(proj(0, TL) [I] proj(0, TR), T) .
+endm
+
