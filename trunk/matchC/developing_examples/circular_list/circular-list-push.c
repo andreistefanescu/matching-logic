@@ -14,7 +14,7 @@ struct listNode {
 struct listNode* clpush(struct listNode* x, int val)
 /*@ rule <k> $ => return x; ...</k>
          <heap>... x |-> [v, n], lseg(n, x)(A) =>
-                   x |-> [v, ?aux], lseg(?aux,x)([val] @ A) ...</heap>
+                   x |-> [v, ?n], lseg(?n,x)([val] @ A) ...</heap>
  */
 {
   struct listNode* aux;
