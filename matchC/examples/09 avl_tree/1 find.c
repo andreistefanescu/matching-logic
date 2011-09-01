@@ -22,7 +22,7 @@ struct node {
 
 int find(int v, struct node *tree)
 /*@ rule <k> $ => return r; ...</k> <heap>... htree(tree)(T) ...</heap>
-    if isAvl(T) /\ (~(r = 0) <==> in(v, tree2mset(values(T)))) */
+    if isBst(values(T)) /\ (~(r = 0) <==> in(v, tree2mset(values(T)))) */
 {
   if (tree == NULL) return 0;
   if (v == tree->value) return 1;
