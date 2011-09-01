@@ -44,15 +44,8 @@ mod MATHEMATICAL-TREE-BUILTIN-MODULE
   op height : Tree++ -> Int++ .
   op mirror : Tree++ -> Tree++ .
 
-  op isMarked : Tree++ Tree++ -> AtomFormula .
-  op isMarkedPath : Tree++ -> AtomFormula .
-  op restore : Tree++ Tree++ -> Tree++ .
-  op restorePath : Tree++ Tree++ -> Tree++ .
-
   op values : Tree++ -> Tree++ .
   op heights : Tree++ -> Tree++ .
-  op pointers : Tree++ -> Tree++ .
-  op marks : Tree++ -> Tree++ .
 
 
   var N : Nat .
@@ -81,47 +74,12 @@ mod MATHEMATICAL-TREE-BUILTIN-MODULE
   eq mirror(TL [Obj] TR) = mirror(TR) [Obj] mirror(TL) .
   eq mirror(upsilon) = upsilon .
 
-
-  eq isMarked(TL [I] TR, T)
-   = I === 0 /\ isConst(0, TL) /\ isConst(0, TR) /\ isMarkedPath(T)
-     \/ I === 1 /\ isConst(3, T) /\ isConst(0, TL) /\ isMarkedPath(TR)
-     \/ I === 2 /\ isConst(3, TR) /\ isConst(3, T) /\ isMarkedPath(TL) .
-  eq isMarked(upsilon, T) = isConst(3, T) .
-
-  eq isMarkedPath(TL [I] TR)
-   = I === 1 /\ isConst(0, TL) /\ isMarkedPath(TR)
-     \/ I === 2 /\ isConst(3, TR) /\ isMarkedPath(TL) .
-  eq isMarkedPath(upsilon) = TrueFormula .
-
-
-  eq restore(TL [[I] @ [0]] TR, T)
-   = restorePath(proj(0, TL) [I] proj(0, TR), T) .
-  eq restore(TL [[I] @ [1]] TR, T)
-   = restorePath(proj(0, T) [I] proj(0, TL), TR) .
-  eq restore(TL [[I] @ [2]] TR, T)
-   = restorePath(proj(0, TR) [I] proj(0, T), TL) .
-  eq restore(upsilon, T) = proj(0, T) .
-
-  eq restorePath(T, TL [[I] @ [1]] TR)
-   = restorePath(T [I] proj(0, TL), TR) . 
-  eq restorePath(T, TL [[I] @ [2]] TR)
-   = restorePath(proj(0, TR) [I] T, TL) .
-  eq restorePath(T, upsilon) = T .
-
-
   eq values(T)   = proj(0, T) .
   eq heights(T)  = proj(1, T) .
-  eq pointers(T) = proj(0, T) .
-  eq marks(T)    = proj(1, T) .
 
 
   eq height(proj(N, T)) = height(T) . 
-  *** eq height(mirror(T)) = height(T) .
   
-  eq isMarked(T, TL [3] TR) = isMarkedPath(T) .
-  eq restore(T, TL [[I] @ [3]] TR)
-   = restorePath(proj(0, TL) [I] proj(0, TR), T) .
-
 
   eq height(T) === 0 = T === upsilon .
   eq @(-Int height(T) >=Int 0) = T === upsilon .
