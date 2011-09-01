@@ -20,14 +20,14 @@ struct node {
 };
 
 
-int find(int v, struct node *tree)
-/*@ rule <k> $ => return r; ...</k> <heap>... htree(tree)(T) ...</heap>
+int find(int v, struct node *t)
+/*@ rule <k> $ => return r; ...</k> <heap>... htree(t)(T) ...</heap>
     if isBst(values(T)) /\ (~(r = 0) <==> in(v, tree2mset(values(T)))) */
 {
-  if (tree == NULL) return 0;
-  if (v == tree->value) return 1;
-  if (v < tree->value) return find(v, tree->left);
-  return find(v, tree->right);
+  if (t == NULL) return 0;
+  if (v == t->value) return 1;
+  if (v < t->value) return find(v, t->left);
+  return find(v, t->right);
 }
 
 
