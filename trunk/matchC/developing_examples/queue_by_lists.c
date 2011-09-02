@@ -41,10 +41,10 @@ struct listNode* dequeue(struct listNode* x)
     last = x->next;
     prelast = x;
     /*@ inv <heap>... lseg(x,prelast)(?A1), 
-                      prelast |-> [vp, last], 
-                      last |-> [vl, n],
-                      list(n)(?A2) ...</heap>
-            /\ A @ [v] = ?A1 @ [vp] @ [vl] @ ?A2
+                      prelast |-> [?vp, last], 
+                      last |-> [?vl, ?n],
+                      list(?n)(?A2) ...</heap>
+            /\ A @ [v] = ?A1 @ [?vp] @ [?vl] @ ?A2
     */
     while(last->next != 0) {
       prelast = last;
