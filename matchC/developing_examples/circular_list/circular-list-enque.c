@@ -6,18 +6,21 @@ struct listNode {
   struct listNode *next;
 };
 
-struct listNode* clenque(struct listNode* x, int val)
-/*@ rule <k> $ => return ?x; ...</k>
-         <heap>... (x |-> [v, n], lseg(n,x)(A)) =>
-                  (?x |-> [val,n], lseg(n,?x)(A @ [v])) ...</heap>
+struct listNode* clenque(struct listNode* x, int value)
+/* rule <k> $ => return x; ...</k>
+         <heap>... (lseg(x, n)([v]), lseg(n,x)(A)) =>
+                   (lseg(x, n)([value] @ [v]), lseg(n,x)(A)) ...</heap>
  */
 {
   struct listNode* aux;
+
   aux = (struct listNode*)malloc(sizeof(struct listNode));
-  aux->val = val;
+  aux->val = x->val;
   aux->next = x->next;
+  x->val = value;
   x->next = aux;
-  x = x->next;
+  //@ assert <heap>... lseg(x,aux)([value]), lseg(aux,n)([v]) ...</heap>
+  //@ assert <heap>... lseg(x,n)([value] @ [v]) ...</heap>
   return x;
 }
 
