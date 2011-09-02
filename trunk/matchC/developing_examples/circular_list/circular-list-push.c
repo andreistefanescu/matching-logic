@@ -25,5 +25,5 @@ struct listNode* clpush(struct listNode* x, int val)
   return x;
 }
 
-//@ var aux, n, v : Int
+//@ var n, v : Int
 //@ var A : Seq
