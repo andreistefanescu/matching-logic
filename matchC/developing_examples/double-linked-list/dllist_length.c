@@ -8,8 +8,8 @@
 
 struct dllistNode {
   int val;
-  struct dllistNode *next;
   struct dllistNode *prev;
+  struct dllistNode *next;
 };
 
 int length(struct dllistNode* a)
@@ -21,8 +21,8 @@ int length(struct dllistNode* a)
   l = 0;
   if (a != 0) {             
     x = a;
-    /*@ inv <heap>... dllseg(0,a)(?y,x,?A1), dllseg(?y,x)(?z,0,?A2) ...</heap>
-            /\ l = len(?A1) */  
+    /*@ inv <heap>... dllseg(a,x)(?A1), dllist(x)(?A2) ...</heap>
+            /\ l = len(?A1) /\ A = ?A1 @ ?A2 */  
     while (x != 0) {
       x = x->next ;
       l = l + 1 ;
