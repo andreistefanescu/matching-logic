@@ -6,11 +6,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+
 struct dllistNode {
   int val;
   struct dllistNode *prev;
   struct dllistNode *next;
 };
+
 
 int length_recursive(struct dllistNode* a)
 /*@ rule <k> $ => return len(A); ...</k>

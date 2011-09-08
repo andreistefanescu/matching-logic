@@ -3,8 +3,8 @@
 
 struct dllistNode {
   int val;
-  struct dllistNode *next;
   struct dllistNode *prev;
+  struct dllistNode *next;
 };
 
 struct dllistNode* reverse(struct dllistNode* a)
@@ -27,9 +27,9 @@ struct dllistNode* reverse(struct dllistNode* a)
     
     p->next = 0;
     p->prev = 0;
-  /*@ inv <heap>... dllseg(0,old(a))(a,?y,?A1), 
-                    dllseg(a,?y)(?z,0,?A2) ...</ heap >
-          /\ A = ?A1 @ ?A2 */
+  /*@ inv <heap>... dllseg(old(a),a)(?A1), 
+                    dllist(a)(?A2) ...</ heap >
+          /\ A = rev(?A1) @ ?A2 */
     while(a!=0)
     {
       aux = a->next;
