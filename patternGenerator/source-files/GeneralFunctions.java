@@ -47,6 +47,26 @@ public class GeneralFunctions {
 			e.printStackTrace();
 		}
 	}
+        
+        public static String cleanContent(String content, String start, String end)
+        {
+            int length = content.length();
+            int indexstart = content.indexOf(start);
+            int indexend = content.indexOf(end);
+            if (indexstart < 0)
+            {
+                System.out.println("The " + start + " string could not be found!\nPlase review your sources!");
+                System.exit(2);
+            }
+            if (indexend < 0)
+            {
+                System.out.println("The " + end + " string could not be found!\nPlase review your sources!");
+                System.exit(2);
+            }
+            if ((indexstart > -1) && (indexend > -1))
+                return content.substring(0, indexstart + start.length()) + "\n" + content.substring(indexend, content.length());
+            return null;
+        }
 	
 	public static int MapHasElement(Map<String,String> map, String element)
 	{
@@ -264,11 +284,12 @@ public class GeneralFunctions {
 		cs.setFields(newfields);
 	}
 	
+    public static void addContent(String file, String anchor, String addedEl)
+    {
+        String content = GeneralFunctions.readFileContent(file);
+        content = content.replace(anchor, anchor + "\n    " + addedEl);
+        GeneralFunctions.writeFileContent(content, file);
+    }
+
 }
-
-
-
-
-
-
 

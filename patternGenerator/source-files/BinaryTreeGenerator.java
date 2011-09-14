@@ -17,18 +17,19 @@ public class BinaryTreeGenerator {
 		nof = cs.getNumberoffields();
 		noef = cs.numberOfElementaryFileds();
 		this.hpname = HeapPatternName;
-		valueFieldsIndex = new int[nof];
+		valueFieldsIndex = new int[noef];
 		
 		int index = 0;
 		for(int i=0; i<nof; i++)
-		{	
+		{
+                    cs.indexNext();
+                    cs.indexPrev();
 			if ((i != cs.indexNext()) && (i != cs.indexPrev()))
 			{
 				valueFieldsIndex[index] = i;
 				index++;
 			}
 		}
-		index++;
 	}
 	
 	private static void genVars()
@@ -257,7 +258,7 @@ public class BinaryTreeGenerator {
 		genLRoll();
 		genRRoll();
 		genCRoll();
-		String content = GeneralFunctions.readFileContent("../patternTemplates/BinaryTree.template");
+		String content = GeneralFunctions.readFileContent(GlVars.patternGenFile + "/patternTemplates/BinaryTree.template");
 		content = content.replaceAll("HPNAME", hpname.toUpperCase());
 		content = content.replaceAll("hpname", hpname);
 		content = content.replace("VARGEN", vars);
@@ -268,6 +269,22 @@ public class BinaryTreeGenerator {
 		content = content.replaceAll("CROLL", croll);
 		content = content.replaceAll(" [+]Int 0", "");
 		
-		GeneralFunctions.writeFileContent(content, "../GeneratedContent/" + hpname + ".k");
+		GeneralFunctions.writeFileContent(content, GlVars.patterns + "/" + hpname + ".k");
+                
+                GeneralFunctions.addContent(GlVars.semantics + "/Makefile", 
+                                    "#GENERATEDCONTENTSTART", 
+                                    "EXT_K_" + hpname.toUpperCase() + "= $(ML_PATTERNS_DIR)/" + hpname + ".k");
+        GeneralFunctions.addContent(GlVars.semantics + "/Makefile", 
+                                    "$(EXT_K_MAIN)", 
+                                    "\\ \n$(EXT_K_" + hpname.toUpperCase() + ")");
+        GeneralFunctions.addContent(GlVars.semantics + "/matchC.k", 
+                                    "***LOADPATTERNSSTART", 
+                                    "load ../patterns/" + hpname);
+        GeneralFunctions.addContent(GlVars.semantics + "/matchC.k", 
+                                    "***ADDMODULESSTART", 
+                                    "+ " + hpname.toUpperCase() + "-HP");
+        GeneralFunctions.addContent(GlVars.lib + "/config.maude", 
+                                    "*** newheapnamesstart", 
+                                    "  op " + hpname + " : -> HeapLabel .");
 	}
 }

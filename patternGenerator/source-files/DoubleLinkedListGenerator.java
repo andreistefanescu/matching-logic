@@ -51,13 +51,13 @@ public class DoubleLinkedListGenerator {
 		{
 			lunroll = lunroll + "      " + hpseg + "(LEFT, FreeInt(N +Int " + cs.indexNext() + "))(RIGHT, ERIGHT, FreeSeq(N +Int "
 						  + Integer.toString(nof) + "))\n      H\n  </heap>\n    <counter> N +Int " + Integer.toString(nof + 1) 
-						  + "    </counter>\n    CfgItems\n  </config>\n  </form>\n    Phi /\\ ~(LEFT === 0) /\\ (Alpha === [< ";
+						  + "    </counter>\n    CfgItems\n  </config>\n  <form>\n    Phi /\\ ~(LEFT === 0) /\\ (Alpha === [< ";
 		}
 		else
 		{
 			lunroll = lunroll + "      " + hpseg + "(LEFT, FreeInt(N +Int " + cs.indexNext() + "))(RIGHT, ERIGHT, FreeSeq(N +Int "
 			  + Integer.toString(nof) + "))\n      H\n  </heap>\n    <counter> N +Int " + Integer.toString(nof + 1) 
-			  + "    </counter>\n    CfgItems\n  </config>\n  </form>\n    Phi /\\ ~(LEFT === 0) /\\ (Alpha === [ ";
+			  + "    </counter>\n    CfgItems\n  </config>\n  <form>\n    Phi /\\ ~(LEFT === 0) /\\ (Alpha === [ ";
 		}
 		
 		for(int i=0;i < noef;i++)
@@ -107,13 +107,13 @@ public class DoubleLinkedListGenerator {
 		{
 			runroll = runroll + "      " + hpseg + "(ELEFT, LEFT)(FreeInt(N +Int " + cs.indexPrev() + "), RIGHT, FreeSeq(N +Int "
 						  + Integer.toString(nof) + "))\n      H\n  </heap>\n    <counter> N +Int " + Integer.toString(nof + 1) 
-						  + "    </counter>\n    CfgItems\n  </config>\n  </form>\n    Phi /\\ ~(RIGHT === 0) /\\ (Alpha === [< ";
+						  + "    </counter>\n    CfgItems\n  </config>\n  <form>\n    Phi /\\ ~(RIGHT === 0) /\\ (Alpha === [< ";
 		}
 		else
 		{
 			runroll = runroll + "      " + hpseg + "(ELEFT, LEFT)(FreeInt(N +Int " + cs.indexPrev() + "), RIGHT, FreeSeq(N +Int "
 			  + Integer.toString(nof) + "))\n      H\n  </heap>\n    <counter> N +Int " + Integer.toString(nof + 1) 
-			  + "    </counter>\n    CfgItems\n  </config>\n  </form>\n    Phi /\\ ~(RIGHT === 0) /\\ (Alpha === [ ";
+			  + "    </counter>\n    CfgItems\n  </config>\n  <form>\n    Phi /\\ ~(RIGHT === 0) /\\ (Alpha === [ ";
 		}
 		
 		for(int i=0;i < noef;i++)
@@ -187,7 +187,7 @@ public class DoubleLinkedListGenerator {
 		genLUnroll();
 		genRUnroll();
 		genSRoll();
-		String content = GeneralFunctions.readFileContent("../patternTemplates/DLList.template");
+		String content = GeneralFunctions.readFileContent(GlVars.patternGenFile + "/patternTemplates/DLList.template");
 		content = content.replaceAll("HPNAME", hpname.toUpperCase());
 		content = content.replaceAll("hpname", hpname);
 		content = content.replaceAll("hpnameseg", hpseg);
@@ -197,7 +197,26 @@ public class DoubleLinkedListGenerator {
 		content = content.replaceAll("SROLL", sroll);
 		content = content.replaceAll(" [+]Int 0", "");
 		
-		GeneralFunctions.writeFileContent(content, "../GeneratedContent/" + hpname + ".k");
+		GeneralFunctions.writeFileContent(content, GlVars.patterns + "/" + hpname + ".k");
+                
+                GeneralFunctions.addContent(GlVars.semantics + "/Makefile", 
+                                    "#GENERATEDCONTENTSTART", 
+                                    "EXT_K_" + hpname.toUpperCase() + "= $(ML_PATTERNS_DIR)/" + hpname + ".k");
+        GeneralFunctions.addContent(GlVars.semantics + "/Makefile", 
+                                    "$(EXT_K_MAIN)", 
+                                    "\\ \n$(EXT_K_" + hpname.toUpperCase() + ")");
+        GeneralFunctions.addContent(GlVars.semantics + "/matchC.k", 
+                                    "***LOADPATTERNSSTART", 
+                                    "load ../patterns/" + hpname);
+        GeneralFunctions.addContent(GlVars.semantics + "/matchC.k", 
+                                    "***ADDMODULESSTART", 
+                                    "+ " + hpname.toUpperCase() + "-HP");
+        GeneralFunctions.addContent(GlVars.lib + "/config.maude", 
+                                    "***newheapnamesstart", 
+                                    "  op " + hpname + " : -> HeapLabel .");
+        GeneralFunctions.addContent(GlVars.lib + "/config.maude", 
+                                    "***newheapnamesstart", 
+                                    "  op " + hpname + "seg : -> HeapLabel .");
 	}
 
 

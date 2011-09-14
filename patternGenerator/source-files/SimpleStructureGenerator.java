@@ -110,7 +110,7 @@ public class SimpleStructureGenerator {
 		String sunrolling = genSURing();
 		String roll = genR();
 		
-		String content = GeneralFunctions.readFileContent("../patternTemplates/Simple.template");
+		String content = GeneralFunctions.readFileContent(GlVars.patternGenFile + "/patternTemplates/Simple.template");
 		content = content.replaceAll("HPNAME", hpname.toUpperCase());
 		content = content.replaceAll("hpname", hpname);
 		content = content.replace("VARGEN", vars);
@@ -119,6 +119,22 @@ public class SimpleStructureGenerator {
 		content = content.replace("ROLL", roll);
 
 		content = content.replaceAll(" [+]Int 0", "");
-		GeneralFunctions.writeFileContent(content, "../GeneratedContent/" + hpname + ".k");
+		GeneralFunctions.writeFileContent(content, GlVars.patterns + "/" + hpname + ".k");
+                
+                GeneralFunctions.addContent(GlVars.semantics + "/Makefile", 
+                                    "#GENERATEDCONTENTSTART", 
+                                    "EXT_K_" + hpname.toUpperCase() + "= $(ML_PATTERNS_DIR)/" + hpname + ".k");
+        GeneralFunctions.addContent(GlVars.semantics + "/Makefile", 
+                                    "$(EXT_K_MAIN)", 
+                                    " \\ \n$(EXT_K_" + hpname.toUpperCase() + ")");
+        GeneralFunctions.addContent(GlVars.semantics + "/matchC.k", 
+                                    "***LOADPATTERNSSTART", 
+                                    "load ../patterns/" + hpname);
+        GeneralFunctions.addContent(GlVars.semantics + "/matchC.k", 
+                                    "***ADDMODULESSTART", 
+                                    "+ " + hpname.toUpperCase() + "-HP");
+        GeneralFunctions.addContent(GlVars.lib + "/config.maude", 
+                                    "***newheapnamesstart", 
+                                    "  op " + hpname + " : -> HeapLabel .");
 	}
 }

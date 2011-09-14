@@ -143,42 +143,30 @@ public class CStructure {
 		return "";
 	}
 	
-	public int indexNext()
+	public int indexNext()//right
 	{
 		Iterator<Map.Entry<String, String>> it = fields.entrySet().iterator();
 		int index = 0;
 		while (it.hasNext())
 	    {
 	    	Map.Entry<String, String> pair = (Map.Entry<String, String>) it.next();
-	    	if (! pair.getKey().contains(smi.pointers()[0])) 
-	    		{
-	    			index++;
-	    		}
-	    	if (pair.getKey().contains(smi.pointers()[0])) 
-    		{
-    			break;
-    		}
-	    }
-		return index;
+	    	if (! pair.getKey().equals(smi.pointers()[0])) index++;
+	    	else return index;
+            }
+                return -1;
 	}
 	
-	public int indexPrev()
+	public int indexPrev()//left
 	{
 		Iterator<Map.Entry<String, String>> it = fields.entrySet().iterator();
 		int index = 0;
 		while (it.hasNext())
 	    {
 	    	Map.Entry<String, String> pair = (Map.Entry<String, String>) it.next();
-	    	if (! pair.getKey().contains(smi.pointers()[1])) 
-	    		{
-	    			index++;
-	    		}
-	    	if (pair.getKey().contains(smi.pointers()[1])) 
-    		{
-    			break;
-    		}
-	    }
-		return index;
+	    	if (! pair.getKey().equals(smi.pointers()[1])) index++;
+                else return index;
+            }
+                return -1;
 	}
 	
 	public Map<String,String> getFields()
