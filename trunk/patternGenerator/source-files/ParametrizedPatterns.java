@@ -3,9 +3,8 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 
-
 public class ParametrizedPatterns {
-	public static void theBody(CProcessor cp)
+    public static void theBody(CProcessor cp)
 	{
 		int no = cp.getNumberOfIndependentStructs();
 		
@@ -43,9 +42,28 @@ public class ParametrizedPatterns {
 		}	
 	}
 
-	public static void main(String[] args) {
+    public static void theClean()
+    {
+        String content = GeneralFunctions.readFileContent(GlVars.semantics + "/Makefile");
+        content = GeneralFunctions.cleanContent(content, "#GENERATEDCONTENTSTART", "#END_EXT_K");
+        content = GeneralFunctions.cleanContent(content, "$(EXT_K_MAIN)", "#GENERATEDCONTENTSTOP");
+        GeneralFunctions.writeFileContent(GlVars.semantics + "/Makefile", content);
+        
+        content = GeneralFunctions.readFileContent(GlVars.semantics + "/matchC.k");
+        content = GeneralFunctions.cleanContent(content, "***LOADPATTERNSSTART", "***LOADPATTERNSSTOP");
+                content = GeneralFunctions.cleanContent(content, "***ADDMODULESSTART", "***ADDMODULESSTOP");
+        GeneralFunctions.writeFileContent(GlVars.semantics + "/matchC.k", content);
+        
+        content = GeneralFunctions.readFileContent(GlVars.lib+"/config.maude");
+        content = GeneralFunctions.cleanContent(content, "***newheapnamesstart", "***newheapnamesstop");
+        GeneralFunctions.writeFileContent(GlVars.lib +"/config.maude", content);
+    }
+        
+    public static void main(String[] args) {
 
-	File folder = new File("../CsourceFiles/");
+        theClean();
+        
+	File folder = new File(GlVars.patternGenFile + "/CsourceFiles/");
 	File[] listOfFiles = folder.listFiles();
 	int numberoffiles = listOfFiles.length;
 	
@@ -60,28 +78,10 @@ public class ParametrizedPatterns {
 			if (filename.contains(".c")) 
 			{
 				//fileProcessors.add(filename);
-				cp.process("../CSourceFiles/"+filename);
+				cp.process(GlVars.patternGenFile + "/CSourceFiles/"+filename);
 				theBody(cp);
 			}
 		}
-	}
-	
-	
-
-	//theBody(cp);
-		
-		
-		/*
-		CStructure cs1 = new CStructure();
-		cs1.setName("simple");
-		cs1.addFieldToStruct("ceva", "int");
-		cs1.addFieldToStruct("altceva", "int");
-		cs1.addFieldToStruct("lucru", "int");
-		
-		ElementaryFieldsOnlyGenerator efg = new ElementaryFieldsOnlyGenerator(cs1, "hpsimple");
-		efg.Generate(); 
-		*/
-		
-	}
-
+	}/* */
+    }
 }

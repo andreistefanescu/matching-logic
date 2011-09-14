@@ -16,31 +16,16 @@ public class CProcessor {
 		if (GeneralFunctions.SetHasElement(this.hpnames, name)) 
 		{
 			System.out.print("The " + name + " heap pattern name is used in" 
-					+ " affiliation with more than one structure!\n" 
-					+ "If you would like the system to produce a new name " 
-					+ "for you and continue please press the y key.\n"
-					+ "If you would like to halt the generation process, press any other key.\n");
-
-		    BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-
-		    String input = "";
+					+ " affiliation with more than one structure!\n");
 
 		    try 
 		    {
-		    	input = br.readLine();
-		    	if (input.equalsIgnoreCase("y"))
-		    	{
-		    		return "Aux" + name;
-		    	}
-		    	else
-		    	{
-		    		throw new Exception("An unintended double assignment for a heap pattern name occured!\n");
-		    	}
+		    	throw new Exception("An unintended double assignment for a heap pattern name occured!\n");
 		    } 
 		    catch (Exception e)
 		    {
-		         System.out.println("Process halted!");
-		         System.exit(1);
+		         e.printStackTrace();;
+		         //System.exit(1);
 		    }
 
 		}
@@ -50,36 +35,22 @@ public class CProcessor {
 
 	private String validPattern(String pattern, String structure)
 	{
-		if (pattern.equalsIgnoreCase("simple") || pattern.equalsIgnoreCase("singlelinkedlist") || pattern.equalsIgnoreCase("doublelinkedlist") || pattern.equalsIgnoreCase("binarytree")) {return pattern;}
+		if (pattern.equalsIgnoreCase("tuple") || 
+                    pattern.equalsIgnoreCase("singlelinkedlist") || 
+                    pattern.equalsIgnoreCase("doublelinkedlist") || 
+                    pattern.equalsIgnoreCase("binarytree")) return pattern;
 		else
 		{
 			try
 			{
-				System.out.println("The file contains the following pattern in the annotation: " + pattern + ".\n" 
-						+ "It is not a recognizable pattern.\n"
-						+ "Please choose one of the following options:\n"
-						+ "Press 1 if you meant to link the " + structure + " to the simple pattern\n"
-						+ "Press 2 if you meant to link the " + structure + " to the single linked list pattern\n"
-						+ "Press 3 if you meant to link the " + structure + " to the double linked list pattern\n"
-						+ "Press 4 if you meant to link the " + structure + " to the binary tree pattern\n"
-						+ "Press any other key to halt the process\n");
-				
-				BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-			    String input = "";
-			    input = br.readLine();
-			    
-			    if (input.equals("1")) return "simple";
-			    else if (input.equals("2")) return "singlelinkedlist";
-			    else if (input.equals("3")) return "doublelinkedlist";
-			    else if (input.equals("4")) return "binarytree";
-			    else
-			    {
-					throw new Exception("Unrecognized heap pattern! Process was halted");
-			    }
+                            System.out.println("The file contains the following pattern in the annotation: " + pattern + ".\n" 
+						+ "It is not a recognizable pattern!\n");
+                            throw new Exception("Unrecognized heap pattern! Process was halted");
 			}
 			catch (Exception e)
 			{
-				System.exit(1);
+                            e.printStackTrace();
+                            System.exit(1);
 			}
 		}
 		return "";
@@ -209,22 +180,14 @@ public class CProcessor {
 				String[] result = {next, prev};
 				return result;
 			}
+                        else if (hpname.contains("binarytree"))
+                        {
+				String left = getString(information, "),", ",");
+				String right = getString(information, left + ",", ">");
+				String[] result = {left, right};
+				return result;
+			}
 			// to be filled with the rest of hp
-		}
-		else
-		{
-			if (hpname.contains("singlelinkedlist"))
-			{
-				String[] result = {getString(information, "<", ">")};
-				return result;
-			}
-			else if (hpname.contains("doublelinkedlist"))
-			{
-				String next = getString(information, "<", ",");
-				String prev = getString(information, ",", ">");
-				String[] result = {next, prev};
-				return result;
-			}
 		}
 		return null;
 	}

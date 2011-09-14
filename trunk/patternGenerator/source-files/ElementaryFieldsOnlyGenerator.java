@@ -141,7 +141,7 @@ public class ElementaryFieldsOnlyGenerator {
 		genSUnroll();
 		genSUnrolling();
 		genSRoll();
-		String content = GeneralFunctions.readFileContent("../patternTemplates/SEL.template");
+		String content = GeneralFunctions.readFileContent(GlVars.patternGenFile + "/patternTemplates/SEL.template");
 		content = content.replaceAll("HPNAME", getHpname().toUpperCase());
 		content = content.replaceAll("hpname", getHpname());
 		content = content.replaceAll("hpnameseg", lseghp);
@@ -151,7 +151,23 @@ public class ElementaryFieldsOnlyGenerator {
 		content = content.replace("SIMPLEROLL", sroll);
 		content = content.replaceAll(" [+]Int 0", "");
 		
-		GeneralFunctions.writeFileContent(content, "../GeneratedContent/" + getHpname() + ".k");
+		GeneralFunctions.writeFileContent(content, GlVars.patterns + "/" + getHpname() + ".k");
+                
+                GeneralFunctions.addContent(GlVars.semantics + "/Makefile", 
+                                    "#GENERATEDCONTENTSTART", 
+                                    "EXT_K_" + hpname.toUpperCase() + "= $(ML_PATTERNS_DIR)/" + hpname + ".k");
+        GeneralFunctions.addContent(GlVars.semantics + "/Makefile", 
+                                    "$(EXT_K_MAIN)", 
+                                    " \\ \n$(EXT_K_" + hpname.toUpperCase() + ")");
+        GeneralFunctions.addContent(GlVars.semantics + "/matchC.k", 
+                                    "***LOADPATTERNSSTART", 
+                                    "load ../patterns/" + hpname);
+        GeneralFunctions.addContent(GlVars.semantics + "/matchC.k", 
+                                    "***ADDMODULESSTART", 
+                                    "+ " + hpname.toUpperCase() + "-HP");
+        GeneralFunctions.addContent(GlVars.lib + "/config.maude", 
+                                    "***newheapnamesstart", 
+                                    "  op " + hpname + " : -> HeapLabel .");
 	}
 
 	public void setCs(CStructure cs) {

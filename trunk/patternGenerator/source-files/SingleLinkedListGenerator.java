@@ -318,28 +318,48 @@ public class SingleLinkedListGenerator {
 		}
 	}
 
-	public static void Generate()
-	{
-		genVars();
-		genSUnroll();
-		genSUnrolling();
-		genSRoll();
-		genCRoll();
-		genSUnrollSeg();
-		genSRollSeg();
-		String content = GeneralFunctions.readFileContent("../patternTemplates/SLList.template");
-		content = content.replaceAll("HPNAME", hpname.toUpperCase());
-		content = content.replaceAll("hpname", hpname);
-		content = content.replaceAll("hpnameseg", lseghp);
-		content = content.replace("VARGEN", vars);
-		content = content.replace("SIMPLEUNROLL", sunroll);
-		content = content.replace("SIMPLEUNROLING", sunrolling);
-		content = content.replace("SIMPLEROLL", sroll);
-		content = content.replace("COMPLEXROLL", croll);
-		content = content.replace("SUNROLLSEG", sunrollseg);
-		content = content.replaceAll("SROLLSEG", srollseg);
-		content = content.replaceAll(" [+]Int 0", "");
-		
-		GeneralFunctions.writeFileContent(content, "../GeneratedContent/" + hpname + ".k");
-	}
+    public static void Generate()
+    {
+        genVars();
+        genSUnroll();
+        genSUnrolling();
+        genSRoll();
+        genCRoll();
+        genSUnrollSeg();
+        genSRollSeg();
+        String content = GeneralFunctions.readFileContent(GlVars.patternGenFile + "/patternTemplates/SLList.template");
+        content = content.replaceAll("HPNAME", hpname.toUpperCase());
+        content = content.replaceAll("hpname", hpname);
+        content = content.replaceAll("hpnameseg", lseghp);
+        content = content.replace("VARGEN", vars);
+        content = content.replace("SIMPLEUNROLL", sunroll);
+        content = content.replace("SIMPLEUNROLING", sunrolling);
+        content = content.replace("SIMPLEROLL", sroll);
+        content = content.replace("COMPLEXROLL", croll);
+        content = content.replace("SUNROLLSEG", sunrollseg);
+        content = content.replaceAll("SROLLSEG", srollseg);
+        content = content.replaceAll(" [+]Int 0", "");
+
+        GeneralFunctions.writeFileContent(content, 
+                                          GlVars.patterns + "/" + hpname + ".k");
+        
+        GeneralFunctions.addContent(GlVars.semantics + "/Makefile", 
+                                    "#GENERATEDCONTENTSTART", 
+                                    "EXT_K_" + hpname.toUpperCase() + "= $(ML_PATTERNS_DIR)/" + hpname + ".k");
+        GeneralFunctions.addContent(GlVars.semantics + "/Makefile", 
+                                    "$(EXT_K_MAIN)", 
+                                    " \\ \n$(EXT_K_" + hpname.toUpperCase() + ")");
+        GeneralFunctions.addContent(GlVars.semantics + "/matchC.k", 
+                                    "***LOADPATTERNSSTART", 
+                                    "load ../patterns/" + hpname);
+        GeneralFunctions.addContent(GlVars.semantics + "/matchC.k", 
+                                    "***ADDMODULESSTART", 
+                                    "+ " + hpname.toUpperCase() + "-HP");
+        GeneralFunctions.addContent(GlVars.lib + "/config.maude", 
+                                    "***newheapnamesstart", 
+                                    "  op " + hpname + " : -> HeapLabel .");
+        GeneralFunctions.addContent(GlVars.lib + "/config.maude", 
+                                    "***newheapnamesstart", 
+                                    "  op " + hpname + "seg : -> HeapLabel .");
+    }
 }
