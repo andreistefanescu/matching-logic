@@ -194,4 +194,81 @@ kmod BINARY-TREE-HP is
       =>
         treeList(P)([Tau] @ Alpha)
     <_/heap>
+
+
+*** Definition of Lists of Trees ***
+  rule 
+  (
+    <task>
+      <taskType> Run </taskType>
+      <config>
+        <k> derive(P') ~> K </k>
+        <heap> tlist(P)(Alpha) H </heap>
+        <counter> N </counter>
+        CfgItems
+      </config>
+      <form> Phi </form>
+      TaskItems
+    </task>
+  =>
+    <task>
+      <taskType> Run </taskType>
+      <config>
+        <k> derive(P') ~> K </k>
+        <heap> H </heap>
+        <counter> N </counter>
+        CfgItems
+      </config>
+      <form> Phi /\ (P === 0) /\ (Alpha === epsilon) </form>
+      TaskItems
+    </task>
+    <task>
+      <taskType> Run </taskType>
+      <config>
+        <k> K </k>
+        <heap>
+          P |-> FreeInt(N) : (id("listNode").id("val"))
+          (P +Int 1) |-> FreeInt(N +Int 1) : (id("listNode").id("next"))
+          tree(FreeInt(N))(FreeTree(N +Int 2))
+          tlist(FreeInt(N +Int 1))(FreeSeq(N +Int 3))
+          H
+        </heap>
+        <counter> N +Int 4 </counter>
+        CfgItems
+      </config>
+      <form>
+        Phi /\ ~(P === 0) /\ ~(FreeInt(N) === 0)
+        /\ (Alpha === [FreeTree(N +Int 2)] @ FreeSeq(N +Int 3))
+      </form>
+      TaskItems
+    </task>
+  )
+  if VALID(Phi ===> P' === P \/ P' === P +Int 1)
+  [structural]
+
+  rule
+    <heap_> tlist(0)(Alpha) => .Map <_/heap>
+    <form> Phi => Phi /\ Alpha === epsilon </form>
+  [structural]
+
+  rule
+    <taskType> Hypothesis </taskType>
+    <heap_>
+        P |-> I : (id("listNode").id("val"))
+        (P +Int 1) |-> 0 : (id("listNode").id("next"))
+        tree(I)(Tau)
+      =>
+        tlist(P)([Tau])
+    <_/heap>
+
+  rule
+    <taskType> Hypothesis </taskType>
+    <heap_>
+        P |-> I : (id("listNode").id("val"))
+        (P +Int 1) |-> Q : (id("listNode").id("next"))
+        tree(I)(Tau)
+        tlist(Q)(Alpha)
+      =>
+        tlist(P)([Tau] @ Alpha)
+    <_/heap>
 endkm 
