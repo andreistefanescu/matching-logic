@@ -1,3 +1,10 @@
+/*
+ * Program that traverses a list of disjoint trees and deallocates each tree.
+ * The heap pattern tlist specifies the existence of a list of disjoint trees
+ * in the heap.
+ */
+
+
 #include <stdlib.h>
 
 
