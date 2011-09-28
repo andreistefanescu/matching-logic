@@ -25,8 +25,6 @@ mod MATHEMATICAL-SET-BUILTIN-MODULE
 
   sorts PESet FESet FreeSet NeGroundSet GroundSet Set++ NeSet++ . 
 
-  *** subsort SetMSet < GroundSet .
-
   subsort NeGroundSet < GroundSet .
   subsort NeSet++ < Set++ .
   subsort GroundSet < Set++ .
@@ -39,11 +37,13 @@ mod MATHEMATICAL-SET-BUILTIN-MODULE
   subsort GroundSet < MathObj .
   subsort Set++ < MathObj++ .
  
+
   op ?Set : Nat -> PESet .
   op !Set : Nat -> FESet .
   op FreeSet : Nat -> FreeSet .
   op skolem : Nat PESet -> FreeSet [ditto] .
   op co-skolem : Nat FreeSet -> FESet [ditto] .
+
 
   op emptySet : -> GroundSet .
   op `{|_|`}s : MathObj -> NeGroundSet [gather(&)] .
@@ -107,7 +107,7 @@ mod MATHEMATICAL-SET-BUILTIN-MODULE
   eq isConst(Obj, emptySet) = TrueFormula .
 
 
-  eq {| Obj |}s U A === empty = FalseFormula .
+  eq {| Obj |}s Us A === emptySet = FalseFormula .
   eq A === A1 Us A2 /\ A2 === A3 /\ Phi1 ===> A === A1 Us A3 /\ Phi2
    = A === A1 Us A2 /\ A2 === A3 /\ A === A1 Us A3 /\ Phi1 ===> Phi2 .
   eq A === A1 Us A2 /\ A1 === A3 /\ A2 === A4 /\ Phi1

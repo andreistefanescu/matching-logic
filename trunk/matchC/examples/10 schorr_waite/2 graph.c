@@ -6,9 +6,9 @@
  * general graph.
  *
  * The specification of the function states that the heap contains the graph of
- * the structure nodes reachable starting from root pointer and stopping at the
- * 0 (NULL) pointer. All the nodes that are not reachable from the root are part
- * of the heap frame. Each node of the mathematical Schorr-Waite graph is
+ * the structure nodes reachable starting from the root pointer and stopping at
+ * the 0 (NULL) pointer. All the nodes that are not reachable from the root are
+ * part of the heap frame. Each node of the mathematical Schorr-Waite graph is
  * labeled with the pair (pointer_to_structure, mark), while each edge is
  * labeled with name of the field that generated the respective edge. In this
  * context, pointers(T) refers to the graph holding only the pointer label
@@ -19,9 +19,9 @@
  * 
  * The loop invariant states that the heap contains the graph of the structure
  * nodes reachable starting from p and q and stopping at 0. The isRestorable
- * predicates encodes the existence of a path from p to root in the initial
- * graph and the nodes on that path are marked accordingly. The invariant also
- * states that pointer structure of the initial graph can be obtain by restoring
+ * predicate encodes the existence of a path from p to root in the initial graph
+ * and the nodes on that path are marked accordingly. The invariant also states
+ * that the pointer structure of the initial graph can be obtain by restoring
  * the edges in the current graph, and that the root program variable remains
  * unchanged.
  * 
@@ -31,7 +31,8 @@
  * an address in Frontier. For the definitions and axioms required by this proof
  * see [1].
  *
- * [1] http://code.google.com/p/matching-logic/source/browse/trunk/matchC/lib/theories/schorr-waite-theory.maude
+ * [1]
+ * http://code.google.com/p/matching-logic/source/browse/trunk/matchC/lib/theories/schorr-waite-graph-theory.maude
  */
 
 

@@ -74,7 +74,7 @@ mod MATHEMATICAL-GRAPH-BUILTIN-MODULE is
 
 
   var N : Nat .
-  var Phi Phi1 Phi2 : Formula .
+  var Phi : Formula .
   var Obj Obj1 Obj2 Vid Vid1 Vid2 : MathObj++ .
   var I : Int++ .
   var A : Seq++ .
@@ -83,7 +83,6 @@ mod MATHEMATICAL-GRAPH-BUILTIN-MODULE is
   var G G1 G2 : Graph .
   var ?G : PEGraph .
   var FreeG : FreeGraph .
-  var NeG NeG1 NeG2 : NeGraph .
 
 
   eq (| V1, E1 |) === (| V2, E2 |) = V1  === V2 /\ E1 === E2 .
@@ -124,6 +123,9 @@ mod MATHEMATICAL-GRAPH-BUILTIN-MODULE is
   eq isConstV(Obj, {| I |}s) = TrueFormula .
   eq isConstV(Obj, emptySet) = TrueFormula .
 
+
+  eq diff({| v(Vid1, Obj1) |}s Us V, {| Vid2 |}s)
+   = {| v(Vid1, Obj1) |}s Us diff(V, {| Vid2 |}s) .
 
   eq proj(N, G) === (| V, E |)
    = (| V(proj(N, G)), E(proj(N, G)) |) === (| V, E |) .
