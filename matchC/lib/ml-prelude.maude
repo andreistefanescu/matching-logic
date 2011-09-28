@@ -2,8 +2,10 @@ load k-prelude.maude
 load theories/core-theory.maude
 load theories/integer-theory.maude
 load theories/sequence-theory.maude
+load theories/set-theory.maude
 load theories/multiset-theory.maude
 load theories/tree-theory.maude
+load theories/graph-theory.maude
 load theories/schorr-waite-theory.maude
 load theories/domain.maude
 load config.maude
@@ -12,8 +14,10 @@ load config.maude
 mod ML-BUILTIN-MODULE is
   including MATHEMATICAL-INT-BUILTIN-MODULE .
   including MATHEMATICAL-SEQUENCE-BUILTIN-MODULE .
+  including MATHEMATICAL-SET-BUILTIN-MODULE .
   including MATHEMATICAL-MULTISET-BUILTIN-MODULE .
   including MATHEMATICAL-TREE-BUILTIN-MODULE .
+  including MATHEMATICAL-GRAPH-BUILTIN-MODULE .
   including MATHEMATICAL-SCHORR-WAITE-BUILTIN-MODULE .
   including MATHEMATICAL-DOMAIN-BUILTIN-MODULE .
   including CONFIG-BUILTIN-MODULE .

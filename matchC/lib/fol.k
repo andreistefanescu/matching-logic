@@ -487,7 +487,7 @@ kmod FOL is including MATCHC-SEMANTICS
         <form> Phi1 ===> Phi2 </form>
         <subst> Subst </subst>
       <_/task>
-  [structural print Phi1 "\n===>\n" Phi2]
+  [structural print "=fol=\n" Phi1 "\n===>\n" Phi2 "\nendfol\n"]
 
 
   rule

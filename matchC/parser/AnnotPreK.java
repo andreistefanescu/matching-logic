@@ -59,6 +59,7 @@ public class AnnotPreK {
     tokenToBuiltins.put(annotParser.GT, "_>Int_");
     tokenToBuiltins.put(annotParser.GEQ, "_>=Int_");
     tokenToBuiltins.put(annotParser.UNION, "_U_");
+    tokenToBuiltins.put(annotParser.SET_UNION, "_Us_");
     tokenToBuiltins.put(annotParser.APPEND, "_@_");
     tokenToBuiltins.put(annotParser.ADD, "_+Int_");
     tokenToBuiltins.put(annotParser.SUB, "_-Int_");
@@ -70,6 +71,7 @@ public class AnnotPreK {
     tokenToBuiltins.put(annotParser.EPSILON, "epsilon");
     tokenToBuiltins.put(annotParser.SEQ, "`[_`]");
     tokenToBuiltins.put(annotParser.MSET, "`{|_|`}");
+    tokenToBuiltins.put(annotParser.MATH_SET, "`{|_|`}s");
     tokenToBuiltins.put(annotParser.HEAP_PATTERN, "_`(_`)`(_`)");
     tokenToBuiltins.put(annotParser.CELL, "<_>_</_>");
     tokenToBuiltins.put(annotParser.FORMULA_TRUE, "TrueFormula");

@@ -387,6 +387,7 @@ loop invariants
       =>
         @ assert Pattern
         ~> 'if`(_`)_else_(E,, (S ~> @ assert Pattern ~> disolveTask),, K)
+        //~> 'if`(_`)_else_(E,, (S ~> @ assert Pattern ~> disolveTask),, _`(_`)('@`breakpoint, .List{K}) ~> K)
     </k>
 
 

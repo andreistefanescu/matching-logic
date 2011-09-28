@@ -31,7 +31,8 @@ endm
 
 
 mod CONFIG-BUILTIN-MODULE is
-  inc PL-ID
+  inc PL-EXT-BOOL
+    + PL-ID
     + PL-STRING
     + K-PROPER
     + MATHEMATICAL-INT-BUILTIN-MODULE
@@ -87,7 +88,7 @@ mod CONFIG-BUILTIN-MODULE is
 
 
   var Obj : MathObj++ .
-  var K : K .
+  var K K1 K2 : K .
   var List : List .
   var Bag : Bag .
   var Set : Set .
@@ -114,10 +115,12 @@ mod CONFIG-BUILTIN-MODULE is
   op skolemize : Nat Pattern -> Pattern .
   op co-skolemize : Nat Pattern -> Pattern .
 
+
   op unit : -> Value . 
   op undef : -> Value . 
   op tv`(_,_`) : ExpressionType Value -> TypedValue .
   op id`(_`) : String -> Id .
+  op _._ : Id Id -> Field .
 
   op _|->_:_ : Int++ Value Field -> MapItem .
   op _`(_`)`(_`) : HeapLabel List{MathObj++} List{MathObj++} -> MapItem .
@@ -125,10 +128,30 @@ mod CONFIG-BUILTIN-MODULE is
   op stream : List{MathObj++} -> ListItem .
 
   op obj`(_`) : Id -> MathObj++ .
-  eq obj(id(S1:String)) === obj(id(S2:String)) = @(S1:String ==Bool S2:String) .
+  op obj`(_`) : String -> MathObj++ .
+  op obj`(_`) : K -> MathObj++ .
+  eq obj(K1) === obj(K2) = @(K1 ==Bool K2) .
+  eq obj(Id1:Id) === obj(Id2:Id) = @(Id1:Id ==Bool Id2:Id) .
+  eq obj(S1:String) === obj(S2:String) = @(S1:String ==Bool S2:String) .
 
   op derive : -> KLabel .
   eq derive(P:Int++ +Int N:Nat) = derive(P:Int++) .
+
+
+  op list : -> HeapLabel .
+  op lseg : -> HeapLabel .
+
+  op tree : -> HeapLabel .
+  op htree : -> HeapLabel .
+  op swtree : -> HeapLabel .
+  op treeList : -> HeapLabel .
+
+  op swgraph : -> HeapLabel .
+
+  op dllist : -> HeapLabel .
+  op dllseg : -> HeapLabel .
+
+  op queue : -> HeapLabel .
 
 
   *** [ERROR] Here subsorting Pattern to K gives all sort of errors,
@@ -155,6 +178,7 @@ mod CONFIG-BUILTIN-MODULE is
 
   *** hack
   op isInt : Int++ -> Bool .
+
 
   op list : -> HeapLabel .
   op lseg : -> HeapLabel .
@@ -188,8 +212,9 @@ mod ML-K is inc CONFIG-BUILTIN-MODULE + K + K-WHERE + K-CONDITION-SEARCH .
   op applySubst : Bag Subst -> Bag .
   op applySubst : Formula Subst -> Formula .
   op applySubst : Subst Subst -> Subst .
-  op _._ : Id Id -> Field .
-  op _._ : Field Id -> Field .
+
+  op checkForm : Formula -> Bool .
+
   op printMatchTask : Bag -> Bag [strat(0) frozen] .
 endm
 

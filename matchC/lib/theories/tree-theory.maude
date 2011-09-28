@@ -22,6 +22,7 @@
 mod MATHEMATICAL-TREE-BUILTIN-MODULE
   is inc MATHEMATICAL-SEQUENCE-BUILTIN-MODULE .
 
+
   sorts PETree FETree FreeTree Tree Tree++ .
   subsort PETree FETree FreeTree Tree < Tree++ .
   subsort PETree < PEMathObj .
@@ -39,8 +40,8 @@ mod MATHEMATICAL-TREE-BUILTIN-MODULE
   op upsilon : -> Tree .
   op _`[_`]_ : Tree++ MathObj++ Tree++ -> Tree++ .
 
-  op isConst : MathObj++ Seq++ -> AtomFormula .
   op proj : Nat Tree++ -> Tree++ .
+  op isConst : MathObj++ Tree++ -> AtomFormula .
   op height : Tree++ -> Int++ .
   op mirror : Tree++ -> Tree++ .
 
@@ -61,12 +62,12 @@ mod MATHEMATICAL-TREE-BUILTIN-MODULE
   eq TL [Obj] TR === upsilon = FalseFormula .
 
 
-  eq isConst(Obj1, TL [Obj2] TR)
-   = Obj1 === Obj2 /\ isConst(Obj1, TL) /\ isConst(Obj1, TR) .
-  eq isConst(Obj1, upsilon) = TrueFormula .
-
   eq proj(N, TL [A] TR) = proj(N, TL) [seq-elem(A, N)] proj(N, TR) .
   eq proj(N, upsilon) = upsilon .
+
+  eq isConst(Obj1, TL [Obj2] TR)
+   = Obj1 === Obj2 /\ isConst(Obj1, TL) /\ isConst(Obj1, TR) .
+  eq isConst(Obj, upsilon) = TrueFormula .
 
   eq height(TL [Obj] TR) = 1 +Int maxInt(height(TR), height(TL)) .
   eq height(upsilon) = 0 .

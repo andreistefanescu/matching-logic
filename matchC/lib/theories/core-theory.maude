@@ -76,18 +76,26 @@ mod FORMULA-BUILTIN-MODULE is inc PL-BOOL + PL-STRING .
   eq ~(NtPhi1 \/ NtPhi2) = ~ NtPhi1 /\ ~ NtPhi2 .
   eq ~(NtPhi1 /\ NtPhi2) = ~ NtPhi1 \/ ~ NtPhi2 .
 
-  eq Atom /\ Phi1 ===> Atom /\ Phi2 = Atom /\ Phi1 ===> Phi2 .
+  eq Atom /\ (~ Atom \/ Phi) = Atom /\ Phi .
+  eq ~ Atom /\ (Atom \/ Phi) = ~ Atom /\ Phi .
+
+
+  eq Atom /\ Phi1 ===> Atom /\ Phi2 \/ Phi
+   = Atom /\ Phi1 ===> Phi2 \/ Phi .
+  eq ~ Atom /\ Phi1 ===> ~ Atom /\ Phi2 \/ Phi
+   = ~ Atom /\ Phi1 ===> Phi2 \/ Phi .
   eq ~ NtPhi /\ Phi1 ===> ~ NtPhi /\ Phi2 = ~ NtPhi /\ Phi1 ===> Phi2 .
   eq (NtPhi1 \/ NtPhi2) /\ Phi1 ===> (NtPhi1 \/ NtPhi2) /\ Phi2
    = (NtPhi1 \/ NtPhi2) /\ Phi1 ===> Phi2 .
 
-  *** eq NtPhi /\ Phi ===> Phi1 \/ (~ NtPhi /\ Phi2) = NtPhi /\ Phi ===> Phi1 .
-  *** eq ~ NtPhi /\ Phi ===> Phi1 \/ (NtPhi /\ Phi2) = ~ NtPhi /\ Phi ===> Phi1 .
+  eq Atom /\ Phi1 ===> ~ Atom /\ Phi \/ Phi2 = Atom /\ Phi1 ===> Phi2 .
+  eq ~ Atom /\ Phi1 ===> Atom /\ Phi \/ Phi2 = ~ Atom /\ Phi1 ===> Phi2 .
 
   eq NtPhi /\ (NtPhi1 \/ NtPhi2) ===> Phi
    = NtPhi /\ NtPhi1 \/ NtPhi /\ NtPhi2 ===> Phi [owise] .
   eq Phi ===> NtPhi /\ (NtPhi1 \/ NtPhi2)
    = Phi ===> NtPhi /\ NtPhi1 \/ NtPhi /\ NtPhi2 [owise] .
+
 
 ***(
   eq NtPhi1 \/ NtPhi2 ===> Phi
@@ -125,9 +133,7 @@ Sort++ stands for all the above
   subsort PEMathObj FEMathObj FreeMathObj MathObj < MathObj++ .
   subsort MathObj++ < List{MathObj++} .
   op skolem : Nat PEMathObj -> FreeMathObj .
-  ---[strat(0)] .
   op co-skolem : Nat FreeMathObj -> FEMathObj .
-  ---[strat(0)] .
 
   op .List{MathObj++} : -> List{MathObj++} .
   op _`,_ : List{MathObj++} List{MathObj++} -> List{MathObj++}
@@ -135,21 +141,27 @@ Sort++ stands for all the above
 
   op errorObj : -> [MathObj++] .
 
+
   op _===_ : MathObj++ MathObj++ -> AtomFormula [comm] .
   op _===_ : List{MathObj++} List{MathObj++} -> AtomFormula [ditto] .
 
-
-  vars Obj Obj1 Obj1' Obj2 Obj2' : MathObj++ .
+  vars Obj Obj11 Obj12 Obj21 Obj22 : MathObj++ .
   vars ObjList1 ObjList2 : List{MathObj++} .
 
+  eq (Obj11, Obj12, ObjList1) === (Obj21, Obj22, ObjList2)
+   = (Obj11 === Obj21) /\ (Obj12 === Obj22) /\ (ObjList1 === ObjList2) .
   eq Obj === Obj = TrueFormula .
-  eq (Obj1, Obj1', ObjList1) === (Obj2, Obj2', ObjList2)
-   = (Obj1 === Obj2) /\ (Obj1' === Obj2') /\ (ObjList1 === ObjList2) .
   eq .List{MathObj++} === .List{MathObj++} = TrueFormula .
 
 
-  op in : MathObj++ MathObj++ -> AtomFormula .
+  sort SetMSet .
+  subsort SetMSet < MathObj .
+  op empty : -> SetMSet .
+  op _U_ : SetMSet SetMSet -> SetMSet [assoc comm id: empty] .
+
   op isConst : MathObj++ MathObj++ -> AtomFormula .
   op proj : Nat MathObj++ -> MathObj++ .
+  op in : MathObj++ MathObj++ -> AtomFormula .
+  op diff : MathObj++ MathObj++ -> MathObj++ .
 endm
 
