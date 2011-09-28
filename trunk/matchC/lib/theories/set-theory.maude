@@ -1,0 +1,131 @@
+***(
+    This file is part of the Matching Logic Verification Framework
+
+    Copyright (C) 2009-2011 Grigore Rosu
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+***)
+
+
+mod MATHEMATICAL-SET-BUILTIN-MODULE
+  is inc MATHEMATICAL-SEQUENCE-BUILTIN-MODULE .
+
+
+  sorts PESet FESet FreeSet NeGroundSet GroundSet Set++ NeSet++ . 
+
+  *** subsort SetMSet < GroundSet .
+
+  subsort NeGroundSet < GroundSet .
+  subsort NeSet++ < Set++ .
+  subsort GroundSet < Set++ .
+  subsort NeGroundSet < NeSet++ .
+
+  subsort PESet FESet FreeSet < NeSet++ .
+  subsort PESet < PEMathObj .
+  subsort FESet < FEMathObj .
+  subsort FreeSet < FreeMathObj .
+  subsort GroundSet < MathObj .
+  subsort Set++ < MathObj++ .
+ 
+  op ?Set : Nat -> PESet .
+  op !Set : Nat -> FESet .
+  op FreeSet : Nat -> FreeSet .
+  op skolem : Nat PESet -> FreeSet [ditto] .
+  op co-skolem : Nat FreeSet -> FESet [ditto] .
+
+  op emptySet : -> GroundSet .
+  op `{|_|`}s : MathObj -> NeGroundSet [gather(&)] .
+  op `{|_|`}s : MathObj++ -> NeSet++ [ditto] .
+  op `{|_|`}s : List{MathObj++} -> Set++ [ditto] .
+  op _Us_ : GroundSet GroundSet -> GroundSet [assoc comm id: emptySet] .
+  op _Us_ : NeGroundSet GroundSet -> NeGroundSet [ditto] .
+  op _Us_ : GroundSet NeGroundSet -> NeGroundSet [ditto] .
+  op _Us_ : Set++ Set++ -> Set++ [ditto] .
+  op _Us_ : NeSet++ Set++ -> NeSet++ [ditto] .
+  op _Us_ : Set++ NeSet++ -> NeSet++ [ditto] .
+  op _Us_ : NeGroundSet Set++ -> NeSet++ [ditto] .
+  op _Us_ : Set++ NeGroundSet -> NeSet++ [ditto] .
+  op _Us_ : NeSet++ GroundSet -> NeSet++ [ditto] .
+  op _Us_ : GroundSet NeSet++ -> NeSet++ [ditto] .
+  op _Us_ : Set++ GroundSet -> Set++ [ditto] .
+  op _Us_ : GroundSet Set++ -> Set++ [ditto] .
+
+  op diff : Set++ Set++ -> NeSet++ .
+  op subset : Set++ Set++ -> AtomFormula . 
+
+
+  op in : MathObj++ Set++ -> AtomFormula .
+  op proj : Nat Set++ -> Set++ .
+  op isConst : MathObj++ Set++ -> AtomFormula .
+
+
+  var N : Nat .
+  var Phi Phi1 Phi2 : Formula .
+  var I I1 I2 J J1 J2 K K1 K2 : Int++ .
+  var Obj Obj1 Obj2 : MathObj++ .
+  var ObjList : List{MathObj++} .
+  var S : Seq++ .
+  var A A1 A2 A3 A4 : Set++ .
+  var NeA NeA1 NeA2 : NeSet++ .
+
+
+  eq {| Obj1, Obj2, ObjList |}s = {| Obj1 |}s Us {| Obj2 |}s Us {| ObjList |}s .
+  eq {| .List{MathObj++} |}s = emptySet .
+  eq NeA Us NeA = NeA .
+  eq NeA Us NeA1 === NeA Us NeA2 = diff(NeA1, NeA) === diff(NeA2, NeA) .
+
+  eq diff(NeA1 Us NeA2, A) = diff(NeA1, A) Us diff(NeA2, A) . 
+  eq diff(emptySet, A) = emptySet . 
+  eq diff(NeA Us A1, NeA Us A2) = diff(A1, NeA Us A2) .
+  eq diff(A, emptySet) = A .
+
+  eq subset(A1, A2) = diff(A1, A2) === emptySet .
+
+
+  eq in(Obj, NeA1 Us NeA2) = in(Obj, NeA1) \/ in(Obj, NeA2) .
+  eq in(Obj1, {| Obj2 |}s) = Obj1 === Obj2 .
+  eq in(Obj, emptySet) = FalseFormula .
+
+  eq proj(N, NeA1 Us NeA2) = proj(N, NeA1) Us proj(N, NeA2) .
+  eq proj(N, {| S |}s) = seq-elem(S, N) .
+  eq proj(N, emptySet) = emptySet .
+
+  eq isConst(Obj, NeA1 Us NeA2) = isConst(Obj, NeA1) /\ isConst(Obj, NeA2) .
+  eq isConst(Obj1, {| Obj2 |}s) = Obj1 === Obj2 .
+  eq isConst(Obj, emptySet) = TrueFormula .
+
+
+  eq {| Obj |}s U A === empty = FalseFormula .
+  eq A === A1 Us A2 /\ A2 === A3 /\ Phi1 ===> A === A1 Us A3 /\ Phi2
+   = A === A1 Us A2 /\ A2 === A3 /\ A === A1 Us A3 /\ Phi1 ===> Phi2 .
+  eq A === A1 Us A2 /\ A1 === A3 /\ A2 === A4 /\ Phi1
+     ===> A === A3 Us A4 /\ Phi2
+   = A === A1 Us A2 /\ A1 === A3 /\ A2 === A4 /\ A === A3 Us A4 /\ Phi1
+     ===> Phi2 .
+  eq diff(diff(A, A1), A2) = diff(A, A1 Us A2) .
+
+
+ ceq norm(in(I, A1) /\ A2 === diff(A1, {| I |}s) /\ Phi)
+   = norm(in(I, A1) /\ A2 === diff(A1, {| I |}s) /\ A1 === {| I |}s Us A2
+          /\ Phi)
+  if (in(I, A1) /\ A2 === diff(A1, {| I |}s) /\ A1 === {| I |}s Us A2 /\ Phi)
+     =/=Bool
+     (in(I, A1) /\ A2 === diff(A1, {| I |}s) /\ Phi) .
+
+
+  eq ~(I === J) /\ Phi1 ===> diff(A1 Us {| J |}s, {| I |}s) === A /\ Phi2
+   = ~(I === J) /\ Phi1 ===> diff(A1, {| I |}s) Us {| J |}s === A /\ Phi2 .
+endm
+
