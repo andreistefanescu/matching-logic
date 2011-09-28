@@ -129,9 +129,10 @@ Sort stands for ground, non-symbolic mathematical objects
 Sort++ stands for all the above
 ***)
   sorts PEMathObj FEMathObj FreeMathObj MathObj MathObj++ .
-  sorts List{MathObj++} .
   subsort PEMathObj FEMathObj FreeMathObj MathObj < MathObj++ .
+  sorts List{MathObj++} .
   subsort MathObj++ < List{MathObj++} .
+
   op skolem : Nat PEMathObj -> FreeMathObj .
   op co-skolem : Nat FreeMathObj -> FEMathObj .
 
@@ -154,14 +155,15 @@ Sort++ stands for all the above
   eq .List{MathObj++} === .List{MathObj++} = TrueFormula .
 
 
-  sort SetMSet .
-  subsort SetMSet < MathObj .
-  op empty : -> SetMSet .
-  op _U_ : SetMSet SetMSet -> SetMSet [assoc comm id: empty] .
-
   op isConst : MathObj++ MathObj++ -> AtomFormula .
   op proj : Nat MathObj++ -> MathObj++ .
   op in : MathObj++ MathObj++ -> AtomFormula .
   op diff : MathObj++ MathObj++ -> MathObj++ .
+
+  op pointers : MathObj++ -> MathObj++ .
+  op marks : MathObj++ -> MathObj++ .
+
+  eq pointers(Obj) = proj(0, Obj) .
+  eq marks(Obj) = proj(1, Obj) .
 endm
 

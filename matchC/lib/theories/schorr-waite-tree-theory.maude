@@ -1,0 +1,81 @@
+***(
+    This file is part of the Matching Logic Verification Framework
+
+    Copyright (C) 2009-2011 Grigore Rosu
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+***)
+
+
+mod MATHEMATICAL-SCHORR-WAITE-TREE-BUILTIN-MODULE is
+  inc MATHEMATICAL-TREE-BUILTIN-MODULE .
+
+
+  op isWellMarked : Tree++ Tree++ -> AtomFormula .
+  op isWellMarkedPath : Tree++ -> AtomFormula .
+  op restorePointers : Tree++ Tree++ -> Tree++ .
+  op restorePathPointers : Tree++ Tree++ -> Tree++ .
+
+  op pointers : Tree++ -> Tree++ .
+  op marks : Tree++ -> Tree++ .
+
+
+  var Phi : Formula .
+  var I J : Int++ .
+  var T TL TR : Tree++ .
+
+
+**************
+*** Axioms ***
+**************
+  eq isWellMarked(TL [[I] @ [J]] TR, T)
+   = J === 0 /\ isConst(0, proj(1, TL)) /\ isConst(0, proj(1, TR))
+     /\ isWellMarkedPath(T)
+  \/ J === 1 /\ isConst(3, proj(1, T)) /\ isConst(0, proj(1, TL))
+     /\ isWellMarkedPath(TR)
+  \/ J === 2 /\ isConst(3, proj(1, TR)) /\ isConst(3, proj(1, T))
+     /\ isWellMarkedPath(TL) .
+  eq isWellMarked(upsilon, T) = isConst(3, proj(1, T)) .
+
+  eq isWellMarkedPath(TL [[I] @ [J]] TR)
+   = J === 1 /\ isConst(0, proj(1, TL)) /\ isWellMarkedPath(TR)
+  \/ J === 2 /\ isConst(3, proj(1, TR)) /\ isWellMarkedPath(TL) .
+  eq isWellMarkedPath(upsilon) = TrueFormula .
+
+
+  eq restorePointers(TL [[I] @ [0]] TR, T)
+   = restorePathPointers(proj(0, TL) [I] proj(0, TR), T) .
+  eq restorePointers(TL [[I] @ [1]] TR, T)
+   = restorePathPointers(proj(0, T) [I] proj(0, TL), TR) .
+  eq restorePointers(TL [[I] @ [2]] TR, T)
+   = restorePathPointers(proj(0, TR) [I] proj(0, T), TL) .
+  eq restorePointers(upsilon, T) = proj(0, T) .
+
+  eq restorePathPointers(T, TL [[I] @ [1]] TR)
+   = restorePathPointers(T [I] proj(0, TL), TR) . 
+  eq restorePathPointers(T, TL [[I] @ [2]] TR)
+   = restorePathPointers(proj(0, TR) [I] T, TL) .
+  eq restorePathPointers(T, upsilon) = T .
+
+
+*******************************
+*** Lemmas (used as axioms) ***
+*******************************
+  eq isWellMarked(T, TL [[I] @ [3]] TR)
+   = isConst(3, proj(1, TL)) /\ isConst(3, proj(1, TR)) /\ isWellMarkedPath(T) .
+  eq restorePointers(T, TL [[I] @ [3]] TR)
+   = restorePathPointers(proj(0, TL) [I] proj(0, TR), T) .
+endm
+

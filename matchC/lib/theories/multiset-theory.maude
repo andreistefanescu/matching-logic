@@ -25,15 +25,11 @@ mod MATHEMATICAL-MULTISET-BUILTIN-MODULE
 
   sorts PEMSet FEMSet FreeMSet NeMSet MSet MSet++ NeMSet++ . 
 
-  subsort SetMSet < MSet .
-
   subsort NeMSet < MSet .
   subsort NeMSet++ < MSet++ .
   subsort MSet < MSet++ .
   subsort NeMSet < NeMSet++ .
 
-
-  *** subsort NeSetMSet < PEMSet FEMSet FreeMSet .
   subsort PEMSet FEMSet FreeMSet < NeMSet++ .
   subsort PEMSet < PEMathObj .
   subsort FEMSet < FEMathObj .
@@ -41,17 +37,19 @@ mod MATHEMATICAL-MULTISET-BUILTIN-MODULE
   subsort MSet < MathObj .
   subsort MSet++ < MathObj++ .
  
+
   op ?MSet : Nat -> PEMSet .
   op !MSet : Nat -> FEMSet .
   op FreeMSet : Nat -> FreeMSet .
   op skolem : Nat PEMSet -> FreeMSet [ditto] .
   op co-skolem : Nat FreeMSet -> FEMSet [ditto] .
 
-  *** op empty : -> MSet .
+
+  op empty : -> MSet .
   op `{|_|`} : MathObj -> NeMSet [gather(&)] .
   op `{|_|`} : MathObj++ -> NeMSet++ [ditto] .
   op `{|_|`} : List{MathObj++} -> MSet++ [ditto] .
-  *** op _U_ : MSet MSet -> MSet [assoc comm id: empty] .
+  op _U_ : MSet MSet -> MSet [assoc comm id: empty] .
   op _U_ : MSet MSet -> MSet [ditto] .
   op _U_ : NeMSet MSet -> NeMSet [ditto] .
   op _U_ : MSet NeMSet -> NeMSet [ditto] .

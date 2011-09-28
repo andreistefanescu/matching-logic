@@ -19,43 +19,31 @@
 ***)
 
 
-mod MATHEMATICAL-SCHORR-WAITE-BUILTIN-MODULE is
-  inc MATHEMATICAL-TREE-BUILTIN-MODULE
-    + MATHEMATICAL-GRAPH-BUILTIN-MODULE .
+mod MATHEMATICAL-SCHORR-WAITE-GRAPH-BUILTIN-MODULE is
+  inc MATHEMATICAL-GRAPH-BUILTIN-MODULE .
 
 
-  op isWellMarked : Tree++ Tree++ -> AtomFormula .
-  op isWellMarkedPath : Tree++ -> AtomFormula .
-  op restorePointers : Tree++ Tree++ -> Tree++ .
-  op restorePathPointers : Tree++ Tree++ -> Tree++ .
   op isRestorable : MathObj++ MathObj++ MathObj++ Graph -> AtomFormula .
   op isRestorablePath : MathObj++ MathObj++ Set++ Graph -> AtomFormula .
   op restore : MathObj++ MathObj++ Graph -> Graph .
   op restorePath : MathObj++ MathObj++ Graph -> Graph .
-
-  op pointers : Tree++ -> Tree++ .
-  op marks : Tree++ -> Tree++ .
 
   op pointers : Graph -> Graph .
   op marks : Graph -> Graph .
 
 
   var Phi Phi1 Phi2 : Formula .
-  var Obj : MathObj++ .
   var P Q Root L R : Int++ .
   var I J : Int++ .
-  var A A1 A2 : Seq++ .
   var M M1 M2 : Set++ .
   var NeM : NeSet++ .
   var V V1 V2 E E1 E2 E3 : Set++ .
-  var T TL TR : Tree++ .
-  var G G1 G2 : Graph .
+  var G : Graph .
 
 
-  eq pointers(Obj) = proj(0, Obj) .
-  eq marks(Obj) = proj(1, Obj) .
-
-
+**************
+*** Axioms ***
+**************
   eq isRestorable(P, Q, Root,
        (| ({| v(P, [P] @ [I]) |}s Us V),
           ({| e(P, L, 0) |}s Us {| e(P, R, 1) |}s Us E)
@@ -137,9 +125,9 @@ mod MATHEMATICAL-SCHORR-WAITE-BUILTIN-MODULE is
   eq restorePath(P, 0, G) = G .
 
 
-  eq diff({| v(P, Obj) |}s Us M, {| Q |}s)
-   = {| v(P, Obj) |}s Us diff(M, {| Q |}s) .
-
+*******************************
+*** Lemmas (used as axioms) ***
+*******************************
  ceq isRestorablePath(Q, Root, M1, (| V1, E1 Us E |)) /\ Phi1
      ===> isRestorablePath(Q, Root, M2, (| V2, E2 Us E |)) /\ Phi2
    = isRestorablePath(Q, Root, M1, (| V1, E1 Us E |))
@@ -181,41 +169,5 @@ mod MATHEMATICAL-SCHORR-WAITE-BUILTIN-MODULE is
   eq V(proj(0, restore(P, Q, G))) = V(proj(0, G)) .
   eq restore(P, Q, (| ({| v(Q, [Q] @ [3]) |}s Us V), E |))
    = restorePath(Q, P, (| ({| v(Q, [Q] @ [3]) |}s Us V), E |)) .
-
-
-  eq isWellMarked(TL [[I] @ [J]] TR, T)
-   = J === 0 /\ isConst(0, proj(1, TL)) /\ isConst(0, proj(1, TR))
-     /\ isWellMarkedPath(T)
-  \/ J === 1 /\ isConst(3, proj(1, T)) /\ isConst(0, proj(1, TL))
-     /\ isWellMarkedPath(TR)
-  \/ J === 2 /\ isConst(3, proj(1, TR)) /\ isConst(3, proj(1, T))
-     /\ isWellMarkedPath(TL) .
-  eq isWellMarked(upsilon, T) = isConst(3, proj(1, T)) .
-
-  eq isWellMarkedPath(TL [[I] @ [J]] TR)
-   = J === 1 /\ isConst(0, proj(1, TL)) /\ isWellMarkedPath(TR)
-  \/ J === 2 /\ isConst(3, proj(1, TR)) /\ isWellMarkedPath(TL) .
-  eq isWellMarkedPath(upsilon) = TrueFormula .
-
-
-  eq restorePointers(TL [[I] @ [0]] TR, T)
-   = restorePathPointers(proj(0, TL) [I] proj(0, TR), T) .
-  eq restorePointers(TL [[I] @ [1]] TR, T)
-   = restorePathPointers(proj(0, T) [I] proj(0, TL), TR) .
-  eq restorePointers(TL [[I] @ [2]] TR, T)
-   = restorePathPointers(proj(0, TR) [I] proj(0, T), TL) .
-  eq restorePointers(upsilon, T) = proj(0, T) .
-
-  eq restorePathPointers(T, TL [[I] @ [1]] TR)
-   = restorePathPointers(T [I] proj(0, TL), TR) . 
-  eq restorePathPointers(T, TL [[I] @ [2]] TR)
-   = restorePathPointers(proj(0, TR) [I] T, TL) .
-  eq restorePathPointers(T, upsilon) = T .
-
-
-  eq isWellMarked(T, TL [[I] @ [3]] TR)
-   = isConst(3, proj(1, TL)) /\ isConst(3, proj(1, TR)) /\ isWellMarkedPath(T) .
-  eq restorePointers(T, TL [[I] @ [3]] TR)
-   = restorePathPointers(proj(0, TL) [I] proj(0, TR), T) .
 endm
 

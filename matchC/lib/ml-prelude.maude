@@ -6,20 +6,22 @@ load theories/set-theory.maude
 load theories/multiset-theory.maude
 load theories/tree-theory.maude
 load theories/graph-theory.maude
-load theories/schorr-waite-theory.maude
+load theories/schorr-waite-tree-theory.maude
+load theories/schorr-waite-graph-theory.maude
 load theories/domain.maude
 load config.maude
 
 
 mod ML-BUILTIN-MODULE is
-  including MATHEMATICAL-INT-BUILTIN-MODULE .
-  including MATHEMATICAL-SEQUENCE-BUILTIN-MODULE .
-  including MATHEMATICAL-SET-BUILTIN-MODULE .
-  including MATHEMATICAL-MULTISET-BUILTIN-MODULE .
-  including MATHEMATICAL-TREE-BUILTIN-MODULE .
-  including MATHEMATICAL-GRAPH-BUILTIN-MODULE .
-  including MATHEMATICAL-SCHORR-WAITE-BUILTIN-MODULE .
-  including MATHEMATICAL-DOMAIN-BUILTIN-MODULE .
-  including CONFIG-BUILTIN-MODULE .
+  including MATHEMATICAL-INT-BUILTIN-MODULE
+          + MATHEMATICAL-SEQUENCE-BUILTIN-MODULE
+          + MATHEMATICAL-SET-BUILTIN-MODULE
+          + MATHEMATICAL-MULTISET-BUILTIN-MODULE
+          + MATHEMATICAL-TREE-BUILTIN-MODULE
+          + MATHEMATICAL-GRAPH-BUILTIN-MODULE
+          + MATHEMATICAL-SCHORR-WAITE-TREE-BUILTIN-MODULE
+          + MATHEMATICAL-SCHORR-WAITE-GRAPH-BUILTIN-MODULE
+          + MATHEMATICAL-DOMAIN-BUILTIN-MODULE
+          + CONFIG-BUILTIN-MODULE .
 endm
 
