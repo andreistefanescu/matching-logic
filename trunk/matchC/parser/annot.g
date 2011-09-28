@@ -49,6 +49,7 @@ tokens {
   GEQ = '>=';
 
   UNION = 'U';
+  SET_UNION = 'Us';
   APPEND = '@';
   ADD = '+';
   SUB = '-';
@@ -64,6 +65,7 @@ tokens {
 
   SEQ;
   MSET;
+  MATH_SET;
 
   REW = '=>';
 
@@ -488,11 +490,11 @@ mathematical_object_list
   ;
 
 mathematical_object
-  : multiset_union_term
+  : union_term
   ;
 
-multiset_union_term
-  : list_append_term (UNION^ list_append_term)*
+union_term
+  : list_append_term ((UNION | SET_UNION)^ list_append_term)*
   ;
 
 list_append_term
@@ -534,7 +536,10 @@ primary_term
 
 constructor
   : '[' mathematical_object_list ']' -> ^(SEQ mathematical_object_list)
-  | '{' mathematical_object_list '}' -> ^(MSET mathematical_object_list)
+  | '{' mathematical_object_list
+    ( '}' -> ^(MSET mathematical_object_list)
+    | '}s' -> ^(MATH_SET mathematical_object_list)
+    )
   ;
 
 infix_term

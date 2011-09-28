@@ -19,25 +19,168 @@
 ***)
 
 
-mod MATHEMATICAL-SCHORR-WAITE-BUILTIN-MODULE
-  is inc MATHEMATICAL-TREE-BUILTIN-MODULE .
+mod MATHEMATICAL-SCHORR-WAITE-BUILTIN-MODULE is
+  inc MATHEMATICAL-TREE-BUILTIN-MODULE
+    + MATHEMATICAL-GRAPH-BUILTIN-MODULE .
+
 
   op isWellMarked : Tree++ Tree++ -> AtomFormula .
   op isWellMarkedPath : Tree++ -> AtomFormula .
   op restorePointers : Tree++ Tree++ -> Tree++ .
   op restorePathPointers : Tree++ Tree++ -> Tree++ .
+  op isRestorable : MathObj++ MathObj++ MathObj++ Graph -> AtomFormula .
+  op isRestorablePath : MathObj++ MathObj++ Set++ Graph -> AtomFormula .
+  op restore : MathObj++ MathObj++ Graph -> Graph .
+  op restorePath : MathObj++ MathObj++ Graph -> Graph .
 
   op pointers : Tree++ -> Tree++ .
   op marks : Tree++ -> Tree++ .
 
+  op pointers : Graph -> Graph .
+  op marks : Graph -> Graph .
 
-  var Phi : Formula .
+
+  var Phi Phi1 Phi2 : Formula .
+  var Obj : MathObj++ .
+  var P Q Root L R : Int++ .
   var I J : Int++ .
+  var A A1 A2 : Seq++ .
+  var M M1 M2 : Set++ .
+  var NeM : NeSet++ .
+  var V V1 V2 E E1 E2 E3 : Set++ .
   var T TL TR : Tree++ .
+  var G G1 G2 : Graph .
 
 
-  eq pointers(T) = proj(0, T) .
-  eq marks(T)    = proj(1, T) .
+  eq pointers(Obj) = proj(0, Obj) .
+  eq marks(Obj) = proj(1, Obj) .
+
+
+  eq isRestorable(P, Q, Root,
+       (| ({| v(P, [P] @ [I]) |}s Us V),
+          ({| e(P, L, 0) |}s Us {| e(P, R, 1) |}s Us E)
+       |))
+   = I === 0 /\ P === Root /\ Q === 0
+  \/ I === 0 /\ ~(P === Root)
+     /\ isRestorablePath(Q, Root, {| P |}s,
+          (| ({| v(P, [P] @ [I]) |}s Us V),
+             ({| e(P, L, 0) |}s Us {| e(P, R, 1) |}s Us E)
+          |))
+  \/ ~(I === 0)
+     /\ isRestorablePath(P, Root, emptySet,
+          (| ({| v(P, [P] @ [I]) |}s Us V),
+             ({| e(P, L, 0) |}s Us {| e(P, R, 1) |}s Us E)
+          |)) .
+  eq isRestorable(0, Q, Root, G) = Q === Root .
+
+ ceq isRestorablePath(Q, Root, M,
+                      (| ({| v(Q, [Q] @ [I]) |}s Us V),
+                         ({| e(Q, L, 0) |}s Us {| e(Q, R, 1) |}s Us E)
+                      |))
+   = Q === Root /\ I === 1 /\ R === 0
+  \/ Q === Root /\ I === 2 /\ L === 0
+  \/ ~(Q === Root) /\ I === 1
+     /\ isRestorablePath(R, Root, M Us {| Q |}s,
+                         (| ({| v(Q, [Q] @ [I]) |}s Us V),
+                            ({| e(Q, L, 0) |}s Us {| e(Q, R, 1) |}s Us E)
+                         |))
+  \/ ~(Q === Root) /\ I === 2
+     /\ isRestorablePath(L, Root, M Us {| Q |}s,
+                         (| ({| v(Q, [Q] @ [I]) |}s Us V),
+                            ({| e(Q, L, 0) |}s Us {| e(Q, R, 1) |}s Us E)
+                         |))
+  if (in(Q, M) =/=Bool TrueFormula) .
+  eq isRestorablePath(Q, Root, {| Q |}s Us M, G) = FalseFormula .
+
+  eq restore(P, Q,
+             (| ({| v(P, [P] @ [0]) |}s Us V),
+                ({| e(P, L, 0) |}s Us {| e(P, R, 1) |}s Us E)
+             |))
+   = restorePath(P, Q,
+                (| ({| v(P, [P] @ [0]) |}s Us V),
+                   ({| e(P, L, 0) |}s Us {| e(P, R, 1) |}s Us E)
+                |)) .
+  eq restore(P, Q,
+             (| ({| v(P, [P] @ [1]) |}s Us V),
+                ({| e(P, L, 0) |}s Us {| e(P, R, 1) |}s Us E)
+             |))
+   = restorePath(P, R,
+                (| ({| v(P, [P] @ [1]) |}s Us V),
+                   ({| e(P, Q, 0) |}s Us {| e(P, L, 1) |}s Us E)
+                |)) .
+  eq restore(P, Q,
+             (| ({| v(P, [P] @ [2]) |}s Us V),
+                ({| e(P, L, 0) |}s Us {| e(P, R, 1) |}s Us E)
+             |))
+   = restorePath(P, L,
+                (| ({| v(P, [P] @ [2]) |}s Us V),
+                   ({| e(P, R, 0) |}s Us {| e(P, Q, 1) |}s Us E)
+                |)) .
+  eq restore(0, Q, G) = G .
+
+  eq restorePath(P, Q,
+             (| ({| v(Q, [Q] @ [1]) |}s Us V),
+                ({| e(Q, L, 0) |}s Us {| e(Q, R, 1) |}s Us E)
+             |))
+   = restorePath(Q, R,
+                (| ({| v(Q, [Q] @ [1]) |}s Us V),
+                   ({| e(Q, P, 0) |}s Us {| e(Q, L, 1) |}s Us E)
+                |)) .
+  eq restorePath(P, Q,
+             (| ({| v(Q, [Q] @ [2]) |}s Us V),
+                ({| e(Q, L, 0) |}s Us {| e(Q, R, 1) |}s Us E)
+             |))
+   = restorePath(Q, L,
+                (| ({| v(Q, [Q] @ [2]) |}s Us V),
+                   ({| e(Q, R, 0) |}s Us {| e(Q, P, 1) |}s Us E)
+                |)) .
+  eq restorePath(P, 0, G) = G .
+
+
+  eq diff({| v(P, Obj) |}s Us M, {| Q |}s)
+   = {| v(P, Obj) |}s Us diff(M, {| Q |}s) .
+
+ ceq isRestorablePath(Q, Root, M1, (| V1, E1 Us E |)) /\ Phi1
+     ===> isRestorablePath(Q, Root, M2, (| V2, E2 Us E |)) /\ Phi2
+   = isRestorablePath(Q, Root, M1, (| V1, E1 Us E |))
+     /\ isRestorablePath(Q, Root, M2, (| V2, E2 Us E |)) /\ Phi1
+     ===> Phi2
+  if (vertexIds(V1) === vertexIds(V2) /\ subset(edgeHeads(E1), M1))
+     ==Bool TrueFormula .
+ ceq norm(isRestorablePath(Q, Root, NeM, (| ({| v(I, [I] @ [0]) |}s Us V), E |))
+          /\ Phi)
+   = norm(isRestorablePath(Q, Root, NeM, (| ({| v(I, [I] @ [0]) |}s Us V), E |))
+          /\ ~(I === Root) /\ Phi)
+  if (isRestorablePath(Q, Root, NeM, (| ({| v(I, [I] @ [0]) |}s Us V), E |))
+     /\ ~(I === Root) /\ Phi)
+     =/=Bool
+     (isRestorablePath(Q, Root, NeM, (| ({| v(I, [I] @ [0]) |}s Us V), E |))
+     /\ Phi) .
+  eq isRestorable(P, Q, Root, (| ({| v(Q, [Q] @ [3]) |}s Us V), E |))
+   = isRestorablePath(P, Root, emptySet, (| ({| v(Q, [Q] @ [3]) |}s Us V), E |))
+  \/ P === 0 /\ Q === Root . 
+
+ ceq isRestorablePath(Q, Root, M, (| (V1 Us V), (E1 Us E) |))
+     /\ E(restorePath(P, Q, (| (V2 Us V), (E2 Us E) |))) === E3
+   = isRestorablePath(Q, Root, M, (| (V1 Us V), (E1 Us E) |))
+     /\ E(restorePath(P, Q, (| (vertexIds(V2) Us V), (E2 Us E) |))) === E3
+  if V2 =/=Bool vertexIds(V2) andBool
+     (subset(vertexIds(V1), M) /\ subset(vertexIds(V2), M)
+     /\ subset(edgeHeads(E1), M) /\ subset(edgeHeads(E2), M))
+     ==Bool TrueFormula .
+ ceq isRestorablePath(Q, Root, M, (| (V1 Us V), (E1 Us E) |)) /\ Phi1
+     ===>
+     E(restorePath(P, Q, (| (V2 Us V), (E2 Us E) |))) === E3 /\ Phi2
+   = isRestorablePath(Q, Root, M, (| (V1 Us V), (E1 Us E) |)) /\ Phi1
+     ===>
+     E(restorePath(P, Q, (| (vertexIds(V2) Us V), (E2 Us E) |))) === E3 /\ Phi2
+  if V2 =/=Bool vertexIds(V2) andBool
+     (subset(vertexIds(V1), M) /\ subset(vertexIds(V2), M)
+     /\ subset(edgeHeads(E1), M) /\ subset(edgeHeads(E2), M))
+     ==Bool TrueFormula .
+  eq V(proj(0, restore(P, Q, G))) = V(proj(0, G)) .
+  eq restore(P, Q, (| ({| v(Q, [Q] @ [3]) |}s Us V), E |))
+   = restorePath(Q, P, (| ({| v(Q, [Q] @ [3]) |}s Us V), E |)) .
 
 
   eq isWellMarked(TL [[I] @ [J]] TR, T)

@@ -249,6 +249,8 @@ mod UTILS is inc PATTERN-SKOLEM + APPLY-SUBST + SMT-LIB + SMT-INTERFACE .
 
   eq getFreeSubstItem(FreeObj === Obj /\ Phi) = (FreeObj <- Obj) .
   eq getFreeSubstItem(Obj === FreeObj /\ Phi) = (FreeObj <- Obj) .
+  *** eq getFreeSubstItem(diff(FreeSet:FreeSet, {| 0 |}s) === Obj /\ Phi)
+  *** = (FreeObj <- Obj) .
   eq getFreeSubstItem(Phi) = .Subst [owise] .
 
   var Obj1 Obj2 Obj1' Obj2' : MathObj++ .
@@ -298,6 +300,7 @@ mod UTILS is inc PATTERN-SKOLEM + APPLY-SUBST + SMT-LIB + SMT-INTERFACE .
   eq filterAnonymousFreeSubst(FreeSeq(N) <- Obj) = .Subst .
   eq filterAnonymousFreeSubst(FreeMSet(N) <- Obj) = .Subst .
   eq filterAnonymousFreeSubst(FreeTree(N) <- Obj) = .Subst .
+  eq filterAnonymousFreeSubst(FreeGraph(N) <- Obj) = .Subst .
   eq filterAnonymousFreeSubst(skolem(N, PEObj) <- Obj) = .Subst .
   eq filterAnonymousFreeSubst(SubstItem) = SubstItem [owise] .
 
@@ -347,5 +350,14 @@ mod UTILS is inc PATTERN-SKOLEM + APPLY-SUBST + SMT-LIB + SMT-INTERFACE .
   eq red-form(Phi:Formula)
    = < form > Formula (Phi:Formula)(.List{K}) </ form >
      < taskType > ('Constrain).KProperLabel(.List{K}) </ taskType > .
+
+  eq checkForm(Phi:Formula) = 
+       < taskType > ('Constrain).KProperLabel(.List{K}) </ taskType >
+       < form > Formula (Phi:Formula)(.List{K}) </ form >
+     ==Bool
+       < taskType > ('Constrain).KProperLabel(.List{K}) </ taskType >
+       < form > Formula (TrueFormula)(.List{K}) </ form > .
+
+  op formatFailedTop : Bag -> Bag .
 endm
 

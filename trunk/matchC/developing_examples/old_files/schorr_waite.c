@@ -12,10 +12,12 @@ struct graphNode {
 
 
 void schorr_waite_graph(struct graphNode *root)
-/* rule <k> $ => return; ...</k>
-         <heap>... swgraph(root, empty)(G) => swgraph(root, empty)(?G) ...</heap>
-    if isConst(0, marks(G)) /\ isConst(3, marks(?G))
-       /\ pointers(G) = pointers(?G) */
+/*@ rule <k> $ => return; ...</k>
+         <heap>...
+           swgraph({root}s, {0}s)(G) => swgraph({root}s, {0}s)(?G)
+         ...</heap>
+    if isConst(0, marks(G)) /\ pointers(G) = pointers(?G) */
+    // /\ isConst(3, marks(?G)) */
 {
   struct graphNode *p;
   struct graphNode *q;
@@ -24,9 +26,10 @@ void schorr_waite_graph(struct graphNode *root)
     return;
 
   p = root; q = NULL;
-  /* inv <heap>... swtree(p)(?TP), swtree(q)(?TQ) ...</heap>
-          /\ isSWMarkedPath(proj(1, ?TP), proj(1, ?TQ))
-          /\ proj(0, T) = SWPath2ptrTree(?TP, ?TQ) */
+  /*@ inv <heap>... swgraph({p, q}s, {0}s)(?GPQ) ...</heap>
+          /\ root = !root /\ isRestorable(p, q, root, ?GPQ)
+          /\ pointers(G) = pointers(restore(p, q, ?GPQ))
+          */
   while (p != NULL) {
     struct graphNode *t;
 
@@ -39,10 +42,12 @@ void schorr_waite_graph(struct graphNode *root)
       p = t;
     }
     else {
+      // breakpoint
       t = p->left;
       p->left = p->right;
       p->right = q;
       q = t;
+      // breakpoint
     }
   }
 
@@ -50,6 +55,7 @@ void schorr_waite_graph(struct graphNode *root)
 
 
 //@ var T, TP, TQ : Tree
+//@ var G, GPQ : Graph
 
 /*
 eq Schorr-Waite-graph =

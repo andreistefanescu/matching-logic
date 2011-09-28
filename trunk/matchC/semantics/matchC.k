@@ -5,6 +5,7 @@ load ../patterns/list
 load ../patterns/binary_tree
 load ../patterns/binary_height_tree
 load ../patterns/schorr_waite_binary_tree
+load ../patterns/schorr_waite_graph
 load ../patterns/io
 load ../patterns/stack
 
@@ -17,6 +18,7 @@ kmod MATCHC is
           + BINARY-TREE-HP
           + BINARY-HEIGHT-TREE-HP
           + SCHORR-WAITE-BINARY-TREE-HP
+          + SCHORR-WAITE-GRAPH-HP
           + IO-PATTERN
           + STACK-PATTERN
 

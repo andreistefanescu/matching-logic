@@ -1,0 +1,134 @@
+***(
+    This file is part of the Matching Logic Verification Framework
+
+    Copyright (C) 2009-2011 Grigore Rosu
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+***)
+
+
+mod MATHEMATICAL-GRAPH-BUILTIN-MODULE is
+  inc MATHEMATICAL-SEQUENCE-BUILTIN-MODULE
+    + MATHEMATICAL-SET-BUILTIN-MODULE .
+
+  sorts GroundGraph NeGroundGraph .
+  subsorts NeGroundGraph < GroundGraph .
+  sorts Graph NeGraph .
+  subsorts NeGraph < Graph .
+  subsort NeGroundGraph < NeGraph .
+  subsort GroundGraph < Graph .
+
+  sorts PEGraph FEGraph FreeGraph .
+  subsort PEGraph < PEMathObj .
+  subsort FEGraph < FEMathObj .
+  subsort FreeGraph < FreeMathObj .
+  subsort PEGraph FEGraph FreeGraph < Graph .
+  subsort GroundGraph < MathObj .
+  subsort Graph < MathObj++ .
+
+ 
+  op ?Graph : Nat -> PEGraph .
+  op !Graph : Nat -> FEGraph .
+  op FreeGraph : Nat -> FreeGraph .
+  op skolem : Nat PEGraph -> FreeGraph [ditto] .
+  op co-skolem : Nat FreeGraph -> FEGraph [ditto] .
+
+
+  op `(|_`,_|`) : GroundSet GroundSet -> GroundGraph .
+  *** op `(|_`,_|`) : NeGroundSet MSet -> NeGroundGraph [ditto] .
+  op `(|_`,_|`) : Set++ Set++ -> Graph [ditto] .
+  *** op `(|_`,_|`) : NeMSet++ MSet++ -> NeGraph [ditto] .
+
+  op v : MathObj MathObj -> GroundSet .
+  op e : MathObj MathObj MathObj -> GroundSet .
+  op v : MathObj++ MathObj++ -> Set++ [ditto] .
+  op e : MathObj++ MathObj++ MathObj++ -> Set++ [ditto] .
+
+  op V : GroundGraph -> GroundSet .
+  op E : GroundGraph -> GroundSet .
+  op V : Graph -> Set++ .
+  op E : Graph -> Set++ .
+
+  op vertexIds : Set++ -> Set++ .
+  op edgeHeads : Set++ -> Set++ .
+  op edgeTails : Set++ -> Set++ .
+
+
+  op proj : Nat Graph -> Graph .
+  op isConst : MathObj++ Graph -> AtomFormula .
+
+  op projV : Nat Set++ -> NeSet++ .
+  op isConstV : MathObj++ Set++ -> AtomFormula .
+
+
+  var N : Nat .
+  var Phi Phi1 Phi2 : Formula .
+  var Obj Obj1 Obj2 Vid Vid1 Vid2 : MathObj++ .
+  var I : Int++ .
+  var A : Seq++ .
+  var V V1 V2 E E1 E2 : Set++ .
+  var NeV NeV1 NeV2 NeE NeE1 NeE2 : NeSet++ .
+  var G G1 G2 : Graph .
+  var ?G : PEGraph .
+  var FreeG : FreeGraph .
+  var NeG NeG1 NeG2 : NeGraph .
+
+
+  eq (| V1, E1 |) === (| V2, E2 |) = V1  === V2 /\ E1 === E2 .
+  eq {| v(Vid, Obj1) |}s Us V1 === {| v(Vid, Obj2) |}s Us V2
+   = Obj1 === Obj2 /\ V1 === V2 .
+  eq {| e(Vid1, Vid2, Obj1) |}s Us E1 === {| e(Vid1, Vid2, Obj2) |}s Us E2
+   = Obj1 === Obj2 /\ E1 === E2 .
+
+  eq V((| V, E |)) = V .
+  eq E((| V, E |)) = E .
+
+
+  eq V(?G) === V /\ E(?G) === E = ?G === (| V, E |) .
+  eq V(FreeG) === V /\ E(FreeG) === E = FreeG === (| V, E |) .
+
+
+  eq vertexIds(NeV1 Us NeV2) = vertexIds(NeV1) Us vertexIds(NeV2) .
+  eq vertexIds({| v(Vid, Obj) |}s) = {| Vid |}s .
+  eq vertexIds({| Vid |}s) = {| Vid |}s .
+  eq vertexIds(emptySet) = emptySet .
+  eq edgeHeads(NeE1 Us NeE2) = edgeHeads(NeE1) Us edgeHeads(NeE2) .
+  eq edgeHeads({| e(Vid1, Vid2, Obj) |}s) = {| Vid1 |}s .
+  eq edgeHeads(emptySet) = emptySet .
+  eq edgeTails(NeE1 Us NeE2) = edgeTails(NeE1) Us edgeTails(NeE2) .
+  eq edgeTails({| e(Vid1, Vid2, Obj) |}s) = {| Vid2 |}s .
+  eq edgeTails(emptySet) = emptySet .
+
+
+  eq proj(N, (| V, E |)) = (| projV(N, V), E |) .
+  eq projV(N, NeV1 Us NeV2) = projV(N, NeV1) Us projV(N, NeV2) .
+  eq projV(N, {| v(Vid, A) |}s) = {| v(Vid, seq-elem(A, N)) |}s .
+  eq projV(N, {| I |}s) = {| I |}s .
+  eq projV(N, emptySet) = emptySet .
+
+  eq isConst(Obj, (| V, E |)) = isConstV(Obj, V) .
+  eq isConstV(Obj, NeV1 Us NeV2) = isConstV(Obj, NeV1) /\ isConstV(Obj, NeV2) .
+  eq isConstV(Obj1, {| v(Vid, Obj2) |}s) = Obj1 === Obj2 .
+  eq isConstV(Obj, {| I |}s) = TrueFormula .
+  eq isConstV(Obj, emptySet) = TrueFormula .
+
+
+  eq proj(N, G) === (| V, E |)
+   = (| V(proj(N, G)), E(proj(N, G)) |) === (| V, E |) .
+
+  eq E(proj(N, G)) = E(G) .
+  eq projV(N, diff(V1, V2)) = diff(projV(N, V1), projV(N, V2)) .
+endm
+

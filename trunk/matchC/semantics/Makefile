@@ -24,6 +24,7 @@ EXT_K_LIST = $(ML_PATTERNS_DIR)/list.k
 EXT_K_BINARY_TREE = $(ML_PATTERNS_DIR)/binary_tree.k
 EXT_K_BINARY_HEIGHT_TREE = $(ML_PATTERNS_DIR)/binary_height_tree.k
 EXT_K_SCHORR_WAITE_BINARY_TREE = $(ML_PATTERNS_DIR)/schorr_waite_binary_tree.k
+EXT_K_SCHORR_WAITE_GRAPH = $(ML_PATTERNS_DIR)/schorr_waite_graph.k
 EXT_K_IO = $(ML_PATTERNS_DIR)/io.k
 EXT_K_STACK = $(ML_PATTERNS_DIR)/stack.k
 EXT_K_FILES = $(LANG_K_SYNTAX) $(LANG_K_SEMANTICS) \
@@ -31,6 +32,7 @@ EXT_K_FILES = $(LANG_K_SYNTAX) $(LANG_K_SEMANTICS) \
               $(EXT_K_FOL) \
               $(EXT_K_LIST) $(EXT_K_QUEUE) $(EXT_K_BINARY_TREE) \
               $(EXT_K_BINARY_HEIGHT_TREE) $(EXT_K_SCHORR_WAITE_BINARY_TREE) \
+              $(EXT_K_SCHORR_WAITE_GRAPH) \
               $(EXT_K_IO) $(EXT_K_STACK) \
               $(EXT_K_MAIN)
 EXT_COMPILED = $(EXT_NAME)-compiled.maude

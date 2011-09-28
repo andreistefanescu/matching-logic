@@ -20,12 +20,21 @@
 
 
 mod MATHEMATICAL-MULTISET-BUILTIN-MODULE
-  is inc MATHEMATICAL-INT-BUILTIN-MODULE .
+  is inc MATHEMATICAL-SEQUENCE-BUILTIN-MODULE .
+
 
   sorts PEMSet FEMSet FreeMSet NeMSet MSet MSet++ NeMSet++ . 
+
+  subsort SetMSet < MSet .
+
   subsort NeMSet < MSet .
-  subsort NeMSet++ MSet < MSet++ .
-  subsort PEMSet FEMSet FreeMSet NeMSet < NeMSet++ .
+  subsort NeMSet++ < MSet++ .
+  subsort MSet < MSet++ .
+  subsort NeMSet < NeMSet++ .
+
+
+  *** subsort NeSetMSet < PEMSet FEMSet FreeMSet .
+  subsort PEMSet FEMSet FreeMSet < NeMSet++ .
   subsort PEMSet < PEMathObj .
   subsort FEMSet < FEMathObj .
   subsort FreeMSet < FreeMathObj .
@@ -38,11 +47,12 @@ mod MATHEMATICAL-MULTISET-BUILTIN-MODULE
   op skolem : Nat PEMSet -> FreeMSet [ditto] .
   op co-skolem : Nat FreeMSet -> FEMSet [ditto] .
 
-  op empty : -> MSet .
+  *** op empty : -> MSet .
   op `{|_|`} : MathObj -> NeMSet [gather(&)] .
   op `{|_|`} : MathObj++ -> NeMSet++ [ditto] .
   op `{|_|`} : List{MathObj++} -> MSet++ [ditto] .
-  op _U_ : MSet MSet -> MSet [assoc comm id: empty] .
+  *** op _U_ : MSet MSet -> MSet [assoc comm id: empty] .
+  op _U_ : MSet MSet -> MSet [ditto] .
   op _U_ : NeMSet MSet -> NeMSet [ditto] .
   op _U_ : MSet NeMSet -> NeMSet [ditto] .
   op _U_ : MSet++ MSet++ -> MSet++ [ditto] .
@@ -55,19 +65,23 @@ mod MATHEMATICAL-MULTISET-BUILTIN-MODULE
   op _U_ : MSet++ MSet -> MSet++ [ditto] .
   op _U_ : MSet MSet++ -> MSet++ [ditto] .
 
-  op diff : MSet++ MSet++ -> MSet++ .
+  op diff : MSet++ MSet++ -> NeMSet++ .
 
 
   op in : MathObj++ MSet++ -> AtomFormula .
+  op proj : Nat MSet++ -> MSet++ .
+  op isConst : MathObj++ MSet++ -> AtomFormula .
   op size : MSet++ -> Int++ . 
   *** ops min max : MSet++ -> Int++ .
   op leq : MSet++ MSet++ -> AtomFormula .
 
 
+  var N : Nat .
   var Phi Phi1 Phi2 : Formula .
   var I I1 I2 J J1 J2 K K1 K2 : Int++ .
   var Obj Obj1 Obj2 : MathObj++ .
   var ObjList : List{MathObj++} .
+  var S : Seq++ .
   var A A1 A2 A3 A4 : MSet++ .
   var NeA NeA1 NeA2 : NeMSet++ .
 
@@ -76,17 +90,26 @@ mod MATHEMATICAL-MULTISET-BUILTIN-MODULE
   eq {| .List{MathObj++} |} = empty .
   eq NeA U A1 === NeA U A2 = A1 === A2 .
 
-  eq diff(A1 U A2, A1) = A2 . 
+  eq diff(NeA U A1, NeA U A2) = diff(A1, A2) . 
+  eq diff(A, empty) = A .
   eq diff(empty, A) = empty . 
 
+
+  eq in(Obj, NeA1 U NeA2) = in(Obj, NeA1) \/ in(Obj, NeA2) .
+  eq in(Obj1, {| Obj2 |}) = Obj1 === Obj2 .
+  eq in(Obj, empty) = FalseFormula .
+
+  eq proj(N, NeA1 U NeA2) = proj(N, NeA1) U proj(N, NeA2) .
+  eq proj(N, {| S |}) = seq-elem(S, N) .
+  eq proj(N, empty) = empty .
+
+  eq isConst(Obj, NeA1 U NeA2) = isConst(Obj, NeA1) /\ isConst(Obj, NeA2) .
+  eq isConst(Obj1, {| Obj2 |}) = Obj1 === Obj2 .
+  eq isConst(Obj, empty) = TrueFormula .
 
   eq size(NeA1 U NeA2) = size(NeA1) +Int size(NeA2) .
   eq size({| Obj |}) = 1 .
   eq size(empty) = 0 .
-
-  eq in(Obj, NeA1 U NeA2) = in(Obj, NeA1) \/ in(Obj, NeA2) . 
-  eq in(Obj1, {| Obj2 |}) = Obj1 === Obj2 .
-  eq in(Obj, empty) = FalseFormula .
 
   eq leq(NeA1 U NeA2, A) = leq(NeA1, A) /\ leq(NeA2, A) .
   eq leq(A, NeA1 U NeA2) = leq(A, NeA1) /\ leq(A, NeA2) .
@@ -102,6 +125,7 @@ mod MATHEMATICAL-MULTISET-BUILTIN-MODULE
      ===> A === A3 U A4 /\ Phi2
    = A === A1 U A2 /\ A1 === A3 /\ A2 === A4 /\ A === A3 U A4 /\ Phi1
      ===> Phi2 .
+  eq diff(diff(A, A1), A2) = diff(A, A1 U A2) .
 
 
  ceq norm(in(I, A1) /\ A2 === diff(A1, {| I |}) /\ Phi)
