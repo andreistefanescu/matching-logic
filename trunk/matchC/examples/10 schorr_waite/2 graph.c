@@ -87,6 +87,5 @@ void schorr_waite_graph(struct graphNode *root)
 
 
 //@ var r : Int
-//@ var T, TP, TQ : Tree
 //@ var G, GPQ : Graph
 
