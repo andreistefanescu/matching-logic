@@ -1,7 +1,7 @@
 LANG_NAME = kernelC
 EXT_NAME = matchC
 
-K_BASE=/Users/andrei/k-release
+K_BASE=/home/grosu/stefane1/k-release
 KC = K_BASE=$(K_BASE) $(K_BASE)/core/kompile
 
 ML_ROOT_DIR = ..

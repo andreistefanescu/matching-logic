@@ -1,7 +1,7 @@
 kmod SCHORR-WAITE-GRAPH-HP is
   including MATCHC-SEMANTICS
           + MATHEMATICAL-SEQUENCE-BUILTIN-MODULE
-          + MATHEMATICAL-TREE-BUILTIN-MODULE
+          + MATHEMATICAL-GRAPH-BUILTIN-MODULE
 
   kvar N : Nat
   kvar Phi : Formula
@@ -13,14 +13,14 @@ kmod SCHORR-WAITE-GRAPH-HP is
   kvar H : Map
 
 
-*** Definition of SW Graphs ***
+*** Definition of Points-to Graphs ***
   rule
   (
     <task>
       <taskType> Run </taskType>
       <config>
         <k> derive(P) ~> K </k>
-        <heap> swgraph(P, B)(G) H </heap>
+        <heap> graph(P, B)(G) H </heap>
         CfgItems
       </config>
       <form> Phi </form>
@@ -31,7 +31,7 @@ kmod SCHORR-WAITE-GRAPH-HP is
       <taskType> Run </taskType>
       <config>
         <k> K </k>
-        <heap> swgraph(P, B)(G) H </heap>
+        <heap> graph(P, B)(G) H </heap>
         CfgItems
       </config>
       <form> Phi /\ P === 0 /\ G === emptyGraph </form>
@@ -41,7 +41,7 @@ kmod SCHORR-WAITE-GRAPH-HP is
       <taskType> Run </taskType>
       <config>
         <k> K </k>
-        <heap> swgraph(P, B)(G) H </heap>
+        <heap> graph(P, B)(G) H </heap>
         CfgItems
       </config>
       <form> Phi /\ ~(P === 0) /\ in(P, B) </form>
@@ -51,7 +51,7 @@ kmod SCHORR-WAITE-GRAPH-HP is
       <taskType> Run </taskType>
       <config>
         <k> K </k>
-        <heap> swgraph(P, B)(G) H </heap>
+        <heap> graph(P, B)(G) H </heap>
         CfgItems
       </config>
       <form> Phi /\ ~(P === 0) /\ ~ in(P, B) </form>
@@ -62,16 +62,16 @@ kmod SCHORR-WAITE-GRAPH-HP is
 
 
   rule
-    <heap_> swgraph(0, B)(G) => .Map <_/heap>
+    <heap_> graph(0, B)(G) => .Map <_/heap>
     <form> Phi => Phi /\ G === emptyGraph </form>
   [structural]
   rule
-    <heap_> swgraph(P, B)(G) => .Map <_/heap>
+    <heap_> graph(P, B)(G) => .Map <_/heap>
     <form> Phi /\ in(P, B) => Phi /\ in(P, B) /\ G === emptyGraph </form>
   [structural]
 
   rule
-    <heap_> swgraph(P, B)(emptyGraph) => .Map <_/heap>
+    <heap_> graph(P, B)(emptyGraph) => .Map <_/heap>
     <form> Phi => Phi /\ (P === 0 \/ ~(P === 0) /\ in(P, B)) </form>
   [structural]
 
@@ -79,13 +79,13 @@ kmod SCHORR-WAITE-GRAPH-HP is
   rule
     <taskType> Run </taskType>
     <heap_>
-        swgraph(P, B)(G)
+        graph(P, B)(G)
       =>
         P |-> FreeInt(N) : (id("graphNode").id("mark"))
         (P +Int 1) |-> FreeInt(N +Int 1) : (id("graphNode").id("left"))
         (P +Int 2) |-> FreeInt(N +Int 2) : (id("graphNode").id("right"))
-        swgraph(FreeInt(N +Int 1), B)(FreeGraph(N +Int 3))
-        swgraph(FreeInt(N +Int 2), )(FreeGraph(N +Int 4))
+        graph(FreeInt(N +Int 1), B)(FreeGraph(N +Int 3))
+        graph(FreeInt(N +Int 2), )(FreeGraph(N +Int 4))
     <_/heap>
     <counter> N => N +Int 5 </counter>
     <form>
@@ -95,5 +95,9 @@ kmod SCHORR-WAITE-GRAPH-HP is
         /\ Tau === (FreeTree(N +Int 3) [[P] @ [FreeInt(N)]] FreeTree(N +Int 4))
     </form>
   [structural]
+
+
+*** Syntactic sugar for Points-to Graphs ***
+  rule graph(S)(G) => graph(S, {| 0 |}s)(G) [structural] 
 endkm
 

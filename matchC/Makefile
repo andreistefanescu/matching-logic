@@ -1,5 +1,5 @@
 ML_ROOT_DIR=.
-K_BASE=/Users/andrei/k-release
+K_BASE=/home/grosu/stefane1/k-release
 
 LIB_DIR=$(ML_ROOT_DIR)/lib/
 SEMANTICS_DIR=$(ML_ROOT_DIR)/semantics/

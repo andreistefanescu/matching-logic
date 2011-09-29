@@ -189,6 +189,7 @@ mod CONFIG-BUILTIN-MODULE is
   op tlist : -> HeapLabel .
   op treeList : -> HeapLabel .
 
+  op graph : -> HeapLabel .
   op swgraph : -> HeapLabel .
 
   op dllist : -> HeapLabel .
