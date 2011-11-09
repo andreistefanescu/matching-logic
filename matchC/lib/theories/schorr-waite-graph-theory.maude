@@ -27,6 +27,8 @@ mod MATHEMATICAL-SCHORR-WAITE-GRAPH-BUILTIN-MODULE is
   op isRestorablePath : MathObj++ MathObj++ Set++ Graph -> AtomFormula .
   op restore : MathObj++ MathObj++ Graph -> Graph .
   op restorePath : MathObj++ MathObj++ Graph -> Graph .
+  op getMarked : MathObj++ MathObj++ Graph -> Set++ .
+  op getMarkedPath : MathObj++ Graph -> Set++ .
 
   op pointers : Graph -> Graph .
   op marks : Graph -> Graph .
