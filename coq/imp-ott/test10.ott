@@ -1,0 +1,204 @@
+metavar x ::= {{ com term variable }} {{ coq nat }} {{ coq-equality }}
+
+grammar
+aexp :: 'aexp_' ::= {{ com arithmetic expressions }}
+     | 0             ::   :: Zero {{ com zero }}
+     | S aexp        ::   :: Succ {{ com successor }}
+     | aexp + aexp'  ::   :: Plus {{ com sum }}
+     | aexp / aexp'  ::   :: Div {{ com division }}
+     | x             ::   :: Var {{ com variable reference }} 
+     | ( aexp )      :: S :: paren {{ icho [[aexp]] }}
+     | Eaexp . aexp  :: M :: Ctx {{ icho (appctx_Eaexp_aexp [[Eaexp]] [[aexp]])}} {{ tex [[Eaexp]] \cdot [[aexp]] }}
+
+bexp :: 'bexp_' ::= {{ com boolean expressions }}
+     | True             ::   :: True {{ com true }}
+     | False            ::   :: False {{ com false }}
+     | not bexp         ::   :: Not {{ com negation }}
+     | bexp and bexp'   ::   :: And {{ com conjunction }}
+     | ( bexp )         :: S :: paren {{ icho [[bexp]] }}
+     | Ebexp . bexp     :: M :: Ctx {{ icho (appctx_Ebexp_bexp [[Ebexp]] [[bexp]])}} {{ tex [[Ebexp]] \cdot [[bexp]] }}  
+
+stmt :: 'stmt_' ::= {{ com statements }}
+     | skip	                     ::   :: Skip {{ com skip }}
+     | x := aexp                     ::   :: Asgn {{ com assignment }}
+     | stmt ; stmt'                  ::   :: Seq {{ com sequence }}
+     | if bexp then stmt else stmt'  ::   :: Ite {{ com if then else }}
+     | while bexp do stmt     	     ::   :: While {{ com while loop }}
+     | Estmt . stmt                  :: M :: Ctx {{ icho (appctx_Estmt_stmt [[Estmt]] [[stmt]])}} {{ tex [[Estmt]] \cdot [[stmt]] }}  
+     | Estmt_aexp . aexp                  :: M :: CtxA {{ icho (appctx_Estmt_aexp_aexp [[Estmt_aexp]] [[aexp]])}} {{ tex [[Estmt_aexp]] \cdot [[aexp]] }}  
+     | Estmt_bexp . bexp                  :: M :: CtxB {{ icho (appctx_Estmt_bexp_bexp [[Estmt_bexp]] [[bexp]])}} {{ tex [[Estmt_bexp]] \cdot [[bexp]] }}  
+
+ids :: 'ids_' ::= {{ com list of variables }}
+    | nothing            :: :: Empty {{ com empty list of ids }}
+    | ids , x            :: :: Cons {{ com variable followedby list }}
+
+pgm :: 'pgm_' ::= {{ com IMP programs }}
+    | var ids ; stmt        :: :: Program {{ com program }}
+
+bv :: 'bv_' ::= {{ com boolean values }}
+   | True      :: :: True {{ com true }}
+   | False     :: :: False {{ com false }}
+
+av :: 'av_' ::= {{ com boolean values }}
+   | 0      :: :: Zero {{ com zero }}
+   | S av   :: :: Succ {{ com succesor }}
+
+grammar
+
+Eaexp :: 'Eaexp_' ::= {{ com evaluation contexts for arithmentic exps }}
+      | __ + aexp     :: :: PlusL
+      | av + __       :: :: PlusR
+      | __ / aexp     :: :: DivL
+      | av / __       :: :: DivR
+      | S __          :: :: SuccI
+
+Ebexp :: 'Ebexp_' ::= {{ com evaluation contexts for boolean exps }}
+      | __ and bexp     :: :: AndL
+      | bv and __       :: :: AndR
+      | not __          :: :: NotI
+
+Estmt :: 'Estmt_' ::= {{ com evaluation contexts for statements }}
+      | __ ; stmt                       :: :: SeqL
+      | skip ; __                       :: :: SeqR
+
+Estmt_aexp :: 'Estmt_aexp_' ::= {{ com evaluation arithmetic contexts for statements }}
+      | x := __                       :: :: AssignI
+
+Estmt_bexp :: 'Estmt_bexp_' ::= {{ com evaluation boolean contexts for statements }}
+      | if __ then stmt else stmt'                      :: :: IfThenElseI
+
+grammar
+env :: 'env_' ::= {{ com environment }}
+    | empty				::   :: Empty
+    | env ,, x |> av			::   :: Bind
+    | ( env )		           	:: S :: paren {{ icho [[env]] }}
+
+
+formula :: formula_ ::=
+| judgement :: :: judgement
+| not formula :: M :: not {{ tex \neg [[formula]] }} {{ isa \<not> ([[formula]]) }} {{ coq not ([[formula]]) }}
+
+terminals :: 'terminals_' ::=
+| __ :: :: hole {{ tex [\cdot] }}
+| ==> :: :: darrow {{ tex \Rightarrow }}
+| --> :: :: arrowa {{ tex \rightarrow_a }}
+| ---> :: :: arrowb {{ tex \rightarrow_b }}
+| ----> :: :: arrows {{ tex \rightarrow_s }}
+| ,, :: :: comma {{ tex , }}
+| |> :: :: belea {{ tex \triangleright }}
+| |- :: :: vdash {{ tex \vdash }}
+
+subrules
+	av <:: aexp
+
+subrules
+	bv <:: bexp
+
+% substitutions
+%   single aexp x :: aexpsubst 
+
+contextrules
+	Eaexp _:: aexp :: aexp
+
+contextrules
+	Ebexp _:: bexp :: bexp
+
+contextrules
+	Estmt _:: stmt :: stmt
+
+contextrules
+	Estmt_aexp _:: stmt :: aexp
+
+contextrules
+	Estmt_bexp _:: stmt :: bexp
+
+defns
+Jeq :: '' ::=
+
+  defn
+  equals x x' :: :: equals :: '' {{ com [[x]] equals [[x']] }}
+  by
+
+  ------------------- :: equals_base
+  equals x x
+
+defns
+Jop :: '' ::=
+
+  defn
+  env |- x |> av :: :: binds :: '' {{ com [[env]] binds [[x]] to [[av]] }} by
+
+  -------------------------- :: ax_base
+  env ,, x |> av |- x |> av
+
+  env |- x |> av
+  not equals x x'
+  ---------------------------- :: ax_rec
+  env ,, x' |> av' |- x |> av
+
+  defn
+  env : aexp --> aexp' :: :: aexp_evals :: '' {{ com [[aexp]] under [[env]] steps into [[aexp']] }} by
+
+  -------------------- :: aexp_0
+  env : 0 + av --> av
+
+  ---------------------------------- :: aexp_s
+  env : (S av) + av' --> S (av + av')
+
+  env |- x |> av
+  ------------------------- :: aexp_lookup
+  env : x --> av
+
+  env : aexp --> av
+  ------------------------- :: aexp_context
+  env : Eaexp . aexp --> Eaexp . av
+
+  defn
+  env : bexp ---> bexp' :: :: bexp_evals :: '' {{ com [[bexp]] under [[env]] steps into [[bexp']] }} by
+  
+  -------------------------- :: bexp_not_true
+  env : not True ---> False
+    
+  -------------------------- :: bexp_not_false
+  env : not False ---> True
+      
+  --------------------------- :: bexp_and_true
+  env : True and bv ---> bv
+    
+  ----------------------------- :: bexp_and_false
+  env : False and bv ---> False
+  
+  env : bexp ---> bv
+  --------------------------------- :: bexp_context
+  env : Ebexp . bexp ---> Ebexp .bv
+
+  defn
+  env : stmt ----> env' : stmt' :: :: stmt_evals :: '' {{ com [[stmt]] under [[env]] steps into [[stmt']] }} by
+
+  ---------------------------- :: stmt_skip
+  env : skip ; stmt ----> env : stmt
+
+  -------------------------------------------- :: stmt_assign
+  env : x := av ----> (env ,, x |> av) : skip
+
+  env : stmt ----> env' : stmt'
+  --------------------------------------------- :: stmt_context
+  env : Estmt . stmt ----> env' : Estmt . stmt'
+
+  env : aexp --> av
+  --------------------------------------------------- :: stmt_aexp_context
+  env : Estmt_aexp . aexp ----> env : Estmt_aexp . av
+
+  env : bexp ---> bv
+  --------------------------------------------------- :: stmt_bexp_context
+  env : Estmt_bexp . bexp ----> env : Estmt_bexp . bv
+
+  defn
+  env : pgm ==> env' : pgm' :: :: pgm_evals :: '' {{ com [[pgm]] under [[env]] steps into [[env']] and [[pgm]] }} by
+
+  env : stmt ----> env' : stmt'
+  --------------------------------------------- :: pgm_var_empty
+  env : var nothing ; stmt ==> env' : var nothing ; stmt'
+
+  ------------------------------------------------------------- :: pgm_var_still
+  env : var ids , x ; stmt ==> (env ,, x |> 0) : var ids ; stmt
