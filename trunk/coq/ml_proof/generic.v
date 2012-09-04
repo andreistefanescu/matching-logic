@@ -1,5 +1,5 @@
 Require Import matchingl.
-Require Import NArith.BinPos.
+Require Import BinPos.
 Require Import FMapPositive.
 Require Import List.
 Require Setoid.
