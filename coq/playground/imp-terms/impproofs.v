@@ -407,12 +407,12 @@ apply M_inj in Hcond.
 symmetry in Hcond.
 destruct (Z_le_lt_eq_dec _ _ (Zle_bool_imp_le _ _ Hcond));
   [right | left].
-assert (1 <= val)%Z.
-apply Zlt_le_succ in z.
+assert (Zle_bool 1 val = true).
+apply Zle_imp_le_bool.
+change (Zsucc 0 <= val)%Z.
+apply Zlt_le_succ.
 assumption.
 (* have 1 <= val *)
-clear z.
-apply Zle_imp_le_bool in H.
 split; apply f_equal; congruence.
 
 (* other case, have val = 0 *)

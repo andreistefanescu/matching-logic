@@ -46,7 +46,6 @@ Definition SomeEqual A (l r : option A) : Prop :=
   | _, _ => False
   end.
 
-k
 Module Type Satisfaction
   (Export Base : Terms)
   (Export BaseM : Model Base)
