@@ -7,8 +7,7 @@ distclean : clean
 .PHONY : all clean distclean
 
 
-FILES=domains.v model.v contexts.v \
-  smallStep.v bigStep.v impproofs.v kstyle.v kproofs.v
+FILES=domains.v kstyle.v
 
 coq_makefile.mk : Makefile
 	coq_makefile ${FILES} -install none -o tmp.mk -R ../../ml_proof '' && mv tmp.mk $@ 
