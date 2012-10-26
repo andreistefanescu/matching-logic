@@ -14,7 +14,7 @@ Inductive Map (Key Elt : Type) : Type :=
 .
 Arguments mapEmpty [Key Elt].
 
-Infix ":->" := mapItem (at level 50, no associativity).
+Infix "|->" := mapItem (at level 50, no associativity).
 Infix ":*" := mapJoin (at level 60, right associativity).
 
 Inductive MapEquiv {K E : Type} : Map K E -> Map K E -> Prop :=
@@ -44,7 +44,11 @@ Add Parametric Morphism K E : (@mapJoin K E) with
   signature MapEquiv ==> MapEquiv ==> MapEquiv as map_join_mor.
 Proof. auto using equivJoin. Qed.
 
-Lemma mapComAssoc : forall {K V} (m1 m2 m3 : Map K V), m1 :* m2 :* m3 ~= m2 :* m1 :* m3.
+Lemma equivUnitL : forall {K V} (m : Map K V), MapEquiv (mapEmpty :* m) m.
+intros. rewrite equivComm. apply equivUnit.
+Qed.
+
+Lemma equivComAssoc : forall {K V} (m1 m2 m3 : Map K V), m1 :* m2 :* m3 ~= m2 :* m1 :* m3.
 intros. rewrite <- equivAssoc, (equivComm m1 m2), equivAssoc. reflexivity. Qed.
 
 (* Language syntax *)
@@ -60,6 +64,7 @@ Definition isEVal e :=
     | ECon _ => true
     | _ => false
   end.
+
 Inductive BExp :=
   | BCon (b:bool)
   | BLe (l r : Exp)
@@ -118,3 +123,4 @@ Structure kcfg := KCfg {
   heap : Map Z Z;
   labels : Map string Stmt
   }.
+
