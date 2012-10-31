@@ -257,9 +257,32 @@ Definition kequiv (k1 k2 : kcfg) : Prop :=
       k1 = k2 /\ store1 ~= store2 /\ heap1 ~= heap2 /\ labels1 ~= labels2
   end.
 
+Require Import Setoid.
+
+Lemma kequiv_refl k : kequiv k k.
+Proof.
+destruct k;simpl;intuition reflexivity.
+Qed.
+
+Lemma kequiv_sym k1 k2 : kequiv k1 k2 -> kequiv k2 k1.
+Proof.
+destruct k1; destruct k2;simpl;intuition.
+Qed.
+
+Lemma kequiv_trans k1 k2 k3 : kequiv k1 k2 -> kequiv k2 k3 -> kequiv k1 k3.
+Proof.
+destruct k1; destruct k2; destruct k3; simpl; intuition (etransitivity; eassumption).
+Qed.
+
+Add Parametric Relation : kcfg kequiv
+  reflexivity proved by kequiv_refl
+  symmetry proved by kequiv_sym
+  transitivity proved by kequiv_trans
+  as kequiv_rel.
+
 CoInductive steps : kcfg -> kcfg -> Prop :=
   | done : forall c1 c2, kequiv c1 c2 -> steps c1 c2
-  | more : forall c1 c2 c3, kstep c1 c2 -> steps c2 c3 -> steps c1 c3
+  | more : forall c1 c1' c2 c3, kequiv c1 c1' -> kstep c1' c2 -> steps c2 c3 -> steps c1 c3
   .
 
 Ltac find x map k :=
@@ -325,8 +348,8 @@ Lemma eval_happy : forall env,
   steps (KCfg (kra (SAssign "x" (EPlus (EVar "x") (EVar "y"))) nil)
             (env :* "x" |-> 12%Z :* "y" |-> 13%Z) mapEmpty mapEmpty)
         (KCfg nil (env :* "x" |-> 25%Z :* "y" |-> 13%Z) mapEmpty mapEmpty).
-intros;
-repeat (eapply more;[econstructor (reflexivity || find_map_entry)|]);
+intros.
+repeat (refine (more _ (@kequiv_refl _) _ _);[econstructor (reflexivity || find_map_entry)|]);
 simpl Zplus; finish.
 Qed.
 
@@ -338,7 +361,7 @@ Lemma eval_happy' : forall env,
             ("x" |-> 12%Z :* "y" |-> 13%Z :* env) mapEmpty mapEmpty)
         (KCfg nil ("x" |-> 25%Z :* "y" |-> 13%Z :* env) mapEmpty mapEmpty).
 intros;
-repeat (eapply more;[match goal with [|- kstep ?l _] => eapply (eval_sound l) end|]);
+repeat (refine (more _ (@kequiv_refl _) _ _);[match goal with [|- kstep ?l _] => eapply (eval_sound l) end|]);
 simpl Zplus; finish.
 Qed.
 
@@ -348,7 +371,7 @@ Lemma loop_test':
   nil) ("x" |-> 25%Z) mapEmpty mapEmpty)
   (KCfg nil ("x" |-> (-1)%Z) mapEmpty mapEmpty).
 Proof.
-Ltac step_eval :=eapply more;[match goal with [|- kstep ?l _] => eapply (eval_sound l) end|].
+Ltac step_eval :=refine (more _ (@kequiv_refl _) _ _);[match goal with [|- kstep ?l _] => eapply (eval_sound l) end|].
 intros;repeat step_eval;simpl;finish.
 Qed.
 
@@ -370,7 +393,7 @@ apply done.
 pose proof (eval_sound c1).
 destruct (eval c1).
 intro.
-apply more with k.
+apply more with c1 k. reflexivity.
 assumption. apply IHn. assumption.
 apply done.
 Qed.
@@ -391,11 +414,11 @@ Lemma loop_test:
   (KCfg nil ("x" |-> (-1)%Z) mapEmpty mapEmpty).
 Proof.
 intros;
-repeat (eapply more;[econstructor (reflexivity || find_map_entry)|];instantiate;simpl Zplus);
+repeat (refine (more _ (@kequiv_refl _) _ _);[econstructor (reflexivity || find_map_entry)|];instantiate;simpl Zplus);
 finish.
 Qed.
 
-Ltac step_rule := eapply more;[econstructor (reflexivity || find_map_entry)|].
+Ltac step_rule := refine (more _ (@kequiv_refl _) _ _);[econstructor (reflexivity || find_map_entry)|].
 Ltac split_if :=
   match goal with
       | [|- steps (KCfg (kra (KStmt (SIf (BCon (?x <=? ?y)%Z) _ _)) _) _ _ _) _] =>
@@ -441,11 +464,179 @@ Definition gcdProg : Map string Stmt :=
                     (Jump "gcd")))
           (Seq (SAssign "a" (EMinus "a" "b"))
                (Jump "gcd")).
-
 Lemma label_eval : forall env,
   steps (KCfg (kra (Jump "gcd") kdot)
-            (env :* "a" |-> 12%Z :* "b" |-> 13%Z) mapEmpty gcdProg)
+            ("a" |-> 12%Z :* "b" |-> 13%Z :* env) mapEmpty gcdProg)
         (KCfg (kra (Jump "done") kdot)
-             (env :* "a" |-> 1%Z :* "b" |-> 1%Z) mapEmpty gcdProg).
-intros; do 307 step_rule;simpl Zminus; finish.
+             ("a" |-> 1%Z :* "b" |-> 1%Z :* env) mapEmpty gcdProg).
+intros. apply evals_sound with 307; simpl; repeat split; reflexivity.
+Qed.
+
+Lemma steps_equiv : forall s1 s2 s1' s2',
+                      kequiv s1 s1' -> kequiv s2 s2' -> steps s1 s2 -> steps s1' s2'.
+Proof.
+cofix; intros; destruct H1.
+* apply done. rewrite H, H0 in H1. assumption.
+* eapply more; eauto. rewrite <- H. assumption.
+  apply steps_equiv with c2 c3. reflexivity. assumption. assumption.
+Qed.
+
+Lemma steps_append : forall s1 s2 s3, steps s1 s2 -> steps s2 s3 -> steps s1 s3.
+Proof.
+cofix.
+intros. destruct H.
+* eapply steps_equiv;[symmetry;eassumption|reflexivity|eassumption].
+* eapply more; eauto.
+Qed.
+
+(* A type that makes transitivity guarded *)
+Inductive itsteps (ctsteps : kcfg -> kcfg -> Prop) (c1 c2 : kcfg) : Prop :=
+| itstep : forall cmid, kstep c1 cmid -> ctsteps cmid c2-> itsteps ctsteps c1 c2
+| ittrans : forall cmid, itsteps ctsteps c1 cmid -> ctsteps cmid c2 -> itsteps ctsteps c1 c2
+.
+CoInductive tsteps (c1 c2 : kcfg) : Prop :=
+  | Done : c1 = c2 -> tsteps c1 c2
+  | Delay : itsteps tsteps c1 c2 -> tsteps c1 c2.
+Inductive PStar {A} (R : A -> A -> Prop) : A -> A -> Prop :=
+  | snil : forall x, PStar R x x
+  | scons : forall x y z, R x y -> PStar R y z -> PStar R x z
+  .
+Fixpoint ps_append {A : Type} {R : A -> A -> Prop} {c1 c2 c3 : A} (l : PStar R c1 c2)
+    : PStar R c2 c3 -> PStar R c1 c3 :=
+  match l with
+    | snil _ => fun r => r
+    | scons _ _ _ s rest => fun r => scons _ s (ps_append rest r)
+  end.
+Inductive it_nf (c1 c2 : kcfg): Prop :=
+  | it_nf_step : forall {cmid}, kstep c1 cmid -> PStar tsteps cmid c2 -> it_nf c1 c2
+  .
+Fixpoint it_whnf {c1 c2} (i : itsteps tsteps c1 c2) : it_nf c1 c2 :=
+  match i with
+    | itstep _ s r => it_nf_step s (scons _ r (snil _ _))
+    | ittrans _ l r =>
+      match it_whnf l with
+        | it_nf_step _ s l' => it_nf_step s (ps_append l' (scons _ r (snil _ _)))
+      end
+  end.
+Inductive star_ts_nf (c1 c2 : kcfg) : Prop :=
+  | st_nf_done : c1 = c2 -> star_ts_nf c1 c2
+  | st_nf_step : forall {cmid}, kstep c1 cmid -> PStar tsteps cmid c2 -> star_ts_nf c1 c2
+  .
+Fixpoint star_nf {c1 c2} (l : PStar tsteps c1 c2) : star_ts_nf c1 c2 :=
+  match l with
+    | snil _ => st_nf_done (eq_refl _)
+    | scons x y z c l' =>
+      match c with
+        | Done eqxy =>
+          match eq_sym eqxy in _ = x return star_ts_nf x z with
+            | eq_refl => star_nf l'
+          end
+        | Delay i =>
+          match it_whnf i with
+            | it_nf_step _ s l1 => st_nf_step s (ps_append l1 l')
+          end
+      end
+  end.
+CoFixpoint steps_sound {c1 c2} (l : PStar tsteps c1 c2) : steps c1 c2 :=
+  match star_nf l with
+    | st_nf_done eql =>
+      eq_ind _ (steps c1) (done _ _ (kequiv_refl _)) _ eql
+    | st_nf_step _ s l' => more _ (kequiv_refl _) s
+                                (steps_sound l')
+  end.
+Definition tsteps_sound {c1 c2} (l : tsteps c1 c2) : steps c1 c2 :=
+  steps_sound (scons _ l (snil _ _ )).
+
+CoFixpoint mult :
+  forall (x y z k t : Z) erest env heap labels,
+    (0 <= x)%Z ->
+    (0 <= y)%Z ->
+    z = (x * y + k)%Z ->
+    env ~= ("i" |-> x :* "j" |-> y :* "k" |-> k :* "t" |-> t :* erest) ->
+  tsteps
+    (KCfg (kra (SWhile (BLe (ECon 1%Z) (EVar "i"))
+                       (Seq (SAssign "t" (EVar "j"))
+                       (Seq (SAssign "i" (EPlus (EVar "i") (ECon (-1)%Z)))
+                            (SWhile (BLe (ECon 1%Z) (EVar "t"))
+                                    (Seq (SAssign "k" (EPlus (EVar "k") (ECon 1%Z)))
+                                         (SAssign "t" (EPlus (EVar "t") (ECon (-1)%Z))))))))
+               (kra (SAssign "t" (ECon 0%Z))
+                    kdot))
+                env heap labels)
+    (KCfg kdot
+          ("i" |-> 0%Z :* "j" |-> y%Z :* "k" |-> z :* "t" |-> 0%Z :* erest) heap labels)
+with mult_sum :
+  forall (x y z : Z) krest erest env heap labels,
+    (0 <= y)%Z ->
+    z = (x + y)%Z ->
+    env ~= ("k" |-> x :* "t" |-> y :* erest) ->
+  tsteps
+    (KCfg (kra
+             (SWhile (BLe (ECon 1%Z) (EVar "t"))
+                     (Seq (SAssign "k" (EPlus (EVar "k") (ECon 1%Z)))
+                          (SAssign "t" (EPlus (EVar "t") (ECon (-1)%Z)))))
+             krest)
+          env heap labels)
+    (KCfg krest
+          ("k" |-> z :* "t" |-> 0%Z :* erest) heap labels).
+Ltac tstep := refine (Delay (itstep _ _ _ _));[econstructor (solve[reflexivity || find_map_entry])|].
+Ltac tsplit_if :=
+  match goal with
+      | [|- tsteps (KCfg (kra (KStmt (SIf (BCon (?x <=? ?y)%Z) _ _)) _) _ _ _) _] =>
+        pose proof (Zle_cases x y); destruct (x <=? y)%Z
+  end.
+Proof.
+(* Outer *)
+* intros;repeat tstep. tsplit_if.
+(* harder true case *)
++
+simpl in H1; subst z.
+do 16 tstep.
+eapply Delay. eapply ittrans.
+  - eapply itstep;[solve[constructor]|].
+    eapply mult_sum; clear mult mult_sum.
+      Focus 3.
+      instantiate (3:=k).
+      instantiate (2:=y).
+      instantiate (1:="j" |-> y :* "i" |-> (x + -1)%Z :* erest).
+      equate_maps.
+      assumption.
+      simpl. reflexivity.
+  - eapply mult; clear mult mult_sum.
+    Focus 4.
+    instantiate (3:=(x + -1)%Z).
+    instantiate (2:=(k + y)%Z).
+    instantiate (1:=0%Z).
+    equate_maps.
+    omega.
+    omega.
+    ring.
+
+(* easy false case *)
++ clear mult mult_sum.
+  repeat tstep.
+  apply Done.
+  replace x with 0%Z in * |- * by omega.
+  match goal with [|- ?l = ?r] => assert (kequiv l r) end.
+    solve[repeat split;try solve[equate_maps]].
+    admit.
+
+(* Inner *)
+* clear mult.
+  intros.
+  repeat tstep. tsplit_if.
+  -
+  do 19 tstep.
+  eapply mult_sum; clear mult_sum; try solve[equate_maps]; omega.
+  - clear mult_sum.
+  repeat tstep.
+  apply Done.
+  replace y with 0%Z by omega.
+  replace x with z by omega.
+  (* now they are equivalent, but ksteps was currently
+     defined in terms of eq rather than kequiv.
+    So, assert kequiv to prove we can, and then admit the eq *)
+  match goal with [|- ?l = ?r] => assert (kequiv l r) end.
+  + solve[repeat split;try solve[equate_maps]].
+  + admit.
 Qed.
