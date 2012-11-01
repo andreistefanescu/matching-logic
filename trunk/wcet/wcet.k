@@ -108,11 +108,13 @@ module WCET
   rule bge X , E , E2 => ble X , E2 , E [macro]
 
   syntax K ::= "branch" "(" Bool "," Id ")"
+/*
   rule <top>... <k> branch(B:Bool, X:Id) => Pgm(X) ...</k>
        <pgm> Pgm:Map </pgm>
        <formula> Phi => Phi andBool B ==Bool true </formula><progress> _ => true </progress> ...</top> when checkSat(notBool (Phi impliesBool B ==Bool true)) ==K unsat [structural]
   rule <top>... <k> branch(B:Bool, _) => . ...</k>
        <formula> Phi => Phi andBool B ==Bool false </formula><progress> _ => true </progress> ...</top> when checkSat(notBool (Phi impliesBool B ==Bool false)) ==K unsat [structural]
+*/
   rule <top>... <task>
          <config>
            <k> branch(B:Bool, X:Id) ~> K </k>
