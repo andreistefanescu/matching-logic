@@ -129,39 +129,6 @@ Inductive kstep : kcfg -> kcfg -> Prop :=
   | k_heat_seq : `(heat_step kstep (Seq s1 s2) s1 s2)
   .
 
-Fixpoint str_split k {V} m : option (V * Map string V) :=
-  match m with
-    | mapEmpty => None
-    | (k' |-> v) => if string_dec k k' then Some (v, mapEmpty) else None
-    | (l :* r) =>
-      match str_split k l with
-        | Some (v, mapEmpty) => Some (v, r)
-        | Some (v, l') => Some (v, l' :* r)
-        | None =>
-          match str_split k r with
-            | Some (v, r') => Some (v, l :* r')
-            | None => None
-          end
-      end
-  end.
-
-Lemma str_split_sound k {V} (v : V) m m' :
-  str_split k m = Some (v, m') -> m ~= k |-> v :* m'.
-Proof with try discriminate.
-revert m'; induction m; simpl; intros... 
-destruct (string_dec k k0) as [->|]...
-injection H; intros; subst; clear H.
-rewrite equivUnit; reflexivity.
-destruct (str_split k m1) as [[v1 m'']|].
-destruct m''; 
-(injection H; intros; subst; clear H);
-rewrite (IHm1 _ (eq_refl _)), ?equivUnit, ?equivAssoc; reflexivity.
-destruct (str_split k m2) as [[v1 m'']|];try discriminate.
-destruct m'';
-(injection H; intros; subst; clear H);
-rewrite (IHm2 _ (eq_refl _)), equivComAssoc, ?equivUnit; reflexivity.
-Qed.
-
 Fixpoint notFree' {K} (used : list K) {V} (m : Map K V) (cont : list K -> Prop) {struct m} : Prop :=
   match m with
     | mapEmpty => cont used
@@ -169,86 +136,6 @@ Fixpoint notFree' {K} (used : list K) {V} (m : Map K V) (cont : list K -> Prop) 
     | l :* r => notFree' used l (fun used' => notFree' used' r cont)
   end.
 Definition defined {K V} (m : Map K V) : Prop := notFree' nil m (fun _ => True).  
-
-(* want to show completeness on defined maps
-Lemma str_split_complete : forall k {V} (v : V) m m', m ~= k |-> v :* m' ->
-                                                      exists m'', str_split k m = Some (v, m')
-                                                                  /\ m'' ~= m'.
- *)
-
-Definition eval cfg : option kcfg :=
-  match cfg with
-    | KCfg nil env heap lenv => None
-    | KCfg (item1 :: rest) env heap lenv =>
-      let exp_step e' := Some (KCfg e' env heap lenv) in
-      let heat_step e' f := exp_step (kra e' (kra f rest)) in
-      let exp1_step e' := exp_step (e' :: rest) in
-      match item1 with
-        | ECon i =>
-          match rest with
-            | (KFreezeE f :: rest') => exp_step (f (ECon i) :: rest')
-            | _ => None
-          end
-        | BCon b =>
-          match rest with
-            | (KFreezeB f :: rest') => exp_step (f (BCon b) :: rest')
-            | (KFreezer (Fif s1 s2) :: rest') => exp_step (kra (SIf (BCon b) s1 s2) rest')
-            | _ => None
-          end
-        | EVar x => 
-          match str_split x env with
-            | None => None
-            | Some (v,env') => Some (KCfg (kra (ECon v) rest) (x |-> v :* env') heap lenv)
-          end
-        | SAssign x (ECon i) =>
-          match str_split x env with
-            | None => None
-            | Some (_, env') => Some (KCfg (kra Skip rest) (x |-> i :* env') heap lenv)
-          end
-        | SAssign x e => heat_step e (x :=□)
-        | Jump l =>
-          match str_split l lenv with
-            | None => None
-            | Some (s, _) => Some (KCfg (kra s kdot) env heap lenv)
-          end
-        | EPlus (ECon i) (ECon j) => exp1_step (ECon (Zplus i j))
-        | EPlus (ECon i) e2       => heat_step e2 (ECon i + □)
-        | EPlus e1 e2             => heat_step e1 (□ + e2)
-        | EMinus (ECon i) (ECon j) => exp1_step (ECon (Zminus i j))
-        | EMinus (ECon i) e2       => heat_step e2 (ECon i - □)
-        | EMinus e1 e2             => heat_step e1 (□ - e2)
-        | EDiv (ECon i) (ECon j) =>
-          if Zneq_bool 0%Z j then exp1_step (ECon (Zdiv i j)) else None
-        | EDiv (ECon i) e2       => heat_step e2 (ECon i /□)
-        | EDiv e1 e2             => heat_step e1 (□/ e2)
-        | BLe (ECon i) (ECon j) => exp1_step (BCon (Zle_bool i j))
-        | BLe (ECon i) e2       => heat_step e2 (i <= □)
-        | BLe e1 e2             => heat_step e1 (□ <= e2)
-        | BAnd (BCon b) be2 => if b then exp1_step be2 else exp1_step (BCon false)
-        | BAnd be1 be2 => heat_step be1 (□ && be2)
-        | Skip => exp_step rest
-        | SIf (BCon b) s1 s2 => if b then exp1_step s1 else exp1_step s2
-        | SIf be s1 s2 => heat_step be (if□then s1 else s2)
-        | SWhile b s => exp1_step (SIf b (Seq s (SWhile b s)) Skip)
-        | Seq s1 s2 => heat_step s1 s2
-
-        | KFreezer _ => None
-        | KFreezeE _ => None
-        | KFreezeB _ => None
-         (* unimplemented *)
-        | BNot _ => None
-        | HAssign _ _ => None
-      end
-end.
-
-Functional Scheme eval_ind := Induction for eval Sort Prop.
-
-Lemma eval_sound : forall cfg, match eval cfg with Some cfg' => kstep cfg cfg' | None => True end.
-Proof.
-intros.
-functional induction (eval cfg);try econstructor(reflexivity || assumption ||
-match goal with [H : str_split _ _ = _ |- _] => apply str_split_sound in H;eassumption end).
-Qed.
 
 Definition kequiv (k1 k2 : kcfg) : Prop :=
   match k1, k2 with
@@ -284,193 +171,6 @@ CoInductive steps : kcfg -> kcfg -> Prop :=
   | done : forall c1 c2, kequiv c1 c2 -> steps c1 c2
   | more : forall c1 c1' c2 c3, kequiv c1 c1' -> kstep c1' c2 -> steps c2 c3 -> steps c1 c3
   .
-
-Ltac find x map k :=
-  match map with
-    | (x |-> _ :* _) => let pf := constr:(equivRefl map) in k pf
-    | (?mapl :* (x |-> ?v)) => let pf := constr:(equivComm mapl (x |-> v)) in k pf
-    | ?mapl :* ?mapr =>
-           find x mapl ltac:(fun pfl => let pf := constr:(equivTrans (equivJoinL mapr pfl)
-                                                                   (equivAssoc (x |-> _) _ mapr))
-                                        in k pf)
-        || find x mapr ltac:(fun pfr => let pf := constr:(equivTrans (equivJoinR mapl pfr)
-                                                                   (equivComAssoc mapl (x |-> _) _))
-                                        in k pf)
-  end.
-Ltac find_submap map submap k :=
-  match map with
-    | (submap :* _) => let pf := constr:(equivRefl map) in k pf
-    | (?mapl :* submap) => let pf := constr:(equivComm mapl submap) in k pf
-    | ?mapl :* ?mapr =>
-           find_submap mapl submap
-
-                       ltac:(fun pfl => let pf := constr:(equivTrans (equivJoinL mapr pfl)
-                                                                   (equivAssoc submap _ mapr))
-                                        in k pf)
-        || find_submap mapr submap
-                       ltac:(fun pfr => let pf := constr:(equivTrans (equivJoinR mapl pfr)
-                                                                   (equivComAssoc mapl submap _))
-                                        in k pf)
-  end.
-
-Ltac find_map_entry :=
-  match goal with
-    | [|- ?map ~= _ ] =>
-      ((is_var map;
-       match goal with
-         | [H : ?map ~= ?mapr |- ?map ~= _] =>
-           match mapr with
-             | map => fail
-             | _ => rewrite H
-           end
-       end)
-        || (try (unfold map)));
-      match goal with
-        | [|- ?x |-> ?v ~= ?x |-> _ :* _] => rewrite (equivUnit (x |-> v)); reflexivity
-        | [|- ?map ~= ?x |-> ?v :* ?map2 ] =>
-          find x map ltac:(fun pf => exact pf)
-      end
-  end.
-
-Ltac equate_maps := rewrite ?equivAssoc, ?equivUnitL, ?equivUnit;
- repeat (rewrite ?f_equal;
-         match goal with
-           | [|- (?x |-> ?v1 :* _) ~= (?x |-> ?v2 :* _)] => apply equivJoin;[replace v1 with v2 by omega|]
-           | [|- MapEquiv ?map (?x |-> _ :* _)] => find x map ltac:(fun pf => rewrite pf)
-           | [|- MapEquiv ?map (?submap :* _)] => find_submap map submap ltac:(fun pf => rewrite pf)
-           | [|- MapEquiv ?map ?map ] => reflexivity
-         end).
-
-Ltac finish :=
-  apply done;repeat (apply conj);[reflexivity|simpl;equate_maps ..].
-
-Lemma eval_happy : forall env,
-  steps (KCfg (kra (SAssign "x" (EPlus (EVar "x") (EVar "y"))) nil)
-            (env :* "x" |-> 12%Z :* "y" |-> 13%Z) mapEmpty mapEmpty)
-        (KCfg nil (env :* "x" |-> 25%Z :* "y" |-> 13%Z) mapEmpty mapEmpty).
-intros.
-repeat (refine (more _ (@kequiv_refl _) _ _);[econstructor (reflexivity || find_map_entry)|]);
-simpl Zplus; finish.
-Qed.
-
-(* Try "quote" on the env *)
-(* Use a mixed coinductive sequencing to use loop invariants? *)
-
-Lemma eval_happy' : forall env,
-  steps (KCfg (kra (SAssign "x" (EPlus (EVar "x") (EVar "y"))) nil)
-            ("x" |-> 12%Z :* "y" |-> 13%Z :* env) mapEmpty mapEmpty)
-        (KCfg nil ("x" |-> 25%Z :* "y" |-> 13%Z :* env) mapEmpty mapEmpty).
-intros;
-repeat (refine (more _ (@kequiv_refl _) _ _);[match goal with [|- kstep ?l _] => eapply (eval_sound l) end|]);
-simpl Zplus; finish.
-Qed.
-
-Lemma loop_test':
-  steps (KCfg (kra (SWhile (BLe (ECon 0) (EVar "x"))
-    (SAssign "x" (EPlus (EVar "x") (ECon (-1)%Z))))
-  nil) ("x" |-> 25%Z) mapEmpty mapEmpty)
-  (KCfg nil ("x" |-> (-1)%Z) mapEmpty mapEmpty).
-Proof.
-Ltac step_eval :=refine (more _ (@kequiv_refl _) _ _);[match goal with [|- kstep ?l _] => eapply (eval_sound l) end|].
-intros;repeat step_eval;simpl;finish.
-Qed.
-
-Function evals n kcfg :=
-  match n with
-    | 0 => kcfg
-    | S n => 
-      match eval kcfg with
-      | Some kcfg' => evals n kcfg'
-      | None => kcfg
-     end
-  end.
-Lemma evals_sound :
-  forall n c1 c2,
-    kequiv (evals n c1) c2 -> steps c1 c2.
-Proof.
-induction n; simpl; intros c1 c2.
-apply done.
-pose proof (eval_sound c1).
-destruct (eval c1).
-intro.
-apply more with c1 k. reflexivity.
-assumption. apply IHn. assumption.
-apply done.
-Qed.
-
-Lemma loop_test'':
-  steps (KCfg (kra (SWhile (BLe (ECon 0) (EVar "x"))
-    (SAssign "x" (EPlus (EVar "x") (ECon (-1)%Z))))
-  nil) ("x" |-> 25%Z) mapEmpty mapEmpty)
-  (KCfg nil ("x" |-> (-1)%Z) mapEmpty mapEmpty).
-Proof.
-intros;apply (evals_sound 1000);lazy;repeat (apply conj);[reflexivity|simpl;equate_maps ..].
-Qed.
-
-Lemma loop_test:
-  steps (KCfg (kra (SWhile (BLe (ECon 0) (EVar "x"))
-    (SAssign "x" (EPlus (EVar "x") (ECon (-1)%Z))))
-  nil) ("x" |-> 25%Z) mapEmpty mapEmpty)
-  (KCfg nil ("x" |-> (-1)%Z) mapEmpty mapEmpty).
-Proof.
-intros;
-repeat (refine (more _ (@kequiv_refl _) _ _);[econstructor (reflexivity || find_map_entry)|];instantiate;simpl Zplus);
-finish.
-Qed.
-
-Ltac step_rule := refine (more _ (@kequiv_refl _) _ _);[econstructor (reflexivity || find_map_entry)|].
-Ltac split_if :=
-  match goal with
-      | [|- steps (KCfg (kra (KStmt (SIf (BCon (?x <=? ?y)%Z) _ _)) _) _ _ _) _] =>
-        pose proof (Zle_cases x y); destruct (x <=? y)%Z
-  end.
-
-(* Either solve immediately by using the circularity,
-   or bail out for manual intervention if the
-   circularity matches structurally *)
-Ltac use_circ circ :=
-  solve[eapply circ;
-  try (match goal with [|- _ ~= _] => equate_maps;reflexivity end);
-  instantiate;  omega]
-  || (eapply circ;fail 1).
-
-Ltac run_circ circ := repeat (use_circ circ || (step_rule || split_if || finish)).
-
-CoFixpoint sum :
-  forall (x y z : Z) erest env heap labels,
-    (0 <= x)%Z ->
-    z = (x + y)%Z ->
-    env ~= ("i" |-> x :* "j" |-> y :* erest) ->
-  steps
-    (KCfg (kra (SWhile (BLe (ECon 1%Z) (EVar "i"))
-                       (Seq
-                          (SAssign "i" (EPlus (EVar "i") (ECon (-1)%Z)))
-                          (SAssign "j" (EPlus (EVar "j") (ECon 1%Z)))))
-               kdot)
-                env heap labels)
-    (KCfg kdot
-          ("i" |-> 0%Z :* "j" |-> z%Z :* erest) heap labels).
-intros;step_rule;run_circ sum.
-Qed.
-
-Coercion EVar : string >-> Exp.
-
-Definition gcdProg : Map string Stmt :=
-  "gcd" |->
-        SIf (BLe "a" "b")
-          (SIf (BLe "b" "a")
-               (Jump "done")
-               (Seq (SAssign "b" (EMinus "b" "a"))
-                    (Jump "gcd")))
-          (Seq (SAssign "a" (EMinus "a" "b"))
-               (Jump "gcd")).
-Lemma label_eval : forall env,
-  steps (KCfg (kra (Jump "gcd") kdot)
-            ("a" |-> 12%Z :* "b" |-> 13%Z :* env) mapEmpty gcdProg)
-        (KCfg (kra (Jump "done") kdot)
-             ("a" |-> 1%Z :* "b" |-> 1%Z :* env) mapEmpty gcdProg).
-intros. apply evals_sound with 307; simpl; repeat split; reflexivity.
-Qed.
 
 Lemma steps_equiv : forall s1 s2 s1' s2',
                       kequiv s1 s1' -> kequiv s2 s2' -> steps s1 s2 -> steps s1' s2'.
@@ -546,6 +246,27 @@ CoFixpoint steps_sound {c1 c2} (l : PStar tsteps c1 c2) : steps c1 c2 :=
   end.
 Definition tsteps_sound {c1 c2} (l : tsteps c1 c2) : steps c1 c2 :=
   steps_sound (scons _ l (snil _ _ )).
+
+Ltac finish :=
+  apply done;repeat (apply conj);[reflexivity|simpl;equate_maps ..].
+
+Ltac step_rule := refine (more _ (@kequiv_refl _) _ _);[econstructor (reflexivity || find_map_entry)|].
+Ltac split_if :=
+  match goal with
+      | [|- steps (KCfg (kra (KStmt (SIf (BCon (?x <=? ?y)%Z) _ _)) _) _ _ _) _] =>
+        pose proof (Zle_cases x y); destruct (x <=? y)%Z
+  end.
+
+(* Either solve immediately by using the circularity,
+   or bail out for manual intervention if the
+   circularity matches structurally *)
+Ltac use_circ circ :=
+  solve[eapply circ;
+  try (match goal with [|- _ ~= _] => equate_maps;reflexivity end);
+  instantiate;  omega]
+  || (eapply circ;fail 1).
+
+Ltac run_circ circ := repeat (use_circ circ || (step_rule || split_if || finish)).
 
 CoFixpoint mult :
   forall (x y z k t : Z) erest env heap labels,

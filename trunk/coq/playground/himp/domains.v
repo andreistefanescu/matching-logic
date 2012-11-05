@@ -51,6 +51,62 @@ Qed.
 Lemma equivComAssoc : forall {K V} (m1 m2 m3 : Map K V), m1 :* m2 :* m3 ~= m2 :* m1 :* m3.
 intros. rewrite <- equivAssoc, (equivComm m1 m2), equivAssoc. reflexivity. Qed.
 
+Ltac find x map k :=
+  match map with
+    | (x |-> _ :* _) => let pf := constr:(equivRefl map) in k pf
+    | (?mapl :* (x |-> ?v)) => let pf := constr:(equivComm mapl (x |-> v)) in k pf
+    | ?mapl :* ?mapr =>
+           find x mapl ltac:(fun pfl => let pf := constr:(equivTrans (equivJoinL mapr pfl)
+                                                                   (equivAssoc (x |-> _) _ mapr))
+                                        in k pf)
+        || find x mapr ltac:(fun pfr => let pf := constr:(equivTrans (equivJoinR mapl pfr)
+                                                                   (equivComAssoc mapl (x |-> _) _))
+                                        in k pf)
+  end.
+Ltac find_submap map submap k :=
+  match map with
+    | (submap :* _) => let pf := constr:(equivRefl map) in k pf
+    | (?mapl :* submap) => let pf := constr:(equivComm mapl submap) in k pf
+    | ?mapl :* ?mapr =>
+           find_submap mapl submap
+
+                       ltac:(fun pfl => let pf := constr:(equivTrans (equivJoinL mapr pfl)
+                                                                   (equivAssoc submap _ mapr))
+                                        in k pf)
+        || find_submap mapr submap
+                       ltac:(fun pfr => let pf := constr:(equivTrans (equivJoinR mapl pfr)
+                                                                   (equivComAssoc mapl submap _))
+                                        in k pf)
+  end.
+
+Ltac find_map_entry :=
+  match goal with
+    | [|- ?map ~= _ ] =>
+      ((is_var map;
+       match goal with
+         | [H : ?map ~= ?mapr |- ?map ~= _] =>
+           match mapr with
+             | map => fail
+             | _ => rewrite H
+           end
+       end)
+        || (try (unfold map)));
+      match goal with
+        | [|- ?x |-> ?v ~= ?x |-> _ :* _] => rewrite (equivUnit (x |-> v)); reflexivity
+        | [|- ?map ~= ?x |-> ?v :* ?map2 ] =>
+          find x map ltac:(fun pf => exact pf)
+      end
+  end.
+
+Ltac equate_maps := rewrite ?equivAssoc, ?equivUnitL, ?equivUnit;
+ repeat (rewrite ?f_equal;
+         match goal with
+           | [|- (?x |-> ?v1 :* _) ~= (?x |-> ?v2 :* _)] => apply equivJoin;[replace v1 with v2 by omega|]
+           | [|- MapEquiv ?map (?x |-> _ :* _)] => find x map ltac:(fun pf => rewrite pf)
+           | [|- MapEquiv ?map (?submap :* _)] => find_submap map submap ltac:(fun pf => rewrite pf)
+           | [|- MapEquiv ?map ?map ] => reflexivity
+         end).
+
 (* Language syntax *)
 Inductive Exp :=
   | EVar (v:string)
