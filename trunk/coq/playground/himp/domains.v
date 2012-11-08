@@ -110,6 +110,7 @@ Ltac equate_maps := rewrite ?equivAssoc, ?equivUnitL, ?equivUnit;
 (* Language syntax *)
 Inductive Exp :=
   | EVar (v:string)
+  | ELoad (x : Exp)
   | ECon (i:Z)
   | EPlus (l r:Exp)
   | EMinus (l r:Exp)
@@ -124,6 +125,7 @@ Definition isEVal e :=
 Inductive BExp :=
   | BCon (b:bool)
   | BLe (l r : Exp)
+  | BEq (l r : Exp)
   | BNot (e:BExp)
   | BAnd (l r:BExp)
   .
@@ -141,7 +143,6 @@ Inductive Stmt :=
   | SWhile (b:BExp) (body:Stmt)
   | Jump (target : string)
   .
-
 
 (* K definitions *)
 Inductive freezer : Set :=
@@ -165,7 +166,7 @@ Inductive kitem : Set :=
   | KExp (e : Exp)
   | KBExp (b : BExp)
   | KStmt (s : Stmt)
-  | KFreezer (f : freezer)
+(* | KFreezer (f : freezer) *)
   | KFreezeE (f : Exp -> kitem)
   | KFreezeB (f : BExp -> kitem)
   .

@@ -84,7 +84,7 @@ let print_kitem = function
     KExp e -> print_aexp 0 e
   | KBExp b -> print_bexp 0 b
   | KStmt s -> print_stmt 0 s
-  | KFreezer _ | KFreezeE _ | KFreezeB _ -> print_string "freezer"
+  | KFreezeE _ | KFreezeB _ -> print_string "freezer"
 
 let rec print_klist = function
     Nil -> print_string ".K"
