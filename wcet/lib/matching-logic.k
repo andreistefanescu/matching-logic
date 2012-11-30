@@ -1,7 +1,5 @@
-require "builtins/smt.k"
 
 module MATCHING-LOGIC
-  imports SMT-HOOKS
 /*
   configuration
     <top>
@@ -39,9 +37,27 @@ module MATCHING-LOGIC
          ...</rhss>
        </task>
        => .Bag 
-       when checkSat(notBool(Phi impliesBool (Phi' andBool LHS impliesBag RHS))) ==K unsat [structural]
+       when checkSat(notBool(Phi impliesBool (Phi' andBool LHS impliesBag RHS))) ==String "unsat" [structural]
+
+  rule [dissolve-fails]: (<task>
+         <lhs>...
+           <config> LHS:Bag </config>
+           <formula> Phi:Bool </formula>
+         ...</lhs>
+         <rhss>...
+           <rhs>
+             <rconfig> RHS:Bag </rconfig>
+             <rformula> Phi':Bool </rformula>
+           </rhs>
+         ...</rhss>
+       </task>)
+       => stuck 
+       when checkSat(notBool(Phi impliesBool (Phi' andBool LHS impliesBag RHS))) =/=String "unsat"
+       andBool checkSat(notBool(Phi impliesBool (LHS assertsBag RHS))) ==String "unsat" [structural]
+
 
   syntax Bool ::= Bag "impliesBag" Bag [function]
+  syntax Bool ::= Bag "assertsBag" Bag [function]
 
   syntax Map ::= "#symMap" "(" Int ")" [klabel('#symMap)]
   rule isSymbolicK(Map2KLabel _:Map #symMap(_)(.List{K})) => true
@@ -52,6 +68,9 @@ module MATCHING-LOGIC
          ...</lhs>
        </task>
        => .Bag
-       when checkSat(Phi) ==K unsat [structural]
+       when checkSat(Phi) ==String "unsat" [structural]
+
+  syntax BagItem ::= "stuck"
+  rule stuck stuck => stuck
 
 endmodule

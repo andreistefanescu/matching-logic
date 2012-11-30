@@ -36,5 +36,6 @@ module NAIVE-DOMAIN-REASONING
   rule K ,, Kl:List{K} impliesList{K} K2 ,, Kl2:List{K} => K impliesK K2 andBool Kl impliesList{K} Kl2
   rule .List{K} impliesList{K} .List{K} => true
 
+  rule (<T>... <k> K </k> ...</T>) assertsBag (<T>... <k> K2 </k> ...</T>) => K impliesK K2
 
 endmodule
