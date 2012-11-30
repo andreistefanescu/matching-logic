@@ -1,4 +1,4 @@
-require "naive-domain-reasoning.k"
+require "lib/naive-domain-reasoning.k"
 
 module WCET-DOMAIN-REASONING
   imports NAIVE-DOMAIN-REASONING

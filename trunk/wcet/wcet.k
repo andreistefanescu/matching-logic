@@ -1,9 +1,10 @@
 module WCET
 
-  syntax BInst ::= BOpCode Register "," Exp "," Exp [strict(3 4)]
+  syntax BInst ::= BOpCode Register "," Exp "," Exp [strict(3, 4)]
   syntax BOpCode ::= "add" | "sub" | "mul" | "div" | "or" | "and"
   syntax Exp ::= Register
                | "#" Int
+               | Int
   syntax Register ::= "r" Int
   syntax UInst ::= UOpCode Register "," Exp
   syntax UOpCode ::= "not" | "load" | "li"
@@ -11,7 +12,7 @@ module WCET
   syntax MOpCode ::= "store"
   syntax JInst ::= JOpCode Id
   syntax JOpCode ::= "jmp"
-  syntax BrInst ::= BrOpCode Id "," Exp "," Exp [strict(3 4)]
+  syntax BrInst ::= BrOpCode Id "," Exp "," Exp [strict(3, 4)]
   syntax BrOpCode ::= "beq" | "bne" | "blt" | "ble" | "bgt" | "bge"
 
   syntax NInst ::= NOpCode
