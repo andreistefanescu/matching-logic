@@ -1,29 +1,38 @@
-module WCET
+require "lib/matching-logic.k"
 
-  syntax BInst ::= BOpCode Register "," Exp "," Exp [strict(3, 4)]
+module WCET
+  imports MATCHING-LOGIC
+
+  syntax BInst ::= BOpCode Register "," Exp "," Exp [klabel('binst), strict(3, 4)]
   syntax BOpCode ::= "add" | "sub" | "mul" | "div" | "or" | "and"
   syntax Exp ::= Register
                | "#" Int
                | Int
   syntax Register ::= "r" Int
-  syntax UInst ::= UOpCode Register "," Exp
+  syntax UInst ::= UOpCode Register "," Exp [klabel('uinst), strict(3)]
   syntax UOpCode ::= "not" | "load" | "li"
-  syntax MInst ::= MOpCode Exp "," Exp
+  syntax MInst ::= MOpCode Exp "," Exp [klabel('minst), strict(2, 3)]
   syntax MOpCode ::= "store"
-  syntax JInst ::= JOpCode Id
+  syntax JInst ::= JOpCode Id [klabel('jinst)]
   syntax JOpCode ::= "jmp"
-  syntax BrInst ::= BrOpCode Id "," Exp "," Exp [strict(3, 4)]
+  syntax BrInst ::= BrOpCode Id "," Exp "," Exp [klabel('brinst), strict(3, 4)]
   syntax BrOpCode ::= "beq" | "bne" | "blt" | "ble" | "bgt" | "bge"
 
-  syntax NInst ::= NOpCode
+  syntax NInst ::= NOpCode [klabel('ninst)]
   syntax NOpCode ::= "halt"
 
-  syntax Inst ::= BInst | UInst | MInst | JInst | BrInst | NInst
+  syntax SInst ::= SOpCode Exp [klabel('sinst), strict(2)]
+  syntax SOpCode ::= "sleep"
+
+  syntax RInst ::= ROpCode Register "," Id "," Exp [klabel('rinst), strict(4)]
+  syntax ROpCode ::= "read"
+
+  syntax Inst ::= BInst | UInst | MInst | JInst | BrInst | NInst | SInst | RInst
   syntax Insts ::= Inst | Inst Insts
   syntax Block ::= Id ":" Insts
   syntax Blocks ::= Block | Block Blocks
 
-  syntax OpCode ::= BOpCode | UOpCode | MOpCode | JOpCode | BrOpCode | NOpCode
+  syntax OpCode ::= BOpCode | UOpCode | MOpCode | JOpCode | BrOpCode | NOpCode | SOpCode | ROpCode
 
 /*
   configuration
@@ -50,6 +59,8 @@ module WCET
                 <reg> .Map </reg>
                 <timing> .Map </timing>
                 <wcet> 0 </wcet>
+                <input> .Map </input>
+                <status> .Map </status>
               </T>
             </config>
             <formula> true </formula>
@@ -67,11 +78,7 @@ module WCET
 
   syntax KResult ::= Int
 
-  context M:MOpCode HOLE , _
-  context M:MOpCode _ , HOLE
-  context U:UOpCode _ , HOLE
-
-  syntax K ::= load( K )
+  syntax K ::= load(K)
              | "jumpToMain"
 
   rule <k> load(B:Block Bs:Blocks) => load(B) ~> load(Bs) ...</k>
@@ -139,7 +146,7 @@ module WCET
   rule bgt X , E , E2 => blt X , E2 , E [macro]
   rule bge X , E , E2 => ble X , E2 , E [macro]
 
-  syntax K ::= "branch" "(" Bool "," Id ")"
+  syntax K ::= branch(Bool, Id)
 /*
   rule <k> branch(true, X:Id) => Pgm(X) ...</k>
        <pgm> Pgm:Map </pgm>
@@ -183,10 +190,116 @@ module WCET
   rule <k> halt ~> _ => time(halt) </k>
        <progress> _ => true </progress>
 
-  syntax K ::= "time" "(" OpCode ")"
-  rule <k> time(O:OpCode) => . ...</k>
+  rule <k> sleep I:Int => waitFor(I) ...</k>
+       <progress> _ => true </progress>
+
+  rule <k> read r I:Int , X:Id , I3:Int => time(read) ...</k>
+       <status>... X |-> (I2:Int => I3) ...</status>
+       <reg> Reg:Map => Reg[I2 / I] </reg>
+       <progress> _ => true </progress>
+
+  syntax K ::= time(OpCode)
+  rule <k> time(O:OpCode) => waitFor(Timing(O)) ...</k>
        <timing> Timing:Map </timing>
-       <wcet> I2:Int => I2 +Int Timing(O) </wcet>
-       <progress> _ => true </progress> [structural]
+       <progress> _ => true </progress>
+
+  syntax K ::= waitFor(Int)
+
+  rule
+    <task><lhs>
+      <config><T>
+        <k> waitFor(I:Int) ~> K </k>
+        <wcet> I2 </wcet>
+        Cfg:Bag
+      </T></config>
+      <formula> Phi </formula>
+      <progress> _ </progress></lhs>
+      Task:Bag
+    </task>
+    =>
+    <task><lhs>
+      <config><T>
+        <k> updateStatus ~> waitFor(I -Int 1) ~> K </k>
+        <wcet> I2 +Int 1 </wcet>
+        Cfg
+      </T></config>
+      <formula> Phi andBool I >Int 0 </formula>
+      <progress> true </progress></lhs>
+      Task
+    </task>
+    <task><lhs>
+      <config><T>
+        <k> K </k>
+        <wcet> I2 </wcet>
+        Cfg
+      </T></config>
+      <formula> Phi andBool I ==Int 0 </formula>
+      <progress> true </progress></lhs>
+      Task
+    </task>
+
+/*
+  rule <k> waitFor(I:Int) => updateStatus ~> waitFor(I -Int 1) ...</k>
+       <wcet> I2:Int => I2 +Int 1 </wcet>
+       <formula> Phi:Bool </formula>
+
+  rule <k> waitFor(0) => . ...</k>
+       <progress> _ => true </progress>
+*/
+  syntax K ::= "updateStatus"
+/*
+  rule <k> updateStatus ...</k>
+       <input>... X:Id |-> Set2KLabel _ ((I, I2:Int) => .)(.List{K}) ...</input>
+       <wcet> I:Int </wcet>
+       <status> Status:Map => Status[I2 / X] </status>
+       <progress> _ => true </progress>
+
+  rule <k> updateStatus => . ...</k>
+       <input> Input:Map </input>
+       <wcet> I:Int </wcet>
+       <progress> _ => true </progress> when notBool(I in first(flatten(values(Input))))
+*/
+
+  rule [updateStatus]:
+    <task><lhs>
+      <config><T>
+        <k> updateStatus ~> K </k>
+        <input> Input:Map </input>
+        <wcet> I:Int </wcet>
+        <status> Status:Map </status>
+        Cfg:Bag
+      </T></config>
+      <formula> Phi </formula>
+      <progress> _ </progress></lhs>
+      Task:Bag
+    </task>
+    =>
+    <task><lhs>
+      <config><T>
+        <k> K </k>
+        <input> Input </input>
+        <wcet> I </wcet>
+        <status> Status[Input(I)] </status>
+        Cfg
+      </T></config>
+      <formula> Phi andBool I inSymbolic keys(Input) </formula>
+      <progress> true </progress></lhs>
+      Task
+    </task>
+    <task><lhs>
+      <config><T>
+        <k> K </k>
+        <input> Input </input>
+        <wcet> I </wcet>
+        <status> Status </status>
+        Cfg
+      </T></config>
+      <formula> Phi andBool notBool(I inSymbolic keys(Input)) </formula>
+      <progress> true </progress></lhs>
+      Task
+    </task>
+
+  syntax Map ::= Map "[" K "]" [function]
+  rule M:Map[Map2KLabel M2:Map(.List{K})] => M[M2]
 
 endmodule

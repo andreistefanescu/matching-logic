@@ -1,4 +1,3 @@
-
 module MATCHING-LOGIC
 /*
   configuration
@@ -73,4 +72,11 @@ module MATCHING-LOGIC
   syntax BagItem ::= "stuck"
   rule stuck stuck => stuck
 
+  syntax Bool ::= K "inSymbolic" Set [function]
+  rule [inSymbolic-int]: I:Int inSymbolic SetItem(I2:Int) S:Set => I ==Int I2 orBool I inSymbolic S [structural]
+  rule I:Int inSymbolic SetItem(K) S:Set => I inSymbolic S when isInt(K) =/=K true [structural]
+  rule B:Bool inSymbolic SetItem(B2:Bool) S:Set => B ==Bool B2 orBool B inSymbolic S [structural]
+  rule B:Bool inSymbolic SetItem(K) S:Set => B inSymbolic S when isBool(K) =/=K true [structural]
+  rule _ inSymbolic .Set => false [structural]
+  rule K inSymbolic S:Set => K in S when isInt(K) =/=K true andBool isBool(K) =/=K true [structural]
 endmodule
