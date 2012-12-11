@@ -19,6 +19,8 @@ module NAIVE-DOMAIN-REASONING
   rule (<mem> M:Map </mem> LHS:Bag) impliesBag (<mem> M2:Map </mem> RHS:Bag) => M impliesMap M2 andBool LHS impliesBag RHS
   rule (<reg> M:Map </reg> LHS:Bag) impliesBag (<reg> M2:Map </reg> RHS:Bag) => M impliesMap M2 andBool LHS impliesBag RHS
   rule (<timing> M:Map </timing> LHS:Bag) impliesBag (<timing> M2:Map </timing> RHS:Bag) => M impliesMap M2 andBool LHS impliesBag RHS
+  rule (<input> M:Map </input> LHS:Bag) impliesBag (<input> M2:Map </input> RHS:Bag) => M impliesMap M2 andBool LHS impliesBag RHS
+  rule (<status> M:Map </status> LHS:Bag) impliesBag (<status> M2:Map </status> RHS:Bag) => M impliesMap M2 andBool LHS impliesBag RHS
 
   rule .Bag impliesBag .Bag => true
 
@@ -27,7 +29,7 @@ module NAIVE-DOMAIN-REASONING
 
   rule I:Int impliesK I2:Int => I ==Int I2
   rule B:Bool impliesK B2:Bool => B ==Bool B2
-  rule Lbl:KLabel ( Kl:List{K} ) impliesK Lbl ( Kl2:List{K} ) => Kl impliesList{K} Kl2
+  rule Lbl:KLabel ( Kl:List{K} ) impliesK Lbl ( Kl2:List{K} ) => Kl impliesList{K} Kl2 when isInt(Lbl(Kl)) =/=K true andBool isBool(Lbl(Kl)) =/=K true
   rule Lbl:KLabel ( _ ) impliesK Lbl2:KLabel ( _ ) => false when Lbl =/=KLabel Lbl2
   rule .K impliesK K => K ==K .K
   rule K impliesK .K => K ==K .K
