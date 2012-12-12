@@ -1,4 +1,5 @@
 ;;; syntax of programs and configurations
+(in-package "ACL2")
 
 (defun expp (e)
   (case-match e
@@ -49,7 +50,8 @@
 (defthm env-lookup-int
   (implies (and (envp e) (assoc v e))
 	   (integerp (cdr (assoc v e))))
-  :rule-classes ((:type-prescription :typed-term (cdr (assoc v e)))))
+  :rule-classes ((:type-prescription :typed-term (cdr (assoc-equal v e)))))
+
 (defthm env-put-int
   (implies (and (envp e) (symbolp v) (integerp x))
 	   (envp (put-assoc-eql v x e))))
@@ -203,21 +205,48 @@
 
 (defthm hstep-sound
   (implies (and (cfgp cfg) (hstep cfg))
-	   (stepped cfg (hstep cfg)))))
+	   (stepped cfg (hstep cfg))))
 
 (defun steps (n cfg)
-  (if (and (integerp n) (> n 0) (hstep cfg))
-      (steps (- n 1) (hstep cfg))
-    cfg))
+  (if (zp n)
+      cfg
+    (let ((next (hstep cfg)))
+      (if next (steps (1- n) next) cfg))))
+
+;; add a rewrite to evaluate calls to steps with a concrete number
+(defthm open-steps
+  (implies
+    (syntaxp (quotep n))
+    (equal (steps n cfg)
+	   (if (zp n)
+	       cfg
+	     (let ((next (hstep cfg)))
+	       (if next (steps (1- n) next) cfg))))))
+
+#|
+(include-book "arithmetic-5/top" :dir :system)
+(encapsulate
+ ()
+ (local (in-theory (disable hstep)))
+ (defthm steps-split
+   (implies (and (integerp n) (integerp m) (> n 0) (> m 0))
+	    (equal (steps (+ n m) cfg) (steps m (steps n cfg))))))
+|#
 
 ;;; End of the definitions I think would be automatically generated
 
 ;; Test execution
-(steps 100 '(((+ x (+ 5 y))) . ((x . 10) (y . 100))))
+;(steps 100 '(((+ x (+ 5 y))) . ((x . 10) (y . 100))))
 ;==> ((115) (X . 10) (Y . 100))
 
-(steps 1400 '(((while x (block (assign x (+ x -1))))) . ((x . 100))))
+;(steps 1400 '(((while x (block (assign x (+ x -1))))) . ((x . 100))))
 ;==> (((WHILE X (BLOCK (ASSIGN X (+ X -1))))) (X . 0))
+
+(defthm semisymbolic-execution
+   (implies (and (integerp x) (integerp y) (integerp z))
+        (equal
+         (steps 13 `(((+ x (+ y z))) . ((x . ,x) (y . ,y) (z . ,z))))
+         `((,(+ x (+ y z))) . ((x . ,x) (y . ,y) (z . ,z))))))
 
 ;; now try to prove a few more things
 

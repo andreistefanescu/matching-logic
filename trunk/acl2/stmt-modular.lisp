@@ -1,4 +1,5 @@
 ;;; syntax of programs and configurations
+(in-package "ACL2")
 
 (defun expp (e)
   (case-match e
@@ -49,7 +50,8 @@
 (defthm env-lookup-int
   (implies (and (envp e) (assoc v e))
 	   (integerp (cdr (assoc v e))))
-  :rule-classes ((:type-prescription :typed-term (cdr (assoc v e)))))
+  :rule-classes ((:type-prescription :typed-term (cdr (assoc-equal v e)))))
+
 (defthm env-put-int
   (implies (and (envp e) (symbolp v) (integerp x))
 	   (envp (put-assoc-eql v x e))))
@@ -303,6 +305,7 @@
       (steps (- n 1) (hstep cfg))
     cfg))
 
+#|
 ;;; End of the definitions I think would be automatically generated
 
 ;; Test execution
@@ -316,6 +319,7 @@
 
 ;; first, try to characterize configurations actually reached during
 ;; program execution, and show the tighter set is closed under step:
+|#
 
 (defun stmtfreezerp (f)
   (case-match f
