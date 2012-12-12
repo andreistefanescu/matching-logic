@@ -6,10 +6,11 @@ module NAIVE-DOMAIN-REASONING
   syntax Bool ::= Map "impliesMap" Map [function]
                 | K "impliesK" K [function]
                 | List{K} "impliesList{K}" List{K} [function]
+  syntax Set ::= "manual"
 /*
-  rule (< X:CellLabel > K:K </ X:CellLabel > LHS:Bag) impliesBag (< X:CellLabel > K2:K </ X:CellLabel > RHS:Bag) => K impliesK K2 andBool LHS impliesBag RHS
-  rule (< X:CellLabel > B:Bag </ X:CellLabel > LHS:Bag) impliesBag (< X:CellLabel > B2:Bag </ X:CellLabel > RHS:Bag) => B impliesBag B2 andBool LHS impliesBag RHS
-  rule (< X:CellLabel > M:Map </ X:CellLabel > LHS:Bag) impliesBag (< X:CellLabel > M2:Map </ X:CellLabel > RHS:Bag) => M impliesMap M2 andBool LHS impliesBag RHS*/
+  rule (< X:CellLabel > K:K </ X:CellLabel > LHS:Bag) impliesBag (< X:CellLabel > K2:K </ X:CellLabel > RHS:Bag) => K impliesK K2 andBool LHS impliesBag RHS when notBool(X in manual)
+  rule (< X:CellLabel > B:Bag </ X:CellLabel > LHS:Bag) impliesBag (< X:CellLabel > B2:Bag </ X:CellLabel > RHS:Bag) => B impliesBag B2 andBool LHS impliesBag RHS when notBool(X in manual)
+  rule (< X:CellLabel > M:Map </ X:CellLabel > LHS:Bag) impliesBag (< X:CellLabel > M2:Map </ X:CellLabel > RHS:Bag) => M impliesMap M2 andBool LHS impliesBag RHS when notBool(X in manual) */
 
   //TODO: remove
   rule (<T> B:Bag </T> LHS:Bag) impliesBag (<T> B2:Bag </T> RHS:Bag) => B impliesBag B2 andBool LHS impliesBag RHS
@@ -20,7 +21,6 @@ module NAIVE-DOMAIN-REASONING
   rule (<reg> M:Map </reg> LHS:Bag) impliesBag (<reg> M2:Map </reg> RHS:Bag) => M impliesMap M2 andBool LHS impliesBag RHS
   rule (<timing> M:Map </timing> LHS:Bag) impliesBag (<timing> M2:Map </timing> RHS:Bag) => M impliesMap M2 andBool LHS impliesBag RHS
   rule (<input> M:Map </input> LHS:Bag) impliesBag (<input> M2:Map </input> RHS:Bag) => M impliesMap M2 andBool LHS impliesBag RHS
-  rule (<status> M:Map </status> LHS:Bag) impliesBag (<status> M2:Map </status> RHS:Bag) => M impliesMap M2 andBool LHS impliesBag RHS
 
   rule .Bag impliesBag .Bag => true
 
@@ -33,7 +33,7 @@ module NAIVE-DOMAIN-REASONING
   rule Lbl:KLabel ( _ ) impliesK Lbl2:KLabel ( _ ) => false when Lbl =/=KLabel Lbl2
   rule .K impliesK K => K ==K .K
   rule K impliesK .K => K ==K .K
-  rule (L1:KLabel(Kl1:List{K}) ~> K2:K) impliesK (L1':KLabel(Kl1':List{K}) ~> K2') => L1(Kl1) impliesK L1'(Kl1') andBool K2 impliesK K2' when K2 =/=K .K andBool K2' =/=K .K
+  rule (L1:KLabel(Kl1:List{K}) ~> K2:K) impliesK (L1':KLabel(Kl1':List{K}) ~> K2') => L1(Kl1) impliesK L1'(Kl1') andBool K2 impliesK K2' when K2 =/=K .K orBool K2' =/=K .K
 
   rule K ,, Kl:List{K} impliesList{K} K2 ,, Kl2:List{K} => K impliesK K2 andBool Kl impliesList{K} Kl2
   rule .List{K} impliesList{K} .List{K} => true
