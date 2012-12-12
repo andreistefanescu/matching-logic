@@ -20,7 +20,7 @@
                    sub r 0 , r 0 , #1
                    bne loop , r 0 , #0
                    halt </pgm>
-        <reg> 0 |-> #symInt("N") 1 |-> #symInt(0) 2 |-> #symInt(1) </reg>
+        <reg> 0 |-> #symInt("N") 1 |-> #symInt("GeneratedFreshVar0") 2 |-> #symInt("GeneratedFreshVar1") </reg>
         <mem> 0 |-> #symInt("Sum") </mem>
         <status> data |-> #symInt("Data") </status>
         <input> #symInt("Time1") |-> Map2KLabel data |-> #symInt("Data1")(.List{K}) #symInt("Time2") |-> Map2KLabel data |-> #symInt("Data2")(.List{K}) </input>
@@ -35,7 +35,7 @@
     <rhs>
       <rconfig>
         <T>
-          <k> halt </k>
+          <k> .K </k>
           <pgm> 
             main |-> store #0, #0
                      or r 0 , #100 , #0
@@ -52,10 +52,11 @@
           <status> data |-> 0 </status>
           <input> #symInt("Time1") |-> Map2KLabel data |-> #symInt("Data1")(.List{K}) #symInt("Time2") |-> Map2KLabel data |-> #symInt("Data2")(.List{K}) </input>
           <timing> add |-> 1 sub |-> 1 mul |-> 1 div |-> 1 or |-> 1 and |-> 1 not |-> 1 load |-> 10 store |-> 10 jmp |-> 1 beq |-> 2 bne |-> 2 blt |-> 2 ble |-> 2 halt |-> 1 read |-> 10 </timing>
-          <wcet> #symInt(4) </wcet>
+          <wcet> #symInt("GeneratedFreshVar2") </wcet>
         </T>     
       </rconfig>
       <rformula> true </rformula>
+      <rfreevars> SetItem(#symInt("GeneratedFreshVar2")) </rfreevars>
     </rhs>
   </rhss>
 </task>

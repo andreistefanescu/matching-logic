@@ -16,7 +16,7 @@ module POLLING
         store #0, r 2
         sub r 0 , r 0 , #1
         bne loop , r 0 , #0
-        halt => halt </k>
+        halt => .K </k>
     <pgm> main |-> store #0, #0
                    or r 0 , #100 , #0
                    jmp loop
@@ -32,9 +32,9 @@ module POLLING
     <status> data |-> (Data:Int => 0) </status>
     <input> Time1:Int |-> Map2KLabel data |-> Data1:Int(.List{K}) Time2:Int |-> Map2KLabel data |-> Data2:Int(.List{K}) </input>
     <timing> add |-> 1 sub |-> 1 mul |-> 1 div |-> 1 or |-> 1 and |-> 1 not |-> 1 load |-> 10 store |-> 10 jmp |-> 1 beq |-> 2 bne |-> 2 blt |-> 2 ble |-> 2 halt |-> 1 read |-> 10 </timing>
-    <wcet> Time:Int => #symInt(4) </wcet>
+    <wcet> Time:Int => FreshTime:Int </wcet>
     <formula> Phi:Bool </formula>
-    <progress> true </progress> when checkSat(notBool(Phi impliesBool (Time1 -Int Time >Int 34 andBool Time2 -Int Time1 >Int 34))) ==String "unsat" [structural]
+    <progress> true </progress> when isValid(Phi impliesBool (Time1 -Int Time >Int 34 andBool Time2 -Int Time1 >Int 34)) andBool fresh(FreshTime) [structural]
 
   rule [invariant-fails] : <task>...
     <k> read r 1 , data , #0
@@ -61,6 +61,6 @@ module POLLING
     <timing> add |-> 1 sub |-> 1 mul |-> 1 div |-> 1 or |-> 1 and |-> 1 not |-> 1 load |-> 10 store |-> 10 jmp |-> 1 beq |-> 2 bne |-> 2 blt |-> 2 ble |-> 2 halt |-> 1 read |-> 10 </timing>
     <wcet> Time:Int </wcet>
     <formula> Phi:Bool </formula>
-    <progress> true </progress> ...</task> => stuck when checkSat(notBool(Phi impliesBool (Time1 -Int Time >Int 34 andBool Time2 -Int Time1 >Int 34))) =/=String "unsat" [structural]
+    <progress> true </progress> ...</task> => stuck(Phi impliesBool (Time1 -Int Time >Int 34 andBool Time2 -Int Time1 >Int 34)) when notBool isValid(Phi impliesBool (Time1 -Int Time >Int 34 andBool Time2 -Int Time1 >Int 34)) [structural]
 
 endmodule

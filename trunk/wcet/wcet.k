@@ -70,6 +70,7 @@ module WCET
             <rhs multiplicity="*">
               <rconfig> .Bag </rconfig>
               <rformula> true </rformula>
+              <rfreevars> .Set </rfreevars>
             </rhs>
           </rhss>      
         </task>

@@ -14,13 +14,15 @@
                       add r 1 , r 1 , r 2
                       bne sum , r 2 , r 0
                       halt </pgm>
-        <mem> #symMap(1) </mem>
-        <reg> 0 |-> #symInt(2) 1 |-> #symInt(3) 2 |-> #symInt(4) </reg>
-        <timing> #symMap(5) </timing>
-        <wcet> #symInt(6) </wcet>
+        <mem> .Map </mem>
+        <status> .Map </status>
+        <input> .Map </input>
+        <reg> 0 |-> #symInt("N") 1 |-> #symInt("S") 2 |-> #symInt("I") </reg>
+        <timing> add |-> 1 sub |-> 1 mul |-> 1 div |-> 1 or |-> 1 and |-> 1 not |-> 1 load |-> 10 store |-> 10 jmp |-> 1 beq |-> 2 bne |-> 2 blt |-> 2 ble |-> 2 halt |-> 1 read |-> 10 </timing>
+        <wcet> #symInt("GeneratedFreshVar0") </wcet>
       </T>
     </config>
-    <formula> #symInt(3) ==Int (#symInt(4) *Int (#symInt(4) +Int 1) /Int 2) </formula>
+    <formula> #symInt("S") ==Int (#symInt("I") *Int (#symInt("I") +Int 1) /Int 2) </formula>
     <progress> false </progress>
   </lhs>
   <rhss>
@@ -36,10 +38,16 @@
                         add r 1 , r 1 , r 2
                         bne sum , r 2 , r 0
                         halt </pgm>
-          <reg> 0 |-> #symInt(2) 1 |-> (#symInt(2) *Int (#symInt(2) +Int 1) /Int 2) 2 |-> #symInt(2) </reg>
+          <mem> .Map </mem>
+          <status> .Map </status>
+          <input> .Map </input>
+          <reg> 0 |-> #symInt("N") 1 |-> (#symInt("N") *Int (#symInt("N") +Int 1) /Int 2) 2 |-> #symInt("N") </reg>
+          <timing> add |-> 1 sub |-> 1 mul |-> 1 div |-> 1 or |-> 1 and |-> 1 not |-> 1 load |-> 10 store |-> 10 jmp |-> 1 beq |-> 2 bne |-> 2 blt |-> 2 ble |-> 2 halt |-> 1 read |-> 10 </timing>
+          <wcet> #symInt("GeneratedFreshVar1") </wcet>
         </T>
       </rconfig>
       <rformula> true </rformula>
+      <rfreevars> SetItem(#symInt("GeneratedFreshVar1")) </rfreevars>
     </rhs>
   </rhss>
 </task>

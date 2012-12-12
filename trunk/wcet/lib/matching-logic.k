@@ -32,45 +32,27 @@ module MATCHING-LOGIC
            <rhs>
              <rconfig> RHS:Bag </rconfig>
              <rformula> Phi':Bool </rformula>
+             <rfreevars> S:Set </rfreevars>
            </rhs>
          ...</rhss>
        </task>
-       => .Bag 
-       when checkSat(notBool(Phi impliesBool (Phi' andBool LHS impliesBag RHS))) ==String "unsat" [structural]
-
-  rule [dissolve-fails]: (<task>
-         <lhs>...
-           <config> LHS:Bag </config>
-           <formula> Phi:Bool </formula>
-         ...</lhs>
-         <rhss>...
-           <rhs>
-             <rconfig> RHS:Bag </rconfig>
-             <rformula> Phi':Bool </rformula>
-           </rhs>
-         ...</rhss>
-       </task>)
-       => stuck 
-       when checkSat(notBool(Phi impliesBool (Phi' andBool LHS impliesBag RHS))) =/=String "unsat"
-       andBool checkSat(notBool(Phi impliesBool (LHS assertsBag RHS))) ==String "unsat" [structural]
-
+       => assertValid(exists S . (Phi impliesBool (Phi' andBool LHS impliesBag RHS)))
+       when isValid(exists S . (Phi impliesBool ((LHS assertsBag RHS)))) [structural]
 
   syntax Bool ::= Bag "impliesBag" Bag [function]
   syntax Bool ::= Bag "assertsBag" Bag [function]
 
-  syntax Map ::= "#symMap" "(" Int ")" [klabel('#symMap)]
-  rule isSymbolicK(Map2KLabel _:Map #symMap(_)(.List{K})) => true
-
-  rule <task>...
+  rule [infeasible]:
+       <task>...
          <lhs>...
            <formula> Phi:Bool </formula>
          ...</lhs>
        </task>
        => .Bag
-       when checkSat(Phi) ==String "unsat" [structural]
+       when isValid(notBool Phi) [structural]
 
-  syntax BagItem ::= "stuck"
-  rule stuck stuck => stuck
+  syntax BagItem ::= stuck(Bool)
+  syntax BagItem ::= stuck(Bool, String)
 
   syntax Bool ::= K "inSymbolic" Set [function]
   rule [inSymbolic-int]: I:Int inSymbolic SetItem(I2:Int) S:Set => I ==Int I2 orBool I inSymbolic S [structural]
@@ -79,4 +61,13 @@ module MATCHING-LOGIC
   rule B:Bool inSymbolic SetItem(K) S:Set => B inSymbolic S when isBool(K) =/=K true [structural]
   rule _ inSymbolic .Set => false [structural]
   rule K inSymbolic S:Set => K in S when isInt(K) =/=K true andBool isBool(K) =/=K true [structural]
+
+  syntax Bool ::= isValid(Bool) [function]
+  rule [isValid]: isValid(T:Bool) => checkSat(notBool(T)) ==String "unsat"
+
+  syntax BagItem ::= assertValid(Bool) [function]
+  rule assertValid(T) => .Bag when isValid(T)
+  rule assertValid(T) => stuck(T) when notBool(isValid(T))
+
+  rule stuck(T) => stuck(T, SMTLibQuery(T))
 endmodule
