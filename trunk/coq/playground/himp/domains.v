@@ -98,14 +98,19 @@ Ltac find_map_entry :=
       end
   end.
 
-Ltac equate_maps := rewrite ?equivAssoc, ?equivUnitL, ?equivUnit;
- repeat (rewrite ?f_equal;
-         match goal with
-           | [|- (?x |-> ?v1 :* _) ~= (?x |-> ?v2 :* _)] => apply equivJoin;[replace v1 with v2 by omega|]
-           | [|- MapEquiv ?map (?x |-> _ :* _)] => find x map ltac:(fun pf => rewrite pf)
-           | [|- MapEquiv ?map (?submap :* _)] => find_submap map submap ltac:(fun pf => rewrite pf)
-           | [|- MapEquiv ?map ?map ] => reflexivity
-         end).
+  Ltac equate_maps := rewrite ?equivAssoc;
+   repeat (rewrite ?f_equal;
+     match goal with
+       | [|- mapEmpty :* ?m ~= _] => rewrite (equivUnitL m)
+       | [|- _ ~= mapEmpty :* ?m] => rewrite (equivUnitL m)
+       | [|- ?m :* _ ~= ?m :* _] => apply equivJoin;[reflexivity|]
+       | [|- (?x |-> ?v1 :* _) ~= (?x |-> ?v2 :* _)] => apply equivJoin;[replace v1 with v2 by omega|]
+       | [|- MapEquiv ?map (?x |-> _ :* _)] => find x map ltac:(fun pf => rewrite pf)
+       | [|- MapEquiv ?map (?submap :* _)] => find_submap map submap ltac:(fun pf => rewrite pf)
+       | [|- MapEquiv ?map ?map ] => reflexivity
+       | [|- ?m :* mapEmpty ~= _] => rewrite (equivUnit m)
+       | [|- _ ~= ?m :* mapEmpty] => rewrite (equivUnit m)
+     end).
 
 (* Language syntax *)
 Inductive Exp :=
@@ -145,28 +150,10 @@ Inductive Stmt :=
   .
 
 (* K definitions *)
-Inductive freezer : Set :=
-  | Fplusl : Exp -> freezer
-  | Fplusr : Exp -> freezer
-  | Fminusl : Exp -> freezer
-  | Fminusr : Exp -> freezer
-  | Fdivl : Exp -> freezer
-  | Fdivr : Exp -> freezer
-  | Flel : Exp -> freezer
-  | Fler : Z -> freezer
-  | Fandl : BExp -> freezer
-  | Fassign : string -> freezer
-  | Fhassignl : Exp -> freezer
-  | Fhassignr : Exp -> freezer
-  | Fseq : Stmt -> freezer
-  | Fif : Stmt -> Stmt -> freezer
-  .
-
 Inductive kitem : Set :=
   | KExp (e : Exp)
   | KBExp (b : BExp)
   | KStmt (s : Stmt)
-(* | KFreezer (f : freezer) *)
   | KFreezeE (f : Exp -> kitem)
   | KFreezeB (f : BExp -> kitem)
   .
