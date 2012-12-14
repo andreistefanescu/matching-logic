@@ -269,6 +269,7 @@ Ltac split_bool bexp :=
 Ltac split_if :=
   cbv beta; match goal with
       | [|- steps (KCfg (kra (KStmt (SIf (BCon ?test) _ _)) _) _ _ _) _] => split_bool test
+      | [|- steps (KCfg (kra (KBExp (BAnd (BCon ?test) _)) _) _ _ _) _] => split_bool test
   end.
 
 (* Either solve immediately by using the circularity,
@@ -280,6 +281,7 @@ Ltac use_circ circ :=
   instantiate;  omega]
   || (eapply circ;fail 1).
 
+Ltac run := repeat (step_rule || split_if || finish).
 Ltac run_circ circ := repeat (use_circ circ || (step_rule || split_if || finish)).
 
 CoFixpoint mult :

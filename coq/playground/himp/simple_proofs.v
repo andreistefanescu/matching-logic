@@ -11,6 +11,28 @@ Require Import evaluator.
 Coercion EVar : string >-> Exp.
 Coercion ECon : Z >-> Exp.
 
+Open Scope Z_scope.
+Definition step (state event : Z) :=
+  match event, state with
+    | Z0, Z0 => 1
+    | _, _ => 0
+  end.
+
+Lemma update_function : forall state addr event,
+  steps (KCfg (kra (SIf
+                 (BAnd (BEq (ELoad "state") 0) (BEq "event" 0))
+                 (HAssign "state" 1)
+                 (HAssign "state" 0)) nil)
+              ("event" |-> event :* "state" |-> addr) (addr |-> state) mapEmpty)
+        (KCfg nil
+              ("event" |-> event :* "state" |-> addr) (addr |-> (step state event)) mapEmpty).
+Proof.
+intros.
+run;destruct state;destruct event;
+simpl;(congruence || reflexivity).
+Qed. 
+Close Scope Z_scope.
+
 Lemma heap_test : forall p env,
   steps (KCfg (kra (HAssign "x" (EPlus (ELoad "x") 1%Z)) nil)
               (env :* "x" |-> p) (p |-> 12%Z) mapEmpty)
@@ -78,6 +100,28 @@ CoInductive reaches (s : kcfg) (phi : kcfg -> Prop) : Prop :=
  | r_done : phi s -> reaches s phi
  | r_more : forall s', kstep s s' -> reaches s' phi -> reaches s phi.
 
+(* Brute force attempt to simplify all representation predicates *)
+Ltac simplify_listrep := repeat
+  match goal with
+    | [H : listrep ?l _ ?heap |- _] =>
+      let pf := fresh in
+      destruct l;
+        [destruct H as [pf H]
+        |destruct H as [pf [? [? [H ?]]]]];
+        try (exfalso;omega);[clear pf];
+        try (rewrite H in * |- *;clear H heap)
+  end.
+
+Ltac stop_at_circ circ := (eapply circ; fail 1).
+(* add to find_map_entry a thing that unfolds/splits *)
+Ltac r_step := (eapply r_more;[solve[econstructor(reflexivity||find_map_entry)]|]).
+(* Add a thing that cleans up *)
+Ltac rsplit_if :=
+  cbv beta; match goal with
+      | [|- reaches (KCfg (kra (KStmt (SIf (BCon ?test) _ _)) _) _ _ _) _] => split_bool test
+  end.
+Ltac r_run circ := repeat (stop_at_circ circ || (r_step || (rsplit_if;simplify_listrep))).
+
 Lemma rev_pf : forall p l q l' heap0 heap_l heap_l' lenv,
   listrep l p heap_l ->
   listrep l' q heap_l' ->
@@ -96,44 +140,27 @@ Lemma rev_pf : forall p l q l' heap0 heap_l heap_l' lenv,
                             lenv)).
 Proof.
 cofix.
-intros.
-Ltac r_step := (eapply r_more;[solve[econstructor(reflexivity||find_map_entry)]|]).
-r_step.
-Ltac rsplit_if :=
-  cbv beta; match goal with
-      | [|- reaches (KCfg (kra (KStmt (SIf (BCon ?test) _ _)) _) _ _ _) _] => split_bool test
-  end.
-repeat ((eapply rev_pf;fail 1) || (r_step || rsplit_if)).
+intros. r_step.
+r_run rev_pf.
 (* zero case *)
 clear rev_pf.
 apply r_done.
-exists q. exists heap0.
-split;[|subst;reflexivity].
-(* show l is nil *)
-destruct l;destruct H;[|solve[exfalso;auto]].
-simpl.
-revert H0.
-apply listrep_equiv.
-rewrite H1, H2. equate_maps.
 
-(* Nonzero case *)
-(* Stuck on a lookup that needs domain reasoning to go through *)
-(* exclude nil l*)
-destruct l. (* nil *) contradict n. clear -H. destruct H. auto.
-destruct H as [_ [next [m' [pequiv p_rel_l]]]].
-rewrite pequiv in H1; clear pequiv.
-
-repeat ((eapply rev_pf;fail 1) || (r_step || rsplit_if)).
+eexists;eexists;split;[eassumption|].
+simpl;rewrite H1;repeat split;(reflexivity||equate_maps).
+(* nonzero case, use circularity *)
 simpl; eapply rev_pf.
 
 eassumption.
-split. congruence.
-eexists; eexists.
-split;[reflexivity|eassumption].
-equate_maps.
-apply equivJoin.
+Focus 2.
+(* Why does equiv_maps fail here? - rewrite equivUnit instantiates the evar*)
+match goal with
+  | [|- MapEquiv ?map (?submap :* _)] => find_submap map submap ltac:(fun pf => rewrite pf)
+end.
 reflexivity.
-apply equivComAssoc.
+
+simpl. split;[congruence|]. eexists;eexists;split;[|eassumption]. 
+equate_maps.
 Qed.
 
 Function evals n kcfg :=
