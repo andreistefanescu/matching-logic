@@ -1,7 +1,8 @@
 main:	store #0, #0
 	li r 0 , #100
 	jmp loop
-loop:	rw r 1, data , #0
+loop:	read r 1, data
+        write data , #0
 	load r 2 , #0
 	add r 2 , r 2 , r 1
 	store #0, r 2

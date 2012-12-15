@@ -24,12 +24,18 @@ module WCET
   syntax RInst ::= ROpCode Register "," Id "," Exp [klabel('rinst), strict(4)]
   syntax ROpCode ::= "read"
 
-  syntax Inst ::= BInst | UInst | MInst | JInst | BrInst | NInst | SInst | RInst
+  syntax WInst ::= WOpCode Id "," Exp [klabel('winst), strict(3)]
+  syntax WOpCode ::= "write"
+
+  syntax RWInst ::= RWOpCode Register "," Id "," Exp [klabel('rwinst), strict(4)]
+  syntax RWOpCode ::= "rw"
+
+  syntax Inst ::= BInst | UInst | MInst | JInst | BrInst | NInst | SInst | RInst | WInst | RWInst
   syntax Insts ::= Inst | Inst Insts
   syntax Block ::= Id ":" Insts
   syntax Blocks ::= Block | Block Blocks
 
-  syntax OpCode ::= BOpCode | UOpCode | MOpCode | JOpCode | BrOpCode | NOpCode | SOpCode | ROpCode
+  syntax OpCode ::= BOpCode | UOpCode | MOpCode | JOpCode | BrOpCode | NOpCode | SOpCode | ROpCode | WOpCode | RWOpCode
 
   configuration
     <T>
@@ -39,7 +45,7 @@ module WCET
       <reg> .Map </reg>
       <timing> $TIMING:Map </timing>
       <wcet> 0 </wcet>
-      <input> $INPUT:Map </input>
+      <input> $INPUT:List </input>
       <status> $INITIAL:Map </status>
     </T>
 
@@ -104,8 +110,15 @@ module WCET
 
   rule <k> sleep I:Int => waitFor(I) ...</k>
 
-  rule <k> read r I:Int , X:Id , I3:Int => time(read) ...</k>
-       <status>... X |-> (I2:Int => I3) ...</status>
+  rule <k> read r I:Int , X:Id => time(read) ...</k>
+       <status>... X |-> I2 ...</status>
+       <reg> Reg:Map => Reg[I2 / I] </reg>
+
+  rule <k> write X:Id , I:Int => time(write) ...</k>
+       <status> Status:Map => Status[I / X] </status>
+
+  rule <k> rw r I:Int , X:Id , I3:Int => time(rw) ...</k>
+       <status>... X |-> (I2 => I3) ...</status>
        <reg> Reg:Map => Reg[I2 / I] </reg>
 
   syntax K ::= time(OpCode)
@@ -113,19 +126,22 @@ module WCET
        <timing> Timing:Map </timing>
 
   syntax K ::= waitFor(Int)
-  rule <k> waitFor(I:Int) => updateStatus ~> waitFor(I -Int 1) ...</k>
-       <wcet> I2:Int => I2 +Int 1 </wcet> when I >Int 0
+  rule <k> waitFor(I:Int) => updateStatus(I2) ...</k>
+       <wcet> I2:Int => I2 +Int I </wcet> 
 
-  rule waitFor(0) => .
+  syntax K ::= updateStatus(Int)
+  syntax ListItem ::= (Int, Map)
 
-  syntax K ::= "updateStatus"
-  rule <k> updateStatus => . ...</k>
-       <input>... I:Int |-> Map2KLabel M(.List{K}) ...</input>
+  rule <k> updateStatus(Start) => . ...</k>
+       <input> (I2:Int, M) => . ...</input>
        <wcet> I:Int </wcet>
-       <status> Status:Map => Status[M] </status>
+       <status> Status:Map => Status[M] </status> when I >=Int I2 andBool I2 >=Int Start
 
-  rule <k> updateStatus => . ...</k>
-       <input> Input:Map </input>
-       <wcet> I:Int </wcet> when notBool(I in keys(Input))
+  rule <k> updateStatus(Start) => . ...</k>
+       <input> (I2:Int, M) ...</input>
+       <wcet> I:Int </wcet> when notBool(I >=Int I2 andBool I >=Int Start)
+
+  rule <k> updateStatus(_) => . ...</k>
+       <input> .List </input>
 
 endmodule
