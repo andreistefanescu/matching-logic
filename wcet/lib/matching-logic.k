@@ -23,6 +23,22 @@ module MATCHING-LOGIC
     </top>
 */
 
+  rule [dissolve-freevars]: <task>
+         <lhs>...
+           <config> LHS:Bag </config>
+           <formula> Phi:Bool </formula>
+         ...</lhs>
+         <rhss>...
+           <rhs>
+             <rconfig> RHS:Bag </rconfig>
+             <rformula> Phi':Bool </rformula>
+             <rfreevars> SetItem(K) S:Set </rfreevars>
+           </rhs>
+         ...</rhss>
+       </task>
+       => assertValid(exists SetItem(K) S . (Phi impliesBool (Phi' andBool LHS impliesBag RHS)), LHS, Phi, RHS, Phi')
+       when isValid(exists SetItem(K) S . (Phi impliesBool ((LHS assertsBag RHS)))) [structural]
+
   rule [dissolve]: <task>
          <lhs>...
            <config> LHS:Bag </config>
@@ -32,27 +48,20 @@ module MATCHING-LOGIC
            <rhs>
              <rconfig> RHS:Bag </rconfig>
              <rformula> Phi':Bool </rformula>
-             <rfreevars> S:Set </rfreevars>
+             <rfreevars> .Set </rfreevars>
            </rhs>
          ...</rhss>
        </task>
-       => assertValid(exists S . (Phi impliesBool (Phi' andBool LHS impliesBag RHS)))
-       when isValid(exists S . (Phi impliesBool ((LHS assertsBag RHS)))) [structural]
+       => assertValid((Phi impliesBool (Phi' andBool LHS impliesBag RHS)), LHS, Phi, RHS, Phi')
+       when isValid((Phi impliesBool ((LHS assertsBag RHS)))) [structural]
+
 
   syntax Bool ::= Bag "impliesBag" Bag [function]
   syntax Bool ::= Bag "assertsBag" Bag [function]
 
-  rule [infeasible]:
-       <task>...
-         <lhs>...
-           <formula> Phi:Bool </formula>
-         ...</lhs>
-       </task>
-       => .Bag
-       when isValid(notBool Phi) [structural]
-
   syntax BagItem ::= stuck(Bool)
   syntax BagItem ::= stuck(Bool, String)
+  syntax BagItem ::= stuck(Bag, Bool, Bag, Bool, String)
 
   syntax Bool ::= K "inSymbolic" Set [function]
   rule [inSymbolic-int]: I:Int inSymbolic SetItem(I2:Int) S:Set => I ==Int I2 orBool I inSymbolic S [structural]
@@ -65,9 +74,9 @@ module MATCHING-LOGIC
   syntax Bool ::= isValid(Bool) [function]
   rule [isValid]: isValid(T:Bool) => checkSat(notBool(T)) ==String "unsat"
 
-  syntax BagItem ::= assertValid(Bool) [function]
-  rule assertValid(T) => .Bag when isValid(T)
-  rule assertValid(T) => stuck(T) when notBool(isValid(T))
+  syntax BagItem ::= assertValid(Bool, Bag, Bool, Bag, Bool) [function]
+  rule assertValid(T, _, _, _, _) => .Bag when isValid(T)
+  rule assertValid(T, LHS, Phi, RHS, Phi') => stuck(LHS, Phi, RHS, Phi', SMTLibQuery(notBool(T))) when notBool(isValid(T))
 
-  rule stuck(T) => stuck(T, SMTLibQuery(T))
+  rule stuck(T) => stuck(T, SMTLibQuery(notBool(T)))
 endmodule

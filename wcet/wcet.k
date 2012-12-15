@@ -24,15 +24,21 @@ module WCET
   syntax SInst ::= SOpCode Exp [klabel('sinst), strict(2)]
   syntax SOpCode ::= "sleep"
 
-  syntax RInst ::= ROpCode Register "," Id "," Exp [klabel('rinst), strict(4)]
+  syntax RInst ::= ROpCode Register "," Id [klabel('rinst)]
   syntax ROpCode ::= "read"
 
-  syntax Inst ::= BInst | UInst | MInst | JInst | BrInst | NInst | SInst | RInst
+  syntax WInst ::= WOpCode Id "," Exp [klabel('winst), strict(3)]
+  syntax WOpCode ::= "write"
+
+  syntax RWInst ::= RWOpCode Register "," Id "," Exp [klabel('rwinst), strict(4)]
+  syntax RWOpCode ::= "rw"
+
+  syntax Inst ::= BInst | UInst | MInst | JInst | BrInst | NInst | SInst | RInst | WInst | RWInst
   syntax Insts ::= Inst | Inst Insts
   syntax Block ::= Id ":" Insts
   syntax Blocks ::= Block | Block Blocks
 
-  syntax OpCode ::= BOpCode | UOpCode | MOpCode | JOpCode | BrOpCode | NOpCode | SOpCode | ROpCode
+  syntax OpCode ::= BOpCode | UOpCode | MOpCode | JOpCode | BrOpCode | NOpCode | SOpCode | ROpCode | WOpCode | RWOpCode
 
 /*
   configuration
@@ -59,7 +65,7 @@ module WCET
                 <reg> .Map </reg>
                 <timing> .Map </timing>
                 <wcet> 0 </wcet>
-                <input> .Map </input>
+                <input> .List </input>
                 <status> .Map </status>
               </T>
             </config>
@@ -194,8 +200,17 @@ module WCET
   rule <k> sleep I:Int => waitFor(I) ...</k>
        <progress> _ => true </progress>
 
-  rule <k> read r I:Int , X:Id , I3:Int => time(read) ...</k>
-       <status>... X |-> (I2:Int => I3) ...</status>
+  rule <k> read r I:Int , X:Id => time(read) ...</k>
+       <status>... X |-> I2 ...</status>
+       <reg> Reg:Map => Reg[I2 / I] </reg>
+       <progress> _ => true </progress>
+
+  rule <k> write X:Id , I:Int => time(write) ...</k>
+       <status> Status:Map => Status[I / X] </status>
+       <progress> _ => true </progress>
+
+  rule <k> rw r I:Int , X:Id , I3:Int => time(rw) ...</k>
+       <status>... X |-> (I2 => I3) ...</status>
        <reg> Reg:Map => Reg[I2 / I] </reg>
        <progress> _ => true </progress>
 
@@ -206,66 +221,29 @@ module WCET
 
   syntax K ::= waitFor(Int)
 
-  rule
-    <task><lhs>
-      <config><T>
-        <k> waitFor(I:Int) ~> K </k>
-        <wcet> I2 </wcet>
-        Cfg:Bag
-      </T></config>
-      <formula> Phi </formula>
-      <progress> _ </progress></lhs>
-      Task:Bag
-    </task>
-    =>
-    <task><lhs>
-      <config><T>
-        <k> updateStatus ~> waitFor(I -Int 1) ~> K </k>
-        <wcet> I2 +Int 1 </wcet>
-        Cfg
-      </T></config>
-      <formula> Phi andBool I >Int 0 </formula>
-      <progress> true </progress></lhs>
-      Task
-    </task>
-    <task><lhs>
-      <config><T>
-        <k> K </k>
-        <wcet> I2 </wcet>
-        Cfg
-      </T></config>
-      <formula> Phi andBool I ==Int 0 </formula>
-      <progress> true </progress></lhs>
-      Task
-    </task>
-
-/*
-  rule <k> waitFor(I:Int) => updateStatus ~> waitFor(I -Int 1) ...</k>
-       <wcet> I2:Int => I2 +Int 1 </wcet>
-       <formula> Phi:Bool </formula>
-
-  rule <k> waitFor(0) => . ...</k>
-       <progress> _ => true </progress>
-*/
-  syntax K ::= "updateStatus"
-/*
-  rule <k> updateStatus ...</k>
-       <input>... X:Id |-> Set2KLabel _ ((I, I2:Int) => .)(.List{K}) ...</input>
-       <wcet> I:Int </wcet>
-       <status> Status:Map => Status[I2 / X] </status>
+  rule <k> waitFor(I:Int) => updateStatus(I2) ...</k>
+       <wcet> I2:Int => I2 +Int I </wcet>
        <progress> _ => true </progress>
 
-  rule <k> updateStatus => . ...</k>
-       <input> Input:Map </input>
+  syntax K ::= updateStatus(Int)
+  syntax K ::= (Int, Map)
+
+/*
+  rule <k> updateStatus(Start) => . ...</k>
+       <input> ListItem((I2:Int, M)) ...</input>
        <wcet> I:Int </wcet>
-       <progress> _ => true </progress> when notBool(I in first(flatten(values(Input))))
+       <status> Status:Map => Status[M] </status> when I >=Int I2 andBool I2 >=Int Start
+
+  rule <k> updateStatus(Start) => . ...</k>
+       <input> ListItem((I2:Int, M)) ...</input>
+       <wcet> I:Int </wcet> when notBool(I >=Int I2 andBool I >=Int Start)
 */
 
   rule [updateStatus]:
     <task><lhs>
       <config><T>
-        <k> updateStatus ~> K </k>
-        <input> Input:Map </input>
+        <k> updateStatus(Start) ~> K </k>
+        <input> ListItem((I2:Int, M)) Input:List </input>
         <wcet> I:Int </wcet>
         <status> Status:Map </status>
         Cfg:Bag
@@ -280,27 +258,28 @@ module WCET
         <k> K </k>
         <input> Input </input>
         <wcet> I </wcet>
-        <status> Status[Input(I)] </status>
+        <status> Status[M] </status>
         Cfg
       </T></config>
-      <formula> Phi andBool I inSymbolic keys(Input) </formula>
+      <formula> Phi andBool I >=Int I2 andBool I2 >=Int Start </formula>
       <progress> true </progress></lhs>
       Task
     </task>
     <task><lhs>
       <config><T>
         <k> K </k>
-        <input> Input </input>
+        <input> ListItem((I2, M)) Input </input>
         <wcet> I </wcet>
         <status> Status </status>
         Cfg
       </T></config>
-      <formula> Phi andBool notBool(I inSymbolic keys(Input)) </formula>
+      <formula> Phi andBool notBool(I >=Int I2 andBool I2 >=Int Start) </formula>
       <progress> true </progress></lhs>
       Task
     </task>
 
-  syntax Map ::= Map "[" K "]" [function]
-  rule M:Map[Map2KLabel M2:Map(.List{K})] => M[M2]
+  rule <k> updateStatus(_) => . ...</k>
+       <input> .List </input>
+       <progress> _ => true </progress>
 
 endmodule
