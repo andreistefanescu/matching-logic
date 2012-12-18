@@ -36,7 +36,7 @@ module POLLING
     <timing> add |-> 1 sub |-> 1 mul |-> 1 div |-> 1 or |-> 1 and |-> 1 not |-> 1 load |-> 3 store |-> 3 jmp |-> 1 beq |-> 2 bne |-> 2 blt |-> 2 ble |-> 2 halt |-> 1 read |-> 3 write |-> 3 rw |-> 6</timing>
     <wcet> Time:Int => Time +Int N *Int 16 +Int 1 </wcet>
     <formula> Phi:Bool </formula>
-    <progress> true </progress> when isValid(Phi impliesBool (Time2 -Int Time1 >Int 16 andBool Time <Int Time1 andBool Time +Int (N -Int 1) *Int 16 >Int Time2)) andBool fresh(FreshR1) andBool fresh(FreshR2) [structural]
+    <progress> true </progress> when isValid(Phi impliesBool (Time2 -Int Time1 >Int 16 andBool Time <Int Time1 andBool Time +Int (N -Int 1) *Int 16 >Int Time2 andBool (Time2 -Int Time) >Int 3 andBool (Time1 -Int Time) >Int 3)) andBool fresh(FreshR1) andBool fresh(FreshR2) [structural]
 
   rule [invariant-fails] : <task>...
     <k> rw r 1 , data , #0
@@ -65,7 +65,7 @@ module POLLING
     <timing> add |-> 1 sub |-> 1 mul |-> 1 div |-> 1 or |-> 1 and |-> 1 not |-> 1 load |-> 3 store |-> 3 jmp |-> 1 beq |-> 2 bne |-> 2 blt |-> 2 ble |-> 2 halt |-> 1 read |-> 3 write |-> 3 rw |-> 6</timing>
     <wcet> Time:Int </wcet>
     <formula> Phi:Bool </formula>
-    <progress> true </progress> ...</task> => stuck((Phi impliesBool (Time2 -Int Time1 >Int 16 andBool Time <Int Time1 andBool Time +Int (N -Int 1) *Int 16 >Int Time2))) when notBool isValid(Phi impliesBool (Time2 -Int Time1 >Int 16 andBool Time <Int Time1 andBool Time +Int (N -Int 1) *Int 16 >Int Time2)) [structural]
+    <progress> true </progress> ...</task> => stuck((Phi impliesBool (Time2 -Int Time1 >Int 16 andBool Time <Int Time1 andBool Time +Int (N -Int 1) *Int 16 >Int Time2 andBool (Time2 -Int Time) >Int 3 andBool (Time1 -Int Time) >Int 3))) when notBool isValid(Phi impliesBool (Time2 -Int Time1 >Int 16 andBool Time <Int Time1 andBool Time +Int (N -Int 1) *Int 16 >Int Time2 andBool (Time2 -Int Time) >Int 3 andBool (Time1 -Int Time) >Int 3)) [structural]
 
   rule [invariant] : 
     <k> rw r 1 , data , #0
@@ -94,7 +94,7 @@ module POLLING
     <timing> add |-> 1 sub |-> 1 mul |-> 1 div |-> 1 or |-> 1 and |-> 1 not |-> 1 load |-> 3 store |-> 3 jmp |-> 1 beq |-> 2 bne |-> 2 blt |-> 2 ble |-> 2 halt |-> 1 read |-> 3 write |-> 3 rw |-> 6</timing>
     <wcet> Time:Int => Time +Int N *Int 16 +Int 1 </wcet>
     <formula> Phi:Bool </formula>
-    <progress> true </progress> when isValid(Phi impliesBool (Time <Int Time2 andBool Time +Int (N -Int 1) *Int 16 >Int Time2)) andBool fresh(FreshR1) andBool fresh(FreshR2) [structural]
+    <progress> true </progress> when isValid(Phi impliesBool (Time <Int Time2 andBool Time +Int (N -Int 1) *Int 16 >Int Time2 andBool (Time2 -Int Time) >Int 3)) andBool fresh(FreshR1) andBool fresh(FreshR2) [structural]
 
   rule [invariant-fails] : <task>...
     <k> rw r 1 , data , #0
@@ -123,7 +123,7 @@ module POLLING
     <timing> add |-> 1 sub |-> 1 mul |-> 1 div |-> 1 or |-> 1 and |-> 1 not |-> 1 load |-> 3 store |-> 3 jmp |-> 1 beq |-> 2 bne |-> 2 blt |-> 2 ble |-> 2 halt |-> 1 read |-> 3 write |-> 3 rw |-> 6</timing>
     <wcet> Time:Int </wcet>
     <formula> Phi:Bool </formula>
-    <progress> true </progress> ...</task> => stuck((Phi impliesBool (Time <Int Time2 andBool Time +Int (N -Int 1) *Int 16 >Int Time2))) when notBool isValid(Phi impliesBool (Time <Int Time2 andBool Time +Int (N -Int 1) *Int 16 >Int Time2)) [structural]
+    <progress> true </progress> ...</task> => stuck((Phi impliesBool (Time <Int Time2 andBool Time +Int (N -Int 1) *Int 16 >Int Time2 andBool (Time2 -Int Time) >Int 3))) when notBool isValid(Phi impliesBool (Time <Int Time2 andBool Time +Int (N -Int 1) *Int 16 >Int Time2 andBool (Time2 -Int Time) >Int 3)) [structural]
 
   rule [invariant] : 
     <k> rw r 1 , data , #0
