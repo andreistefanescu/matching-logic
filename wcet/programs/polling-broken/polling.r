@@ -30,7 +30,7 @@
         <wcet> #symInt("Time") </wcet>
       </T>
     </config>
-    <formula> #symInt("Time2") -Int #symInt("Time1") >Int 16 andBool #symInt("Time") <Int #symInt("Time1") andBool #symInt("Time") +Int (#symInt("N") -Int 1) *Int 16 >Int #symInt("Time2") </formula>
+    <formula> #symInt("Time2") -Int #symInt("Time1") >Int 16 andBool #symInt("Time") <Int #symInt("Time1") andBool #symInt("Time") +Int (#symInt("N") -Int 1) *Int 16 >Int #symInt("Time2") andBool (#symInt("Time2") -Int #symInt("Time")) modInt 16 >Int 3 andBool (#symInt("Time1") -Int #symInt("Time")) >Int 3 </formula>
     <progress> false </progress>
   </lhs>
   <rhss>
@@ -95,7 +95,7 @@
         <wcet> #symInt("Time") </wcet>
       </T>
     </config>
-    <formula> #symInt("Time") <Int #symInt("Time2") andBool #symInt("Time") +Int (#symInt("N") -Int 1) *Int 16 >Int #symInt("Time2") </formula>
+    <formula> #symInt("Time") <Int #symInt("Time2") andBool #symInt("Time") +Int (#symInt("N") -Int 1) *Int 16 >Int #symInt("Time2") andBool (#symInt("Time2") -Int #symInt("Time")) modInt 16 >Int 3 </formula>
     <progress> false </progress>
   </lhs>
   <rhss>
