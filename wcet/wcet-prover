@@ -1,3 +1,4 @@
 #!/bin/bash
 
-krun --parser="kast --def-parser -def $1.k" --compiled-def "$1-compiled.maude" $1.r "${@:2}"
+kompile $1.k --output $1-kompiled -addTopCell --transition "computational" && \
+krun --parser="kast -groundParser --k-definition $1.k" --compiled-def "$1-kompiled" $1.r "${@:2}"
