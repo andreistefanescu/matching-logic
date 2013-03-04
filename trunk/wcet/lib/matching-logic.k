@@ -23,7 +23,7 @@ module MATCHING-LOGIC
     </top>
 */
 
-  rule [dissolve-freevars]: <task>
+  rule [dissolve]: <task>
          <lhs>...
            <config> LHS:Bag </config>
            <formula> Phi:Bool </formula>
@@ -37,7 +37,7 @@ module MATCHING-LOGIC
          ...</rhss>
        </task>
        => assertValid(exists SetItem(K) S . (Phi impliesBool (Phi' andBool LHS impliesBag RHS)), LHS, Phi, RHS, Phi')
-       when isValid(exists SetItem(K) S . (Phi impliesBool ((LHS assertsBag RHS)))) [structural]
+       when LHS assertsBag RHS [structural]
 
   rule [dissolve]: <task>
          <lhs>...
@@ -53,7 +53,13 @@ module MATCHING-LOGIC
          ...</rhss>
        </task>
        => assertValid((Phi impliesBool (Phi' andBool LHS impliesBag RHS)), LHS, Phi, RHS, Phi')
-       when isValid((Phi impliesBool ((LHS assertsBag RHS)))) [structural]
+       when LHS assertsBag RHS [structural]
+
+  rule [infeasible]: <task>...
+    <lhs>...
+      <formula> Phi:Bool </formula>
+    ...</lhs>
+  ...</task> => .Bag when isValid(notBool Phi) [structural]
 
 
   syntax Bool ::= Bag "impliesBag" Bag [function]
@@ -75,8 +81,8 @@ module MATCHING-LOGIC
   rule [isValid]: isValid(T:Bool) => checkSat(notBool(T)) ==String "unsat"
 
   syntax BagItem ::= assertValid(Bool, Bag, Bool, Bag, Bool) [function]
-  rule assertValid(T, _, _, _, _) => .Bag when isValid(T)
-  rule assertValid(T, LHS, Phi, RHS, Phi') => stuck(LHS, Phi, RHS, Phi', SMTLibQuery(notBool(T))) when notBool(isValid(T))
+  rule [assertValid]: assertValid(T, _, _, _, _) => .Bag when isValid(T)
+  rule [assertValid]: assertValid(T, LHS, Phi, RHS, Phi') => stuck(LHS, Phi, RHS, Phi', SMTLibQuery(notBool(T))) when notBool(isValid(T))
 
   rule stuck(T) => stuck(T, SMTLibQuery(notBool(T)))
 endmodule

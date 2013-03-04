@@ -7,7 +7,7 @@ module POLLING
   imports WCET
   imports WCET-DOMAIN-REASONING
 
-  syntax #Id ::= "main" | "loop" | "data"
+  syntax #Id ::= "loop" | "data"
 
   rule [invariant] : 
     <k> rw r 1 , data , #0

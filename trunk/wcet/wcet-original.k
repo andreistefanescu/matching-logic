@@ -6,22 +6,26 @@ module WCET
                | "#" Int
                | Int
   syntax Register ::= "r" Int
+
   syntax UInst ::= UOpCode Register "," Exp [klabel('uinst), strict(3)]
   syntax UOpCode ::= "not" | "load" | "li"
+
   syntax MInst ::= MOpCode Exp "," Exp [klabel('minst), strict(2, 3)]
   syntax MOpCode ::= "store"
+
   syntax JInst ::= JOpCode Id [klabel('jinst)]
   syntax JOpCode ::= "jmp"
-  syntax BrInst ::= BrOpCode Id "," Exp "," Exp [klabel('brinst), strict(3, 4)]
-  syntax BrOpCode ::= "beq" | "bne" | "blt" | "ble" | "bgt" | "bge"
 
-  syntax NInst ::= NOpCode [klabel('ninst)]
-  syntax NOpCode ::= "halt"
+  syntax BrInst ::= BrOpCode Id "," Exp "," Exp [klabel('brinst), strict(3, 4)]
+  syntax BrOpCode ::= "beq" | "bne" | "blt" | "ble" | "bgt" | "bge" | "int"
+
+  syntax NInst ::= NOpCode
+  syntax NOpCode ::= "halt" | "rfi"
 
   syntax SInst ::= SOpCode Exp [klabel('sinst), strict(2)]
   syntax SOpCode ::= "sleep"
 
-  syntax RInst ::= ROpCode Register "," Id "," Exp [klabel('rinst), strict(4)]
+  syntax RInst ::= ROpCode Register "," Id [klabel('rinst)]
   syntax ROpCode ::= "read"
 
   syntax WInst ::= WOpCode Id "," Exp [klabel('winst), strict(3)]
@@ -39,7 +43,7 @@ module WCET
 
   configuration
     <T>
-      <k> load($PGM:K) ~> jumpToMain </k>
+      <k> load($PGM:K) ~> jumpTo(main) </k>
       <pgm> .Map </pgm>
       <mem> .Map </mem>
       <reg> .Map </reg>
@@ -47,21 +51,26 @@ module WCET
       <wcet> 0 </wcet>
       <input> $INPUT:List </input>
       <status> $INITIAL:Map </status>
+      <timers> .List </timers>
+      <priority> 0 </priority>
+      <stack> .List </stack>
+      <interrupts> .Set </interrupts>
     </T>
 
   syntax KResult ::= Int
 
   syntax K ::= load(K)
-             | "jumpToMain"
+             | jumpTo(Id)
+
+  syntax #Id ::= "main"
 
   rule <k> load(B:Block Bs:Blocks) => load(B) ~> load(Bs) ...</k>
   rule <k> load(X:Id : Is:Insts) => . ...</k>
        <pgm>... . => X |-> (Is) ...</pgm>
   rule <k> I:Inst Is:Insts => I ~> Is ...</k>
 
-  rule <k> jumpToMain => K </k>
+  rule <k> jumpTo(X) => K </k>
        <pgm>... X:Id |-> K ...</pgm>
-        when Id2String(X) ==String "main"
 
   rule <k> r I:Int => I2:Int ...</k>
        <reg>... I |-> I2 ...</reg>
@@ -121,27 +130,63 @@ module WCET
        <status>... X |-> (I2 => I3) ...</status>
        <reg> Reg:Map => Reg[I2 / I] </reg>
 
+  rule <k> int X:Id , I:Int , I2:Int => time(int) ...</k>
+       <timers>... . => (X, I +Int Time, I2) </timers>
+       <wcet> Time:Int </wcet>
+
+  rule <k> rfi ~> _ => time(rfi) ~> K </k>
+       <stack> (K, Priority) => . ...</stack>
+       <priority> _ => Priority </priority>
+
+  syntax ListItem ::= (Id, Int, Int)
+
   syntax K ::= time(OpCode)
   rule <k> time(O:OpCode) => waitFor(Timing(O)) ...</k>
        <timing> Timing:Map </timing>
 
   syntax K ::= waitFor(Int)
-  rule <k> waitFor(I:Int) => updateStatus(I2) ...</k>
-       <wcet> I2:Int => I2 +Int I </wcet> 
+  rule <k> waitFor(I:Int) => updateStatus(I2) ~> updateTimers(L) ~> interrupt(L, lengthList L) ...</k>
+       <wcet> I2:Int => I2 +Int I </wcet>
+       <timers> L:List => . </timers>
 
   syntax K ::= updateStatus(Int)
   syntax ListItem ::= (Int, Map)
 
   rule <k> updateStatus(Start) => . ...</k>
-       <input> (I2:Int, M) => . ...</input>
+       <input> (I2:Int, M:Map) => . ...</input>
        <wcet> I:Int </wcet>
        <status> Status:Map => Status[M] </status> when I >=Int I2 andBool I2 >=Int Start
 
   rule <k> updateStatus(Start) => . ...</k>
-       <input> (I2:Int, M) ...</input>
+       <input> (I2:Int, M:Map) ...</input>
        <wcet> I:Int </wcet> when notBool(I >=Int I2 andBool I >=Int Start)
 
   rule <k> updateStatus(_) => . ...</k>
        <input> .List </input>
+
+  syntax K ::= updateTimers(List)
+  rule <k> updateTimers(((X, Expires, Interval) => .) _:List) ...</k>
+       <wcet> I:Int </wcet>
+       <timers>... . => (X, Expires, Interval) </timers> when I <Int Expires orBool Interval ==Int 0
+
+  rule <k> updateTimers((X, (Expires => Expires +Int Interval), Interval) _:List) ...</k>
+       <wcet> I:Int </wcet>
+       <interrupts>... . => SetItem(X) </interrupts> when I >=Int Expires andBool Interval =/=Int 0
+
+  rule updateTimers(.List) => .
+
+  syntax K ::= interrupt(List, Int)
+  syntax ListItem ::= (K, Int)
+
+  rule <k> interrupt(((X, _, _) => .) _:List, (N => N -Int 1)) ...</k>
+       <interrupts> S </interrupts>
+       <priority> Priority </priority> when notBool(X in S) orBool N <=Int Priority
+
+  rule <k> interrupt((X, _, _) _, N) ~> K => jumpTo(X) </k>
+       <priority> Priority => N </priority>
+       <interrupts> S => S -Set SetItem(X) </interrupts>
+       <stack> . => (K, Priority) ...</stack> when N >Int Priority andBool X in S
+
+  rule <k> interrupt(.List, _) => . ...</k>
 
 endmodule

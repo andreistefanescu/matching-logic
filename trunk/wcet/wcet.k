@@ -16,10 +16,10 @@ module WCET
   syntax JInst ::= JOpCode Id [klabel('jinst)]
   syntax JOpCode ::= "jmp"
   syntax BrInst ::= BrOpCode Id "," Exp "," Exp [klabel('brinst), strict(3, 4)]
-  syntax BrOpCode ::= "beq" | "bne" | "blt" | "ble" | "bgt" | "bge"
+  syntax BrOpCode ::= "beq" | "bne" | "blt" | "ble" | "bgt" | "bge" | "int"
 
-  syntax NInst ::= NOpCode [klabel('ninst)]
-  syntax NOpCode ::= "halt"
+  syntax NInst ::= NOpCode
+  syntax NOpCode ::= "halt" | "rfi"
 
   syntax SInst ::= SOpCode Exp [klabel('sinst), strict(2)]
   syntax SOpCode ::= "sleep"
@@ -43,7 +43,7 @@ module WCET
 /*
   configuration
     <T>
-      <k> load($PGM:K) ~> jumpToMain </k>
+      <k> load($PGM:K) ~> jumpTo(main) </k>
       <pgm> .Map </pgm>
       <mem> .Map </mem>
       <reg> .Map </reg>
@@ -67,6 +67,10 @@ module WCET
                 <wcet> 0 </wcet>
                 <input> .List </input>
                 <status> .Map </status>
+                <timers> .List </timers>
+                <priority> 0 </priority>
+                <stack> .List </stack>
+                <interrupts> .Set </interrupts>
               </T>
             </config>
             <formula> true </formula>
@@ -86,7 +90,9 @@ module WCET
   syntax KResult ::= Int
 
   syntax K ::= load(K)
-             | "jumpToMain"
+             | jumpTo(Id)
+
+  syntax #Id ::= "main"
 
   rule <k> load(B:Block Bs:Blocks) => load(B) ~> load(Bs) ...</k>
        <progress> _ => true </progress>
@@ -96,9 +102,9 @@ module WCET
   rule <k> I:Inst Is:Insts => I ~> Is ...</k>
        <progress> _ => true </progress>
 
-  rule <k> jumpToMain => K </k>
+  rule <k> jumpTo(X) => K </k>
        <pgm>... X:Id |-> K ...</pgm>
-       <progress> _ => true </progress> when Id2String(X) ==String "main"
+       <progress> _ => true </progress>
 
   rule <k> r I:Int => I2:Int ...</k>
        <reg>... I |-> I2 ...</reg>
@@ -214,6 +220,18 @@ module WCET
        <reg> Reg:Map => Reg[I2 / I] </reg>
        <progress> _ => true </progress>
 
+  rule <k> int X:Id , I:Int , I2:Int => time(int) ...</k>
+       <timers>... . => ListItem((X, I +Int Time, I2)) </timers>
+       <wcet> Time:Int </wcet>
+       <progress> _ => true </progress>
+
+  rule <k> rfi ~> _ => time(rfi) ~> K </k>
+       <stack> ListItem((K, Priority)) => . ...</stack>
+       <priority> _ => Priority </priority>
+       <progress> _ => true </progress>
+
+  syntax K ::= (Id, Int, Int)
+
   syntax K ::= time(OpCode)
   rule <k> time(O:OpCode) => waitFor(Timing(O)) ...</k>
        <timing> Timing:Map </timing>
@@ -221,8 +239,9 @@ module WCET
 
   syntax K ::= waitFor(Int)
 
-  rule <k> waitFor(I:Int) => updateStatus(I2) ...</k>
+  rule <k> waitFor(I:Int) => updateStatus(I2) ~> updateTimers(L) ~> interrupt(L, lengthList L) ...</k>
        <wcet> I2:Int => I2 +Int I </wcet>
+       <timers> L:List => . </timers>
        <progress> _ => true </progress>
 
   syntax K ::= updateStatus(Int)
@@ -281,5 +300,109 @@ module WCET
   rule <k> updateStatus(_) => . ...</k>
        <input> .List </input>
        <progress> _ => true </progress>
+
+  syntax K ::= updateTimers(List)
+/*  rule <k> updateTimers(((X, Expires, Interval) => .) _:List) ...</k>
+       <wcet> I:Int </wcet>
+       <timers>... . => (X, Expires, Interval) </timers> when I <Int Expires orBool Interval ==Int 0
+
+  rule <k> updateTimers((X, (Expires => Expires +Int Interval), Interval) _:List) ...</k>
+       <wcet> I:Int </wcet>
+       <interrupts>... . => SetItem(X) </interrupts> when I >=Int Expires andBool Interval =/=Int 0
+*/
+
+  rule [updateTimers]:
+    <task><lhs>
+      <config><T>
+        <k> updateTimers(ListItem((X, Expires, Interval)) L:List) ~> K </k>
+        <wcet> I:Int </wcet>
+        <timers> L2:List </timers>
+        <interrupts> S:Set </interrupts>
+        Cfg:Bag
+      </T></config>
+      <formula> Phi </formula>
+      <progress> _ </progress></lhs>
+      Task:Bag
+    </task>
+    =>
+    <task><lhs>
+      <config><T>
+        <k> updateTimers(L) ~> K </k>
+        <wcet> I </wcet>
+        <timers> L2 ListItem((X, Expires, Interval)) </timers>
+        <interrupts> S:Set </interrupts>
+        Cfg
+      </T></config>
+      <formula> Phi andBool (I <Int Expires orBool Interval ==Int 0) </formula>
+      <progress> true </progress></lhs>
+      Task
+    </task>
+    <task><lhs>
+      <config><T>
+        <k> updateTimers(ListItem((X, Expires +Int Interval, Interval)) L) ~> K </k>
+        <wcet> I </wcet>
+        <timers> L2 </timers>
+        <interrupts> S SetItem(X) </interrupts>
+        Cfg
+      </T></config>
+      <formula> Phi andBool I >=Int Expires andBool Interval =/=Int 0 </formula>
+      <progress> true </progress></lhs>
+      Task
+    </task>
+
+  rule updateTimers(.List) => .
+
+  syntax K ::= interrupt(List, Int)
+  syntax K ::= (K, Int)
+/*
+  rule <k> interrupt(((X, _, _) => .) _:List, (N => N -Int 1)) ...</k>
+       <interrupts> S </interrupts>
+       <priority> Priority </priority> when notBool(X in S) orBool N <=Int Priority
+
+  rule <k> interrupt((X, _, _) _, N) ~> K => jumpTo(X) </k>
+       <priority> Priority => N </priority>
+       <interrupts> S => S -Set SetItem(X) </interrupts>
+       <stack> . => (K, Priority) ...</stack> when N >Int Priority andBool X in S
+*/
+  rule [interrupt]:
+    <task><lhs>
+      <config><T>
+        <k> interrupt(ListItem((X, Expires, Interval)) L:List, N) ~> K </k>
+        <interrupts> S </interrupts>
+        <priority> Priority </priority>
+        <stack> L2:List </stack>
+        Cfg:Bag
+      </T></config>
+      <formula> Phi </formula>
+      <progress> _ </progress></lhs>
+      Task:Bag
+    </task>
+    =>
+    <task><lhs>
+      <config><T>
+        <k> interrupt(L, N -Int 1) ~> K </k>
+        <interrupts> S </interrupts>
+        <priority> Priority </priority>
+        <stack> L2 </stack>
+        Cfg
+      </T></config>
+      <formula> Phi andBool (notBool(X in S) orBool N <=Int Priority) </formula>
+      <progress> true </progress></lhs>
+      Task
+    </task>
+    <task><lhs>
+      <config><T>
+        <k> jumpTo(X) </k>
+        <priority> N </priority>
+        <interrupts> S -Set SetItem(X) </interrupts>
+        <stack> ListItem((K, Priority)) L2 </stack>
+        Cfg
+      </T></config>
+      <formula> Phi andBool N >Int Priority andBool X in S </formula>
+      <progress> true </progress></lhs>
+      Task
+    </task>
+
+  rule <k> interrupt(.List, _) => . ...</k>
 
 endmodule
