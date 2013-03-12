@@ -67,7 +67,7 @@ module MATCHING-LOGIC
 
   syntax BagItem ::= stuck(Bool)
   syntax BagItem ::= stuck(Bool, String)
-  syntax BagItem ::= stuck(Bag, Bool, Bag, Bool, String)
+  syntax BagItem ::= stuck(Bool, Bag, Bool, Bag, Bool, String)
 
   syntax Bool ::= K "inSymbolic" Set [function]
   rule [inSymbolic-int]: I:Int inSymbolic SetItem(I2:Int) S:Set => I ==Int I2 orBool I inSymbolic S [structural]
@@ -82,7 +82,7 @@ module MATCHING-LOGIC
 
   syntax BagItem ::= assertValid(Bool, Bag, Bool, Bag, Bool) [function]
   rule [assertValid]: assertValid(T, _, _, _, _) => .Bag when isValid(T)
-  rule [assertValid]: assertValid(T, LHS, Phi, RHS, Phi') => stuck(LHS, Phi, RHS, Phi', SMTLibQuery(notBool(T))) when notBool(isValid(T))
+  rule [assertValid]: assertValid(T, LHS, Phi, RHS, Phi') => stuck(T, LHS, Phi, RHS, Phi', SMTLibQuery(notBool(T))) when notBool(isValid(T))
 
   rule stuck(T) => stuck(T, SMTLibQuery(notBool(T)))
 endmodule
