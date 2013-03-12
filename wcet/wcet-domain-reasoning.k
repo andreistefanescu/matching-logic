@@ -18,6 +18,6 @@ module WCET-DOMAIN-REASONING
   syntax Int ::= Int "cdivInt" Int [function]
   syntax priorities '_cdivInt_ > '_+Int_
 
-  rule I:Int cdivInt I2:Int => (I +Int I2 -Int 1) divInt I2
+  rule I:Int cdivInt I2:Int => 0 -Int ((0 -Int I) divInt I2)
 
 endmodule
