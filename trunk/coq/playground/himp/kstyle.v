@@ -52,6 +52,10 @@ Notation cool_step step hot ctx cool :=
 Generalizable Variables rest env erest henv hrest lenv x y i j v r e b s.
 Inductive kstep : kcfg -> kcfg -> Prop :=
   (* evaluation rules *)
+  | k_amb_left : `(kstep (KCfg (kra (EAmb x y) rest) env henv lenv)
+                         (KCfg (kra x rest) env henv lenv))
+  | k_amb_right : `(kstep (KCfg (kra (EAmb x y) rest) env henv lenv)
+                          (KCfg (kra y rest) env henv lenv))
   | k_lookup : `(env ~= (x |-> i :* erest) ->
                  kstep (KCfg (kra (EVar x) rest) env henv lenv)
                        (KCfg (kra (ECon i) rest) (x |-> i :* erest) henv lenv))
@@ -171,9 +175,11 @@ destruct 1;destruct s1';simpl;
 intro Hequiv1;destruct Hequiv1 as (Hkcell & Hstore & Henv & Hlabels);
 rewrite <- ?Hkcell, ?Hstore, ?Henv, ?Hlabels in * |- *;
 refine (ex_intro _ (KCfg _ _ _ _) _);
-(split;
+try solve[(split;
 [econstructor (eassumption || reflexivity)|]);
-try solve[repeat split;(assumption || reflexivity)].
+repeat split;(assumption || reflexivity)].
+(* the amb case is trickier *)
+eauto using kstep.
 Qed.
 
 CoInductive steps : kcfg -> kcfg -> Prop :=

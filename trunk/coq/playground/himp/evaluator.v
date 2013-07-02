@@ -125,6 +125,7 @@ Definition eval cfg : option kcfg :=
       let heat_step e' f := exp_step (kra e' (kra f rest)) in
       let exp1_step e' := exp_step (e' :: rest) in
       match item1 with
+        | EAmb l _ => exp1_step l
         | ECon i =>
           match rest with
             | (KFreezeE f :: rest') => exp_step (f (ECon i) :: rest')

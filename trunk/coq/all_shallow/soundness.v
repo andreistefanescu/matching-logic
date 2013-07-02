@@ -387,10 +387,6 @@ Proof.
   intros until phi'; intro proof.
   induction proof; intros gamma Hterm Hsystem HCsystem.
 
-(* refl *)
-+ destruct C;[destruct H|].
-  unfold gamma_entails; auto using all_reach.
-
 (* step *)
 + unfold gamma_entails; intros.
   destruct (H _ _ H1).
@@ -401,13 +397,9 @@ Proof.
 (* axiom *)
 + apply gamma_entails_unstrict. auto.
 
-(* subst *)
-+ specialize (IHproof gamma Hterm Hsystem HCsystem); clear -IHproof.
-  unfold gamma_entails in * |- *; intros.
-  specialize (IHproof (f rho) gamma0 H H0).
-  revert IHproof.
-  apply all_reach_impl.
-  trivial.
+(* refl *)
++ destruct C;[destruct H|].
+  unfold gamma_entails; auto using all_reach.
 
 (* trans *) 
 + destruct C.
@@ -434,18 +426,6 @@ Proof.
   clear -IHproof1 IHproof2.
   eapply gamma_entails_trans_nonstrict;eassumption.
 
-(* ps_case *)
-+ solve[firstorder].
-
-(* ps_lf *)
-+ specialize (IHproof gamma Hterm Hsystem HCsystem).
-  revert IHproof; clear.
-  intro; intro; intros.
-  destruct H0.
-  specialize (IHproof rho gamma0 H H0).
-  clear -IHproof H1.
-  revert IHproof; apply all_reach_impl. auto.
-
 (* ps_conseq *)
 + specialize (IHproof gamma Hterm Hsystem HCsystem).
   intros rho gamma0; intros.
@@ -454,6 +434,9 @@ Proof.
   revert IHproof.
   apply all_reach_impl.
   auto.
+
+(* ps_case *)
++ solve[firstorder].
 
 (* ps_abstr *)
 + specialize (IHproof gamma Hterm Hsystem HCsystem).
@@ -488,6 +471,23 @@ Proof.
   unfold eq_rect_r, eq_sym in H2, H3; simpl in H2, H3; subst phi0 phi'0.
   specialize (H0 _ H1); simpl in H0.
   assumption.
+
+(* subst *)
++ specialize (IHproof gamma Hterm Hsystem HCsystem); clear -IHproof.
+  unfold gamma_entails in * |- *; intros.
+  specialize (IHproof (f rho) gamma0 H H0).
+  revert IHproof.
+  apply all_reach_impl.
+  trivial.
+
+(* ps_lf *)
++ specialize (IHproof gamma Hterm Hsystem HCsystem).
+  revert IHproof; clear.
+  intro; intro; intros.
+  destruct H0.
+  specialize (IHproof rho gamma0 H H0).
+  clear -IHproof H1.
+  revert IHproof; apply all_reach_impl. auto.
 Qed.
 
 Definition empty_system : system cfg := fun env phi phi' => False.

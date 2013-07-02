@@ -20,17 +20,19 @@ module IMP-SYNTAX
                    Stmt "else" Stmt         [strict(1)]
                  | "while" "(" BExp ")" Stmt
                  > Stmt Stmt                  [left]
+                 | "var" Id "is" AExp "in" Stmt [strict(2)]
   syntax Pgm ::= Stmt
 endmodule
 
 module IMP
   imports IMP-SYNTAX
+  imports INT-HOOKS
   syntax KResult ::= Int | Bool
 
   configuration <T color="yellow">
   		  <k color="green"> $PGM:Pgm </k>
 		  <state color="red"> .Map </state>
-		  <heap> .Map </state>
+		  <heap> .Map </heap>
 		  <labels> .Map </labels>
 		</T>
 
@@ -47,9 +49,9 @@ module IMP
   rule false && _ => false
 // Stmt
   rule skip => .   [structural]
-  rule <k> (jmp L ; ~> K) => Body </k> <labels>... L |-> Body ...</labels>
+  rule <k> (goto L ; ~> K) => Body </k> <labels>... L |-> Body ...</labels>
   rule <k> X = I:Int; => . ...</k> <state>... X |-> (_ => I) ...</state>
-  rule <k> I:Int <- J:Int ; => . ...</k> <heap>... I |-> (_ => J) ...</heap>
+  rule <k> I:Int = J:Int ; => . ...</k> <heap>... I |-> (_ => J) ...</heap>
   rule S1 S2 => S1 ~> S2  [structural]
   rule if (true)  S else _ => S
   rule if (false) _ else S => S
