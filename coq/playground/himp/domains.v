@@ -120,6 +120,7 @@ Inductive Exp :=
   | EPlus (l r:Exp)
   | EMinus (l r:Exp)
   | EDiv (l r:Exp)
+  | EAmb (x y : Exp)
   .
 Definition isEVal e :=
   match e with

@@ -40,28 +40,28 @@ Qed.
 Definition empty_system : forall {cfg}, system cfg :=
   fun _ _ _ _ => False.
 
-Definition is_conseq_l : forall ax (strict : bool) (env : Type)
+Definition is_conseq_l : forall cfg Step C A (env : Type)
                 (phi1 phi1' phi2 : formula cfg env),
-                (forall (g : cfg) (e : env), phi1 g e -> phi1' g e) ->
-                IS cfg step ax strict env phi1' phi2 ->
-                IS cfg step ax strict env phi1 phi2.
-intros. eapply is_conseq; eauto.
+                (forall (e : env) (g : cfg), phi1 e g -> phi1' e g) ->
+                IS cfg Step C A env phi1' phi2 ->
+                IS cfg Step C A env phi1 phi2.
+intros. eapply is_conseq;eauto.
 Defined.
 
-Lemma split_case : forall ax (strict : bool) (env : Type)
+Lemma split_case : forall circ ax (env : Type)
                 (phi1 check phi2 : formula cfg env),
 
                   (forall g e, check g e \/ ~check g e) ->
-                IS cfg step ax strict env (fun env cfg => check env cfg /\ phi1 env cfg) phi2 ->
-                IS cfg step ax strict env (fun env cfg => (~ check env cfg) /\ phi1 env cfg) phi2 ->
-                IS cfg step ax strict env phi1 phi2.
+                IS cfg step circ ax env (fun env cfg => check env cfg /\ phi1 env cfg) phi2 ->
+                IS cfg step circ ax env (fun env cfg => (~ check env cfg) /\ phi1 env cfg) phi2 ->
+                IS cfg step circ ax env phi1 phi2.
 intros.
 apply is_conseq_l with
   (phi1' := fun env cfg =>
             (check env cfg /\ phi1 env cfg) \/ (~check env cfg /\ phi1 env cfg))
 ;[clear -H;firstorder |apply is_case;assumption].
 Qed.
-Lemma proof_reach_zero : IS _ step empty_system false cfg
+Lemma proof_reach_zero : IS _ step None empty_system cfg
    (fun env cfg => cfg = env) (fun env cfg => cfg = (0,0)).
 Proof.
 apply split_case with (check := (fun env _ => env = (0,0))).
