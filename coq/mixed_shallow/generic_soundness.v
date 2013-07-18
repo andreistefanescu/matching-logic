@@ -82,6 +82,140 @@ Module Type ReachabilitySemantics.
 
 End ReachabilitySemantics.
 
+Module Type StateBasedReachability.
+  Parameter cfg : Set.
+  Parameter S : cfg -> cfg -> Prop.
+
+  Parameter index : Set.
+  (* This is one step of soundness relation *)
+  Parameter ix_rel : index -> index -> Prop.
+
+  Parameter state_reaches : bool -> index -> cfg -> (cfg -> Prop) -> Prop.
+
+  Definition holds strict env (phi phi' : formula cfg env) i :=
+    forall rho gamma,
+      phi rho gamma ->
+      state_reaches strict i gamma (phi' rho).
+
+  Parameter ix_rel_ind : forall env (phi phi' : formula cfg env),
+      forall i0,
+      (forall i, clos ix_rel false i0 i ->
+                   (forall i', ix_rel i i' -> holds true phi phi' i') ->
+                   holds true phi phi' i)
+       -> holds true phi phi' i0.
+
+  Parameter reach_later : forall i i', ix_rel i i' ->
+    forall gamma P,
+      state_reaches true i gamma P ->
+      state_reaches true i' gamma P.
+
+  Parameter reach_unstrict : forall i gamma P,
+    state_reaches true i gamma P -> state_reaches false i gamma P.
+
+  (* These are really from axiom cases, maybe make it generic *)
+  Parameter reach_refl : forall i gamma (P : cfg -> Prop),
+                           P gamma -> state_reaches false i gamma P.
+  Parameter reach_step : forall i gamma (P : cfg -> Prop),
+    (exists gamma', S gamma gamma') ->
+    (forall gamma', S gamma gamma' -> P gamma') ->
+      state_reaches true i gamma P.
+
+  Parameter reach_impl : forall (P Q : cfg -> Prop),
+                           (forall c, P c -> Q c) ->
+                           forall strict i gamma,
+                             state_reaches strict i gamma P ->
+                             state_reaches strict i gamma Q.
+
+  Parameter reach_join : forall i gamma P,
+    state_reaches false i gamma
+     (fun gamma' => state_reaches false i gamma' P) ->
+    state_reaches false i gamma P.
+  Parameter reach_join_strict : forall i gamma P,
+    state_reaches true i gamma
+     (fun gamma' => forall i', ix_rel i i' -> state_reaches false i' gamma' P) ->
+    state_reaches true i gamma P.
+
+End StateBasedReachability.
+
+Module StateBasedSemantics (Reach : StateBasedReachability)
+  <: ReachabilitySemantics.
+
+  Import Reach.
+
+  Definition cfg := cfg.
+  Definition S := S.
+  Definition index := index.
+  Definition ix_rel := ix_rel.
+  Definition holds := holds.
+  Definition ix_rel_ind := ix_rel_ind.
+
+  Lemma holds_strict_later : forall env phi1 phi2 i,
+                                   @holds true env phi1 phi2 i ->
+                                   forall i', ix_rel i i' ->
+                                   holds true phi1 phi2 i'.
+    unfold holds, Reach.holds; eauto using reach_later.
+  Qed.
+
+  Lemma holds_unstrict : forall env phi1 phi2 i,
+                           @holds true env phi1 phi2 i ->
+                           @holds false env phi1 phi2 i.
+    unfold holds, Reach.holds; eauto using reach_unstrict.
+  Qed.
+
+  Lemma holds_step : forall env (phi phi' : formula cfg env),
+    (forall (e : env) (c : cfg),
+      phi e c ->
+      (exists c2 : cfg, S c c2) /\ (forall c2 : cfg, S c c2 -> phi' e c2)) ->
+    forall i, holds true phi phi' i.
+    unfold holds, Reach.holds; intros; apply reach_step;firstorder.
+  Qed.
+
+  Lemma holds_refl : forall env phi i, @holds false env phi phi i.
+    unfold holds, Reach.holds; intros; apply reach_refl;assumption.
+  Qed.
+
+  Lemma holds_case :
+    forall strict env (phi phi1 phi' : formula cfg env) i,
+      holds strict phi phi' i -> holds strict phi1 phi' i ->
+      holds strict (fun (e : env) (g : cfg) => phi e g \/ phi1 e g) phi' i.
+  Proof.
+    firstorder.
+  Qed.
+
+  Lemma holds_mut_conseq :
+    forall strict env1 (phi1 phi2 : formula cfg env1)
+                  env2 (phi1' phi2' : formula cfg env2),
+     (forall gamma rho,
+        phi1 rho gamma ->
+        exists rho', phi1' rho' gamma /\
+                     forall gamma', phi2' rho' gamma' -> phi2 rho gamma') ->
+    forall i, holds strict phi1' phi2' i ->
+              holds strict phi1 phi2 i.
+  Proof.
+    unfold holds, Reach.holds;intros.
+    specialize (H _ _ H1).
+    firstorder using reach_impl.
+  Qed.
+
+  Lemma holds_trans : forall env phi phi' phi'' i,
+    @holds false env phi phi' i ->
+    holds false phi' phi'' i ->
+    holds false phi phi'' i.
+  Proof.
+    unfold holds, Reach.holds;intros.
+    eauto using reach_join, reach_impl.
+  Qed.
+
+  Lemma holds_trans_strict : forall env phi phi' phi'' i,
+    @holds true env phi phi' i ->
+    (forall i' : index, ix_rel i i' -> holds false phi' phi'' i') ->
+   holds true phi phi'' i.
+  Proof.
+    unfold holds, Reach.holds;intros.
+    eauto using reach_join_strict, reach_impl.
+  Qed.
+End StateBasedSemantics.
+
 Module Soundness(Sem : ReachabilitySemantics).  
   Import Sem.
 
