@@ -172,7 +172,7 @@ Ltac holds_start := intros;
           specialize (H Hpath)
     end
   (* Open results *)
-  | [H : exists gamma : Top.cfg, _ |- _] =>
+  | [H : exists gamma : _, _ |- _] =>
     destruct H
   | [H : _ /\ _ |- _] =>
     destruct H
