@@ -1,7 +1,5 @@
 Require Import generic_soundness.
 
-Add LoadPath "../ml_proof".
-
 Require Import reduction.
 
 Require Import proofsystem.
@@ -9,6 +7,12 @@ Set Implicit Arguments.
 
 Require Import Setoid.
 Require Import Relation_Definitions.
+
+(* For all-path reachability,
+   the approximation is indexed by a number of steps, and says that
+   every path which terminates within the bound encountered a state
+   matching the target state.
+ *)
 
 Parameter cfg : Set.
 Parameter SF : cfg -> cfg -> Prop.
@@ -457,5 +461,3 @@ intros.
 apply reach_approx.
 auto.
 Qed.
-
-

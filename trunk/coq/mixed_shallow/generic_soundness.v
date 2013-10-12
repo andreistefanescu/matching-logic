@@ -1,10 +1,23 @@
-Add LoadPath "../ml_proof".
-
 Require Import Wellfounded.
 Require Import reduction.
 
 Require Import proofsystem.
 Set Implicit Arguments.
+
+(* A generic soundness proof.
+   The proof is parameterized over a semantic interpretation of reachability rules,
+   which can be instantiated to show one-path or all-path soundness.
+
+   The semantics of a rule must be further parameterized by some kind of "index"
+   with a well-founded approximation order, used to justifying circularity.
+
+   This module reduces showing soundess of the proof system to showing a few
+   lemmas about the selected semantics of reachability rules.
+
+   The soundness result proved in this module shows that the conclusion of
+   the proof holds with any index. To finish a specific soundness proof this
+   should be shown equaivalent to some un-indexed notion of soundenss.
+ *)
 
 Lemma clos_true_step : forall {A: Set} (R : A -> A -> Prop) x z, clos R true x z ->
                                    exists y, R x y /\ clos R false y z.
@@ -304,6 +317,9 @@ Module Soundness(Sem : ReachabilitySemantics).
     auto using holds_case.
   + (* abstr *)
     revert IHIS;clear;apply holds_mut_conseq;firstorder.
+  + (* abstr' *)
+    revert IHIS; clear -H; apply holds_mut_conseq.
+    firstorder;eexists;split;[eassumption|];instantiate;firstorder.
   + (* circularity *)
     apply holds_weak.
     apply ix_rel_ind.

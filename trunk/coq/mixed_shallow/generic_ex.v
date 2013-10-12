@@ -1,7 +1,5 @@
 Require Import generic_soundness.
 
-Add LoadPath "../ml_proof".
-
 Require Import reduction.
 
 Require Import proofsystem.
@@ -12,6 +10,15 @@ Require Import Relation_Definitions.
 
 Axiom cfg : Set.
 Axiom S : cfg -> cfg -> Prop.
+
+(* Showing one-path soundness.
+  The final notion of one-path soundness considers a reachability rule
+  satisfied if the initial configuration admits a diverging execution, so
+  in the non-vacuous case we might as well assume the initial configuration
+  terminates on all execution paths, and then this termination is itself
+  a well-ordering we can use to justify circularity.
+  (see "holds" for the unconditional definition)
+ *)
 
 (* Lemmas *)
 Lemma clos_lift (A B : Type) (R1 : relation A) (R2 : relation B)
@@ -281,3 +288,5 @@ pose proof holds_approx.
 unfold ExPathSoundness.system_holds;intros.
 eauto.
 Qed.
+
+(* Print Assumptions soundness. *)
