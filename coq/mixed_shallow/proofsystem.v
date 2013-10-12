@@ -1,9 +1,18 @@
 Section domain.
 Variable cfg : Set.
 
+(* Because we are showing soundness, it's a stronger result if we don't put any
+   restrictions on the syntax or domains of matching logic patterns,
+   so we instead allow an arbitrary satisfaction relation.
+ *)
 Definition formula env : Type := env -> cfg -> Prop.
 Definition stateless env : Type := env -> Prop.
-(* Definition rule := { env : Type & formula env & formula env }. *)
+
+(* Rather than explicitly tagging rules as one-path or all-path,
+   observe that none of the rules mix quantifiers, so we'll just
+   state the proof system without saying whether it's one-path or
+   all-path, and prove that soundness for both interpretations.
+ *)
 Definition system := forall env,
   formula env -> formula env -> Prop.
 
@@ -34,17 +43,22 @@ Definition union_system (C : option system) (S : system) : system :=
       fun env0 X X0 => S1 env0 X X0 \/ S env0 X X0
   end.
   
-(* accepts a rule if all instances come from the relation *)
-Definition system_of_relation (R : cfg -> cfg -> Prop) : system :=
-  fun env phi phi' =>
-    forall (rho : env) gamma gamma',
-      phi rho gamma -> phi' rho gamma' -> R gamma gamma'.
-
 Section FixTransition.
 Variable (S : cfg -> cfg -> Prop).
 
+(* The proof system defined for soundness.
+   Because we are only interested in soundness here, including additional
+   rules is a stronger result (such as allowing logical framing at any
+   point rather than just combined with axiom, including substitution
+   as an explicit rule, or including step even during the
+   one-path soundness proof)
+ *)
 Inductive IS (C : option system) (A : system) : forall env,
   formula env -> formula env -> Prop :=
+  (* This step is written in terms of a transtion relation, rather
+     than a system given as a set of rules.
+     Equavalence to the version in the paper is shown
+     later in this file. *)
   | is_step : forall env (phi phi' : formula env),
                 (forall e c, phi e c ->
                              (exists c2, S c c2) /\
@@ -67,15 +81,19 @@ Inductive IS (C : option system) (A : system) : forall env,
        IS C A env phi  phi' ->
        IS C A env phi1 phi' ->
        IS C A env (fun e g => phi e g \/ phi1 e g) phi'
-(* use embedding projection pair -
-   have env, env' bigger,
-   env' phi (fun e' => phi' (project e'))
-   env (fun e => exists e', extends e e' /\ phi e') phi'
-  *)
+(* Abstraction with frehsness made manifest by giving phi a biggern env. *)
   | is_abstr : forall env denx
        (phi : formula (env * denx)) (phi' : formula env),
        IS C A (env * denx) phi (fun rho_and_x g => phi' (fst rho_and_x) g) ->
        IS C A env (fun rho g => exists x, phi (rho , x) g) phi'
+(* Abstraction done by replacing the value in the environment,
+   with the operation (repx) of replacing that value in the environment left abstract,
+   and freeness of phi' taken as an assumption. *)
+  | is_abstr' : forall env denx repx
+       (phi phi' : formula env),
+       (forall rho (x : denx) gamma, phi' rho gamma <-> phi' (repx x rho) gamma) ->
+       IS C A env phi phi' ->
+       IS C A env (fun rho g => exists x, phi (repx x rho) g) phi'
   | is_circ : forall env phi phi',
        IS (cons_opt_system env phi phi' C) A env phi phi' ->
        IS C A env phi phi'
@@ -87,6 +105,37 @@ Inductive IS (C : option system) (A : system) : forall env,
        IS C A env (fun e g => phi e g  /\ psi e)
                   (fun e g => phi' e g /\ psi e).
 
+(* Now some lemmas checking adequacy of definitions that
+   won't be needed outside this file
+ *)
+
+(* For soundness, the weakly-well-defined condition is used mostly
+   just to be sure that the transition system induced by a set of
+   rules actually makes it's own rules semantically valid.
+   Check that here. *)
+(* A transition relation where each rule in the system
+   induces an immediate step *)
+Definition relation_of_system (S : system) : cfg -> cfg -> Prop :=
+  fun gamma gamma' =>
+    exists env, exists (rho : env), exists phi, exists phi',
+       (S env phi phi') /\ phi rho gamma /\ phi' rho gamma'.           
+(* A system consisting of rules all of whose instances
+   hold in exactly one step along some path *)
+Definition system_of_relation (R : cfg -> cfg -> Prop) : system :=
+  fun env phi phi' =>
+    forall (rho : env) gamma gamma',
+      phi rho gamma -> phi' rho gamma' -> R gamma gamma'.
+(* A weakly well-defined rule *)
+Definition weakly_well_defined (env : Set) phi phi' : Prop :=
+  forall (gamma : cfg) (rho : env), phi rho gamma -> exists (gamma' : cfg), phi' rho gamma'.
+(* Show that the if a rule is weakly-well-defined, then included in the
+   system of the transition relation of any system including that rule *)
+Lemma weakly_well_defined_rule_valid :
+  forall (S : system) (env : Set) (phi phi' : formula env),
+    S env phi phi' -> weakly_well_defined env phi phi' ->
+    (system_of_relation (relation_of_system S) env phi phi').
+unfold system_of_relation, relation_of_system; eauto 40.
+Qed.
 
 Section StepGood.
 Variable (Ssys : system).

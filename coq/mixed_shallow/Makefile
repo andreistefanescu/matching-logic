@@ -4,8 +4,8 @@ distclean : clean
 
 .PHONY : all distclean
 
-FILES=proofsystem.v generic_soundness.v generic_all.v generic_ex.v
+FILES=proofsystem.v reduction.v generic_soundness.v generic_all.v generic_ex.v
 coq_makefile.mk : Makefile
-	coq_makefile ${FILES} -R ../ml_proof '' -install none > $@
+	coq_makefile ${FILES} -R . '' -install none > $@
 
 include coq_makefile.mk
