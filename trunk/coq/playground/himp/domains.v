@@ -7,6 +7,9 @@ Require Import Setoid.
 
 Set Implicit Arguments.
 
+(* Define maps and the syntax used in the definition,
+   also an equivalence relation on maps and tactics for applying it *)
+
 Inductive Map (Key Elt : Type) : Type :=
 | mapEmpty
 | mapItem (k : Key) (v : Elt)
