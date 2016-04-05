@@ -1,0 +1,3 @@
+Matching logic is a program verification logic inspired by [K](http://k-framework.googlecode.com/).  Matching logic specifications are particular first-order formulae with constrained algebraic structure, called _patterns_.  Configurations satisfy patterns iff they _match_ their algebraic structure and satisfy their constraints.  Patterns can naturally specify separation at the _structural_ (i.e., term) level rather than at the logical (i.e., formula) level, without any need for disjointness predicates or for support from the underlying logic.
+
+See also the related [K](http://k-framework.googlecode.com/) project, upon which the Matching logic verifiers are built.
